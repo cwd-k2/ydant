@@ -20,11 +20,11 @@ const dialogComponent = compose<{
   emits: {
     close: [];
   };
-  slots: DefineSlots<["child"]>;
+  slots: DefineSlots<["default"]>;
 }>("dialog-modal", function* (useProp, useEmit, useSlot) {
   const isOpen = useProp("open");
   const title = useProp("title") ?? "Dialog Title";
-  const child = useSlot("child");
+  const child = useSlot("default");
   const emitClose = useEmit("close");
 
   if (!isOpen) return;
@@ -49,7 +49,7 @@ const dialogComponent = compose<{
       // オーバーレイをクリックした際にも閉じる
       if ((e.target as HTMLElement)?.classList?.contains("bg-opacity-50")) emitClose();
     })
-    .child(function* () {
+    .children(function* () {
       // モーダルコンテナ
       yield* div()
         .class([
@@ -63,14 +63,14 @@ const dialogComponent = compose<{
           "duration-300",
         ])
         .style({ animation: "slideUp 0.3s ease-out" })
-        .child(function* () {
+        .children(function* () {
           // ヘッダー
           yield* div()
             .class(["flex", "justify-between", "items-center", "mb-4", "border-b", "pb-2"])
-            .child(() => [
+            .children(() => [
               h3()
                 .class(["text-xl", "font-semibold", "text-gray-800"])
-                .child(() => [text(title)]),
+                .children(() => [text(title)]),
 
               // 閉じるボタン
               button()
@@ -91,10 +91,10 @@ const dialogComponent = compose<{
                 .on("click", () => {
                   emitClose();
                 })
-                .child(() => [
+                .children(() => [
                   p()
                     .class(["text-lg", "font-bold"])
-                    .child(() => [text("✕")]),
+                    .children(() => [text("✕")]),
                 ]),
             ]);
 
@@ -102,12 +102,12 @@ const dialogComponent = compose<{
           if (child)
             yield* div()
               .class(["text-gray-600", "mb-4"])
-              .child(() => [child]);
+              .children(() => [child]);
 
           // 状態表示
           yield* p()
             .class(["text-sm", "font-mono", "text-blue-600", "mt-2"])
-            .child(() => [text(`Prop 'open' is: ${isOpen}`)]);
+            .children(() => [text(`Prop 'open' is: ${isOpen}`)]);
         });
     });
 });
@@ -115,13 +115,13 @@ const dialogComponent = compose<{
 const main = compose("app", function* () {
   yield* h1()
     .class(["text-purple-800", "mb-5", "text-center", "text-2xl", "font-bold"])
-    .child(() => [text("Demo Showcase 1: Ydant DSL Components")]);
+    .children(() => [text("Demo Showcase 1: Ydant DSL Components")]);
 
   yield* div().class(["border-t", "border-gray-200", "my-6"]);
 
   yield* h3()
     .class(["text-xl", "font-semibold", "text-gray-700", "mb-4"])
-    .child(() => [text("1. Reactive Component Props Demo (Dialog)")]);
+    .children(() => [text("1. Reactive Component Props Demo (Dialog)")]);
   let isModalOpen = false;
 
   const dialog = yield* dialogComponent()
@@ -131,16 +131,16 @@ const main = compose("app", function* () {
       isModalOpen = false;
       dialog.prop("open", isModalOpen).apply();
     })
-    .child(() => [
-      p().child(() => [text("これは DSL で定義されたモーダルコンポーネントの例です。")]),
+    .children(() => [
+      p().children(() => [text("これは DSL で定義されたモーダルコンポーネントの例です。")]),
       p()
         .class(["text-sm", "mt-2"])
-        .child(() => [
+        .children(() => [
           text("モーダルの内容も `open` prop の値によって再レンダリングされています。"),
         ]),
       div()
         .class(["mt-4", "p-2", "bg-blue-100", "text-blue-800", "rounded"])
-        .child(() => [text("親の状態: " + (isModalOpen ? "OPEN" : "CLOSED"))]),
+        .children(() => [text("親の状態: " + (isModalOpen ? "OPEN" : "CLOSED"))]),
       img()
         .prop("src", "https://placehold.co/100x20?text=Self-Closing+Tag")
         .class(["mt-4", "rounded"]),
@@ -148,21 +148,21 @@ const main = compose("app", function* () {
 
   yield* div()
     .class(["text-center", "mb-8"])
-    .child(() => [
+    .children(() => [
       button()
         .class(["counter-btn", "bg-green-500", "hover:bg-green-600"])
         .on("click", () => {
           isModalOpen = !isModalOpen;
           dialog.prop("open", isModalOpen).apply();
         })
-        .child(() => [text("Toggle Dialog (Update Prop)")]),
+        .children(() => [text("Toggle Dialog (Update Prop)")]),
     ]);
 
   yield* div().class(["border-t", "border-gray-200", "my-6"]);
 
   yield* h3()
     .class(["text-xl", "font-semibold", "text-gray-700", "mb-4"])
-    .child(() => [text("2. Simple Counter & Custom Event Demo")]);
+    .children(() => [text("2. Simple Counter & Custom Event Demo")]);
 
   let counter = 0;
   const counterDisplay = yield* p()
@@ -177,33 +177,33 @@ const main = compose("app", function* () {
       "border-2",
       "border-gray-300",
     ])
-    .child(() => [text(`Count: ${counter}`)]);
+    .children(() => [text(`Count: ${counter}`)]);
 
   yield* div()
     .class(["text-center", "mb-8"])
-    .child(() => [
+    .children(() => [
       button()
         .class(["counter-btn", "mr-4"])
         .on("click", () => {
           counter++;
           // DOM を直接更新
-          counterDisplay.child(() => [text(`Count: ${counter}`)]).apply();
+          counterDisplay.children(() => [text(`Count: ${counter}`)]).apply();
         })
-        .child(() => [text("Increment (DOM Update)")]),
+        .children(() => [text("Increment (DOM Update)")]),
       button()
         .class(["counter-btn", "bg-red-600", "hover:bg-red-700"])
         .on("click", () => {
           counter = 0;
           counterDisplay
-            .child(() => [
+            .children(() => [
               span()
                 .class(["text-red-500"])
-                .child(() => [text("RESET: ")]),
+                .children(() => [text("RESET: ")]),
               text(`${counter}`),
             ])
             .apply();
         })
-        .child(() => [text("Reset (Children Update)")]),
+        .children(() => [text("Reset (Children Update)")]),
     ]);
 });
 

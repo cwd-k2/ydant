@@ -1,9 +1,11 @@
 import type {
   Component,
   DefineComponent,
-  Definition,
   NativeComponent,
   Reference,
+  Props,
+  Emits,
+  Slots,
 } from "@ydant/interface";
 
 class RefrenceImpl<C extends Component> implements Reference<C> {
@@ -28,9 +30,9 @@ class RefrenceImpl<C extends Component> implements Reference<C> {
   }
 
   // @ts-expect-error
-  child(...args) {
+  children(...args) {
     // @ts-expect-error
-    this.component.child(...args);
+    this.component.children(...args);
     return this;
   }
 
@@ -93,7 +95,7 @@ function createElement<T extends string>(component: NativeComponent<T>): Node {
   }
 
   // スロット内容のレンダリング
-  for (const children of Object.values(component.slots)) {
+  for (const children of Object.values(component.slots).filter(v => v !== undefined)) {
     for (const child of processDefine(children, element)) {
       element.appendChild(child);
     }
@@ -106,7 +108,10 @@ function* sequence(gs: Iterable<any>[]) {
   for (const g of gs) yield* g;
 }
 
-function processDefine<D extends Definition>(component: DefineComponent<D>, parent: Node): Node[] {
+function processDefine<P extends Props, E extends Emits, S extends Slots>(
+  component: DefineComponent<P, E, S>,
+  parent: Node
+): Node[] {
   const nodes = [];
 
   let iter = component.build(

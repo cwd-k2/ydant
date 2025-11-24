@@ -1,9 +1,9 @@
-import type { NativeComponent, Predefined, Props, Emits, Slots, Build } from "@ydant/interface";
+import type { NativeComponent, Builder, Props, Emits, Slots } from "@ydant/interface";
 import { compose } from "./composer";
 
 export const native =
-  <T extends string>(tag: T): (() => NativeComponent<T>) =>
-  () =>
+  <T extends string>(tag: T) =>
+  (): NativeComponent<T> =>
     new NativeComponentImpl<T>(tag);
 
 class NativeComponentImpl<T extends string> implements NativeComponent<T> {
@@ -33,23 +33,23 @@ class NativeComponentImpl<T extends string> implements NativeComponent<T> {
     return this;
   }
 
-  child(build: Build<Slots<Predefined>["child"]>): this {
-    return this.slot("child", build);
+  children(build: Builder<Slots["default"]>): this {
+    return this.slot("default", build);
   }
 
-  prop<K extends keyof Props<Predefined>>(key: K, value: Props<Predefined>[K]): this {
+  prop<K extends keyof Props>(key: K, value: Props[K]): this {
     this.props[key] = value;
     return this;
   }
 
-  slot<K extends keyof Slots<Predefined>>(key: K, build: Build<Slots<Predefined>[K]>): this {
-    this.slots[key] = compose(`${this.tag}/${key as string}`, build)();
+  slot<K extends keyof Slots>(key: K, build: Builder<Slots[K]>): this {
+    (this.slots as any)[key] = compose(`${this.tag}/${key as string}`, build)();
     return this;
   }
 
-  on<K extends keyof Emits<Predefined>>(
+  on<K extends keyof Record<string, [Event]>>(
     key: K,
-    handler: (...args: Emits<Predefined>[K]) => void
+    handler: (...args: Record<string, [Event]>[K]) => void
   ): this {
     this.handlers[key] = handler;
     return this;
@@ -61,22 +61,3 @@ class NativeComponentImpl<T extends string> implements NativeComponent<T> {
     return v;
   }
 }
-
-export const h1 = native("h1");
-export const h2 = native("h2");
-export const h3 = native("h3");
-export const h4 = native("h4");
-export const h5 = native("h5");
-export const h6 = native("h6");
-export const p = native("p");
-export const div = native("div");
-export const span = native("span");
-export const button = native("button");
-export const input = native("input");
-export const select = native("select");
-export const option = native("option");
-export const textarea = native("textarea");
-export const form = native("form");
-export const label = native("label");
-export const img = native("img");
-export const ul = native("ul");

@@ -1,84 +1,69 @@
-export interface Definition {
-  props: Record<string, unknown>;
-  emits: Record<string, unknown[]>;
-  slots: Record<string, Definition>;
-}
+export type Props = Record<string, unknown>;
+export type Emits = Record<string, unknown[]>;
+export type Slots = Record<string, DefineComponent<any, any, any>>;
 
-export interface Predefined extends Definition {
-  props: Record<string, string>;
-  emits: Record<string, [Event]>;
-  slots: {};
-}
+export type GetProps<C extends Component> = C extends ComponentBase<infer P, any, any> ? P : never;
+export type GetEmits<C extends Component> = C extends ComponentBase<any, infer E, any> ? E : never;
+export type GetSlots<C extends Component> = C extends ComponentBase<any, any, infer S> ? S : never;
 
-export type Props<D extends Definition> = D["props"] & {
-  class: string[];
-  style: Record<string, string>;
-};
-export type Emits<D extends Definition> = D["emits"];
-export type Slots<D extends Definition> = D["slots"] & {
-  child: Definition;
-};
-
-export interface Build<D extends Definition> {
+export interface Build<P extends Props, E extends Emits, S extends Slots> {
   (
-    useProp: <K extends keyof Props<D>>(key: K) => Props<D>[K] | undefined,
-    useEmit: <K extends keyof Emits<D>>(key: K) => (...args: Emits<D>[K]) => void,
-    useSlot: <K extends keyof Slots<D>>(key: K) => DefineComponent<Slots<D>[K]> | undefined
+    useProp: <K extends keyof P>(key: K) => P[K] | undefined,
+    useEmit: <K extends keyof E>(key: K) => (...args: E[K]) => void,
+    useSlot: <K extends keyof S>(key: K) => S[K] | undefined
   ):
     | Iterator<Component | string, void, Reference<Component> | void>
     | Array<Iterable<Component | string>>;
 }
 
-interface ComponentBase<D extends Definition> {
-  readonly tag: string;
-  readonly props: Partial<Props<D>>;
-  readonly slots: Partial<{ [K in keyof Slots<D>]: DefineComponent<Slots<D>[K]> }>;
-  readonly handlers: { [K in keyof Emits<D>]?: (...args: Emits<D>[K]) => void };
+export type Builder<C> = C extends DefineComponent<infer P, infer E, infer S>
+  ? Build<P, E, S>
+  : never;
 
+interface ComponentBase<P extends Props, E extends Emits, S extends Slots> {
+  readonly tag: string;
+  readonly props: Partial<P>;
+  readonly slots: Partial<{ [K in keyof S]: S[K] }>;
+  readonly handlers: { [K in keyof E]?: (...args: E[K]) => void };
   class(cls: string[]): this;
   style(styles: Record<string, string>): this;
-  child(build: Build<Slots<D>["child"]>): this;
+  children(build: Builder<S["default"]>): this;
 
-  prop<K extends keyof Props<D>>(key: K, value: Props<D>[K]): this;
-  slot<K extends keyof Slots<D>>(key: K, build: Build<Slots<D>[K]>): this;
-  on<K extends keyof Emits<D>>(key: K, handler: (...args: Emits<D>[K]) => void): this;
+  prop<K extends keyof P>(key: K, value: P[K]): this;
+  slot<K extends keyof S>(key: K, build: Builder<S[K]>): this;
+  on<K extends keyof E>(key: K, handler: (...args: E[K]) => void): this;
 }
 
-export interface NativeComponent<T extends string> extends ComponentBase<Predefined> {
+export interface NativeComponent<T extends string>
+  extends ComponentBase<
+    Props & { class: string[]; style: Record<string, string> },
+    Record<string, [Event]>,
+    { default: any }
+  > {
   readonly tag: T;
   readonly isNative: true;
 
   [Symbol.iterator](): Iterator<this, Reference<this>, Reference<this>>;
 }
 
-export interface DefineComponent<D extends Definition> extends ComponentBase<D> {
-  readonly build: Build<D>;
+export interface DefineComponent<P extends Props, E extends Emits, S extends Slots = {}>
+  extends ComponentBase<P & { class: string[]; style: Record<string, string> }, E, S> {
+  readonly build: Build<P, E, S>;
   readonly isNative: false;
 
   [Symbol.iterator](): Iterator<this, Reference<this>, Reference<this>>;
 }
 
-export type Component = NativeComponent<string> | DefineComponent<any>;
-
-type ExtractDefinition<C extends Component> = C extends DefineComponent<infer D> ? D : Predefined;
+export type Component = NativeComponent<string> | DefineComponent<any, any, any>;
 
 export interface Reference<C extends Component> {
   class: (cls: string[]) => this;
   style: (styles: Record<string, string>) => this;
-  child: (build: Build<Slots<ExtractDefinition<C>>["child"]>) => this;
+  children: (build: Builder<GetSlots<C>["default"]>) => this;
 
-  prop: <K extends keyof Props<ExtractDefinition<C>>>(
-    key: K,
-    value: Props<ExtractDefinition<C>>[K]
-  ) => this;
-  slot: <K extends keyof Slots<ExtractDefinition<C>>>(
-    key: K,
-    build: Build<Slots<ExtractDefinition<C>>[K]>
-  ) => this;
-  on: <K extends keyof Emits<ExtractDefinition<C>>>(
-    key: K,
-    handler: (...args: Emits<ExtractDefinition<C>>[K]) => void
-  ) => this;
+  prop: <K extends keyof GetProps<C>>(key: K, value: GetProps<C>[K]) => this;
+  slot: <K extends keyof GetSlots<C>>(key: K, build: Builder<GetSlots<C>[K]>) => this;
+  on: <K extends keyof GetEmits<C>>(key: K, handler: (...args: GetEmits<C>[K]) => void) => this;
 
   apply(): void;
 }
