@@ -1,13 +1,21 @@
-import type { DefineComponent, Builder, Build, Props, Emits, Slots } from "@ydant/interface";
+import type {
+  Component,
+  DefineComponent,
+  Builder,
+  Build,
+  Props,
+  Emits,
+  Slots,
+} from "@ydant/interface";
 
 export type DefineSlots<S extends string[]> = {
-  [K in S[number]]: DefineComponent<any, any, any>;
+  [K in S[number]]: Component;
 };
 
 type Definition = {
   props: Record<string, unknown>;
   emits: Record<string, unknown[]>;
-  slots: Record<string, DefineComponent<any, any, any>>;
+  slots: Record<string, Component>;
 };
 
 type Pr<D extends Definition> = D["props"];

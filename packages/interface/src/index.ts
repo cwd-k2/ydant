@@ -1,6 +1,6 @@
 export type Props = Record<string, unknown>;
 export type Emits = Record<string, unknown[]>;
-export type Slots = Record<string, DefineComponent<any, any, any>>;
+export type Slots = Record<string, Component>;
 
 export type GetProps<C extends Component> = C extends ComponentBase<infer P, any, any> ? P : never;
 export type GetEmits<C extends Component> = C extends ComponentBase<any, infer E, any> ? E : never;
