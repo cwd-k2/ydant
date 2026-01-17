@@ -21,23 +21,23 @@ import {
   isEventListener,
 } from "@ydant/interface";
 
-type BuildFn<T extends Record<string, unknown>> = (
+type BuildFn<T extends object> = (
   inject: InjectorFn<T>
 ) => Sequence<Injector<T>, ElementGen, Injectee<T>>;
 
-type RenderFn<T extends Record<string, unknown>> = (
+type RenderFn<T extends object> = (
   provide: ProviderFn<T>
 ) => Sequence<Provider<T> | Decoration, void, void>;
 
-export function compose<T extends Record<string, unknown>>(
+export function compose<T extends object>(
   build: BuildFn<T>
 ): Component<T> {
   return ((render: RenderFn<T>): ElementGen => {
-    return processComponent(build, render);
+    return processComponent<T>(build, render);
   }) as Component<T>;
 }
 
-function* processComponent<T extends Record<string, unknown>>(
+function* processComponent<T extends object>(
   build: BuildFn<T>,
   render: RenderFn<T>
 ): Generator<Element, Refresher, Refresher> {

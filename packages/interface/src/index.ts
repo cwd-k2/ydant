@@ -112,40 +112,40 @@ export function isProvide(value: { type: string }): value is Provide<unknown, un
 }
 
 /** Injector union 型 */
-export type Injector<T extends Record<string, unknown>> = {
+export type Injector<T extends object> = {
   [K in keyof T]: Inject<K>;
 }[keyof T];
 
 /** Provider union 型 */
-export type Provider<T extends Record<string, unknown>> = {
+export type Provider<T extends object> = {
   [K in keyof T]: Provide<K, T[K]>;
 }[keyof T];
 
 /** inject 関数の型 */
-export type InjectorFn<T> = <K extends keyof T>(key: K) => Iterator<Inject<K>, T[K], T[K]>;
+export type InjectorFn<T> = <K extends keyof T>(key: K) => Generator<Inject<K>, T[K], T[K]>;
 
 /** provide 関数の型 */
 export type ProviderFn<T> = <K extends keyof T, V extends T[K]>(
   key: K,
   value: V
-) => Iterator<Provide<K, V>, void, void>;
+) => Generator<Provide<K, V>, void, void>;
 
 /** Inject された値の union 型 */
-export type Injectee<T extends Record<string, unknown>> = T[keyof T];
+export type Injectee<T extends object> = T[keyof T];
 
 // =============================================================================
 // Component Types
 // =============================================================================
 
 /** コンポーネント */
-export interface Component<T extends Record<string, unknown>> {
+export interface Component<T extends object> {
   (
     arg: (provide: ProviderFn<T>) => Sequence<Provider<T> | Decoration, void, void>
   ): ElementGen;
 }
 
 /** コンポーネント定義関数 */
-export interface ComposeFn<T extends Record<string, unknown>> {
+export interface ComposeFn<T extends object> {
   (
     arg: (inject: InjectorFn<T>) => Sequence<Injector<T>, ElementGen, Injectee<T>>
   ): Component<T>;
