@@ -14,6 +14,15 @@ export const attr = createPrimitive(
   (key: string, value: string): Attribute => ({ type: "attribute", key, value })
 );
 
+/** class 属性のショートハンド */
+export const clss = createPrimitive(
+  (classes: string[]): Attribute => ({
+    type: "attribute",
+    key: "class",
+    value: classes.join(" "),
+  })
+);
+
 /** イベントリスナを yield */
 export const on = createPrimitive(
   (key: string, handler: (e: Event) => void): EventListener => ({
