@@ -1,213 +1,210 @@
-import {
-  type DefineSlots,
-  text,
-  compose,
-  h1,
-  h3,
-  p,
-  span,
-  div,
-  img,
-  button,
-} from "@ydant/composer";
-import { render } from "@ydant/renderer";
+import { text, div, h1, h3, p, span, button, clss, on, compose } from "@ydant/composer";
+import { mount } from "@ydant/renderer";
 
-const dialogComponent = compose<{
-  props: {
-    open: boolean;
-    title: string;
-  };
-  emits: {
-    close: [];
-  };
-  slots: DefineSlots<["default"]>;
-}>("dialog-modal", function* (useProp, useEmit, useSlot) {
-  const isOpen = useProp("open");
-  const title = useProp("title") ?? "Dialog Title";
-  const child = useSlot("default");
-  const emitClose = useEmit("close");
+// ============================================================================
+// Dialog Component using compose (配列形式を一部使用)
+// ============================================================================
 
-  if (!isOpen) return;
+interface DialogProps {
+  title: string;
+  content: string;
+  onClose: () => void;
+}
 
-  // モーダルオーバーレイ
-  yield* div()
-    .class([
-      "fixed",
-      "inset-0",
-      "bg-black",
-      "bg-opacity-50",
-      "flex",
-      "items-center",
-      "justify-center",
-      "z-50",
-      "p-4",
-      "transition-opacity",
-      "duration-300",
-    ])
-    .style({ animation: "fadeIn 0.3s ease-out" })
-    .on("click", e => {
-      // オーバーレイをクリックした際にも閉じる
-      if ((e.target as HTMLElement)?.classList?.contains("bg-opacity-50")) emitClose();
-    })
-    .children(function* () {
-      // モーダルコンテナ
-      yield* div()
-        .class([
-          "bg-white",
-          "p-6",
-          "rounded-xl",
-          "shadow-2xl",
-          "max-w-md",
-          "w-full",
-          "transition-transform",
-          "duration-300",
-        ])
-        .style({ animation: "slideUp 0.3s ease-out" })
-        .children(function* () {
-          // ヘッダー
-          yield* div()
-            .class(["flex", "justify-between", "items-center", "mb-4", "border-b", "pb-2"])
-            .children(() => [
-              h3()
-                .class(["text-xl", "font-semibold", "text-gray-800"])
-                .children(() => [text(title)]),
+const Dialog = compose<DialogProps>(function* (inject) {
+  const title = yield* inject("title");
+  const content = yield* inject("content");
+  const onClose = yield* inject("onClose");
 
-              // 閉じるボタン
-              button()
-                .class([
-                  "p-2",
-                  "rounded-full",
-                  "text-gray-600",
-                  "hover:bg-gray-100",
-                  "hover:text-gray-800",
-                  "transition",
-                  "duration-150",
-                  "w-8",
-                  "h-8",
-                  "flex",
-                  "items-center",
-                  "justify-center",
-                ])
-                .on("click", () => {
-                  emitClose();
-                })
-                .children(() => [
-                  p()
-                    .class(["text-lg", "font-bold"])
-                    .children(() => [text("✕")]),
-                ]),
-            ]);
+  // 配列形式: 静的な構造に適している
+  return div(() => [
+    // オーバーレイ背景
+    clss(["fixed", "inset-0", "bg-black", "bg-opacity-50", "flex", "items-center", "justify-center", "z-50"]),
+    on("click", (e) => {
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    }),
 
-          // コンテンツ
-          if (child)
-            yield* div()
-              .class(["text-gray-600", "mb-4"])
-              .children(() => [child]);
+    // ダイアログ本体
+    div(() => [
+      clss(["bg-white", "rounded-lg", "shadow-xl", "max-w-md", "w-full", "mx-4"]),
 
-          // 状態表示
-          yield* p()
-            .class(["text-sm", "font-mono", "text-blue-600", "mt-2"])
-            .children(() => [text(`Prop 'open' is: ${isOpen}`)]);
-        });
-    });
-});
-
-const main = compose("app", function* () {
-  yield* h1()
-    .class(["text-purple-800", "mb-5", "text-center", "text-2xl", "font-bold"])
-    .children(() => [text("Demo Showcase 1: Ydant DSL Components")]);
-
-  yield* div().class(["border-t", "border-gray-200", "my-6"]);
-
-  yield* h3()
-    .class(["text-xl", "font-semibold", "text-gray-700", "mb-4"])
-    .children(() => [text("1. Reactive Component Props Demo (Dialog)")]);
-  let isModalOpen = false;
-
-  const dialog = yield* dialogComponent()
-    .prop("open", isModalOpen)
-    .prop("title", "Prop 駆動のモーダル")
-    .on("close", () => {
-      isModalOpen = false;
-      dialog.prop("open", isModalOpen).apply();
-    })
-    .children(() => [
-      p().children(() => [text("これは DSL で定義されたモーダルコンポーネントの例です。")]),
-      p()
-        .class(["text-sm", "mt-2"])
-        .children(() => [
-          text("モーダルの内容も `open` prop の値によって再レンダリングされています。"),
+      // ヘッダー
+      div(() => [
+        clss(["flex", "items-center", "justify-between", "p-4", "border-b"]),
+        h3(() => [clss(["text-lg", "font-semibold", "text-gray-800"]), text(title)]),
+        button(() => [
+          clss(["text-gray-400", "hover:text-gray-600", "text-2xl", "leading-none"]),
+          on("click", onClose),
+          text("×"),
         ]),
-      div()
-        .class(["mt-4", "p-2", "bg-blue-100", "text-blue-800", "rounded"])
-        .children(() => [text("親の状態: " + (isModalOpen ? "OPEN" : "CLOSED"))]),
-      img()
-        .prop("src", "https://placehold.co/100x20?text=Self-Closing+Tag")
-        .class(["mt-4", "rounded"]),
-    ]);
+      ]),
 
-  yield* div()
-    .class(["text-center", "mb-8"])
-    .children(() => [
-      button()
-        .class(["counter-btn", "bg-green-500", "hover:bg-green-600"])
-        .on("click", () => {
-          isModalOpen = !isModalOpen;
-          dialog.prop("open", isModalOpen).apply();
-        })
-        .children(() => [text("Toggle Dialog (Update Prop)")]),
-    ]);
+      // コンテンツ
+      div(() => [
+        clss(["p-4"]),
+        p(() => [clss(["text-gray-600"]), text(content)]),
+      ]),
 
-  yield* div().class(["border-t", "border-gray-200", "my-6"]);
-
-  yield* h3()
-    .class(["text-xl", "font-semibold", "text-gray-700", "mb-4"])
-    .children(() => [text("2. Simple Counter & Custom Event Demo")]);
-
-  let counter = 0;
-  const counterDisplay = yield* p()
-    .class([
-      "text-center",
-      "text-3xl",
-      "font-mono",
-      "mb-4",
-      "p-4",
-      "bg-gray-100",
-      "rounded-lg",
-      "border-2",
-      "border-gray-300",
-    ])
-    .children(() => [text(`Count: ${counter}`)]);
-
-  yield* div()
-    .class(["text-center", "mb-8"])
-    .children(() => [
-      button()
-        .class(["counter-btn", "mr-4"])
-        .on("click", () => {
-          counter++;
-          // DOM を直接更新
-          counterDisplay.children(() => [text(`Count: ${counter}`)]).apply();
-        })
-        .children(() => [text("Increment (DOM Update)")]),
-      button()
-        .class(["counter-btn", "bg-red-600", "hover:bg-red-700"])
-        .on("click", () => {
-          counter = 0;
-          counterDisplay
-            .children(() => [
-              span()
-                .class(["text-red-500"])
-                .children(() => [text("RESET: ")]),
-              text(`${counter}`),
-            ])
-            .apply();
-        })
-        .children(() => [text("Reset (Children Update)")]),
-    ]);
+      // フッター
+      div(() => [
+        clss(["flex", "justify-end", "gap-2", "p-4", "border-t"]),
+        button(() => [
+          clss(["px-4", "py-2", "bg-gray-200", "text-gray-700", "rounded", "hover:bg-gray-300"]),
+          on("click", onClose),
+          text("Cancel"),
+        ]),
+        button(() => [
+          clss(["px-4", "py-2", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600"]),
+          on("click", onClose),
+          text("OK"),
+        ]),
+      ]),
+    ]),
+  ]);
 });
+
+// ============================================================================
+// Main App Component
+// ============================================================================
+
+const Main = compose<{}>(function* () {
+  return div(function* () {
+    yield* clss(["container", "mx-auto", "p-6"]);
+
+    // タイトル
+    yield* h1(() => [
+      clss(["text-purple-800", "mb-5", "text-center", "text-2xl", "font-bold"]),
+      text("Demo Showcase 1: Ydant DSL Components (Generator-based)"),
+    ]);
+
+    // 区切り線
+    yield* div(() => [clss(["border-t", "border-gray-200", "my-6"])]);
+
+    // セクション1: カウンター（ジェネレーター形式 - Refresher が必要な場合）
+    yield* h3(() => [
+      clss(["text-xl", "font-semibold", "text-gray-700", "mb-4"]),
+      text("1. Counter Demo (Generator syntax for Refresher)"),
+    ]);
+
+    let counter = 0;
+    const counterClss = ["text-center", "text-3xl", "font-mono", "mb-4", "p-4", "bg-gray-100", "rounded-lg", "border-2", "border-gray-300"];
+
+    // カウンター表示 - ジェネレーター形式で Refresher を取得
+    const counterRefresh = yield* p(function* () {
+      yield* clss(counterClss);
+      yield* text(`Count: ${counter}`);
+    });
+
+    // ボタン群
+    yield* div(function* () {
+      yield* clss(["text-center", "mb-8"]);
+
+      // Increment ボタン
+      yield* button(function* () {
+        yield* clss(["counter-btn", "mr-4", "px-4", "py-2", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600"]);
+        yield* on("click", () => {
+          counter++;
+          counterRefresh(() => [clss(counterClss), text(`Count: ${counter}`)]);
+        });
+        yield* text("Increment");
+      });
+
+      // Reset ボタン
+      yield* button(function* () {
+        yield* clss(["counter-btn", "px-4", "py-2", "bg-red-600", "text-white", "rounded", "hover:bg-red-700"]);
+        yield* on("click", () => {
+          counter = 0;
+          counterRefresh(() => [
+            clss(counterClss),
+            span(() => [clss(["text-red-500"]), text("RESET: ")]),
+            text(`${counter}`),
+          ]);
+        });
+        yield* text("Reset");
+      });
+    });
+
+    // 区切り線
+    yield* div(() => [clss(["border-t", "border-gray-200", "my-6"])]);
+
+    // セクション2: 配列形式の説明
+    yield* h3(() => [
+      clss(["text-xl", "font-semibold", "text-gray-700", "mb-4"]),
+      text("2. Array Syntax Demo"),
+    ]);
+
+    yield* div(() => [
+      clss(["p-4", "bg-blue-50", "rounded-lg"]),
+      p(() => [
+        clss(["text-gray-700"]),
+        text("This section uses the array syntax: div(() => [clss([...]), text(...)])"),
+      ]),
+      p(() => [
+        clss(["text-gray-600", "mt-2", "text-sm"]),
+        text("Array syntax is more concise for static structures. Use generator syntax when you need Refresher."),
+      ]),
+    ]);
+
+    // 区切り線
+    yield* div(() => [clss(["border-t", "border-gray-200", "my-6"])]);
+
+    // セクション3: Dialog Component (compose の例)
+    yield* h3(() => [
+      clss(["text-xl", "font-semibold", "text-gray-700", "mb-4"]),
+      text("3. Dialog Component (compose example)"),
+    ]);
+
+    yield* div(() => [
+      clss(["p-4", "bg-green-50", "rounded-lg", "mb-4"]),
+      p(() => [
+        clss(["text-gray-700", "text-sm"]),
+        text("The Dialog component demonstrates compose() with array syntax for cleaner code."),
+      ]),
+    ]);
+
+    // ダイアログの状態
+    let isDialogOpen = false;
+
+    // ダイアログコンテナ - ジェネレーター形式で Refresher を取得
+    const dialogContainerRefresh = yield* div(function* () {
+      yield* clss(["dialog-container"]);
+    });
+
+    // ダイアログを開くボタン
+    yield* div(() => [
+      clss(["text-center"]),
+      button(function* () {
+        yield* clss(["px-6", "py-3", "bg-green-500", "text-white", "rounded-lg", "hover:bg-green-600", "font-semibold"]);
+        yield* on("click", () => {
+          if (!isDialogOpen) {
+            isDialogOpen = true;
+            dialogContainerRefresh(function* () {
+              yield* Dialog(function* (provide) {
+                yield* provide("title", "Welcome!");
+                yield* provide("content", "This dialog uses array syntax internally. Click outside or press a button to close.");
+                yield* provide("onClose", () => {
+                  isDialogOpen = false;
+                  dialogContainerRefresh(() => []);
+                });
+              });
+            });
+          }
+        });
+        yield* text("Open Dialog");
+      }),
+    ]);
+  });
+});
+
+// ============================================================================
+// Mount App
+// ============================================================================
 
 window.addEventListener("DOMContentLoaded", () => {
   const appRoot = document.getElementById("app");
-  if (appRoot) render(main(), appRoot);
+  if (appRoot) {
+    mount(Main, appRoot);
+  }
 });

@@ -1,69 +1,117 @@
-export type Props = Record<string, unknown>;
-export type Emits = Record<string, unknown[]>;
-export type Slots = Record<string, Component>;
+// =============================================================================
+// Utility Types
+// =============================================================================
 
-export type GetProps<C extends Component> = C extends ComponentBase<infer P, any, any> ? P : never;
-export type GetEmits<C extends Component> = C extends ComponentBase<any, infer E, any> ? E : never;
-export type GetSlots<C extends Component> = C extends ComponentBase<any, any, infer S> ? S : never;
+/** Tagged Union を作成するヘルパー型 */
+export type Tagged<T extends string, P = {}> = { type: T } & P;
 
-export interface Build<P extends Props, E extends Emits, S extends Slots> {
-  (
-    useProp: <K extends keyof P>(key: K) => P[K] | undefined,
-    useEmit: <K extends keyof E>(key: K) => (...args: E[K]) => void,
-    useSlot: <K extends keyof S>(key: K) => S[K] | undefined
-  ):
-    | Iterator<Component | string, void, Reference<Component> | void>
-    | Array<Iterable<Component | string>>;
+// =============================================================================
+// Type Guard
+// =============================================================================
+
+/** Tagged 型の判定関数 */
+export function isTagged<T extends string>(
+  value: { type: string },
+  tag: T
+): value is Tagged<T, Record<string, unknown>> {
+  return value.type === tag;
 }
 
-export type Builder<C> = C extends DefineComponent<infer P, infer E, infer S>
-  ? Build<P, E, S>
-  : never;
+// =============================================================================
+// Primitive Types (Leaf nodes)
+// =============================================================================
 
-interface ComponentBase<P extends Props, E extends Emits, S extends Slots> {
-  readonly tag: string;
-  readonly props: Partial<P>;
-  readonly slots: Partial<{ [K in keyof S]: S[K] }>;
-  readonly handlers: { [K in keyof E]?: (...args: E[K]) => void };
-  class(cls: string[]): this;
-  style(styles: Record<string, string>): this;
-  children(build: Builder<S["default"]>): this;
+/** HTML 属性 */
+export type Attribute = Tagged<"attribute", { key: string; value: string }>;
 
-  prop<K extends keyof P>(key: K, value: P[K]): this;
-  slot<K extends keyof S>(key: K, build: Builder<S[K]>): this;
-  on<K extends keyof E>(key: K, handler: (...args: E[K]) => void): this;
+/** イベントリスナ */
+export type Listener = Tagged<"listener", { key: string; value: (e: Event) => void }>;
+
+/** テキストノード */
+export type Text = Tagged<"text", { content: string }>;
+
+// =============================================================================
+// Element Types
+// =============================================================================
+
+/** HTML 要素の装飾 (Attribute または Listener) */
+export type Decoration = Attribute | Listener;
+
+/** 子要素として yield できるもの */
+export type Child = Element | Decoration | Text;
+
+/** Child を yield するジェネレーター */
+export type ChildGen = Generator<Child, unknown, unknown>;
+
+/** 子要素の Iterator */
+export type Children = Iterator<Child, void, Refresher | void>;
+
+/** 子要素を生成する関数 */
+export type ChildrenFn = () => Children | ChildGen[];
+
+/** ChildrenFn の結果を Children に正規化する */
+export function toChildren(result: Children | ChildGen[]): Children {
+  if (Array.isArray(result)) {
+    return (function* () {
+      for (const gen of result) {
+        yield* gen;
+      }
+    })();
+  }
+  return result;
 }
 
-export interface NativeComponent<T extends string>
-  extends ComponentBase<
-    Props & { class: string[]; style: Record<string, string> },
-    Record<string, [Event]>,
-    { default: any }
-  > {
-  readonly tag: T;
-  readonly isNative: true;
-
-  [Symbol.iterator](): Iterator<this, Reference<this>, Reference<this>>;
+/** Refresher は子要素を生成する関数を受け取り、再レンダリングする */
+export interface Refresher {
+  (children: ChildrenFn): void;
 }
 
-export interface DefineComponent<P extends Props, E extends Emits, S extends Slots = {}>
-  extends ComponentBase<P & { class: string[]; style: Record<string, string> }, E, S> {
-  readonly build: Build<P, E, S>;
-  readonly isNative: false;
+/** HTML 要素 */
+export type Element = Tagged<
+  "element",
+  { tag: string; holds: Children; extras?: Decoration[] }
+>;
 
-  [Symbol.iterator](): Iterator<this, Reference<this>, Reference<this>>;
+/** Element を yield し、最終的に Refresher を返すジェネレーター */
+export type ElementGenerator = Generator<Element, Refresher, Refresher>;
+
+// =============================================================================
+// Inject / Provide Types (for Component composition)
+// =============================================================================
+
+/** Inject 要求 */
+export type Inject<K> = Tagged<"inject", { key: K }>;
+
+/** Provide 提供 */
+export type Provide<K, V> = Tagged<"provide", { key: K; value: V }>;
+
+/** inject 関数の型 */
+export type InjectorFn<T> = <K extends keyof T>(key: K) => Generator<Inject<K>, T[K], T[K]>;
+
+/** provide 関数の型 */
+export type ProviderFn<T> = <K extends keyof T, V extends T[K]>(
+  key: K,
+  value: V
+) => Generator<Provide<K, V>, void, void>;
+
+// =============================================================================
+// Component Types
+// =============================================================================
+
+/** コンポーネント定義関数の引数 */
+export type BuildFn<T extends object> = (
+  inject: InjectorFn<T>
+) => Iterator<Inject<keyof T>, ElementGenerator, T[keyof T]>;
+
+/** コンポーネント使用時の引数 */
+export type RenderFn<T extends object> = (
+  provide: ProviderFn<T>
+) => Iterator<Provide<keyof T, T[keyof T]> | Decoration, void, void>;
+
+/** コンポーネント */
+export interface Component<T extends object> {
+  (render: RenderFn<T>): ElementGenerator;
 }
 
-export type Component = NativeComponent<string> | DefineComponent<any, any, any>;
-
-export interface Reference<C extends Component> {
-  class: (cls: string[]) => this;
-  style: (styles: Record<string, string>) => this;
-  children: (build: Builder<GetSlots<C>["default"]>) => this;
-
-  prop: <K extends keyof GetProps<C>>(key: K, value: GetProps<C>[K]) => this;
-  slot: <K extends keyof GetSlots<C>>(key: K, build: Builder<GetSlots<C>[K]>) => this;
-  on: <K extends keyof GetEmits<C>>(key: K, handler: (...args: GetEmits<C>[K]) => void) => this;
-
-  apply(): void;
-}
+/** アプリケーションのルートコンポーネント */
+export type App = Component<{}>;

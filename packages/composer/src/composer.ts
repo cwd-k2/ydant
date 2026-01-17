@@ -1,85 +1,84 @@
 import type {
+  Element,
+  Decoration,
+  ElementGenerator,
+  Refresher,
   Component,
-  DefineComponent,
-  Builder,
-  Build,
-  Props,
-  Emits,
-  Slots,
+  Inject,
+  Provide,
+  InjectorFn,
+  ProviderFn,
+  BuildFn,
+  RenderFn,
 } from "@ydant/interface";
+import { isTagged } from "@ydant/interface";
 
-export type DefineSlots<S extends string[]> = {
-  [K in S[number]]: Component;
-};
+export function compose<T extends object>(build: BuildFn<T>): Component<T> {
+  return (render: RenderFn<T>): ElementGenerator => {
+    return processComponent<T>(build, render);
+  };
+}
 
-type Definition = {
-  props: Record<string, unknown>;
-  emits: Record<string, unknown[]>;
-  slots: Record<string, Component>;
-};
+function* processComponent<T extends object>(
+  build: BuildFn<T>,
+  render: RenderFn<T>
+): Generator<Element, Refresher, Refresher> {
+  const context: Partial<T> = {};
+  const extras: Decoration[] = [];
 
-type Pr<D extends Definition> = D["props"];
-type Em<D extends Definition> = D["emits"];
-type Sl<D extends Definition> = D["slots"];
+  const inject: InjectorFn<T> = function* <K extends keyof T>(key: K) {
+    const value = yield { type: "inject" as const, key } as Inject<K>;
+    return value as unknown as T[K];
+  };
 
-export const compose =
-  <D extends Definition>(tag: string, build: Build<Pr<D>, Em<D>, Sl<D>>) =>
-  (): DefineComponent<Pr<D>, Em<D>, Sl<D>> =>
-    new DefineComponentImpl<Pr<D>, Em<D>, Sl<D>>(tag, build);
+  const provide: ProviderFn<T> = function* <K extends keyof T, V extends T[K]>(
+    key: K,
+    value: V
+  ) {
+    yield { type: "provide" as const, key, value } as Provide<K, V>;
+  };
 
-class DefineComponentImpl<P extends Props, E extends Emits, S extends Slots>
-  implements DefineComponent<P, E, S>
-{
-  readonly tag: string;
-  readonly build: Build<P, E, S>;
-  readonly props: DefineComponent<P, E, S>["props"];
-  readonly slots: DefineComponent<P, E, S>["slots"];
-  readonly handlers: DefineComponent<P, E, S>["handlers"];
-
-  get isNative(): false {
-    return false;
+  // (1) render フェーズを先に実行: provide と装飾を収集
+  const renderIter = render(provide);
+  let renderResult = renderIter.next();
+  while (!renderResult.done) {
+    const { value } = renderResult;
+    if (isTagged(value, "provide")) {
+      context[value.key as keyof T] = value.value as T[keyof T];
+    } else if (isTagged(value, "attribute") || isTagged(value, "listener")) {
+      extras.push(value as Decoration);
+    }
+    renderResult = renderIter.next();
   }
 
-  constructor(tag: string, build: Build<P, E, S>) {
-    this.tag = tag;
-    this.build = build;
-    this.props = {};
-    this.slots = {};
-    this.handlers = {};
+  // (2) build フェーズ: inject に context から値を渡す
+  const buildIter = build(inject);
+  let buildResult = buildIter.next();
+  while (!buildResult.done) {
+    const { value } = buildResult;
+    if (isTagged(value, "inject")) {
+      const key = value.key as keyof T;
+      buildResult = buildIter.next(context[key] as T[keyof T]);
+    }
   }
 
-  class(cls: string[]): this {
-    (this.props.class as string[]) = cls;
-    return this;
+  // (3) build の return 値 (ElementGenerator) を処理
+  const rootGen = buildResult.value as ElementGenerator;
+  let rootResult = rootGen.next();
+
+  // 最初の Element のみに extras を付与
+  let isFirst = true;
+  while (!rootResult.done) {
+    const element = rootResult.value;
+    const augmented: Element =
+      isFirst && extras.length > 0
+        ? { ...element, extras: [...(element.extras ?? []), ...extras] }
+        : element;
+    isFirst = false;
+
+    const refresher: Refresher = yield augmented;
+    rootResult = rootGen.next(refresher);
   }
 
-  style(styles: Record<string, string>): this {
-    (this.props.style as Record<string, string>) = styles;
-    return this;
-  }
-
-  children(build: Builder<S["default"]>): this {
-    return this.slot("default", build);
-  }
-
-  prop<K extends keyof P>(key: K, value: P[K]): this {
-    (this.props[key] as any) = value;
-    return this;
-  }
-
-  slot<K extends keyof S>(key: K, build: Builder<S[K]>): this {
-    (this.slots[key] as any) = compose(`${this.tag}/${key as string}`, build)();
-    return this;
-  }
-
-  on<K extends keyof E>(key: K, handler: (...args: E[K]) => void): this {
-    this.handlers[key] = handler;
-    return this;
-  }
-
-  *[Symbol.iterator]() {
-    // @ts-expect-error
-    const ref = yield this;
-    return ref;
-  }
+  return rootResult.value;
 }
