@@ -4,6 +4,7 @@ import type {
   ChildrenFn,
   ElementGen,
   Refresher,
+  App,
 } from "@ydant/interface";
 import {
   toIterator,
@@ -89,7 +90,7 @@ function processIterator(
   }
 }
 
-export function render(gen: ElementGen, parent: HTMLElement): void {
+function render(gen: ElementGen, parent: HTMLElement): void {
   parent.innerHTML = "";
 
   const ctx: RenderContext = {
@@ -109,4 +110,10 @@ export function render(gen: ElementGen, parent: HTMLElement): void {
       result = gen.next(undefined as unknown as Refresher);
     }
   }
+}
+
+/** App を DOM にマウントする */
+export function mount(app: App, parent: HTMLElement): void {
+  const gen = app(function* () {});
+  render(gen, parent);
 }

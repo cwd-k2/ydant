@@ -150,3 +150,6 @@ export interface ComposeFn<T extends object> {
     arg: (inject: InjectorFn<T>) => Sequence<Injector<T>, ElementGen, Injectee<T>>
   ): Component<T>;
 }
+
+/** アプリケーションのルートコンポーネント */
+export type App = Component<{}>;
