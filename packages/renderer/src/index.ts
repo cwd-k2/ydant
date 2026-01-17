@@ -1,28 +1,21 @@
 import type {
-  Sequence,
   Element,
-  Attribute,
-  EventListener,
-  Text,
   Child,
+  ChildrenFn,
   ElementGen,
   Refresher,
 } from "@ydant/interface";
-
-type YieldValue = Element | Attribute | EventListener | Text;
+import {
+  toIterator,
+  isElement,
+  isAttribute,
+  isEventListener,
+  isText,
+} from "@ydant/interface";
 
 interface RenderContext {
   parent: Node;
   currentElement: HTMLElement | null;
-}
-
-function toIterator<T, TReturn, TNext>(
-  seq: Sequence<T, TReturn, TNext>
-): Iterator<T, TReturn, TNext> {
-  if (Symbol.iterator in seq) {
-    return (seq as Iterable<T, TReturn, TNext>)[Symbol.iterator]();
-  }
-  return seq as Iterator<T, TReturn, TNext>;
 }
 
 function processElement(
@@ -37,18 +30,16 @@ function processElement(
     currentElement: node,
   };
 
-  const refresher: Refresher = (
-    childrenFn: () => Sequence<Child, void, Refresher | void>
-  ) => {
+  const refresher: Refresher = (childrenFn: ChildrenFn) => {
     node.innerHTML = "";
     childCtx.currentElement = node;
     const children = childrenFn();
-    const iter = toIterator(children) as Iterator<YieldValue, void, Refresher | void>;
+    const iter = toIterator(children) as Iterator<Child, void, Refresher | void>;
     processIterator(iter, childCtx);
   };
 
   if (element.holds) {
-    const childIter = toIterator(element.holds) as Iterator<YieldValue, void, Refresher | void>;
+    const childIter = toIterator(element.holds) as Iterator<Child, void, Refresher | void>;
     processIterator(childIter, childCtx);
   }
 
@@ -56,48 +47,33 @@ function processElement(
 }
 
 function processIterator(
-  iter: Iterator<YieldValue, void, Refresher | void>,
+  iter: Iterator<Child, void, Refresher | void>,
   ctx: RenderContext
 ): void {
   let result = iter.next();
 
   while (!result.done) {
-    const { value } = result;
+    const value = result.value;
 
-    switch (value.type) {
-      case "element": {
-        const { refresher } = processElement(value as Element, ctx);
-        result = iter.next(refresher);
-        break;
+    if (isElement(value)) {
+      const { refresher } = processElement(value, ctx);
+      result = iter.next(refresher);
+    } else if (isAttribute(value)) {
+      if (ctx.currentElement) {
+        ctx.currentElement.setAttribute(value.key, value.value);
       }
-
-      case "attribute": {
-        if (ctx.currentElement) {
-          const attr = value as Attribute;
-          ctx.currentElement.setAttribute(attr.key, attr.value);
-        }
-        result = iter.next();
-        break;
+      result = iter.next();
+    } else if (isEventListener(value)) {
+      if (ctx.currentElement) {
+        ctx.currentElement.addEventListener(value.key, value.value);
       }
-
-      case "eventlistener": {
-        if (ctx.currentElement) {
-          const listener = value as EventListener;
-          ctx.currentElement.addEventListener(listener.key, listener.value);
-        }
-        result = iter.next();
-        break;
-      }
-
-      case "text": {
-        const textNode = document.createTextNode((value as Text).content);
-        ctx.parent.appendChild(textNode);
-        result = iter.next();
-        break;
-      }
-
-      default:
-        result = iter.next();
+      result = iter.next();
+    } else if (isText(value)) {
+      const textNode = document.createTextNode(value.content);
+      ctx.parent.appendChild(textNode);
+      result = iter.next();
+    } else {
+      result = iter.next();
     }
   }
 }
@@ -115,11 +91,10 @@ export function render(gen: ElementGen, parent: HTMLElement): void {
   while (!result.done) {
     const { value } = result;
 
-    if (value.type === "element") {
+    if (isElement(value)) {
       const { refresher } = processElement(value, ctx);
       result = gen.next(refresher);
     } else {
-      // Element 以外の値が来ることは想定外だが、安全のため処理を続行
       result = gen.next(undefined as unknown as Refresher);
     }
   }

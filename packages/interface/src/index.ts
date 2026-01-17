@@ -1,69 +1,145 @@
-// Iterator or Iterable として統一的に扱うためのもの
+// =============================================================================
+// Utility Types
+// =============================================================================
+
+/** Tagged Union を作成するヘルパー型 */
+export type Tagged<T extends string, P = {}> = { type: T } & P;
+
+/** Iterator or Iterable として統一的に扱うための型 */
 export type Sequence<T, TReturn = unknown, TNext = unknown> =
   | Iterator<T, TReturn, TNext>
   | Iterable<T, TReturn, TNext>;
 
-// inject する用 (独自コンポーネント専用)
-type Inject<K> = { type: "inject"; key: K };
+// =============================================================================
+// Utility Functions
+// =============================================================================
 
-type Injector<T extends Record<string, any>> = {
+/** Sequence を Iterator に変換する */
+export function toIterator<T, TReturn, TNext>(
+  seq: Sequence<T, TReturn, TNext>
+): Iterator<T, TReturn, TNext> {
+  if (Symbol.iterator in seq) {
+    return (seq as Iterable<T, TReturn, TNext>)[Symbol.iterator]();
+  }
+  return seq as Iterator<T, TReturn, TNext>;
+}
+
+// =============================================================================
+// Primitive Types (Leaf nodes)
+// =============================================================================
+
+/** HTML 属性 */
+export type Attribute = Tagged<"attribute", { key: string; value: string }>;
+
+/** イベントリスナ */
+export type EventListener = Tagged<"eventlistener", { key: string; value: (e: Event) => void }>;
+
+/** テキストノード */
+export type Text = Tagged<"text", { content: string }>;
+
+// =============================================================================
+// Element Types
+// =============================================================================
+
+/** 子要素の Sequence 型エイリアス */
+export type ChildSequence = Sequence<Child, void, Refresher | void>;
+
+/** 子要素を生成する関数の型エイリアス */
+export type ChildrenFn = () => ChildSequence;
+
+/** Refresher は子要素を生成する関数を受け取り、再レンダリングする */
+export interface Refresher {
+  (children: ChildrenFn): void;
+}
+
+/** HTML 要素 */
+export type Element = Tagged<"element", { tag: string; holds: ChildSequence }>;
+
+/** 子要素として yield できるもの */
+export type Child = Element | Attribute | EventListener | Text;
+
+/** ElementGen は Element を yield し、最終的に Refresher を返すジェネレーター */
+export interface ElementGen extends Generator<Element, Refresher, Refresher> {}
+
+// =============================================================================
+// Type Guards
+// =============================================================================
+
+/** Element かどうかを判定 */
+export function isElement(value: { type: string }): value is Element {
+  return value.type === "element";
+}
+
+/** Attribute かどうかを判定 */
+export function isAttribute(value: { type: string }): value is Attribute {
+  return value.type === "attribute";
+}
+
+/** EventListener かどうかを判定 */
+export function isEventListener(value: { type: string }): value is EventListener {
+  return value.type === "eventlistener";
+}
+
+/** Text かどうかを判定 */
+export function isText(value: { type: string }): value is Text {
+  return value.type === "text";
+}
+
+// =============================================================================
+// Inject / Provide Types (for Component composition)
+// =============================================================================
+
+/** Inject 要求 */
+export type Inject<K> = Tagged<"inject", { key: K }>;
+
+/** Inject かどうかを判定 */
+export function isInject(value: { type: string }): value is Inject<unknown> {
+  return value.type === "inject";
+}
+
+/** Provide 提供 */
+export type Provide<K, V> = Tagged<"provide", { key: K; value: V }>;
+
+/** Provide かどうかを判定 */
+export function isProvide(value: { type: string }): value is Provide<unknown, unknown> {
+  return value.type === "provide";
+}
+
+/** Injector union 型 */
+export type Injector<T extends Record<string, unknown>> = {
   [K in keyof T]: Inject<K>;
 }[keyof T];
 
-type InjectorFn<T> = <K extends keyof T>(key: K) => Iterator<Inject<K>, T[K], T[K]>;
-
-// provide する用 (独自コンポーネント専用)
-type Provide<K, V> = { type: "provide"; key: K; value: V };
-
-type Provider<T extends Record<string, any>> = {
+/** Provider union 型 */
+export type Provider<T extends Record<string, unknown>> = {
   [K in keyof T]: Provide<K, T[K]>;
 }[keyof T];
 
-type ProviderFn<T> = <K extends keyof T, V extends T[K]>(
+/** inject 関数の型 */
+export type InjectorFn<T> = <K extends keyof T>(key: K) => Iterator<Inject<K>, T[K], T[K]>;
+
+/** provide 関数の型 */
+export type ProviderFn<T> = <K extends keyof T, V extends T[K]>(
   key: K,
   value: V
 ) => Iterator<Provide<K, V>, void, void>;
 
-// HTML 要素専用 属性やイベントリスナの登録
-export type Attribute = { type: "attribute"; key: string; value: string };
-export type EventListener = {
-  type: "eventlistener";
-  key: string;
-  value: (e: Event) => void;
-};
+/** Inject された値の union 型 */
+export type Injectee<T extends Record<string, unknown>> = T[keyof T];
 
-// テキストノード
-export type Text = { type: "text"; content: string };
+// =============================================================================
+// Component Types
+// =============================================================================
 
-// 子要素として yield できるもの
-export type Child = Element | Attribute | EventListener | Text;
-
-// Refresher は子要素を生成する関数を受け取り、再レンダリングする
-export interface Refresher {
-  (children: () => Sequence<Child, void, Refresher | void>): void;
-}
-
-// 実際にレンダリングに利用する HTML 要素の定義
-export type Element = {
-  type: "element";
-  tag: string;
-  holds: Sequence<Child, void, Refresher | void>;
-};
-
-// ElementGen は Element を yield し、最終的に Refresher を返すジェネレーター
-export interface ElementGen extends Generator<Element, Refresher, Refresher> {}
-
-export interface Component<T extends Record<string, any>> {
+/** コンポーネント */
+export interface Component<T extends Record<string, unknown>> {
   (
-    arg: (
-      provide: ProviderFn<T>
-    ) => Sequence<Provider<T> | Child, void, Refresher | void>
+    arg: (provide: ProviderFn<T>) => Sequence<Provider<T> | Child, void, Refresher | void>
   ): ElementGen;
 }
 
-type Injectee<T extends Record<string, any>> = T[keyof T];
-
-export interface ComposeFn<T extends Record<string, any>> {
+/** コンポーネント定義関数 */
+export interface ComposeFn<T extends Record<string, unknown>> {
   (
     arg: (inject: InjectorFn<T>) => Sequence<Injector<T>, ElementGen, Injectee<T>>
   ): Component<T>;

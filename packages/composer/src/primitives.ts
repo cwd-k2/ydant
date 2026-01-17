@@ -1,12 +1,29 @@
-import type { Attribute, EventListener } from "@ydant/interface";
+import type { Attribute, EventListener, Text } from "@ydant/interface";
 
-export function* attr(key: string, value: string): Generator<Attribute, void, void> {
-  yield { type: "attribute", key, value };
+/** プリミティブを yield するジェネレーター関数を作成するファクトリ */
+function createPrimitive<T, Args extends unknown[]>(
+  factory: (...args: Args) => T
+) {
+  return function* (...args: Args): Generator<T, void, void> {
+    yield factory(...args);
+  };
 }
 
-export function* on(
-  key: string,
-  handler: (e: Event) => void
-): Generator<EventListener, void, void> {
-  yield { type: "eventlistener", key, value: handler };
-}
+/** HTML 属性を yield */
+export const attr = createPrimitive(
+  (key: string, value: string): Attribute => ({ type: "attribute", key, value })
+);
+
+/** イベントリスナを yield */
+export const on = createPrimitive(
+  (key: string, handler: (e: Event) => void): EventListener => ({
+    type: "eventlistener",
+    key,
+    value: handler,
+  })
+);
+
+/** テキストノードを yield */
+export const text = createPrimitive(
+  (content: string): Text => ({ type: "text", content })
+);

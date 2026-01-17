@@ -1,11 +1,4 @@
-import type {
-  Sequence,
-  Child,
-  ElementGen,
-  Refresher,
-} from "@ydant/interface";
-
-type ChildrenFn = () => Sequence<Child, void, Refresher | void>;
+import type { ChildrenFn, ElementGen } from "@ydant/interface";
 
 function createHTMLElement(tag: string) {
   return function* (children: ChildrenFn): ElementGen {
@@ -38,7 +31,6 @@ export const label = createHTMLElement("label");
 export const textarea = createHTMLElement("textarea");
 export const select = createHTMLElement("select");
 export const option = createHTMLElement("option");
-export const buttonGroup = createHTMLElement("button-group");
 export const table = createHTMLElement("table");
 export const thead = createHTMLElement("thead");
 export const tbody = createHTMLElement("tbody");
