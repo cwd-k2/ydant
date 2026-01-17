@@ -1,85 +1,111 @@
 import type {
+  Sequence,
+  Element,
+  Attribute,
+  EventListener,
+  Text,
+  ElementGen,
+  Refresher,
   Component,
-  DefineComponent,
-  Builder,
-  Build,
-  Props,
-  Emits,
-  Slots,
 } from "@ydant/interface";
 
-export type DefineSlots<S extends string[]> = {
-  [K in S[number]]: Component;
-};
+type Inject<K> = { type: "inject"; key: K };
 
-type Definition = {
-  props: Record<string, unknown>;
-  emits: Record<string, unknown[]>;
-  slots: Record<string, Component>;
-};
+type InjectorFn<T> = <K extends keyof T>(key: K) => Generator<Inject<K>, T[K], T[K]>;
 
-type Pr<D extends Definition> = D["props"];
-type Em<D extends Definition> = D["emits"];
-type Sl<D extends Definition> = D["slots"];
+type Provide<K, V> = { type: "provide"; key: K; value: V };
 
-export const compose =
-  <D extends Definition>(tag: string, build: Build<Pr<D>, Em<D>, Sl<D>>) =>
-  (): DefineComponent<Pr<D>, Em<D>, Sl<D>> =>
-    new DefineComponentImpl<Pr<D>, Em<D>, Sl<D>>(tag, build);
+type Provider<T extends Record<string, any>> = {
+  [K in keyof T]: Provide<K, T[K]>;
+}[keyof T];
 
-class DefineComponentImpl<P extends Props, E extends Emits, S extends Slots>
-  implements DefineComponent<P, E, S>
-{
-  readonly tag: string;
-  readonly build: Build<P, E, S>;
-  readonly props: DefineComponent<P, E, S>["props"];
-  readonly slots: DefineComponent<P, E, S>["slots"];
-  readonly handlers: DefineComponent<P, E, S>["handlers"];
+type ProviderFn<T> = <K extends keyof T, V extends T[K]>(
+  key: K,
+  value: V
+) => Generator<Provide<K, V>, void, void>;
 
-  get isNative(): false {
-    return false;
+type Injector<T extends Record<string, any>> = {
+  [K in keyof T]: Inject<K>;
+}[keyof T];
+
+type Injectee<T extends Record<string, any>> = T[keyof T];
+
+type BuildFn<T extends Record<string, any>> = (
+  inject: InjectorFn<T>
+) => Sequence<Injector<T>, ElementGen<any>, Injectee<T>>;
+
+type RenderFn<T extends Record<string, any>> = (
+  provide: ProviderFn<T>
+) => Sequence<Provider<T> | Element | Attribute | EventListener | Text, void, Refresher<any> | void>;
+
+export function compose<T extends Record<string, any>>(
+  build: BuildFn<T>
+): Component<T> {
+  return ((render: RenderFn<T>): ElementGen<T> => {
+    return processComponent(build, render);
+  }) as Component<T>;
+}
+
+function* processComponent<T extends Record<string, any>>(
+  build: BuildFn<T>,
+  render: RenderFn<T>
+): Generator<Element, Refresher<T>, Refresher<T>> {
+  const context: Partial<T> = {};
+
+  const inject: InjectorFn<T> = function* <K extends keyof T>(key: K) {
+    const value = yield { type: "inject" as const, key };
+    return value as unknown as T[K];
+  };
+
+  const provide: ProviderFn<T> = function* <K extends keyof T, V extends T[K]>(
+    key: K,
+    value: V
+  ) {
+    yield { type: "provide" as const, key, value };
+  };
+
+  const buildIter = toIterator(build(inject));
+  const renderIter = toIterator(render(provide));
+
+  let buildResult = buildIter.next();
+  while (!buildResult.done) {
+    const { value } = buildResult;
+    if (value.type === "inject") {
+      const key = value.key as keyof T;
+      buildResult = buildIter.next(context[key] as Injectee<T>);
+    }
   }
 
-  constructor(tag: string, build: Build<P, E, S>) {
-    this.tag = tag;
-    this.build = build;
-    this.props = {};
-    this.slots = {};
-    this.handlers = {};
+  let renderResult = renderIter.next();
+  while (!renderResult.done) {
+    const { value } = renderResult;
+    if (value.type === "provide") {
+      context[value.key as keyof T] = value.value;
+      renderResult = renderIter.next();
+    } else if (value.type === "element") {
+      const refresher: Refresher<any> = yield value as Element;
+      renderResult = renderIter.next(refresher);
+    } else {
+      renderResult = renderIter.next();
+    }
   }
 
-  class(cls: string[]): this {
-    (this.props.class as string[]) = cls;
-    return this;
-  }
+  const finalRefresher: Refresher<T> = (childrenFn) => {
+    const newRenderIter = toIterator(childrenFn());
+    let result = newRenderIter.next();
+    while (!result.done) {
+      result = newRenderIter.next();
+    }
+  };
 
-  style(styles: Record<string, string>): this {
-    (this.props.style as Record<string, string>) = styles;
-    return this;
-  }
+  return finalRefresher;
+}
 
-  children(build: Builder<S["default"]>): this {
-    return this.slot("default", build);
+function toIterator<T, TReturn, TNext>(
+  seq: Sequence<T, TReturn, TNext>
+): Iterator<T, TReturn, TNext> {
+  if (Symbol.iterator in seq) {
+    return (seq as Iterable<T, TReturn, TNext>)[Symbol.iterator]();
   }
-
-  prop<K extends keyof P>(key: K, value: P[K]): this {
-    (this.props[key] as any) = value;
-    return this;
-  }
-
-  slot<K extends keyof S>(key: K, build: Builder<S[K]>): this {
-    (this.slots[key] as any) = compose(`${this.tag}/${key as string}`, build)();
-    return this;
-  }
-
-  on<K extends keyof E>(key: K, handler: (...args: E[K]) => void): this {
-    this.handlers[key] = handler;
-    return this;
-  }
-
-  *[Symbol.iterator]() {
-    // @ts-expect-error
-    const ref = yield this;
-    return ref;
-  }
+  return seq as Iterator<T, TReturn, TNext>;
 }

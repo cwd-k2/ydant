@@ -1,17 +1,15 @@
 import type {
   Sequence,
-  Element,
-  Attribute,
-  EventListener,
+  Child,
   ElementGen,
   Refresher,
 } from "@ydant/interface";
 
+type ChildrenFn = () => Sequence<Child, void, Refresher<any> | void>;
+
 function createHTMLElement(tag: string) {
-  return function* (
-    f: () => Sequence<Element | Attribute | EventListener, void, Refresher<any> | void>
-  ): ElementGen<{}> {
-    const refresher = yield { type: "element", tag, holds: f };
+  return function* (children: ChildrenFn): ElementGen<{}> {
+    const refresher = yield { type: "element", tag, holds: children() };
     return refresher;
   };
 }

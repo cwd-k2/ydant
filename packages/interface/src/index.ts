@@ -24,16 +24,6 @@ type ProviderFn<T> = <K extends keyof T, V extends T[K]>(
   value: V
 ) => Iterator<Provide<K, V>, void, void>;
 
-// 実際にレンダリングに利用する HTML 要素の定義
-export type Element = {
-  type: "element";
-  tag: string;
-  holds: any;
-};
-
-export interface ElementGen<T extends Record<string, any>>
-  extends Iterator<Element, Refresher<T>, Refresher<T>> {}
-
 // HTML 要素専用 属性やイベントリスナの登録
 export type Attribute = { type: "attribute"; key: string; value: string };
 export type EventListener = {
@@ -42,19 +32,32 @@ export type EventListener = {
   value: (e: Event) => void;
 };
 
+// テキストノード
+export type Text = { type: "text"; content: string };
+
+// 子要素として yield できるもの
+export type Child = Element | Attribute | EventListener | Text;
+
+// 実際にレンダリングに利用する HTML 要素の定義
+export type Element = {
+  type: "element";
+  tag: string;
+  holds: Sequence<Child, void, Refresher<any> | void>;
+};
+
+export interface ElementGen<T extends Record<string, any>>
+  extends Generator<Element, Refresher<T>, Refresher<T>> {}
+
+// Refresher は子要素を生成する関数を受け取り、再レンダリングする
 export interface Refresher<T extends Record<string, any>> {
-  (
-    arg: (
-      provide: ProviderFn<T>
-    ) => Sequence<Provider<T> | Element | Attribute | EventListener, void, Refresher<any> | void>
-  ): void;
+  (children: () => Sequence<Child, void, Refresher<any> | void>): void;
 }
 
 export interface Component<T extends Record<string, any>> {
   (
     arg: (
       provide: ProviderFn<T>
-    ) => Sequence<Provider<T> | Element | Attribute | EventListener, void, Refresher<any> | void>
+    ) => Sequence<Provider<T> | Child, void, Refresher<any> | void>
   ): ElementGen<T>;
 }
 
