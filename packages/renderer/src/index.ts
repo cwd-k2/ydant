@@ -25,6 +25,17 @@ function processElement(
   const node = document.createElement(element.tag);
   ctx.parent.appendChild(node);
 
+  // extras (Attribute, EventListener) を適用
+  if (element.extras) {
+    for (const extra of element.extras) {
+      if (isAttribute(extra)) {
+        node.setAttribute(extra.key, extra.value);
+      } else if (isEventListener(extra)) {
+        node.addEventListener(extra.key, extra.value);
+      }
+    }
+  }
+
   const childCtx: RenderContext = {
     parent: node,
     currentElement: node,

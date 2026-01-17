@@ -1,8 +1,7 @@
 import type {
   Sequence,
   Element,
-  Child,
-  ChildSequence,
+  Decoration,
   ElementGen,
   Refresher,
   Component,
@@ -14,7 +13,13 @@ import type {
   ProviderFn,
   Injectee,
 } from "@ydant/interface";
-import { toIterator, isInject, isProvide, isElement } from "@ydant/interface";
+import {
+  toIterator,
+  isInject,
+  isProvide,
+  isAttribute,
+  isEventListener,
+} from "@ydant/interface";
 
 type BuildFn<T extends Record<string, unknown>> = (
   inject: InjectorFn<T>
@@ -22,7 +27,7 @@ type BuildFn<T extends Record<string, unknown>> = (
 
 type RenderFn<T extends Record<string, unknown>> = (
   provide: ProviderFn<T>
-) => Sequence<Provider<T> | Child, void, Refresher | void>;
+) => Sequence<Provider<T> | Decoration, void, void>;
 
 export function compose<T extends Record<string, unknown>>(
   build: BuildFn<T>
@@ -37,6 +42,7 @@ function* processComponent<T extends Record<string, unknown>>(
   render: RenderFn<T>
 ): Generator<Element, Refresher, Refresher> {
   const context: Partial<T> = {};
+  const extras: Decoration[] = [];
 
   const inject: InjectorFn<T> = function* <K extends keyof T>(key: K) {
     const value = yield { type: "inject" as const, key } as Inject<K>;
@@ -50,9 +56,21 @@ function* processComponent<T extends Record<string, unknown>>(
     yield { type: "provide" as const, key, value } as Provide<K, V>;
   };
 
-  const buildIter = toIterator(build(inject));
+  // (1) render フェーズを先に実行: provide と装飾を収集
   const renderIter = toIterator(render(provide));
+  let renderResult = renderIter.next();
+  while (!renderResult.done) {
+    const { value } = renderResult;
+    if (isProvide(value)) {
+      context[value.key as keyof T] = value.value as T[keyof T];
+    } else if (isAttribute(value) || isEventListener(value)) {
+      extras.push(value);
+    }
+    renderResult = renderIter.next();
+  }
 
+  // (2) build フェーズ: inject に context から値を渡す
+  const buildIter = toIterator(build(inject));
   let buildResult = buildIter.next();
   while (!buildResult.done) {
     const { value } = buildResult;
@@ -62,27 +80,23 @@ function* processComponent<T extends Record<string, unknown>>(
     }
   }
 
-  let renderResult = renderIter.next();
-  while (!renderResult.done) {
-    const { value } = renderResult;
-    if (isProvide(value)) {
-      context[value.key as keyof T] = value.value as T[keyof T];
-      renderResult = renderIter.next();
-    } else if (isElement(value)) {
-      const refresher: Refresher = yield value;
-      renderResult = renderIter.next(refresher);
-    } else {
-      renderResult = renderIter.next();
-    }
+  // (3) build の return 値 (ElementGen) を処理
+  const rootGen = buildResult.value as ElementGen;
+  let rootResult = rootGen.next();
+
+  // 最初の Element のみに extras を付与
+  let isFirst = true;
+  while (!rootResult.done) {
+    const element = rootResult.value;
+    const augmented: Element =
+      isFirst && extras.length > 0
+        ? { ...element, extras: [...(element.extras ?? []), ...extras] }
+        : element;
+    isFirst = false;
+
+    const refresher: Refresher = yield augmented;
+    rootResult = rootGen.next(refresher);
   }
 
-  const finalRefresher: Refresher = (childrenFn: () => ChildSequence) => {
-    const newRenderIter = toIterator(childrenFn());
-    let result = newRenderIter.next();
-    while (!result.done) {
-      result = newRenderIter.next();
-    }
-  };
-
-  return finalRefresher;
+  return rootResult.value;
 }

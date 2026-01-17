@@ -52,8 +52,14 @@ export interface Refresher {
   (children: ChildrenFn): void;
 }
 
+/** HTML 要素の装飾 (Attribute または EventListener) */
+export type Decoration = Attribute | EventListener;
+
 /** HTML 要素 */
-export type Element = Tagged<"element", { tag: string; holds: ChildSequence }>;
+export type Element = Tagged<
+  "element",
+  { tag: string; holds: ChildSequence; extras?: Decoration[] }
+>;
 
 /** 子要素として yield できるもの */
 export type Child = Element | Attribute | EventListener | Text;
@@ -134,7 +140,7 @@ export type Injectee<T extends Record<string, unknown>> = T[keyof T];
 /** コンポーネント */
 export interface Component<T extends Record<string, unknown>> {
   (
-    arg: (provide: ProviderFn<T>) => Sequence<Provider<T> | Child, void, Refresher | void>
+    arg: (provide: ProviderFn<T>) => Sequence<Provider<T> | Decoration, void, void>
   ): ElementGen;
 }
 
