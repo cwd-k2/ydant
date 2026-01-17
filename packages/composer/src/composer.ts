@@ -1,40 +1,22 @@
 import type {
-  Sequence,
   Element,
   Decoration,
-  ElementGen,
+  ElementGenerator,
   Refresher,
   Component,
   Inject,
   Provide,
-  Injector,
-  Provider,
   InjectorFn,
   ProviderFn,
-  Injectee,
+  BuildFn,
+  RenderFn,
 } from "@ydant/interface";
-import {
-  toIterator,
-  isInject,
-  isProvide,
-  isAttribute,
-  isEventListener,
-} from "@ydant/interface";
+import { isTagged } from "@ydant/interface";
 
-type BuildFn<T extends object> = (
-  inject: InjectorFn<T>
-) => Sequence<Injector<T>, ElementGen, Injectee<T>>;
-
-type RenderFn<T extends object> = (
-  provide: ProviderFn<T>
-) => Sequence<Provider<T> | Decoration, void, void>;
-
-export function compose<T extends object>(
-  build: BuildFn<T>
-): Component<T> {
-  return ((render: RenderFn<T>): ElementGen => {
+export function compose<T extends object>(build: BuildFn<T>): Component<T> {
+  return (render: RenderFn<T>): ElementGenerator => {
     return processComponent<T>(build, render);
-  }) as Component<T>;
+  };
 }
 
 function* processComponent<T extends object>(
@@ -57,31 +39,31 @@ function* processComponent<T extends object>(
   };
 
   // (1) render フェーズを先に実行: provide と装飾を収集
-  const renderIter = toIterator(render(provide));
+  const renderIter = render(provide);
   let renderResult = renderIter.next();
   while (!renderResult.done) {
     const { value } = renderResult;
-    if (isProvide(value)) {
+    if (isTagged(value, "provide")) {
       context[value.key as keyof T] = value.value as T[keyof T];
-    } else if (isAttribute(value) || isEventListener(value)) {
-      extras.push(value);
+    } else if (isTagged(value, "attribute") || isTagged(value, "listener")) {
+      extras.push(value as Decoration);
     }
     renderResult = renderIter.next();
   }
 
   // (2) build フェーズ: inject に context から値を渡す
-  const buildIter = toIterator(build(inject));
+  const buildIter = build(inject);
   let buildResult = buildIter.next();
   while (!buildResult.done) {
     const { value } = buildResult;
-    if (isInject(value)) {
+    if (isTagged(value, "inject")) {
       const key = value.key as keyof T;
-      buildResult = buildIter.next(context[key] as Injectee<T>);
+      buildResult = buildIter.next(context[key] as T[keyof T]);
     }
   }
 
-  // (3) build の return 値 (ElementGen) を処理
-  const rootGen = buildResult.value as ElementGen;
+  // (3) build の return 値 (ElementGenerator) を処理
+  const rootGen = buildResult.value as ElementGenerator;
   let rootResult = rootGen.next();
 
   // 最初の Element のみに extras を付与

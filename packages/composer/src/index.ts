@@ -5,34 +5,26 @@ export * from "./primitives";
 // Re-export types from interface
 export type {
   Tagged,
-  Sequence,
   Attribute,
-  EventListener,
+  Listener,
   Text,
+  Decoration,
   Child,
-  ChildSequence,
+  ChildGen,
+  Children,
   ChildrenFn,
   Element,
-  ElementGen,
+  ElementGenerator,
   Refresher,
   Inject,
   Provide,
-  Injector,
-  Provider,
   InjectorFn,
   ProviderFn,
-  Injectee,
+  BuildFn,
+  RenderFn,
   Component,
-  ComposeFn,
+  App,
 } from "@ydant/interface";
 
 // Re-export utilities from interface
-export {
-  toIterator,
-  isElement,
-  isAttribute,
-  isEventListener,
-  isText,
-  isInject,
-  isProvide,
-} from "@ydant/interface";
+export { isTagged, toChildren } from "@ydant/interface";

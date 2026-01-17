@@ -2,18 +2,11 @@ import type {
   Element,
   Child,
   ChildrenFn,
-  ElementGen,
+  ElementGenerator,
   Refresher,
   App,
 } from "@ydant/interface";
-import {
-  toIterator,
-  toChildSequence,
-  isElement,
-  isAttribute,
-  isEventListener,
-  isText,
-} from "@ydant/interface";
+import { toChildren, isTagged } from "@ydant/interface";
 
 interface RenderContext {
   parent: Node;
@@ -27,13 +20,13 @@ function processElement(
   const node = document.createElement(element.tag);
   ctx.parent.appendChild(node);
 
-  // extras (Attribute, EventListener) を適用
+  // extras (Attribute, Listener) を適用
   if (element.extras) {
     for (const extra of element.extras) {
-      if (isAttribute(extra)) {
-        node.setAttribute(extra.key, extra.value);
-      } else if (isEventListener(extra)) {
-        node.addEventListener(extra.key, extra.value);
+      if (isTagged(extra, "attribute")) {
+        node.setAttribute(extra.key as string, extra.value as string);
+      } else if (isTagged(extra, "listener")) {
+        node.addEventListener(extra.key as string, extra.value as (e: Event) => void);
       }
     }
   }
@@ -46,14 +39,12 @@ function processElement(
   const refresher: Refresher = (childrenFn: ChildrenFn) => {
     node.innerHTML = "";
     childCtx.currentElement = node;
-    const children = toChildSequence(childrenFn());
-    const iter = toIterator(children) as Iterator<Child, void, Refresher | void>;
-    processIterator(iter, childCtx);
+    const children = toChildren(childrenFn());
+    processIterator(children as Iterator<Child, void, Refresher | void>, childCtx);
   };
 
   if (element.holds) {
-    const childIter = toIterator(element.holds) as Iterator<Child, void, Refresher | void>;
-    processIterator(childIter, childCtx);
+    processIterator(element.holds as Iterator<Child, void, Refresher | void>, childCtx);
   }
 
   return { node, refresher };
@@ -68,21 +59,21 @@ function processIterator(
   while (!result.done) {
     const value = result.value;
 
-    if (isElement(value)) {
-      const { refresher } = processElement(value, ctx);
+    if (isTagged(value, "element")) {
+      const { refresher } = processElement(value as Element, ctx);
       result = iter.next(refresher);
-    } else if (isAttribute(value)) {
+    } else if (isTagged(value, "attribute")) {
       if (ctx.currentElement) {
-        ctx.currentElement.setAttribute(value.key, value.value);
+        ctx.currentElement.setAttribute(value.key as string, value.value as string);
       }
       result = iter.next();
-    } else if (isEventListener(value)) {
+    } else if (isTagged(value, "listener")) {
       if (ctx.currentElement) {
-        ctx.currentElement.addEventListener(value.key, value.value);
+        ctx.currentElement.addEventListener(value.key as string, value.value as (e: Event) => void);
       }
       result = iter.next();
-    } else if (isText(value)) {
-      const textNode = document.createTextNode(value.content);
+    } else if (isTagged(value, "text")) {
+      const textNode = document.createTextNode(value.content as string);
       ctx.parent.appendChild(textNode);
       result = iter.next();
     } else {
@@ -91,7 +82,7 @@ function processIterator(
   }
 }
 
-function render(gen: ElementGen, parent: HTMLElement): void {
+function render(gen: ElementGenerator, parent: HTMLElement): void {
   parent.innerHTML = "";
 
   const ctx: RenderContext = {
@@ -104,8 +95,8 @@ function render(gen: ElementGen, parent: HTMLElement): void {
   while (!result.done) {
     const { value } = result;
 
-    if (isElement(value)) {
-      const { refresher } = processElement(value, ctx);
+    if (isTagged(value, "element")) {
+      const { refresher } = processElement(value as Element, ctx);
       result = gen.next(refresher);
     } else {
       result = gen.next(undefined as unknown as Refresher);

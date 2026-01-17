@@ -1,4 +1,4 @@
-import type { Attribute, EventListener, Text } from "@ydant/interface";
+import type { Attribute, Listener, Text } from "@ydant/interface";
 
 /** プリミティブを yield するジェネレーター関数を作成するファクトリ */
 function createPrimitive<T, Args extends unknown[]>(
@@ -25,8 +25,8 @@ export const clss = createPrimitive(
 
 /** イベントリスナを yield */
 export const on = createPrimitive(
-  (key: string, handler: (e: Event) => void): EventListener => ({
-    type: "eventlistener",
+  (key: string, handler: (e: Event) => void): Listener => ({
+    type: "listener",
     key,
     value: handler,
   })
