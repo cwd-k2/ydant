@@ -1,8 +1,10 @@
 import type { ChildrenFn, ElementGen } from "@ydant/interface";
+import { toChildSequence } from "@ydant/interface";
 
 function createHTMLElement(tag: string) {
   return function* (children: ChildrenFn): ElementGen {
-    const refresher = yield { type: "element", tag, holds: children() };
+    const holds = toChildSequence(children());
+    const refresher = yield { type: "element", tag, holds };
     return refresher;
   };
 }

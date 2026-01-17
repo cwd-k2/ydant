@@ -8,6 +8,7 @@ import type {
 } from "@ydant/interface";
 import {
   toIterator,
+  toChildSequence,
   isElement,
   isAttribute,
   isEventListener,
@@ -45,7 +46,7 @@ function processElement(
   const refresher: Refresher = (childrenFn: ChildrenFn) => {
     node.innerHTML = "";
     childCtx.currentElement = node;
-    const children = childrenFn();
+    const children = toChildSequence(childrenFn());
     const iter = toIterator(children) as Iterator<Child, void, Refresher | void>;
     processIterator(iter, childCtx);
   };

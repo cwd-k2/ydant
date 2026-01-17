@@ -44,8 +44,23 @@ export type Text = Tagged<"text", { content: string }>;
 /** 子要素の Sequence 型エイリアス */
 export type ChildSequence = Sequence<Child, void, Refresher | void>;
 
+/** Child を yield するジェネレーター（配列形式で使用） */
+export type ChildItem = Generator<Child, unknown, unknown>;
+
 /** 子要素を生成する関数の型エイリアス */
-export type ChildrenFn = () => ChildSequence;
+export type ChildrenFn = () => ChildSequence | ChildItem[];
+
+/** ChildrenFn の結果を ChildSequence に正規化する */
+export function toChildSequence(result: ChildSequence | ChildItem[]): ChildSequence {
+  if (Array.isArray(result)) {
+    return (function* () {
+      for (const gen of result) {
+        yield* gen;
+      }
+    })();
+  }
+  return result;
+}
 
 /** Refresher は子要素を生成する関数を受け取り、再レンダリングする */
 export interface Refresher {
