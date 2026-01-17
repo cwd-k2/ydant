@@ -4,6 +4,7 @@ import type {
   Attribute,
   EventListener,
   Text,
+  Child,
   ElementGen,
   Refresher,
 } from "@ydant/interface";
@@ -27,7 +28,7 @@ function toIterator<T, TReturn, TNext>(
 function processElement(
   element: Element,
   ctx: RenderContext
-): { node: HTMLElement; refresher: Refresher<any> } {
+): { node: HTMLElement; refresher: Refresher } {
   const node = document.createElement(element.tag);
   ctx.parent.appendChild(node);
 
@@ -36,16 +37,18 @@ function processElement(
     currentElement: node,
   };
 
-  const refresher: Refresher<any> = (childrenFn) => {
+  const refresher: Refresher = (
+    childrenFn: () => Sequence<Child, void, Refresher | void>
+  ) => {
     node.innerHTML = "";
     childCtx.currentElement = node;
     const children = childrenFn();
-    const iter = toIterator(children) as Iterator<YieldValue, any, any>;
+    const iter = toIterator(children) as Iterator<YieldValue, void, Refresher | void>;
     processIterator(iter, childCtx);
   };
 
   if (element.holds) {
-    const childIter = toIterator(element.holds) as Iterator<YieldValue, any, any>;
+    const childIter = toIterator(element.holds) as Iterator<YieldValue, void, Refresher | void>;
     processIterator(childIter, childCtx);
   }
 
@@ -53,7 +56,7 @@ function processElement(
 }
 
 function processIterator(
-  iter: Iterator<YieldValue | { type: "provide"; key: string; value: any }, any, any>,
+  iter: Iterator<YieldValue, void, Refresher | void>,
   ctx: RenderContext
 ): void {
   let result = iter.next();
@@ -93,18 +96,13 @@ function processIterator(
         break;
       }
 
-      case "provide": {
-        result = iter.next();
-        break;
-      }
-
       default:
         result = iter.next();
     }
   }
 }
 
-export function render(gen: ElementGen<any>, parent: HTMLElement): void {
+export function render(gen: ElementGen, parent: HTMLElement): void {
   parent.innerHTML = "";
 
   const ctx: RenderContext = {
@@ -121,7 +119,8 @@ export function render(gen: ElementGen<any>, parent: HTMLElement): void {
       const { refresher } = processElement(value, ctx);
       result = gen.next(refresher);
     } else {
-      result = gen.next(undefined as any);
+      // Element 以外の値が来ることは想定外だが、安全のため処理を続行
+      result = gen.next(undefined as unknown as Refresher);
     }
   }
 }

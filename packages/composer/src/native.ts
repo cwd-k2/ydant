@@ -5,10 +5,10 @@ import type {
   Refresher,
 } from "@ydant/interface";
 
-type ChildrenFn = () => Sequence<Child, void, Refresher<any> | void>;
+type ChildrenFn = () => Sequence<Child, void, Refresher | void>;
 
 function createHTMLElement(tag: string) {
-  return function* (children: ChildrenFn): ElementGen<{}> {
+  return function* (children: ChildrenFn): ElementGen {
     const refresher = yield { type: "element", tag, holds: children() };
     return refresher;
   };

@@ -4,6 +4,7 @@ import type {
   Attribute,
   EventListener,
   Text,
+  Child,
   ElementGen,
   Refresher,
   Component,
@@ -32,16 +33,16 @@ type Injectee<T extends Record<string, any>> = T[keyof T];
 
 type BuildFn<T extends Record<string, any>> = (
   inject: InjectorFn<T>
-) => Sequence<Injector<T>, ElementGen<any>, Injectee<T>>;
+) => Sequence<Injector<T>, ElementGen, Injectee<T>>;
 
 type RenderFn<T extends Record<string, any>> = (
   provide: ProviderFn<T>
-) => Sequence<Provider<T> | Element | Attribute | EventListener | Text, void, Refresher<any> | void>;
+) => Sequence<Provider<T> | Element | Attribute | EventListener | Text, void, Refresher | void>;
 
 export function compose<T extends Record<string, any>>(
   build: BuildFn<T>
 ): Component<T> {
-  return ((render: RenderFn<T>): ElementGen<T> => {
+  return ((render: RenderFn<T>): ElementGen => {
     return processComponent(build, render);
   }) as Component<T>;
 }
@@ -49,7 +50,7 @@ export function compose<T extends Record<string, any>>(
 function* processComponent<T extends Record<string, any>>(
   build: BuildFn<T>,
   render: RenderFn<T>
-): Generator<Element, Refresher<T>, Refresher<T>> {
+): Generator<Element, Refresher, Refresher> {
   const context: Partial<T> = {};
 
   const inject: InjectorFn<T> = function* <K extends keyof T>(key: K) {
@@ -83,14 +84,16 @@ function* processComponent<T extends Record<string, any>>(
       context[value.key as keyof T] = value.value;
       renderResult = renderIter.next();
     } else if (value.type === "element") {
-      const refresher: Refresher<any> = yield value as Element;
+      const refresher: Refresher = yield value as Element;
       renderResult = renderIter.next(refresher);
     } else {
       renderResult = renderIter.next();
     }
   }
 
-  const finalRefresher: Refresher<T> = (childrenFn) => {
+  const finalRefresher: Refresher = (
+    childrenFn: () => Sequence<Child, void, Refresher | void>
+  ) => {
     const newRenderIter = toIterator(childrenFn());
     let result = newRenderIter.next();
     while (!result.done) {

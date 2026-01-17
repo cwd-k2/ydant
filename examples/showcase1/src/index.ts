@@ -1,7 +1,7 @@
-import { text, div, h1, h3, p, span, button, attr, on, type ElementGen } from "@ydant/composer";
+import { text, div, h1, h3, p, span, button, attr, on, type ElementGen, type Refresher } from "@ydant/composer";
 import { render } from "@ydant/renderer";
 
-function* main(): ElementGen<any> {
+function* main(): ElementGen {
   // タイトル
   yield* h1(function* () {
     yield* attr("class", "text-purple-800 mb-5 text-center text-2xl font-bold");
@@ -85,7 +85,9 @@ function* main(): ElementGen<any> {
     });
   });
 
-  return undefined as any;
+  // トップレベルの Refresher（実際には使用されない）
+  const noop: Refresher = () => {};
+  return noop;
 }
 
 window.addEventListener("DOMContentLoaded", () => {

@@ -1,5 +1,5 @@
 // Iterator or Iterable として統一的に扱うためのもの
-export type Sequence<T, TReturn = any, TNext = any> =
+export type Sequence<T, TReturn = unknown, TNext = unknown> =
   | Iterator<T, TReturn, TNext>
   | Iterable<T, TReturn, TNext>;
 
@@ -38,33 +38,33 @@ export type Text = { type: "text"; content: string };
 // 子要素として yield できるもの
 export type Child = Element | Attribute | EventListener | Text;
 
+// Refresher は子要素を生成する関数を受け取り、再レンダリングする
+export interface Refresher {
+  (children: () => Sequence<Child, void, Refresher | void>): void;
+}
+
 // 実際にレンダリングに利用する HTML 要素の定義
 export type Element = {
   type: "element";
   tag: string;
-  holds: Sequence<Child, void, Refresher<any> | void>;
+  holds: Sequence<Child, void, Refresher | void>;
 };
 
-export interface ElementGen<T extends Record<string, any>>
-  extends Generator<Element, Refresher<T>, Refresher<T>> {}
-
-// Refresher は子要素を生成する関数を受け取り、再レンダリングする
-export interface Refresher<T extends Record<string, any>> {
-  (children: () => Sequence<Child, void, Refresher<any> | void>): void;
-}
+// ElementGen は Element を yield し、最終的に Refresher を返すジェネレーター
+export interface ElementGen extends Generator<Element, Refresher, Refresher> {}
 
 export interface Component<T extends Record<string, any>> {
   (
     arg: (
       provide: ProviderFn<T>
-    ) => Sequence<Provider<T> | Child, void, Refresher<any> | void>
-  ): ElementGen<T>;
+    ) => Sequence<Provider<T> | Child, void, Refresher | void>
+  ): ElementGen;
 }
 
 type Injectee<T extends Record<string, any>> = T[keyof T];
 
 export interface ComposeFn<T extends Record<string, any>> {
   (
-    arg: (inject: InjectorFn<T>) => Sequence<Injector<T>, ElementGen<any>, Injectee<T>>
+    arg: (inject: InjectorFn<T>) => Sequence<Injector<T>, ElementGen, Injectee<T>>
   ): Component<T>;
 }
