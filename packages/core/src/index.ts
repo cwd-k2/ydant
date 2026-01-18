@@ -23,7 +23,7 @@ export type {
 } from "./types";
 
 // Utilities
-export { isTagged, toChildren } from "./types";
+export { isTagged, toChildren } from "./utils";
 
 // Composer
 export { compose } from "./composer";
@@ -60,7 +60,7 @@ export {
   tr,
   th,
   td,
-} from "./native";
+} from "./elements";
 
 // Primitives
 export { attr, clss, on, text } from "./primitives";

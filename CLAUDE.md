@@ -161,12 +161,10 @@ mount(Main, document.getElementById("app")!);
 
 - `types.ts` - Core type definitions
   - `Tagged<T, P>` - Tagged union helper
-  - `isTagged(value, tag)` - Unified type guard
   - `Attribute`, `Listener`, `Text` - Primitive types
   - `Decoration` - Attribute | Listener
   - `Child` - Element | Decoration | Text
   - `Children`, `ChildrenFn`, `ChildGen` - Child iteration types
-  - `toChildren(result)` - Normalize array/iterator to Children
   - `Element` - HTML element with holds & extras
   - `ElementGenerator` - Generator yielding Elements
   - `Refresher` - Re-render callback
@@ -174,8 +172,11 @@ mount(Main, document.getElementById("app")!);
   - `InjectorFn<T>`, `ProviderFn<T>` - DI function types
   - `BuildFn<T>`, `RenderFn<T>` - Component function types
   - `Component<T>`, `App` - Component types
+- `utils.ts` - Utility functions
+  - `isTagged(value, tag)` - Unified type guard
+  - `toChildren(result)` - Normalize array/iterator to Children
 - `composer.ts` - `compose<T>()` function implementation
-- `native.ts` - HTML element factories (div, span, p, button, etc.)
+- `elements.ts` - HTML element factories (div, span, p, button, etc.)
 - `primitives.ts` - `attr()`, `clss()`, `on()`, `text()`
 - `index.ts` - Re-exports everything
 
@@ -184,6 +185,32 @@ mount(Main, document.getElementById("app")!);
 - `mount(app, parent)` - Mount App to DOM element
 - `processElement()` - Render Element to HTMLElement
 - `processIterator()` - Process child iterator
+
+### examples/showcase2/src/ (ToDo App)
+
+```
+src/
+├── types.ts           # Todo, Filter 型定義
+├── storage.ts         # localStorage ヘルパー
+├── components/
+│   ├── TodoItem.ts    # Todo アイテムコンポーネント
+│   └── FilterButton.ts
+├── App.ts             # メインコンポーネント
+└── index.ts           # エントリーポイント (mount)
+```
+
+### examples/showcase3/src/ (Pomodoro Timer)
+
+```
+src/
+├── types.ts           # TimerMode, TimerState 型定義
+├── constants.ts       # DURATIONS, MODE_LABELS, MODE_COLORS
+├── utils.ts           # formatTime, calculateProgress, createProgressRingSVG
+├── components/
+│   └── ModeButton.ts
+├── App.ts             # メインコンポーネント
+└── index.ts           # エントリーポイント (mount)
+```
 
 ## Design Decisions
 

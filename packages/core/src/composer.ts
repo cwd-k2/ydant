@@ -11,7 +11,7 @@ import type {
   BuildFn,
   RenderFn,
 } from "./types";
-import { isTagged } from "./types";
+import { isTagged } from "./utils";
 
 export function compose<T extends object>(build: BuildFn<T>): Component<T> {
   return (render: RenderFn<T>): ElementGenerator => {
