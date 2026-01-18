@@ -164,7 +164,26 @@ packages/
 └── renderer/    # DOM レンダリングエンジン
 
 examples/
-└── showcase1/   # デモアプリケーション
+├── showcase1/   # カウンター、ダイアログコンポーネント
+├── showcase2/   # ToDo アプリ
+└── showcase3/   # ポモドーロタイマー
+```
+
+## 実装例
+
+Ydant の動作を確認できるサンプルを用意しています：
+
+| サンプル | 説明 | 主な機能 |
+|----------|------|----------|
+| [showcase1](./examples/showcase1/) | 基本デモ | Refresher を使ったカウンター、`compose` によるダイアログコンポーネント |
+| [showcase2](./examples/showcase2/) | ToDo アプリ | CRUD 操作、localStorage への永続化、フィルタリング |
+| [showcase3](./examples/showcase3/) | ポモドーロタイマー | タイマー状態管理、SVG プログレスリング、モード切り替え |
+
+サンプルを実行するには：
+
+```bash
+cd examples/showcase1  # または showcase2, showcase3
+pnpm run dev
 ```
 
 ## 開発

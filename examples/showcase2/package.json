@@ -1,0 +1,14 @@
+{
+  "name": "showcase2",
+  "version": "1.0.0",
+  "description": "ToDo App - Ydant showcase",
+  "private": true,
+  "scripts": {
+    "dev": "vite"
+  },
+  "packageManager": "pnpm@10.22.0",
+  "dependencies": {
+    "@ydant/composer": "workspace:*",
+    "@ydant/renderer": "workspace:*"
+  }
+}
