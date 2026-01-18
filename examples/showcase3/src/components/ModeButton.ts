@@ -1,4 +1,4 @@
-import { button, clss, on, text, compose } from "@ydant/core";
+import { button, clss, on, text } from "@ydant/core";
 import type { TimerMode } from "../types";
 import { MODE_LABELS, MODE_COLORS } from "../constants";
 
@@ -8,10 +8,8 @@ export interface ModeButtonProps {
   onClick: () => void;
 }
 
-export const ModeButton = compose<ModeButtonProps>(function* (inject) {
-  const mode = yield* inject("mode");
-  const isActive = yield* inject("isActive");
-  const onClick = yield* inject("onClick");
+export function ModeButton(props: ModeButtonProps) {
+  const { mode, isActive, onClick } = props;
 
   const colors = MODE_COLORS[mode];
 
@@ -30,4 +28,4 @@ export const ModeButton = compose<ModeButtonProps>(function* (inject) {
     on("click", onClick),
     text(MODE_LABELS[mode]),
   ]);
-});
+}

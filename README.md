@@ -9,8 +9,10 @@
 Ydant is an experimental UI library that uses JavaScript generators as a domain-specific language for building DOM structures. It's deliberately minimal and unconventional—a playground for exploring what's possible when generators meet the DOM.
 
 ```typescript
-const Counter = compose<{ initial: number }>(function* (inject) {
-  let count = yield* inject("initial");
+import { div, span, button, text, clss, on } from "@ydant/core";
+
+function Counter(initial: number) {
+  let count = initial;
 
   return div(function* () {
     yield* clss(["counter"]);
@@ -27,14 +29,14 @@ const Counter = compose<{ initial: number }>(function* (inject) {
       yield* text("+1");
     });
   });
-});
+}
 ```
 
 ## Features
 
 - **Generator-based DSL** - Use `yield*` to compose DOM elements naturally
 - **Two syntaxes** - Generator syntax for reactive updates, array syntax for static structures
-- **Component system** - `compose<Props>()` with dependency injection via `inject`/`provide`
+- **Simple function components** - Plain functions that take props and return generators
 - **Refresher pattern** - Fine-grained updates without virtual DOM diffing
 - **Tiny footprint** - No dependencies, minimal abstraction
 - **TypeScript-first** - Full type safety with tagged union types
@@ -52,15 +54,14 @@ pnpm -r run build
 ## Quick Start
 
 ```typescript
-import { compose, div, button, text, clss, on } from "@ydant/core";
+import { div, text, clss, type Component } from "@ydant/core";
 import { mount } from "@ydant/dom";
 
-const App = compose<{}>(function* () {
-  return div(() => [
+const App: Component = () =>
+  div(() => [
     clss(["app"]),
     text("Hello, Ydant!"),
   ]);
-});
 
 mount(App, document.getElementById("root")!);
 ```
@@ -96,7 +97,7 @@ div(() => [
 
 ## Components
 
-Define components with `compose<Props>()`:
+Components are simple functions that take props and return a generator:
 
 ```typescript
 interface ButtonProps {
@@ -104,26 +105,23 @@ interface ButtonProps {
   onClick: () => void;
 }
 
-const Button = compose<ButtonProps>(function* (inject) {
-  const label = yield* inject("label");
-  const onClick = yield* inject("onClick");
+function Button(props: ButtonProps) {
+  const { label, onClick } = props;
 
   return button(() => [
     clss(["btn"]),
     on("click", onClick),
     text(label),
   ]);
-});
+}
 ```
 
-Use components with `provide`:
+Use components by calling the function and yielding the result:
 
 ```typescript
-yield* Button(function* (provide) {
-  yield* provide("label", "Click me");
-  yield* provide("onClick", () => alert("Clicked!"));
-  // Add extra attributes to root element
-  yield* clss(["primary"]);
+yield* Button({
+  label: "Click me",
+  onClick: () => alert("Clicked!"),
 });
 ```
 
@@ -137,17 +135,19 @@ yield* Button(function* (provide) {
 | `attr(key, value)` | Set an HTML attribute |
 | `clss(classes[])` | Set class attribute (shorthand) |
 | `on(event, handler)` | Add event listener |
+| `tap(callback)` | Direct access to DOM element |
 
 ### Elements
 
 All standard HTML elements are available: `div`, `span`, `p`, `button`, `input`, `h1`-`h3`, `ul`, `li`, `a`, `form`, `table`, etc.
 
-### Component
+SVG elements are also available: `svg`, `circle`, `path`, `rect`, `g`, etc.
+
+### Mount
 
 | Function | Description |
 |----------|-------------|
-| `compose<T>(buildFn)` | Create a component with props type `T` |
-| `mount(app, element)` | Mount an app to a DOM element |
+| `mount(component, element)` | Mount a component to a DOM element |
 
 ### Type Guards
 
@@ -159,7 +159,7 @@ All standard HTML elements are available: `div`, `span`, `p`, `button`, `input`,
 
 ```
 packages/
-├── core/        # DSL, types, component composition
+├── core/        # DSL, types, element factories
 └── dom/         # DOM rendering engine
 
 examples/
@@ -174,7 +174,7 @@ Explore working examples to see Ydant in action:
 
 | Example | Description | Key Features |
 |---------|-------------|--------------|
-| [showcase1](./examples/showcase1/) | Basic demos | Counter with Refresher, Dialog component with `compose` |
+| [showcase1](./examples/showcase1/) | Basic demos | Counter with Refresher, Dialog component |
 | [showcase2](./examples/showcase2/) | ToDo App | CRUD operations, localStorage persistence, filtering |
 | [showcase3](./examples/showcase3/) | Pomodoro Timer | Timer state management, SVG progress ring, mode switching |
 

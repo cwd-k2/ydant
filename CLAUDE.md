@@ -2,14 +2,14 @@
 
 ## Overview
 
-Ydant is a lightweight DOM rendering library using JavaScript generators as a DSL. It provides a declarative way to build UI components with dependency injection support via `inject`/`provide` pattern.
+Ydant is a lightweight DOM rendering library using JavaScript generators as a DSL. It provides a declarative way to build UI components with simple function-based composition.
 
 ## Project Structure
 
 ```
 ydant/
 ├── packages/
-│   ├── core/          # DSL, types, component composition
+│   ├── core/          # DSL, types, element factories
 │   └── dom/           # DOM rendering engine
 ├── examples/
 │   ├── showcase1/     # Demo: Counter, Dialog component
@@ -23,7 +23,7 @@ ydant/
 ## Package Dependencies
 
 ```
-@ydant/core   (DSL, types, composition)
+@ydant/core   (DSL, types)
        ↑
 @ydant/dom    (peer depends on core)
        ↑
@@ -90,7 +90,18 @@ div(() => [
 
 ### Component System
 
-Components are defined with `compose<Props>()`:
+**ルートコンポーネント** は `Component` 型（`() => ElementGenerator`）として定義する:
+
+```typescript
+import { type Component } from "@ydant/core";
+
+const Main: Component = () =>
+  div(function* () {
+    yield* h1(() => [text("Hello World")]);
+  });
+```
+
+**props を受け取るコンポーネント** は通常の関数として定義（返り値の型注釈は不要）:
 
 ```typescript
 interface DialogProps {
@@ -98,28 +109,23 @@ interface DialogProps {
   onClose: () => void;
 }
 
-const Dialog = compose<DialogProps>(function* (inject) {
-  // Receive props via inject
-  const title = yield* inject("title");
-  const onClose = yield* inject("onClose");
+function Dialog(props: DialogProps) {
+  const { title, onClose } = props;
 
-  // Return single root element
   return div(() => [
     clss(["dialog"]),
     h1(() => [text(title)]),
     button(() => [on("click", onClose), text("Close")]),
   ]);
-});
+}
 ```
 
-Components are used with `provide`:
+コンポーネントは呼び出して結果を yield:
 
 ```typescript
-yield* Dialog(function* (provide) {
-  yield* provide("title", "Welcome");
-  yield* provide("onClose", () => console.log("closed"));
-  // Can also add decorations to root element
-  yield* clss(["custom-class"]);
+yield* Dialog({
+  title: "Welcome",
+  onClose: () => console.log("closed"),
 });
 ```
 
@@ -138,19 +144,18 @@ count++;
 refresh(() => [text(`Count: ${count}`)]);
 ```
 
-### App & Mount
+### Mount
 
-The root component uses `Component<{}>` (aliased as `App`):
+ルートコンポーネントは `Component` 型として定義し、`mount` に渡す:
 
 ```typescript
-import { compose, div, text } from "@ydant/core";
+import { div, text, type Component } from "@ydant/core";
 import { mount } from "@ydant/dom";
 
-const Main = compose<{}>(function* () {
-  return div(function* () {
+const Main: Component = () =>
+  div(function* () {
     yield* text("Hello World");
   });
-});
 
 // Mount to DOM
 mount(Main, document.getElementById("app")!);
@@ -167,23 +172,19 @@ mount(Main, document.getElementById("app")!);
   - `Child` - Element | Decoration | Text
   - `Children`, `ChildrenFn`, `ChildGen` - Child iteration types
   - `Element` - HTML element with holds, extras & ns (namespace for SVG)
-  - `ElementGenerator` - Generator yielding Elements
+  - `ElementGenerator` - Generator yielding Elements, returning Refresher
   - `Refresher` - Re-render callback
-  - `Inject<K>`, `Provide<K,V>` - DI types
-  - `InjectorFn<T>`, `ProviderFn<T>` - DI function types
-  - `BuildFn<T>`, `RenderFn<T>` - Component function types
-  - `Component<T>`, `App` - Component types
+  - `Component` - `() => ElementGenerator` (ルートコンポーネント用)
 - `utils.ts` - Utility functions
   - `isTagged(value, tag)` - Unified type guard
   - `toChildren(result)` - Normalize array/iterator to Children
-- `composer.ts` - `compose<T>()` function implementation
 - `elements.ts` - HTML element factories (div, span, p, button, etc.) and SVG element factories (svg, circle, path, rect, etc.)
 - `primitives.ts` - `attr()`, `clss()`, `on()`, `text()`, `tap()`
 - `index.ts` - Re-exports everything
 
 ### packages/dom/src/index.ts
 
-- `mount(app, parent)` - Mount App to DOM element
+- `mount(app, parent)` - Mount Component to DOM element
 - `processElement()` - Render Element to HTMLElement
 - `processIterator()` - Process child iterator
 
@@ -215,12 +216,10 @@ src/
 
 ## Design Decisions
 
-1. **Single-root components**: Each component returns exactly one Element
-2. **extras field**: Decorations from usage site are merged into root element's `extras`
-3. **render-first execution**: In `compose()`, the render phase (provide) runs before build phase (inject)
-4. **Generator for Refresher**: Use generator syntax when you need the Refresher return value
-5. **Array for static**: Use array syntax for static structures that don't need updates
-6. **Two-package architecture**: `@ydant/core` provides DSL and types, `@ydant/dom` handles DOM rendering
+1. **Simple function components**: Components are plain functions that take props and return Component
+2. **Generator for Refresher**: Use generator syntax when you need the Refresher return value
+3. **Array for static**: Use array syntax for static structures that don't need updates
+4. **Two-package architecture**: `@ydant/core` provides DSL and types, `@ydant/dom` handles DOM rendering
 
 ## Development Notes
 
@@ -256,9 +255,9 @@ refresh(function* () {
 **解決策: `refreshers` オブジェクトパターン**
 
 ```typescript
-import { type Refresher } from "@ydant/core";
+import { type Refresher, type Component } from "@ydant/core";
 
-const Main = compose<{}>(function* () {
+const Main: Component = () => {
   // 1. Refresher を保持するオブジェクトを先に定義
   const refreshers: {
     list?: Refresher;
@@ -292,7 +291,7 @@ const Main = compose<{}>(function* () {
     refreshers.list = yield* div(renderList);
     refreshers.stats = yield* div(renderStats);
   });
-});
+};
 ```
 
 このパターンにより:

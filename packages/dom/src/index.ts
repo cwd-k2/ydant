@@ -4,7 +4,7 @@ import type {
   ChildrenFn,
   ElementGenerator,
   Refresher,
-  App,
+  Component,
 } from "@ydant/core";
 import { toChildren, isTagged } from "@ydant/core";
 
@@ -113,8 +113,7 @@ function render(gen: ElementGenerator, parent: HTMLElement): void {
   }
 }
 
-/** App を DOM にマウントする */
-export function mount(app: App, parent: HTMLElement): void {
-  const gen = app(function* () {});
-  render(gen, parent);
+/** Component を DOM にマウントする */
+export function mount(app: Component, parent: HTMLElement): void {
+  render(app(), parent);
 }
