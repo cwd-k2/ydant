@@ -33,6 +33,24 @@ importers:
         specifier: workspace:*
         version: link:../../packages/renderer
 
+  examples/showcase2:
+    dependencies:
+      '@ydant/composer':
+        specifier: workspace:*
+        version: link:../../packages/composer
+      '@ydant/renderer':
+        specifier: workspace:*
+        version: link:../../packages/renderer
+
+  examples/showcase3:
+    dependencies:
+      '@ydant/composer':
+        specifier: workspace:*
+        version: link:../../packages/composer
+      '@ydant/renderer':
+        specifier: workspace:*
+        version: link:../../packages/renderer
+
   packages/composer:
     dependencies:
       '@ydant/interface':

@@ -164,7 +164,26 @@ packages/
 └── renderer/    # DOM rendering engine
 
 examples/
-└── showcase1/   # Demo application
+├── showcase1/   # Counter, Dialog component
+├── showcase2/   # ToDo App
+└── showcase3/   # Pomodoro Timer
+```
+
+## Examples
+
+Explore working examples to see Ydant in action:
+
+| Example | Description | Key Features |
+|---------|-------------|--------------|
+| [showcase1](./examples/showcase1/) | Basic demos | Counter with Refresher, Dialog component with `compose` |
+| [showcase2](./examples/showcase2/) | ToDo App | CRUD operations, localStorage persistence, filtering |
+| [showcase3](./examples/showcase3/) | Pomodoro Timer | Timer state management, SVG progress ring, mode switching |
+
+To run an example:
+
+```bash
+cd examples/showcase1  # or showcase2, showcase3
+pnpm run dev
 ```
 
 ## Development
