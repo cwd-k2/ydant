@@ -10,8 +10,8 @@ import type {
   ProviderFn,
   BuildFn,
   RenderFn,
-} from "@ydant/interface";
-import { isTagged } from "@ydant/interface";
+} from "./types";
+import { isTagged } from "./types";
 
 export function compose<T extends object>(build: BuildFn<T>): Component<T> {
   return (render: RenderFn<T>): ElementGenerator => {

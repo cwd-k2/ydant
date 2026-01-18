@@ -26,44 +26,38 @@ importers:
 
   examples/showcase1:
     dependencies:
-      '@ydant/composer':
+      '@ydant/core':
         specifier: workspace:*
-        version: link:../../packages/composer
-      '@ydant/renderer':
+        version: link:../../packages/core
+      '@ydant/dom':
         specifier: workspace:*
-        version: link:../../packages/renderer
+        version: link:../../packages/dom
 
   examples/showcase2:
     dependencies:
-      '@ydant/composer':
+      '@ydant/core':
         specifier: workspace:*
-        version: link:../../packages/composer
-      '@ydant/renderer':
+        version: link:../../packages/core
+      '@ydant/dom':
         specifier: workspace:*
-        version: link:../../packages/renderer
+        version: link:../../packages/dom
 
   examples/showcase3:
     dependencies:
-      '@ydant/composer':
+      '@ydant/core':
         specifier: workspace:*
-        version: link:../../packages/composer
-      '@ydant/renderer':
+        version: link:../../packages/core
+      '@ydant/dom':
         specifier: workspace:*
-        version: link:../../packages/renderer
+        version: link:../../packages/dom
 
-  packages/composer:
+  packages/core: {}
+
+  packages/dom:
     dependencies:
-      '@ydant/interface':
+      '@ydant/core':
         specifier: workspace:*
-        version: link:../interface
-
-  packages/interface: {}
-
-  packages/renderer:
-    dependencies:
-      '@ydant/interface':
-        specifier: workspace:*
-        version: link:../interface
+        version: link:../core
 
 packages:
 

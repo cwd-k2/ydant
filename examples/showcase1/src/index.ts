@@ -1,5 +1,5 @@
-import { text, div, h1, h3, p, span, button, clss, on, compose } from "@ydant/composer";
-import { mount } from "@ydant/renderer";
+import { text, div, h1, h3, p, span, button, clss, on, compose } from "@ydant/core";
+import { mount } from "@ydant/dom";
 
 // ============================================================================
 // Dialog Component using compose (配列形式を一部使用)

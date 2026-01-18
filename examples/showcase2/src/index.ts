@@ -1,5 +1,5 @@
-import { text, div, h1, p, span, button, input, clss, on, attr, compose, type Refresher } from "@ydant/composer";
-import { mount } from "@ydant/renderer";
+import { text, div, h1, p, span, button, input, clss, on, attr, compose, type Refresher } from "@ydant/core";
+import { mount } from "@ydant/dom";
 
 // ============================================================================
 // Types

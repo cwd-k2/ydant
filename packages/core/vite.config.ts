@@ -8,16 +8,8 @@ export default defineConfig({
     outDir: "dist",
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),
-      name: "YdantRenderer",
+      name: "YdantCore",
       fileName: format => `index.${format}.js`,
-    },
-    rollupOptions: {
-      external: ["@ydant/interface"],
-      output: {
-        globals: {
-          "@ydant/interface": "YantInterface",
-        },
-      },
     },
   },
 });

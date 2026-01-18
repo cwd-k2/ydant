@@ -1,7 +1,7 @@
 {
-  "name": "@ydant/composer",
+  "name": "@ydant/dom",
   "version": "0.0.0",
-  "description": "",
+  "description": "DOM renderer for Ydant",
   "exports": {
     ".": {
       "@ydant/dev": "./src/index.ts",
@@ -18,7 +18,7 @@
   "author": "",
   "license": "MIT",
   "packageManager": "pnpm@10.22.0",
-  "dependencies": {
-    "@ydant/interface": "workspace:*"
+  "peerDependencies": {
+    "@ydant/core": "workspace:*"
   }
 }
