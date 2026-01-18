@@ -1,4 +1,4 @@
-import { button, clss, on, text, type Component } from "@ydant/core";
+import { button, clss, on, text } from "@ydant/core";
 
 export interface FilterButtonProps {
   label: string;
@@ -6,7 +6,7 @@ export interface FilterButtonProps {
   onClick: () => void;
 }
 
-export function FilterButton(props: FilterButtonProps): Component {
+export function FilterButton(props: FilterButtonProps) {
   const { label, isActive, onClick } = props;
 
   return button(() => [

@@ -18,7 +18,7 @@ import { loadTodos, saveTodos } from "./storage";
 import { TodoItem } from "./components/TodoItem";
 import { FilterButton } from "./components/FilterButton";
 
-export function* App(): Component {
+export const App: Component = () => {
   // State
   let todos: Todo[] = loadTodos();
   let filter: Filter = "all";
@@ -141,7 +141,7 @@ export function* App(): Component {
     }
   };
 
-  yield* div(function* () {
+  return div(function* () {
     yield* clss(["container", "mx-auto"]);
 
     // Title
@@ -242,6 +242,4 @@ export function* App(): Component {
       text("Double-click to edit a todo (not implemented). Data is saved to localStorage."),
     ]);
   });
-
-  return (() => {}) as never;
-}
+};

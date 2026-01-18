@@ -1,4 +1,4 @@
-import { button, clss, on, text, type Component } from "@ydant/core";
+import { button, clss, on, text } from "@ydant/core";
 import type { TimerMode } from "../types";
 import { MODE_LABELS, MODE_COLORS } from "../constants";
 
@@ -8,7 +8,7 @@ export interface ModeButtonProps {
   onClick: () => void;
 }
 
-export function ModeButton(props: ModeButtonProps): Component {
+export function ModeButton(props: ModeButtonProps) {
   const { mode, isActive, onClick } = props;
 
   const colors = MODE_COLORS[mode];

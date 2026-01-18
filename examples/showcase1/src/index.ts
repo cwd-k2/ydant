@@ -11,7 +11,7 @@ interface DialogProps {
   onClose: () => void;
 }
 
-function Dialog(props: DialogProps): Component {
+function Dialog(props: DialogProps) {
   const { title, content, onClose } = props;
 
   // 配列形式: 静的な構造に適している
@@ -67,8 +67,8 @@ function Dialog(props: DialogProps): Component {
 // Main App Component
 // ============================================================================
 
-function* Main(): Component {
-  yield* div(function* () {
+const Main: Component = () =>
+  div(function* () {
     yield* clss(["container", "mx-auto", "p-6"]);
 
     // タイトル
@@ -158,7 +158,7 @@ function* Main(): Component {
       clss(["p-4", "bg-green-50", "rounded-lg", "mb-4"]),
       p(() => [
         clss(["text-gray-700", "text-sm"]),
-        text("The Dialog component is now a simple function that takes props and returns Component."),
+        text("The Dialog component is a simple function that takes props and returns a generator."),
       ]),
     ]);
 
@@ -195,9 +195,6 @@ function* Main(): Component {
     ]);
   });
 
-  return (() => {}) as never;
-}
-
 // ============================================================================
 // Mount App
 // ============================================================================
@@ -205,6 +202,6 @@ function* Main(): Component {
 window.addEventListener("DOMContentLoaded", () => {
   const appRoot = document.getElementById("app");
   if (appRoot) {
-    mount(Main(), appRoot);
+    mount(Main, appRoot);
   }
 });

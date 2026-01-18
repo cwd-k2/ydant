@@ -2,8 +2,9 @@ import type {
   Element,
   Child,
   ChildrenFn,
-  Component,
+  ElementGenerator,
   Refresher,
+  Component,
 } from "@ydant/core";
 import { toChildren, isTagged } from "@ydant/core";
 
@@ -90,7 +91,7 @@ function processIterator(
   }
 }
 
-function render(gen: Component, parent: HTMLElement): void {
+function render(gen: ElementGenerator, parent: HTMLElement): void {
   parent.innerHTML = "";
 
   const ctx: RenderContext = {
@@ -114,5 +115,5 @@ function render(gen: Component, parent: HTMLElement): void {
 
 /** Component を DOM にマウントする */
 export function mount(app: Component, parent: HTMLElement): void {
-  render(app, parent);
+  render(app(), parent);
 }

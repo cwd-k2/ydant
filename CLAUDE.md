@@ -90,17 +90,26 @@ div(() => [
 
 ### Component System
 
-Components are simple functions that take props and return an `Component`:
+**ルートコンポーネント** は `Component` 型（`() => ElementGenerator`）として定義する:
 
 ```typescript
 import { type Component } from "@ydant/core";
 
+const Main: Component = () =>
+  div(function* () {
+    yield* h1(() => [text("Hello World")]);
+  });
+```
+
+**props を受け取るコンポーネント** は通常の関数として定義（返り値の型注釈は不要）:
+
+```typescript
 interface DialogProps {
   title: string;
   onClose: () => void;
 }
 
-function Dialog(props: DialogProps): Component {
+function Dialog(props: DialogProps) {
   const { title, onClose } = props;
 
   return div(() => [
@@ -111,7 +120,7 @@ function Dialog(props: DialogProps): Component {
 }
 ```
 
-Components are used by calling the function and yielding the result:
+コンポーネントは呼び出して結果を yield:
 
 ```typescript
 yield* Dialog({
@@ -137,21 +146,19 @@ refresh(() => [text(`Count: ${count}`)]);
 
 ### Mount
 
-The root component is a generator function that returns a `Component`:
+ルートコンポーネントは `Component` 型として定義し、`mount` に渡す:
 
 ```typescript
 import { div, text, type Component } from "@ydant/core";
 import { mount } from "@ydant/dom";
 
-function* Main(): Component {
-  yield* div(function* () {
+const Main: Component = () =>
+  div(function* () {
     yield* text("Hello World");
   });
-  return (() => {}) as never;
-}
 
 // Mount to DOM
-mount(Main(), document.getElementById("app")!);
+mount(Main, document.getElementById("app")!);
 ```
 
 ## File Reference
@@ -165,8 +172,9 @@ mount(Main(), document.getElementById("app")!);
   - `Child` - Element | Decoration | Text
   - `Children`, `ChildrenFn`, `ChildGen` - Child iteration types
   - `Element` - HTML element with holds, extras & ns (namespace for SVG)
-  - `Component` - Generator yielding Elements
+  - `ElementGenerator` - Generator yielding Elements, returning Refresher
   - `Refresher` - Re-render callback
+  - `Component` - `() => ElementGenerator` (ルートコンポーネント用)
 - `utils.ts` - Utility functions
   - `isTagged(value, tag)` - Unified type guard
   - `toChildren(result)` - Normalize array/iterator to Children
@@ -249,7 +257,7 @@ refresh(function* () {
 ```typescript
 import { type Refresher, type Component } from "@ydant/core";
 
-function* Main(): Component {
+const Main: Component = () => {
   // 1. Refresher を保持するオブジェクトを先に定義
   const refreshers: {
     list?: Refresher;
@@ -268,7 +276,7 @@ function* Main(): Component {
     yield* text(`Total: ${items.length}`);
   };
 
-  yield* div(function* () {
+  return div(function* () {
     // 3. イベントハンドラでは refreshers 経由で呼び出し
     yield* button(function* () {
       yield* on("click", () => {
@@ -283,9 +291,7 @@ function* Main(): Component {
     refreshers.list = yield* div(renderList);
     refreshers.stats = yield* div(renderStats);
   });
-
-  return (() => {}) as never;
-}
+};
 ```
 
 このパターンにより:

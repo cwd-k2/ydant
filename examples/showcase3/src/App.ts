@@ -19,7 +19,7 @@ import { DURATIONS, MODE_LABELS, MODE_COLORS } from "./constants";
 import { formatTime } from "./utils";
 import { ModeButton } from "./components/ModeButton";
 
-export function* App(): Component {
+export const App: Component = () => {
   // State
   const state: TimerState = {
     mode: "work",
@@ -302,7 +302,7 @@ export function* App(): Component {
     refreshers.timer?.(renderTimer);
   };
 
-  yield* div(function* () {
+  return div(function* () {
     yield* clss(["flex", "flex-col", "items-center"]);
 
     // Title
@@ -335,6 +335,4 @@ export function* App(): Component {
       p(() => [text("Every 4 sessions, take a 15 min long break")]),
     ]);
   });
-
-  return (() => {}) as never;
-}
+};

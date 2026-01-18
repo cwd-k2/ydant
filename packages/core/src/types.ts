@@ -51,5 +51,12 @@ export type Element = Tagged<
   { tag: string; holds: Children; extras?: Decoration[]; ns?: string }
 >;
 
-/** Element を yield し、最終的に Refresher を返すジェネレーター（コンポーネント） */
-export type Component = Generator<Element, Refresher, Refresher>;
+/** Element を yield し、最終的に Refresher を返すジェネレーター */
+export type ElementGenerator = Generator<Element, Refresher, Refresher>;
+
+// =============================================================================
+// Component Types
+// =============================================================================
+
+/** ルートコンポーネント（ElementGenerator を返す関数） */
+export type Component = () => ElementGenerator;

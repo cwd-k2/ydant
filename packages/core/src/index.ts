@@ -11,8 +11,9 @@ export type {
   Children,
   ChildrenFn,
   Element,
-  Component,
+  ElementGenerator,
   Refresher,
+  Component,
 } from "./types";
 
 // Utilities
