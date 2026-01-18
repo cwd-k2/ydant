@@ -2,9 +2,8 @@ import type {
   Element,
   Child,
   ChildrenFn,
-  ElementGenerator,
+  Component,
   Refresher,
-  App,
 } from "@ydant/core";
 import { toChildren, isTagged } from "@ydant/core";
 
@@ -91,7 +90,7 @@ function processIterator(
   }
 }
 
-function render(gen: ElementGenerator, parent: HTMLElement): void {
+function render(gen: Component, parent: HTMLElement): void {
   parent.innerHTML = "";
 
   const ctx: RenderContext = {
@@ -113,8 +112,7 @@ function render(gen: ElementGenerator, parent: HTMLElement): void {
   }
 }
 
-/** App を DOM にマウントする */
-export function mount(app: App, parent: HTMLElement): void {
-  const gen = app(function* () {});
-  render(gen, parent);
+/** Component を DOM にマウントする */
+export function mount(app: Component, parent: HTMLElement): void {
+  render(app, parent);
 }

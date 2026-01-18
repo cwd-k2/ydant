@@ -10,15 +10,15 @@ import {
   on,
   attr,
   tap,
-  compose,
   type Refresher,
+  type Component,
 } from "@ydant/core";
 import type { Todo, Filter } from "./types";
 import { loadTodos, saveTodos } from "./storage";
 import { TodoItem } from "./components/TodoItem";
 import { FilterButton } from "./components/FilterButton";
 
-export const App = compose<{}>(function* () {
+export function* App(): Component {
   // State
   let todos: Todo[] = loadTodos();
   let filter: Filter = "all";
@@ -58,14 +58,14 @@ export const App = compose<{}>(function* () {
     ];
 
     for (const f of filters) {
-      yield* FilterButton(function* (provide) {
-        yield* provide("label", f.label);
-        yield* provide("isActive", filter === f.key);
-        yield* provide("onClick", () => {
+      yield* FilterButton({
+        label: f.label,
+        isActive: filter === f.key,
+        onClick: () => {
           filter = f.key;
           refreshers.filter?.(renderFilterButtons);
           refreshers.todoList?.(renderTodoList);
-        });
+        },
       });
     }
   };
@@ -94,20 +94,20 @@ export const App = compose<{}>(function* () {
       ]);
     } else {
       for (const todo of filteredTodos) {
-        yield* TodoItem(function* (provide) {
-          yield* provide("todo", todo);
-          yield* provide("onToggle", () => {
+        yield* TodoItem({
+          todo,
+          onToggle: () => {
             todo.completed = !todo.completed;
             saveTodos(todos);
             refreshers.todoList?.(renderTodoList);
             refreshers.stats?.(renderStats);
-          });
-          yield* provide("onDelete", () => {
+          },
+          onDelete: () => {
             todos = todos.filter((t) => t.id !== todo.id);
             saveTodos(todos);
             refreshers.todoList?.(renderTodoList);
             refreshers.stats?.(renderStats);
-          });
+          },
         });
       }
     }
@@ -141,7 +141,7 @@ export const App = compose<{}>(function* () {
     }
   };
 
-  return div(function* () {
+  yield* div(function* () {
     yield* clss(["container", "mx-auto"]);
 
     // Title
@@ -242,4 +242,6 @@ export const App = compose<{}>(function* () {
       text("Double-click to edit a todo (not implemented). Data is saved to localStorage."),
     ]);
   });
-});
+
+  return (() => {}) as never;
+}

@@ -1,4 +1,4 @@
-import { div, input, span, button, clss, on, attr, text, compose } from "@ydant/core";
+import { div, input, span, button, clss, on, attr, text, type Component } from "@ydant/core";
 import type { Todo } from "../types";
 
 export interface TodoItemProps {
@@ -7,10 +7,8 @@ export interface TodoItemProps {
   onDelete: () => void;
 }
 
-export const TodoItem = compose<TodoItemProps>(function* (inject) {
-  const todo = yield* inject("todo");
-  const onToggle = yield* inject("onToggle");
-  const onDelete = yield* inject("onDelete");
+export function TodoItem(props: TodoItemProps): Component {
+  const { todo, onToggle, onDelete } = props;
 
   return div(() => [
     clss([
@@ -56,4 +54,4 @@ export const TodoItem = compose<TodoItemProps>(function* (inject) {
       text("×"),
     ]),
   ]);
-});
+}

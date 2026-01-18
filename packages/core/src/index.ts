@@ -11,23 +11,12 @@ export type {
   Children,
   ChildrenFn,
   Element,
-  ElementGenerator,
-  Refresher,
-  Inject,
-  Provide,
-  InjectorFn,
-  ProviderFn,
-  BuildFn,
-  RenderFn,
   Component,
-  App,
+  Refresher,
 } from "./types";
 
 // Utilities
 export { isTagged, toChildren } from "./utils";
-
-// Composer
-export { compose } from "./composer";
 
 // Native elements
 export {

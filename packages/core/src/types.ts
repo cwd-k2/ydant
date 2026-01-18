@@ -51,46 +51,5 @@ export type Element = Tagged<
   { tag: string; holds: Children; extras?: Decoration[]; ns?: string }
 >;
 
-/** Element を yield し、最終的に Refresher を返すジェネレーター */
-export type ElementGenerator = Generator<Element, Refresher, Refresher>;
-
-// =============================================================================
-// Inject / Provide Types (for Component composition)
-// =============================================================================
-
-/** Inject 要求 */
-export type Inject<K> = Tagged<"inject", { key: K }>;
-
-/** Provide 提供 */
-export type Provide<K, V> = Tagged<"provide", { key: K; value: V }>;
-
-/** inject 関数の型 */
-export type InjectorFn<T> = <K extends keyof T>(key: K) => Generator<Inject<K>, T[K], T[K]>;
-
-/** provide 関数の型 */
-export type ProviderFn<T> = <K extends keyof T, V extends T[K]>(
-  key: K,
-  value: V
-) => Generator<Provide<K, V>, void, void>;
-
-// =============================================================================
-// Component Types
-// =============================================================================
-
-/** コンポーネント定義関数の引数 */
-export type BuildFn<T extends object> = (
-  inject: InjectorFn<T>
-) => Iterator<Inject<keyof T>, ElementGenerator, T[keyof T]>;
-
-/** コンポーネント使用時の引数 */
-export type RenderFn<T extends object> = (
-  provide: ProviderFn<T>
-) => Iterator<Provide<keyof T, T[keyof T]> | Decoration, void, void>;
-
-/** コンポーネント */
-export interface Component<T extends object> {
-  (render: RenderFn<T>): ElementGenerator;
-}
-
-/** アプリケーションのルートコンポーネント */
-export type App = Component<{}>;
+/** Element を yield し、最終的に Refresher を返すジェネレーター（コンポーネント） */
+export type Component = Generator<Element, Refresher, Refresher>;

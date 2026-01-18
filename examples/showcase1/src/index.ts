@@ -1,8 +1,8 @@
-import { text, div, h1, h3, p, span, button, clss, on, compose } from "@ydant/core";
+import { text, div, h1, h3, p, span, button, clss, on, type Component } from "@ydant/core";
 import { mount } from "@ydant/dom";
 
 // ============================================================================
-// Dialog Component using compose (配列形式を一部使用)
+// Dialog Component (配列形式を一部使用)
 // ============================================================================
 
 interface DialogProps {
@@ -11,10 +11,8 @@ interface DialogProps {
   onClose: () => void;
 }
 
-const Dialog = compose<DialogProps>(function* (inject) {
-  const title = yield* inject("title");
-  const content = yield* inject("content");
-  const onClose = yield* inject("onClose");
+function Dialog(props: DialogProps): Component {
+  const { title, content, onClose } = props;
 
   // 配列形式: 静的な構造に適している
   return div(() => [
@@ -63,14 +61,14 @@ const Dialog = compose<DialogProps>(function* (inject) {
       ]),
     ]),
   ]);
-});
+}
 
 // ============================================================================
 // Main App Component
 // ============================================================================
 
-const Main = compose<{}>(function* () {
-  return div(function* () {
+function* Main(): Component {
+  yield* div(function* () {
     yield* clss(["container", "mx-auto", "p-6"]);
 
     // タイトル
@@ -153,14 +151,14 @@ const Main = compose<{}>(function* () {
     // セクション3: Dialog Component (compose の例)
     yield* h3(() => [
       clss(["text-xl", "font-semibold", "text-gray-700", "mb-4"]),
-      text("3. Dialog Component (compose example)"),
+      text("3. Dialog Component (function example)"),
     ]);
 
     yield* div(() => [
       clss(["p-4", "bg-green-50", "rounded-lg", "mb-4"]),
       p(() => [
         clss(["text-gray-700", "text-sm"]),
-        text("The Dialog component demonstrates compose() with array syntax for cleaner code."),
+        text("The Dialog component is now a simple function that takes props and returns Component."),
       ]),
     ]);
 
@@ -181,13 +179,13 @@ const Main = compose<{}>(function* () {
           if (!isDialogOpen) {
             isDialogOpen = true;
             dialogContainerRefresh(function* () {
-              yield* Dialog(function* (provide) {
-                yield* provide("title", "Welcome!");
-                yield* provide("content", "This dialog uses array syntax internally. Click outside or press a button to close.");
-                yield* provide("onClose", () => {
+              yield* Dialog({
+                title: "Welcome!",
+                content: "This dialog is now a simple function. Click outside or press a button to close.",
+                onClose: () => {
                   isDialogOpen = false;
                   dialogContainerRefresh(() => []);
-                });
+                },
               });
             });
           }
@@ -196,7 +194,9 @@ const Main = compose<{}>(function* () {
       }),
     ]);
   });
-});
+
+  return (() => {}) as never;
+}
 
 // ============================================================================
 // Mount App
@@ -205,6 +205,6 @@ const Main = compose<{}>(function* () {
 window.addEventListener("DOMContentLoaded", () => {
   const appRoot = document.getElementById("app");
   if (appRoot) {
-    mount(Main, appRoot);
+    mount(Main(), appRoot);
   }
 });

@@ -9,10 +9,12 @@
 Ydant は、JavaScript のジェネレーターをドメイン固有言語として使い、DOM 構造を構築する実験的な UI ライブラリです。意図的にミニマルで型破りなアプローチを取っています。ジェネレーターと DOM が出会うとき、何が可能になるかを探求する遊び場です。
 
 ```typescript
-const Counter = compose<{ initial: number }>(function* (inject) {
-  let count = yield* inject("initial");
+import { div, span, button, text, clss, on, type Component } from "@ydant/core";
 
-  return div(function* () {
+function* Counter(initial: number): Component {
+  let count = initial;
+
+  yield* div(function* () {
     yield* clss(["counter"]);
 
     const refresh = yield* span(function* () {
@@ -27,14 +29,16 @@ const Counter = compose<{ initial: number }>(function* (inject) {
       yield* text("+1");
     });
   });
-});
+
+  return (() => {}) as never;
+}
 ```
 
 ## 特徴
 
 - **ジェネレーターベースの DSL** - `yield*` を使って DOM 要素を自然に合成
 - **2つの構文** - リアクティブ更新にはジェネレーター構文、静的構造には配列構文
-- **コンポーネントシステム** - `inject`/`provide` による依存性注入を備えた `compose<Props>()`
+- **シンプルな関数コンポーネント** - props を受け取り `Component` を返すプレーンな関数
 - **Refresher パターン** - 仮想 DOM の差分計算なしに細粒度の更新
 - **軽量** - 依存関係なし、最小限の抽象化
 - **TypeScript ファースト** - Tagged Union 型による完全な型安全性
@@ -52,17 +56,18 @@ pnpm -r run build
 ## クイックスタート
 
 ```typescript
-import { compose, div, button, text, clss, on } from "@ydant/core";
+import { div, text, clss, type Component } from "@ydant/core";
 import { mount } from "@ydant/dom";
 
-const App = compose<{}>(function* () {
-  return div(() => [
+function* App(): Component {
+  yield* div(() => [
     clss(["app"]),
     text("Hello, Ydant!"),
   ]);
-});
+  return (() => {}) as never;
+}
 
-mount(App, document.getElementById("root")!);
+mount(App(), document.getElementById("root")!);
 ```
 
 ## 構文オプション
@@ -96,34 +101,33 @@ div(() => [
 
 ## コンポーネント
 
-`compose<Props>()` でコンポーネントを定義：
+コンポーネントは props を受け取り `Component` を返すシンプルな関数です：
 
 ```typescript
+import { type Component } from "@ydant/core";
+
 interface ButtonProps {
   label: string;
   onClick: () => void;
 }
 
-const Button = compose<ButtonProps>(function* (inject) {
-  const label = yield* inject("label");
-  const onClick = yield* inject("onClick");
+function Button(props: ButtonProps): Component {
+  const { label, onClick } = props;
 
   return button(() => [
     clss(["btn"]),
     on("click", onClick),
     text(label),
   ]);
-});
+}
 ```
 
-`provide` でコンポーネントを使用：
+関数を呼び出して結果を yield することでコンポーネントを使用：
 
 ```typescript
-yield* Button(function* (provide) {
-  yield* provide("label", "クリック");
-  yield* provide("onClick", () => alert("クリックされました！"));
-  // ルート要素に追加の属性を付与
-  yield* clss(["primary"]);
+yield* Button({
+  label: "クリック",
+  onClick: () => alert("クリックされました！"),
 });
 ```
 
@@ -137,17 +141,19 @@ yield* Button(function* (provide) {
 | `attr(key, value)` | HTML 属性を設定 |
 | `clss(classes[])` | class 属性を設定（ショートハンド） |
 | `on(event, handler)` | イベントリスナーを追加 |
+| `tap(callback)` | DOM 要素への直接アクセス |
 
 ### 要素
 
 標準的な HTML 要素がすべて利用可能：`div`, `span`, `p`, `button`, `input`, `h1`-`h3`, `ul`, `li`, `a`, `form`, `table` など
 
-### コンポーネント
+SVG 要素も利用可能：`svg`, `circle`, `path`, `rect`, `g` など
+
+### マウント
 
 | 関数 | 説明 |
 |------|------|
-| `compose<T>(buildFn)` | props 型 `T` を持つコンポーネントを作成 |
-| `mount(app, element)` | アプリを DOM 要素にマウント |
+| `mount(component, element)` | コンポーネントを DOM 要素にマウント |
 
 ### 型ガード
 
@@ -159,7 +165,7 @@ yield* Button(function* (provide) {
 
 ```
 packages/
-├── core/        # DSL、型定義、コンポーネント合成
+├── core/        # DSL、型定義、要素ファクトリ
 └── dom/         # DOM レンダリングエンジン
 
 examples/
@@ -174,7 +180,7 @@ Ydant の動作を確認できるサンプルを用意しています：
 
 | サンプル | 説明 | 主な機能 |
 |----------|------|----------|
-| [showcase1](./examples/showcase1/) | 基本デモ | Refresher を使ったカウンター、`compose` によるダイアログコンポーネント |
+| [showcase1](./examples/showcase1/) | 基本デモ | Refresher を使ったカウンター、ダイアログコンポーネント |
 | [showcase2](./examples/showcase2/) | ToDo アプリ | CRUD 操作、localStorage への永続化、フィルタリング |
 | [showcase3](./examples/showcase3/) | ポモドーロタイマー | タイマー状態管理、SVG プログレスリング、モード切り替え |
 

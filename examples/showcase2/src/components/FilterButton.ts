@@ -1,4 +1,4 @@
-import { button, clss, on, text, compose } from "@ydant/core";
+import { button, clss, on, text, type Component } from "@ydant/core";
 
 export interface FilterButtonProps {
   label: string;
@@ -6,10 +6,8 @@ export interface FilterButtonProps {
   onClick: () => void;
 }
 
-export const FilterButton = compose<FilterButtonProps>(function* (inject) {
-  const label = yield* inject("label");
-  const isActive = yield* inject("isActive");
-  const onClick = yield* inject("onClick");
+export function FilterButton(props: FilterButtonProps): Component {
+  const { label, isActive, onClick } = props;
 
   return button(() => [
     clss([
@@ -25,4 +23,4 @@ export const FilterButton = compose<FilterButtonProps>(function* (inject) {
     on("click", onClick),
     text(label),
   ]);
-});
+}

@@ -9,17 +9,17 @@ import {
   clss,
   on,
   attr,
-  compose,
   svg,
   circle,
   type Refresher,
+  type Component,
 } from "@ydant/core";
 import type { TimerMode, TimerState } from "./types";
 import { DURATIONS, MODE_LABELS, MODE_COLORS } from "./constants";
 import { formatTime } from "./utils";
 import { ModeButton } from "./components/ModeButton";
 
-export const App = compose<{}>(function* () {
+export function* App(): Component {
   // State
   const state: TimerState = {
     mode: "work",
@@ -45,10 +45,10 @@ export const App = compose<{}>(function* () {
 
     const modes: TimerMode[] = ["work", "break", "long-break"];
     for (const mode of modes) {
-      yield* ModeButton(function* (provide) {
-        yield* provide("mode", mode);
-        yield* provide("isActive", state.mode === mode);
-        yield* provide("onClick", () => switchMode(mode));
+      yield* ModeButton({
+        mode,
+        isActive: state.mode === mode,
+        onClick: () => switchMode(mode),
       });
     }
   };
@@ -302,7 +302,7 @@ export const App = compose<{}>(function* () {
     refreshers.timer?.(renderTimer);
   };
 
-  return div(function* () {
+  yield* div(function* () {
     yield* clss(["flex", "flex-col", "items-center"]);
 
     // Title
@@ -335,4 +335,6 @@ export const App = compose<{}>(function* () {
       p(() => [text("Every 4 sessions, take a 15 min long break")]),
     ]);
   });
-});
+
+  return (() => {}) as never;
+}
