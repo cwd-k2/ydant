@@ -15,6 +15,9 @@ export type Attribute = Tagged<"attribute", { key: string; value: string }>;
 /** イベントリスナ */
 export type Listener = Tagged<"listener", { key: string; value: (e: Event) => void }>;
 
+/** DOM 要素への直接アクセス */
+export type Tap = Tagged<"tap", { callback: (el: HTMLElement) => void }>;
+
 /** テキストノード */
 export type Text = Tagged<"text", { content: string }>;
 
@@ -22,8 +25,8 @@ export type Text = Tagged<"text", { content: string }>;
 // Element Types
 // =============================================================================
 
-/** HTML 要素の装飾 (Attribute または Listener) */
-export type Decoration = Attribute | Listener;
+/** HTML 要素の装飾 (Attribute, Listener, Tap) */
+export type Decoration = Attribute | Listener | Tap;
 
 /** 子要素として yield できるもの */
 export type Child = Element | Decoration | Text;
@@ -45,7 +48,7 @@ export interface Refresher {
 /** HTML 要素 */
 export type Element = Tagged<
   "element",
-  { tag: string; holds: Children; extras?: Decoration[] }
+  { tag: string; holds: Children; extras?: Decoration[]; ns?: string }
 >;
 
 /** Element を yield し、最終的に Refresher を返すジェネレーター */

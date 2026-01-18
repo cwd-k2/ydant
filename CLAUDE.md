@@ -58,8 +58,9 @@ type Tagged<T extends string, P = {}> = { type: T } & P;
 // Examples
 type Attribute = Tagged<"attribute", { key: string; value: string }>;
 type Listener = Tagged<"listener", { key: string; value: (e: Event) => void }>;
+type Tap = Tagged<"tap", { callback: (el: HTMLElement) => void }>;
 type Text = Tagged<"text", { content: string }>;
-type Element = Tagged<"element", { tag: string; holds: Children; extras?: Decoration[] }>;
+type Element = Tagged<"element", { tag: string; holds: Children; extras?: Decoration[]; ns?: string }>;
 ```
 
 Use `isTagged(value, "tagname")` for type guards.
@@ -161,11 +162,11 @@ mount(Main, document.getElementById("app")!);
 
 - `types.ts` - Core type definitions
   - `Tagged<T, P>` - Tagged union helper
-  - `Attribute`, `Listener`, `Text` - Primitive types
-  - `Decoration` - Attribute | Listener
+  - `Attribute`, `Listener`, `Tap`, `Text` - Primitive types
+  - `Decoration` - Attribute | Listener | Tap
   - `Child` - Element | Decoration | Text
   - `Children`, `ChildrenFn`, `ChildGen` - Child iteration types
-  - `Element` - HTML element with holds & extras
+  - `Element` - HTML element with holds, extras & ns (namespace for SVG)
   - `ElementGenerator` - Generator yielding Elements
   - `Refresher` - Re-render callback
   - `Inject<K>`, `Provide<K,V>` - DI types
@@ -176,8 +177,8 @@ mount(Main, document.getElementById("app")!);
   - `isTagged(value, tag)` - Unified type guard
   - `toChildren(result)` - Normalize array/iterator to Children
 - `composer.ts` - `compose<T>()` function implementation
-- `elements.ts` - HTML element factories (div, span, p, button, etc.)
-- `primitives.ts` - `attr()`, `clss()`, `on()`, `text()`
+- `elements.ts` - HTML element factories (div, span, p, button, etc.) and SVG element factories (svg, circle, path, rect, etc.)
+- `primitives.ts` - `attr()`, `clss()`, `on()`, `text()`, `tap()`
 - `index.ts` - Re-exports everything
 
 ### packages/dom/src/index.ts
@@ -205,10 +206,10 @@ src/
 src/
 ├── types.ts           # TimerMode, TimerState 型定義
 ├── constants.ts       # DURATIONS, MODE_LABELS, MODE_COLORS
-├── utils.ts           # formatTime, calculateProgress, createProgressRingSVG
+├── utils.ts           # formatTime
 ├── components/
 │   └── ModeButton.ts
-├── App.ts             # メインコンポーネント
+├── App.ts             # メインコンポーネント (SVG プログレスリングを DSL で構築)
 └── index.ts           # エントリーポイント (mount)
 ```
 
@@ -298,6 +299,63 @@ const Main = compose<{}>(function* () {
 - イベントハンドラ登録時点で `refreshers` オブジェクトは存在する
 - 実際の `Refresher` は後から格納されるが、クロージャで参照可能
 - Optional chaining (`?.`) で安全に呼び出し可能
+
+### tap による DOM 要素への直接アクセス
+
+`tap` は DOM 要素に直接アクセスするためのプリミティブ。`attr` や `on` では対応できない、要素固有のプロパティ操作が必要な場合に使用する。
+
+```typescript
+let inputElement: HTMLInputElement | null = null;
+
+yield* input(function* () {
+  yield* attr("type", "text");
+  yield* tap<HTMLInputElement>((el) => {
+    inputElement = el;  // DOM 要素への参照を取得
+  });
+  yield* on("input", (e) => { ... });
+});
+
+// 後で使用
+if (inputElement) {
+  inputElement.value = "";  // DOM プロパティを直接操作
+}
+```
+
+**注意**: `tap` は DSL の抽象化を破るため、`attr`, `clss`, `on` で対応できない場合にのみ使用すること。
+
+### SVG 要素の使い方
+
+SVG 要素は専用のファクトリ関数で生成する。namespace が自動的に設定される。
+
+```typescript
+import { svg, circle, path, attr, clss } from "@ydant/core";
+
+yield* svg(function* () {
+  yield* attr("width", "240");
+  yield* attr("height", "240");
+  yield* clss(["my-svg"]);
+
+  // 背景の円
+  yield* circle(() => [
+    attr("cx", "120"),
+    attr("cy", "120"),
+    attr("r", "100"),
+    attr("fill", "none"),
+    attr("stroke", "#e5e7eb"),
+    attr("stroke-width", "8"),
+  ]);
+
+  // パス
+  yield* path(() => [
+    attr("d", "M10 10 L100 100"),
+    attr("stroke", "black"),
+  ]);
+});
+```
+
+**利用可能な SVG 要素**: `svg`, `circle`, `ellipse`, `line`, `path`, `polygon`, `polyline`, `rect`, `g`, `defs`, `use`, `clipPath`, `mask`, `linearGradient`, `radialGradient`, `stop`, `svgText`, `tspan`
+
+**注意**: SVG の `<text>` 要素は `svgText` として提供（`text` プリミティブとの名前衝突を回避）。
 
 ### 新しい showcase の追加方法
 

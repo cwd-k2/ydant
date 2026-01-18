@@ -9,6 +9,16 @@ function createHTMLElement(tag: string) {
   };
 }
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function createSVGElement(tag: string) {
+  return function* (children: ChildrenFn): ElementGenerator {
+    const holds = toChildren(children());
+    const refresher = yield { type: "element", tag, holds, ns: SVG_NS };
+    return refresher;
+  };
+}
+
 export const div = createHTMLElement("div");
 export const span = createHTMLElement("span");
 export const p = createHTMLElement("p");
@@ -39,3 +49,23 @@ export const tbody = createHTMLElement("tbody");
 export const tr = createHTMLElement("tr");
 export const th = createHTMLElement("th");
 export const td = createHTMLElement("td");
+
+// SVG 要素
+export const svg = createSVGElement("svg");
+export const circle = createSVGElement("circle");
+export const ellipse = createSVGElement("ellipse");
+export const line = createSVGElement("line");
+export const path = createSVGElement("path");
+export const polygon = createSVGElement("polygon");
+export const polyline = createSVGElement("polyline");
+export const rect = createSVGElement("rect");
+export const g = createSVGElement("g");
+export const defs = createSVGElement("defs");
+export const use = createSVGElement("use");
+export const clipPath = createSVGElement("clipPath");
+export const mask = createSVGElement("mask");
+export const linearGradient = createSVGElement("linearGradient");
+export const radialGradient = createSVGElement("radialGradient");
+export const stop = createSVGElement("stop");
+export const svgText = createSVGElement("text");
+export const tspan = createSVGElement("tspan");

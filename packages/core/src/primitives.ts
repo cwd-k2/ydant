@@ -1,4 +1,4 @@
-import type { Attribute, Listener, Text } from "./types";
+import type { Attribute, Listener, Tap, Text } from "./types";
 
 /** プリミティブを yield するジェネレーター関数を作成するファクトリ */
 function createPrimitive<T, Args extends unknown[]>(
@@ -36,3 +36,10 @@ export const on = createPrimitive(
 export const text = createPrimitive(
   (content: string): Text => ({ type: "text", content })
 );
+
+/** DOM 要素に直接アクセスして操作 */
+export function* tap<E extends HTMLElement = HTMLElement>(
+  callback: (el: E) => void
+): Generator<Tap, void, void> {
+  yield { type: "tap", callback: callback as (el: HTMLElement) => void };
+}

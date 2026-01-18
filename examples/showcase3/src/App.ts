@@ -8,12 +8,15 @@ import {
   button,
   clss,
   on,
+  attr,
   compose,
+  svg,
+  circle,
   type Refresher,
 } from "@ydant/core";
 import type { TimerMode, TimerState } from "./types";
 import { DURATIONS, MODE_LABELS, MODE_COLORS } from "./constants";
-import { formatTime, calculateProgress, createProgressRingSVG } from "./utils";
+import { formatTime } from "./utils";
 import { ModeButton } from "./components/ModeButton";
 
 export const App = compose<{}>(function* () {
@@ -31,6 +34,7 @@ export const App = compose<{}>(function* () {
   const refreshers: {
     mode?: Refresher;
     timer?: Refresher;
+    progressRing?: Refresher;
     controls?: Refresher;
     sessions?: Refresher;
   } = {};
@@ -49,19 +53,58 @@ export const App = compose<{}>(function* () {
     }
   };
 
+  // SVG progress ring の定数
+  const RING_RADIUS = 120;
+  const RING_STROKE = 8;
+  const RING_NORMALIZED_RADIUS = RING_RADIUS - RING_STROKE * 2;
+  const RING_CIRCUMFERENCE = RING_NORMALIZED_RADIUS * 2 * Math.PI;
+
+  const renderProgressRing = function* () {
+    const totalTime = DURATIONS[state.mode];
+    const progress = ((totalTime - state.timeLeft) / totalTime) * 100;
+    const strokeDashoffset = RING_CIRCUMFERENCE - (progress / 100) * RING_CIRCUMFERENCE;
+    const ringColor = MODE_COLORS[state.mode].ring;
+
+    yield* clss(["transform", "-rotate-90"]);
+    yield* attr("width", String(RING_RADIUS * 2));
+    yield* attr("height", String(RING_RADIUS * 2));
+
+    // 背景の円
+    yield* circle(() => [
+      attr("stroke", "#e5e7eb"),
+      attr("fill", "transparent"),
+      attr("stroke-width", String(RING_STROKE)),
+      attr("r", String(RING_NORMALIZED_RADIUS)),
+      attr("cx", String(RING_RADIUS)),
+      attr("cy", String(RING_RADIUS)),
+    ]);
+
+    // プログレスの円
+    yield* circle(() => [
+      clss(["progress-ring"]),
+      attr("stroke", ringColor),
+      attr("fill", "transparent"),
+      attr("stroke-width", String(RING_STROKE)),
+      attr("stroke-linecap", "round"),
+      attr("stroke-dasharray", `${RING_CIRCUMFERENCE} ${RING_CIRCUMFERENCE}`),
+      attr("stroke-dashoffset", String(strokeDashoffset)),
+      attr("r", String(RING_NORMALIZED_RADIUS)),
+      attr("cx", String(RING_RADIUS)),
+      attr("cy", String(RING_RADIUS)),
+    ]);
+  };
+
   const renderTimer = function* () {
     yield* clss(["relative", "mb-8"]);
-
-    const progress = calculateProgress(state.timeLeft, DURATIONS[state.mode]);
-    const ringColor = MODE_COLORS[state.mode].ring;
 
     yield* div(function* () {
       yield* clss(["flex", "items-center", "justify-center"]);
 
-      // SVG container (will be updated via requestAnimationFrame)
-      yield* div(() => [
-        clss(["absolute", "inset-0", "flex", "items-center", "justify-center"]),
-      ]);
+      // SVG progress ring
+      yield* div(function* () {
+        yield* clss(["absolute", "inset-0", "flex", "items-center", "justify-center"]);
+        refreshers.progressRing = yield* svg(renderProgressRing);
+      });
 
       // Timer text overlay
       yield* div(function* () {
@@ -90,14 +133,6 @@ export const App = compose<{}>(function* () {
           text(MODE_LABELS[state.mode]),
         ]);
       });
-    });
-
-    // Update SVG after render
-    requestAnimationFrame(() => {
-      const container = document.querySelector(".relative.mb-8 .absolute.inset-0");
-      if (container) {
-        container.innerHTML = createProgressRingSVG(progress, ringColor);
-      }
     });
   };
 

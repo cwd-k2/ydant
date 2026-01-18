@@ -9,6 +9,7 @@ import {
   clss,
   on,
   attr,
+  tap,
   compose,
   type Refresher,
 } from "@ydant/core";
@@ -151,6 +152,7 @@ export const App = compose<{}>(function* () {
 
     // Input section
     let inputValue = "";
+    let inputElement: HTMLInputElement | null = null;
 
     yield* div(function* () {
       yield* clss(["flex", "gap-2", "mb-6"]);
@@ -171,6 +173,9 @@ export const App = compose<{}>(function* () {
           "focus:ring-blue-500",
           "focus:border-transparent",
         ]);
+        yield* tap<HTMLInputElement>((el) => {
+          inputElement = el;
+        });
         yield* on("input", (e) => {
           inputValue = (e.target as HTMLInputElement).value;
         });
@@ -210,11 +215,8 @@ export const App = compose<{}>(function* () {
               completed: false,
             });
             saveTodos(todos);
-            const inputEl = document.querySelector(
-              'input[type="text"]'
-            ) as HTMLInputElement;
-            if (inputEl) {
-              inputEl.value = "";
+            if (inputElement) {
+              inputElement.value = "";
             }
             inputValue = "";
             refreshers.todoList?.(renderTodoList);

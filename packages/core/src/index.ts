@@ -3,6 +3,7 @@ export type {
   Tagged,
   Attribute,
   Listener,
+  Tap,
   Text,
   Decoration,
   Child,
@@ -60,7 +61,26 @@ export {
   tr,
   th,
   td,
+  // SVG elements
+  svg,
+  circle,
+  ellipse,
+  line,
+  path,
+  polygon,
+  polyline,
+  rect,
+  g,
+  defs,
+  use,
+  clipPath,
+  mask,
+  linearGradient,
+  radialGradient,
+  stop,
+  svgText,
+  tspan,
 } from "./elements";
 
 // Primitives
-export { attr, clss, on, text } from "./primitives";
+export { attr, clss, on, text, tap } from "./primitives";

@@ -10,23 +10,27 @@ import { toChildren, isTagged } from "@ydant/core";
 
 interface RenderContext {
   parent: Node;
-  currentElement: HTMLElement | null;
+  currentElement: globalThis.Element | null;
 }
 
 function processElement(
   element: Element,
   ctx: RenderContext
-): { node: HTMLElement; refresher: Refresher } {
-  const node = document.createElement(element.tag);
+): { node: globalThis.Element; refresher: Refresher } {
+  const node = element.ns
+    ? document.createElementNS(element.ns, element.tag)
+    : document.createElement(element.tag);
   ctx.parent.appendChild(node);
 
-  // extras (Attribute, Listener) を適用
+  // extras (Attribute, Listener, Tap) を適用
   if (element.extras) {
     for (const extra of element.extras) {
       if (isTagged(extra, "attribute")) {
         node.setAttribute(extra.key as string, extra.value as string);
       } else if (isTagged(extra, "listener")) {
         node.addEventListener(extra.key as string, extra.value as (e: Event) => void);
+      } else if (isTagged(extra, "tap")) {
+        (extra.callback as (el: globalThis.Element) => void)(node);
       }
     }
   }
@@ -70,6 +74,11 @@ function processIterator(
     } else if (isTagged(value, "listener")) {
       if (ctx.currentElement) {
         ctx.currentElement.addEventListener(value.key as string, value.value as (e: Event) => void);
+      }
+      result = iter.next();
+    } else if (isTagged(value, "tap")) {
+      if (ctx.currentElement) {
+        (value.callback as (el: globalThis.Element) => void)(ctx.currentElement);
       }
       result = iter.next();
     } else if (isTagged(value, "text")) {
