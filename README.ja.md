@@ -9,12 +9,12 @@
 Ydant は、JavaScript のジェネレーターをドメイン固有言語として使い、DOM 構造を構築する実験的な UI ライブラリです。意図的にミニマルで型破りなアプローチを取っています。ジェネレーターと DOM が出会うとき、何が可能になるかを探求する遊び場です。
 
 ```typescript
-import { div, span, button, text, clss, on, type Component } from "@ydant/core";
+import { div, span, button, text, clss, on } from "@ydant/core";
 
-function* Counter(initial: number): Component {
+function Counter(initial: number) {
   let count = initial;
 
-  yield* div(function* () {
+  return div(function* () {
     yield* clss(["counter"]);
 
     const refresh = yield* span(function* () {
@@ -29,8 +29,6 @@ function* Counter(initial: number): Component {
       yield* text("+1");
     });
   });
-
-  return (() => {}) as never;
 }
 ```
 
@@ -38,7 +36,7 @@ function* Counter(initial: number): Component {
 
 - **ジェネレーターベースの DSL** - `yield*` を使って DOM 要素を自然に合成
 - **2つの構文** - リアクティブ更新にはジェネレーター構文、静的構造には配列構文
-- **シンプルな関数コンポーネント** - props を受け取り `Component` を返すプレーンな関数
+- **シンプルな関数コンポーネント** - props を受け取りジェネレーターを返すプレーンな関数
 - **Refresher パターン** - 仮想 DOM の差分計算なしに細粒度の更新
 - **軽量** - 依存関係なし、最小限の抽象化
 - **TypeScript ファースト** - Tagged Union 型による完全な型安全性
@@ -59,15 +57,13 @@ pnpm -r run build
 import { div, text, clss, type Component } from "@ydant/core";
 import { mount } from "@ydant/dom";
 
-function* App(): Component {
-  yield* div(() => [
+const App: Component = () =>
+  div(() => [
     clss(["app"]),
     text("Hello, Ydant!"),
   ]);
-  return (() => {}) as never;
-}
 
-mount(App(), document.getElementById("root")!);
+mount(App, document.getElementById("root")!);
 ```
 
 ## 構文オプション
@@ -101,17 +97,15 @@ div(() => [
 
 ## コンポーネント
 
-コンポーネントは props を受け取り `Component` を返すシンプルな関数です：
+コンポーネントは props を受け取りジェネレーターを返すシンプルな関数です：
 
 ```typescript
-import { type Component } from "@ydant/core";
-
 interface ButtonProps {
   label: string;
   onClick: () => void;
 }
 
-function Button(props: ButtonProps): Component {
+function Button(props: ButtonProps) {
   const { label, onClick } = props;
 
   return button(() => [

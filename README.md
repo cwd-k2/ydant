@@ -9,12 +9,12 @@
 Ydant is an experimental UI library that uses JavaScript generators as a domain-specific language for building DOM structures. It's deliberately minimal and unconventional—a playground for exploring what's possible when generators meet the DOM.
 
 ```typescript
-import { div, span, button, text, clss, on, type Component } from "@ydant/core";
+import { div, span, button, text, clss, on } from "@ydant/core";
 
-function* Counter(initial: number): Component {
+function Counter(initial: number) {
   let count = initial;
 
-  yield* div(function* () {
+  return div(function* () {
     yield* clss(["counter"]);
 
     const refresh = yield* span(function* () {
@@ -29,8 +29,6 @@ function* Counter(initial: number): Component {
       yield* text("+1");
     });
   });
-
-  return (() => {}) as never;
 }
 ```
 
@@ -38,7 +36,7 @@ function* Counter(initial: number): Component {
 
 - **Generator-based DSL** - Use `yield*` to compose DOM elements naturally
 - **Two syntaxes** - Generator syntax for reactive updates, array syntax for static structures
-- **Simple function components** - Plain functions that take props and return `Component`
+- **Simple function components** - Plain functions that take props and return generators
 - **Refresher pattern** - Fine-grained updates without virtual DOM diffing
 - **Tiny footprint** - No dependencies, minimal abstraction
 - **TypeScript-first** - Full type safety with tagged union types
@@ -59,15 +57,13 @@ pnpm -r run build
 import { div, text, clss, type Component } from "@ydant/core";
 import { mount } from "@ydant/dom";
 
-function* App(): Component {
-  yield* div(() => [
+const App: Component = () =>
+  div(() => [
     clss(["app"]),
     text("Hello, Ydant!"),
   ]);
-  return (() => {}) as never;
-}
 
-mount(App(), document.getElementById("root")!);
+mount(App, document.getElementById("root")!);
 ```
 
 ## Syntax Options
@@ -101,17 +97,15 @@ div(() => [
 
 ## Components
 
-Components are simple functions that take props and return a `Component`:
+Components are simple functions that take props and return a generator:
 
 ```typescript
-import { type Component } from "@ydant/core";
-
 interface ButtonProps {
   label: string;
   onClick: () => void;
 }
 
-function Button(props: ButtonProps): Component {
+function Button(props: ButtonProps) {
   const { label, onClick } = props;
 
   return button(() => [
