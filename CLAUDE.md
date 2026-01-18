@@ -9,9 +9,8 @@ Ydant is a lightweight DOM rendering library using JavaScript generators as a DS
 ```
 ydant/
 ├── packages/
-│   ├── interface/     # Core type definitions
-│   ├── composer/      # Component composition & native elements
-│   └── renderer/      # DOM rendering engine
+│   ├── core/          # DSL, types, component composition
+│   └── dom/           # DOM rendering engine
 ├── examples/
 │   ├── showcase1/     # Demo: Counter, Dialog component
 │   ├── showcase2/     # Demo: ToDo App (CRUD, localStorage)
@@ -24,13 +23,11 @@ ydant/
 ## Package Dependencies
 
 ```
-@ydant/interface  (core types)
+@ydant/core   (DSL, types, composition)
        ↑
-@ydant/composer   (depends on interface)
+@ydant/dom    (peer depends on core)
        ↑
-@ydant/renderer   (peer depends on interface)
-       ↑
-showcase1         (depends on composer & renderer)
+showcase1     (depends on core & dom)
 ```
 
 ## Commands
@@ -145,6 +142,9 @@ refresh(() => [text(`Count: ${count}`)]);
 The root component uses `Component<{}>` (aliased as `App`):
 
 ```typescript
+import { compose, div, text } from "@ydant/core";
+import { mount } from "@ydant/dom";
+
 const Main = compose<{}>(function* () {
   return div(function* () {
     yield* text("Hello World");
@@ -157,36 +157,60 @@ mount(Main, document.getElementById("app")!);
 
 ## File Reference
 
-### packages/interface/src/index.ts
+### packages/core/src/
 
-Core type definitions:
-- `Tagged<T, P>` - Tagged union helper
-- `isTagged(value, tag)` - Unified type guard
-- `Attribute`, `Listener`, `Text` - Primitive types
-- `Decoration` - Attribute | Listener
-- `Child` - Element | Decoration | Text
-- `Children`, `ChildrenFn`, `ChildGen` - Child iteration types
-- `toChildren(result)` - Normalize array/iterator to Children
-- `Element` - HTML element with holds & extras
-- `ElementGenerator` - Generator yielding Elements
-- `Refresher` - Re-render callback
-- `Inject<K>`, `Provide<K,V>` - DI types
-- `InjectorFn<T>`, `ProviderFn<T>` - DI function types
-- `BuildFn<T>`, `RenderFn<T>` - Component function types
-- `Component<T>`, `App` - Component types
-
-### packages/composer/src/
-
+- `types.ts` - Core type definitions
+  - `Tagged<T, P>` - Tagged union helper
+  - `Attribute`, `Listener`, `Text` - Primitive types
+  - `Decoration` - Attribute | Listener
+  - `Child` - Element | Decoration | Text
+  - `Children`, `ChildrenFn`, `ChildGen` - Child iteration types
+  - `Element` - HTML element with holds & extras
+  - `ElementGenerator` - Generator yielding Elements
+  - `Refresher` - Re-render callback
+  - `Inject<K>`, `Provide<K,V>` - DI types
+  - `InjectorFn<T>`, `ProviderFn<T>` - DI function types
+  - `BuildFn<T>`, `RenderFn<T>` - Component function types
+  - `Component<T>`, `App` - Component types
+- `utils.ts` - Utility functions
+  - `isTagged(value, tag)` - Unified type guard
+  - `toChildren(result)` - Normalize array/iterator to Children
 - `composer.ts` - `compose<T>()` function implementation
-- `native.ts` - HTML element factories (div, span, p, button, etc.)
+- `elements.ts` - HTML element factories (div, span, p, button, etc.)
 - `primitives.ts` - `attr()`, `clss()`, `on()`, `text()`
 - `index.ts` - Re-exports everything
 
-### packages/renderer/src/index.ts
+### packages/dom/src/index.ts
 
 - `mount(app, parent)` - Mount App to DOM element
 - `processElement()` - Render Element to HTMLElement
 - `processIterator()` - Process child iterator
+
+### examples/showcase2/src/ (ToDo App)
+
+```
+src/
+├── types.ts           # Todo, Filter 型定義
+├── storage.ts         # localStorage ヘルパー
+├── components/
+│   ├── TodoItem.ts    # Todo アイテムコンポーネント
+│   └── FilterButton.ts
+├── App.ts             # メインコンポーネント
+└── index.ts           # エントリーポイント (mount)
+```
+
+### examples/showcase3/src/ (Pomodoro Timer)
+
+```
+src/
+├── types.ts           # TimerMode, TimerState 型定義
+├── constants.ts       # DURATIONS, MODE_LABELS, MODE_COLORS
+├── utils.ts           # formatTime, calculateProgress, createProgressRingSVG
+├── components/
+│   └── ModeButton.ts
+├── App.ts             # メインコンポーネント
+└── index.ts           # エントリーポイント (mount)
+```
 
 ## Design Decisions
 
@@ -195,6 +219,7 @@ Core type definitions:
 3. **render-first execution**: In `compose()`, the render phase (provide) runs before build phase (inject)
 4. **Generator for Refresher**: Use generator syntax when you need the Refresher return value
 5. **Array for static**: Use array syntax for static structures that don't need updates
+6. **Two-package architecture**: `@ydant/core` provides DSL and types, `@ydant/dom` handles DOM rendering
 
 ## Development Notes
 
@@ -230,7 +255,7 @@ refresh(function* () {
 **解決策: `refreshers` オブジェクトパターン**
 
 ```typescript
-import { type Refresher } from "@ydant/composer";
+import { type Refresher } from "@ydant/core";
 
 const Main = compose<{}>(function* () {
   // 1. Refresher を保持するオブジェクトを先に定義
@@ -278,7 +303,7 @@ const Main = compose<{}>(function* () {
 
 1. `examples/showcaseN/` ディレクトリを作成
 2. 以下のファイルを showcase1 からコピーして修正:
-   - `package.json` - name を変更
+   - `package.json` - name を変更、dependencies に `@ydant/core` と `@ydant/dom`
    - `tsconfig.json` - そのまま使用可能
    - `vite.config.ts` - そのまま使用可能
    - `index.html` - タイトルとスタイルを調整

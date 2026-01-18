@@ -8,7 +8,7 @@
   },
   "packageManager": "pnpm@10.22.0",
   "dependencies": {
-    "@ydant/composer": "workspace:*",
-    "@ydant/renderer": "workspace:*"
+    "@ydant/core": "workspace:*",
+    "@ydant/dom": "workspace:*"
   }
 }

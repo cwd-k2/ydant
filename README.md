@@ -52,8 +52,8 @@ pnpm -r run build
 ## Quick Start
 
 ```typescript
-import { compose, div, button, text, clss, on } from "@ydant/composer";
-import { mount } from "@ydant/renderer";
+import { compose, div, button, text, clss, on } from "@ydant/core";
+import { mount } from "@ydant/dom";
 
 const App = compose<{}>(function* () {
   return div(() => [
@@ -159,9 +159,8 @@ All standard HTML elements are available: `div`, `span`, `p`, `button`, `input`,
 
 ```
 packages/
-├── interface/   # Core type definitions
-├── composer/    # Component composition & elements
-└── renderer/    # DOM rendering engine
+├── core/        # DSL, types, component composition
+└── dom/         # DOM rendering engine
 
 examples/
 ├── showcase1/   # Counter, Dialog component

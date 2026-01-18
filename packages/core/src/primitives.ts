@@ -1,4 +1,4 @@
-import type { Attribute, Listener, Text } from "@ydant/interface";
+import type { Attribute, Listener, Text } from "./types";
 
 /** プリミティブを yield するジェネレーター関数を作成するファクトリ */
 function createPrimitive<T, Args extends unknown[]>(

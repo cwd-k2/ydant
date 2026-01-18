@@ -1,5 +1,5 @@
-import type { ChildrenFn, ElementGenerator } from "@ydant/interface";
-import { toChildren } from "@ydant/interface";
+import type { ChildrenFn, ElementGenerator } from "./types";
+import { toChildren } from "./utils";
 
 function createHTMLElement(tag: string) {
   return function* (children: ChildrenFn): ElementGenerator {

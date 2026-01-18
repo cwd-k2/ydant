@@ -52,8 +52,8 @@ pnpm -r run build
 ## クイックスタート
 
 ```typescript
-import { compose, div, button, text, clss, on } from "@ydant/composer";
-import { mount } from "@ydant/renderer";
+import { compose, div, button, text, clss, on } from "@ydant/core";
+import { mount } from "@ydant/dom";
 
 const App = compose<{}>(function* () {
   return div(() => [
@@ -159,9 +159,8 @@ yield* Button(function* (provide) {
 
 ```
 packages/
-├── interface/   # コア型定義
-├── composer/    # コンポーネント合成 & 要素
-└── renderer/    # DOM レンダリングエンジン
+├── core/        # DSL、型定義、コンポーネント合成
+└── dom/         # DOM レンダリングエンジン
 
 examples/
 ├── showcase1/   # カウンター、ダイアログコンポーネント

@@ -1,7 +1,7 @@
 {
-  "name": "@ydant/renderer",
+  "name": "@ydant/core",
   "version": "0.0.0",
-  "description": "",
+  "description": "Generator-based DOM rendering DSL",
   "exports": {
     ".": {
       "@ydant/dev": "./src/index.ts",
@@ -17,8 +17,5 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "packageManager": "pnpm@10.22.0",
-  "peerDependencies": {
-    "@ydant/interface": "workspace:*"
-  }
+  "packageManager": "pnpm@10.22.0"
 }

@@ -5,8 +5,8 @@ import type {
   ElementGenerator,
   Refresher,
   App,
-} from "@ydant/interface";
-import { toChildren, isTagged } from "@ydant/interface";
+} from "@ydant/core";
+import { toChildren, isTagged } from "@ydant/core";
 
 interface RenderContext {
   parent: Node;
