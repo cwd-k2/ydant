@@ -51,6 +51,12 @@ importers:
         specifier: workspace:*
         version: link:../../packages/dom
 
+  packages/async:
+    devDependencies:
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/context:
     devDependencies:
       '@ydant/core':
@@ -69,7 +75,19 @@ importers:
         specifier: workspace:*
         version: link:../reactive
 
+  packages/form:
+    devDependencies:
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/reactive:
+    devDependencies:
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/router:
     devDependencies:
       '@ydant/core':
         specifier: workspace:*
