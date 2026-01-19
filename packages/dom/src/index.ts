@@ -151,6 +151,19 @@ function processIterator(
       const textNode = document.createTextNode(value.content as string);
       ctx.parent.appendChild(textNode);
       result = iter.next();
+    } else if (isTagged(value, "style")) {
+      // インラインスタイルを適用
+      if (ctx.currentElement && ctx.currentElement instanceof HTMLElement) {
+        const properties = value.properties as Record<string, string>;
+        for (const [prop, val] of Object.entries(properties)) {
+          ctx.currentElement.style.setProperty(prop, val);
+        }
+      }
+      result = iter.next();
+    } else if (isTagged(value, "key")) {
+      // key はマーカーとして記録（Phase 3 で差分更新に使用予定）
+      // 現時点では処理なし
+      result = iter.next();
     } else {
       result = iter.next();
     }

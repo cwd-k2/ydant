@@ -30,6 +30,12 @@ export type Lifecycle = Tagged<
   }
 >;
 
+/** インラインスタイル */
+export type Style = Tagged<"style", { properties: Record<string, string> }>;
+
+/** リスト要素のキー（差分更新用のマーカー） */
+export type Key = Tagged<"key", { value: string | number }>;
+
 // =============================================================================
 // Element Types
 // =============================================================================
@@ -38,7 +44,7 @@ export type Lifecycle = Tagged<
 export type Decoration = Attribute | Listener | Tap;
 
 /** 子要素として yield できるもの */
-export type Child = Element | Decoration | Text | Lifecycle;
+export type Child = Element | Decoration | Text | Lifecycle | Style | Key;
 
 /** Child を yield するジェネレーター */
 export type ChildGen = Generator<Child, unknown, unknown>;

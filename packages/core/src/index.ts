@@ -6,6 +6,8 @@ export type {
   Tap,
   Text,
   Lifecycle,
+  Style,
+  Key,
   Decoration,
   Child,
   ChildGen,
@@ -74,4 +76,7 @@ export {
 } from "./elements";
 
 // Primitives
-export { attr, clss, on, text, tap, onMount, onUnmount } from "./primitives";
+export { attr, clss, on, text, tap, onMount, onUnmount, style, key } from "./primitives";
+
+// Helpers
+export { show, each } from "./helpers";

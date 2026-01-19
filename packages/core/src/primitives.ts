@@ -1,4 +1,4 @@
-import type { Attribute, Listener, Tap, Text, Lifecycle } from "./types";
+import type { Attribute, Listener, Tap, Text, Lifecycle, Style, Key } from "./types";
 
 /** プリミティブを yield するジェネレーター関数を作成するファクトリ */
 function createPrimitive<T, Args extends unknown[]>(
@@ -77,4 +77,43 @@ export function* onMount(
  */
 export function* onUnmount(callback: () => void): Generator<Lifecycle, void, void> {
   yield { type: "lifecycle", event: "unmount", callback };
+}
+
+/**
+ * インラインスタイルを設定する（型安全）
+ *
+ * @param properties - CSS プロパティのオブジェクト
+ *
+ * @example
+ * ```typescript
+ * yield* style({
+ *   padding: "16px",
+ *   display: "flex",
+ *   "--primary-color": "#3b82f6",
+ * });
+ * ```
+ */
+export function* style(
+  properties: Partial<CSSStyleDeclaration> & Record<`--${string}`, string>
+): Generator<Style, void, void> {
+  yield { type: "style", properties: properties as Record<string, string> };
+}
+
+/**
+ * リスト要素の一意な識別子を設定する（差分更新用マーカー）
+ *
+ * @param value - 一意な識別子（string または number）
+ *
+ * @example
+ * ```typescript
+ * for (const item of items) {
+ *   yield* li(() => [
+ *     key(item.id),
+ *     text(item.name),
+ *   ]);
+ * }
+ * ```
+ */
+export function* key(value: string | number): Generator<Key, void, void> {
+  yield { type: "key", value };
 }
