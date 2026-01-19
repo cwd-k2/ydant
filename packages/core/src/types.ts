@@ -43,17 +43,20 @@ export type Key = Tagged<"key", { value: string | number }>;
 /** HTML 要素の装飾 (Attribute, Listener, Tap) */
 export type Decoration = Attribute | Listener | Tap;
 
+/** 子要素を生成する関数（前方宣言用） */
+export type ChildrenFn = () => Children | ChildGen[];
+
+/** リアクティブブロック（Signal の変更を追跡して自動更新） */
+export type Reactive = Tagged<"reactive", { childrenFn: ChildrenFn }>;
+
 /** 子要素として yield できるもの */
-export type Child = Element | Decoration | Text | Lifecycle | Style | Key;
+export type Child = Element | Decoration | Text | Lifecycle | Style | Key | Reactive;
 
 /** Child を yield するジェネレーター */
 export type ChildGen = Generator<Child, unknown, unknown>;
 
 /** 子要素の Iterator */
 export type Children = Iterator<Child, void, Slot | void>;
-
-/** 子要素を生成する関数 */
-export type ChildrenFn = () => Children | ChildGen[];
 
 /** 要素のスロット（DOM 参照と更新関数を持つ） */
 export interface Slot {

@@ -8,6 +8,7 @@ export type {
   Lifecycle,
   Style,
   Key,
+  Reactive,
   Decoration,
   Child,
   ChildGen,

@@ -58,6 +58,16 @@ importers:
       '@ydant/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      '@ydant/reactive':
+        specifier: workspace:*
+        version: link:../reactive
+
+  packages/reactive:
+    devDependencies:
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
 
 packages:
 

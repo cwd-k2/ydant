@@ -8,11 +8,11 @@ export default defineConfig({
     outDir: "dist",
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),
-      name: "YdantDom",
+      name: "YdantReactive",
       fileName: format => `index.${format}.js`,
     },
     rollupOptions: {
-      external: ["@ydant/core", "@ydant/reactive"],
+      external: ["@ydant/core"],
     },
   },
 });

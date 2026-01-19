@@ -7,6 +7,7 @@ import type {
   Component,
 } from "@ydant/core";
 import { toChildren, isTagged } from "@ydant/core";
+import { runWithSubscriber } from "@ydant/reactive";
 
 interface RenderContext {
   parent: Node;
@@ -163,6 +164,55 @@ function processIterator(
     } else if (isTagged(value, "key")) {
       // key はマーカーとして記録（Phase 3 で差分更新に使用予定）
       // 現時点では処理なし
+      result = iter.next();
+    } else if (isTagged(value, "reactive")) {
+      // リアクティブブロックの処理
+      const childrenFn = value.childrenFn as ChildrenFn;
+
+      // コンテナ要素を作成（リアクティブ更新のため）
+      const container = document.createElement("span");
+      container.setAttribute("data-reactive", "");
+      ctx.parent.appendChild(container);
+
+      // リアクティブコンテキスト
+      const reactiveCtx = createContext(container, container);
+
+      // 更新関数
+      const update = () => {
+        // アンマウントコールバックを実行
+        for (const callback of reactiveCtx.unmountCallbacks) {
+          callback();
+        }
+        reactiveCtx.unmountCallbacks = [];
+        reactiveCtx.mountCallbacks = [];
+
+        // DOM をクリアして再構築
+        container.innerHTML = "";
+        reactiveCtx.currentElement = container;
+
+        // Signal 依存関係を追跡しながら子要素を処理
+        runWithSubscriber(update, () => {
+          const children = toChildren(childrenFn());
+          processIterator(
+            children as Iterator<Child, void, Slot | void>,
+            reactiveCtx
+          );
+        });
+
+        // マウントコールバックを実行
+        executeMount(reactiveCtx);
+      };
+
+      // 初回レンダリング（依存関係を追跡）
+      update();
+
+      // アンマウント時にリアクティブ購読を解除するためのクリーンアップ
+      ctx.unmountCallbacks.push(() => {
+        for (const callback of reactiveCtx.unmountCallbacks) {
+          callback();
+        }
+      });
+
       result = iter.next();
     } else {
       result = iter.next();
