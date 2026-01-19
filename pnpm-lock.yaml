@@ -69,6 +69,12 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/transition:
+    devDependencies:
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
+
 packages:
 
   '@babel/helper-string-parser@7.27.1':
