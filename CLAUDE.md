@@ -10,7 +10,8 @@ Ydant is a lightweight DOM rendering library using JavaScript generators as a DS
 ydant/
 ├── packages/
 │   ├── core/          # DSL, types, element factories
-│   └── dom/           # DOM rendering engine
+│   ├── dom/           # DOM rendering engine
+│   └── reactive/      # Reactivity system (signal, computed, effect)
 ├── examples/
 │   ├── showcase1/     # Demo: Counter, Dialog component
 │   ├── showcase2/     # Demo: ToDo App (CRUD, localStorage)
@@ -23,11 +24,13 @@ ydant/
 ## Package Dependencies
 
 ```
-@ydant/core   (DSL, types)
+@ydant/core     (DSL, types)
        ↑
-@ydant/dom    (peer depends on core)
+@ydant/reactive (peer depends on core)
        ↑
-showcase1     (depends on core & dom)
+@ydant/dom      (peer depends on core, optional peer depends on reactive)
+       ↑
+showcase1       (depends on core & dom)
 ```
 
 ## Commands
@@ -194,8 +197,11 @@ mount(Main, document.getElementById("app")!);
   - `Tagged<T, P>` - Tagged union helper
   - `Attribute`, `Listener`, `Tap`, `Text` - Primitive types
   - `Lifecycle` - ライフサイクルイベント（mount/unmount）
+  - `Style` - インラインスタイル
+  - `Key` - リスト要素の一意な識別子（差分更新用）
+  - `Reactive` - リアクティブブロック（Signal 追跡用）
   - `Decoration` - Attribute | Listener | Tap
-  - `Child` - Element | Decoration | Text | Lifecycle
+  - `Child` - Element | Decoration | Text | Lifecycle | Style | Key | Reactive
   - `Children`, `ChildrenFn`, `ChildGen` - Child iteration types
   - `Element` - HTML element with holds, extras & ns (namespace for SVG)
   - `Slot` - DOM 要素参照と再レンダリング関数を持つオブジェクト
@@ -205,7 +211,16 @@ mount(Main, document.getElementById("app")!);
   - `isTagged(value, tag)` - Unified type guard
   - `toChildren(result)` - Normalize array/iterator to Children
 - `elements.ts` - HTML element factories (div, span, p, button, etc.) and SVG element factories (svg, circle, path, rect, etc.)
-- `primitives.ts` - `attr()`, `clss()`, `on()`, `text()`, `tap()`, `onMount()`, `onUnmount()`
+- `primitives.ts` - `attr()`, `clss()`, `on()`, `text()`, `tap()`, `onMount()`, `onUnmount()`, `style()`, `key()`
+- `helpers.ts` - `show()`, `each()` ヘルパー関数
+- `index.ts` - Re-exports everything
+
+### packages/reactive/src/
+
+- `signal.ts` - Signal 実装（リアクティブな値コンテナ）
+- `computed.ts` - Computed 実装（派生値）
+- `effect.ts` - Effect 実装（副作用）
+- `reactive.ts` - reactive プリミティブ（Signal 追跡と自動更新）
 - `index.ts` - Re-exports everything
 
 ### packages/dom/src/index.ts
@@ -245,8 +260,10 @@ src/
 1. **Simple function components**: Components are plain functions that take props and return Component
 2. **Generator for Slot**: Use generator syntax when you need the Slot return value (for re-rendering or DOM access)
 3. **Array for static**: Use array syntax for static structures that don't need updates
-4. **Two-package architecture**: `@ydant/core` provides DSL and types, `@ydant/dom` handles DOM rendering
+4. **Three-package architecture**: `@ydant/core` provides DSL and types, `@ydant/reactive` provides reactivity, `@ydant/dom` handles DOM rendering
 5. **Lifecycle hooks**: `onMount`/`onUnmount` for resource cleanup (e.g., timers, subscriptions)
+6. **Signal-based reactivity**: Explicit reading with `signal()` call, similar to SolidJS/Preact Signals
+7. **Key-based diff**: `key` primitive enables efficient list updates by reusing DOM nodes
 
 ## Development Notes
 
@@ -393,6 +410,152 @@ if (inputElement) {
 ```
 
 **注意**: `tap` は DSL の抽象化を破るため、`attr`, `clss`, `on`, `Slot.node` で対応できない場合にのみ使用すること。
+
+### ヘルパー関数（show, each）
+
+条件分岐やリストレンダリングを簡潔に書くためのヘルパー関数。
+
+**show: 条件分岐**
+
+```typescript
+import { show } from "@ydant/core";
+
+// 条件が真の時だけ表示
+yield* show(isLoggedIn, () => UserProfile({ user }));
+
+// else 付き
+yield* show(
+  isLoggedIn,
+  () => UserProfile({ user }),
+  () => LoginButton()
+);
+```
+
+**each: リストレンダリング**
+
+```typescript
+import { each } from "@ydant/core";
+
+yield* ul(function* () {
+  yield* each(todos, {
+    key: (todo) => todo.id,  // 一意なキー（差分更新に使用）
+    render: (todo, index) => li(() => [
+      text(`${index + 1}. ${todo.text}`),
+    ]),
+    empty: () => p(() => [text("No todos yet")]),  // 空の場合
+  });
+});
+```
+
+### style プリミティブ
+
+型安全なインラインスタイルを設定するプリミティブ。CSS 変数もサポート。
+
+```typescript
+import { style } from "@ydant/core";
+
+yield* div(function* () {
+  yield* style({
+    padding: "16px",
+    display: "flex",
+    gap: "8px",
+    "--primary-color": "#3b82f6",  // CSS 変数
+    backgroundColor: "var(--primary-color)",
+  });
+  yield* text("Styled content");
+});
+```
+
+### key による差分更新
+
+リスト要素に一意なキーを設定することで、`Slot.refresh()` 時の DOM 更新を最適化できる。
+
+```typescript
+import { key } from "@ydant/core";
+
+// キーを設定することで、同じキーを持つ要素は DOM ノードが再利用される
+for (const item of items) {
+  yield* key(item.id);  // 次の要素にキーを関連付け
+  yield* li(() => [text(item.name)]);
+}
+
+// または each ヘルパーを使用（key は自動設定される）
+yield* each(items, {
+  key: (item) => item.id,
+  render: (item) => li(() => [text(item.name)]),
+});
+```
+
+**利点:**
+- DOM ノードの再利用による パフォーマンス向上
+- input のフォーカスやスクロール位置の保持
+- アニメーションの継続
+
+### リアクティビティシステム（@ydant/reactive）
+
+Signal ベースのリアクティビティシステム。SolidJS / Preact Signals に影響を受けた設計。
+
+**基本的な使い方:**
+
+```typescript
+import { signal, computed, effect } from "@ydant/reactive";
+
+// Signal: 値を保持するリアクティブコンテナ
+const count = signal(0);
+console.log(count());  // 読み取り: 0
+count.set(5);          // 書き込み
+count.update(n => n + 1);  // 関数で更新
+
+// Computed: 派生値（依存する Signal が変わると自動再計算）
+const doubled = computed(() => count() * 2);
+console.log(doubled());  // 12
+
+// Effect: 副作用（依存する Signal が変わると自動再実行）
+const dispose = effect(() => {
+  console.log(`Count: ${count()}, Doubled: ${doubled()}`);
+});
+// 出力: "Count: 6, Doubled: 12"
+
+count.set(10);
+// 出力: "Count: 10, Doubled: 20"
+
+dispose();  // 購読解除
+```
+
+**reactive プリミティブで自動更新:**
+
+```typescript
+import { signal, computed } from "@ydant/reactive";
+import { reactive } from "@ydant/reactive";
+
+const count = signal(0);
+const doubled = computed(() => count() * 2);
+
+const Counter: Component = () =>
+  div(function* () {
+    // reactive 内の Signal アクセスを自動追跡
+    // Signal が変わると自動で再レンダリング
+    yield* reactive(() => [
+      text(`Count: ${count()}, Doubled: ${doubled()}`),
+    ]);
+
+    yield* button(() => [
+      on("click", () => count.update(n => n + 1)),
+      text("Increment"),
+    ]);
+  });
+```
+
+**手動更新との共存:**
+
+```typescript
+// リアクティブ更新と手動 Slot.refresh() は共存可能
+yield* reactive(() => [text(`Auto: ${autoCount()}`)]);
+
+const { refresh } = yield* div(() => [text(`Manual: ${manualCount}`)]);
+manualCount++;
+refresh(() => [text(`Manual: ${manualCount}`)]);
+```
 
 ### SVG 要素の使い方
 
