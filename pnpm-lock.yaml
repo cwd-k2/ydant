@@ -51,6 +51,27 @@ importers:
         specifier: workspace:*
         version: link:../../packages/dom
 
+  examples/showcase4:
+    dependencies:
+      '@ydant/context':
+        specifier: workspace:*
+        version: link:../../packages/context
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@ydant/dom':
+        specifier: workspace:*
+        version: link:../../packages/dom
+      '@ydant/form':
+        specifier: workspace:*
+        version: link:../../packages/form
+      '@ydant/reactive':
+        specifier: workspace:*
+        version: link:../../packages/reactive
+      '@ydant/router':
+        specifier: workspace:*
+        version: link:../../packages/router
+
   packages/async:
     devDependencies:
       '@ydant/core':
