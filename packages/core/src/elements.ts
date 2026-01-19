@@ -4,8 +4,8 @@ import { toChildren } from "./utils";
 function createHTMLElement(tag: string) {
   return function* (children: ChildrenFn): ElementGenerator {
     const holds = toChildren(children());
-    const refresher = yield { type: "element", tag, holds };
-    return refresher;
+    const slot = yield { type: "element", tag, holds };
+    return slot;
   };
 }
 
@@ -14,8 +14,8 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 function createSVGElement(tag: string) {
   return function* (children: ChildrenFn): ElementGenerator {
     const holds = toChildren(children());
-    const refresher = yield { type: "element", tag, holds, ns: SVG_NS };
-    return refresher;
+    const slot = yield { type: "element", tag, holds, ns: SVG_NS };
+    return slot;
   };
 }
 

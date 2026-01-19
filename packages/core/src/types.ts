@@ -21,6 +21,15 @@ export type Tap = Tagged<"tap", { callback: (el: HTMLElement) => void }>;
 /** テキストノード */
 export type Text = Tagged<"text", { content: string }>;
 
+/** ライフサイクルイベント */
+export type Lifecycle = Tagged<
+  "lifecycle",
+  {
+    event: "mount" | "unmount";
+    callback: () => void | (() => void);
+  }
+>;
+
 // =============================================================================
 // Element Types
 // =============================================================================
@@ -29,20 +38,23 @@ export type Text = Tagged<"text", { content: string }>;
 export type Decoration = Attribute | Listener | Tap;
 
 /** 子要素として yield できるもの */
-export type Child = Element | Decoration | Text;
+export type Child = Element | Decoration | Text | Lifecycle;
 
 /** Child を yield するジェネレーター */
 export type ChildGen = Generator<Child, unknown, unknown>;
 
 /** 子要素の Iterator */
-export type Children = Iterator<Child, void, Refresher | void>;
+export type Children = Iterator<Child, void, Slot | void>;
 
 /** 子要素を生成する関数 */
 export type ChildrenFn = () => Children | ChildGen[];
 
-/** Refresher は子要素を生成する関数を受け取り、再レンダリングする */
-export interface Refresher {
-  (children: ChildrenFn): void;
+/** 要素のスロット（DOM 参照と更新関数を持つ） */
+export interface Slot {
+  /** マウントされた DOM 要素 */
+  readonly node: HTMLElement;
+  /** 子要素を再レンダリングする */
+  refresh(children: ChildrenFn): void;
 }
 
 /** HTML 要素 */
@@ -51,8 +63,8 @@ export type Element = Tagged<
   { tag: string; holds: Children; extras?: Decoration[]; ns?: string }
 >;
 
-/** Element を yield し、最終的に Refresher を返すジェネレーター */
-export type ElementGenerator = Generator<Element, Refresher, Refresher>;
+/** Element を yield し、最終的に Slot を返すジェネレーター */
+export type ElementGenerator = Generator<Element, Slot, Slot>;
 
 // =============================================================================
 // Component Types

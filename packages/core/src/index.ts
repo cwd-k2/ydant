@@ -5,6 +5,7 @@ export type {
   Listener,
   Tap,
   Text,
+  Lifecycle,
   Decoration,
   Child,
   ChildGen,
@@ -12,7 +13,7 @@ export type {
   ChildrenFn,
   Element,
   ElementGenerator,
-  Refresher,
+  Slot,
   Component,
 } from "./types";
 
@@ -73,4 +74,4 @@ export {
 } from "./elements";
 
 // Primitives
-export { attr, clss, on, text, tap } from "./primitives";
+export { attr, clss, on, text, tap, onMount, onUnmount } from "./primitives";

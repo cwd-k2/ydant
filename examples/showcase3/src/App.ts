@@ -11,7 +11,8 @@ import {
   attr,
   svg,
   circle,
-  type Refresher,
+  onUnmount,
+  type Slot,
   type Component,
 } from "@ydant/core";
 import type { TimerMode, TimerState } from "./types";
@@ -30,14 +31,12 @@ export const App: Component = () => {
 
   let timerInterval: ReturnType<typeof setInterval> | null = null;
 
-  // Refresher references
-  const refreshers: {
-    mode?: Refresher;
-    timer?: Refresher;
-    progressRing?: Refresher;
-    controls?: Refresher;
-    sessions?: Refresher;
-  } = {};
+  // Slot references (set later)
+  let modeSlot: Slot;
+  let timerSlot: Slot;
+  let progressRingSlot: Slot;
+  let controlsSlot: Slot;
+  let sessionsSlot: Slot;
 
   // Render functions
   const renderModeButtons = function* () {
@@ -103,7 +102,7 @@ export const App: Component = () => {
       // SVG progress ring
       yield* div(function* () {
         yield* clss(["absolute", "inset-0", "flex", "items-center", "justify-center"]);
-        refreshers.progressRing = yield* svg(renderProgressRing);
+        progressRingSlot = yield* svg(renderProgressRing);
       });
 
       // Timer text overlay
@@ -240,8 +239,8 @@ export const App: Component = () => {
     if (timerInterval) return;
 
     state.isRunning = true;
-    refreshers.timer?.(renderTimer);
-    refreshers.controls?.(renderControls);
+    timerSlot.refresh(renderTimer);
+    controlsSlot.refresh(renderControls);
 
     timerInterval = setInterval(() => {
       state.timeLeft--;
@@ -272,10 +271,10 @@ export const App: Component = () => {
           // Ignore audio errors
         }
 
-        refreshers.sessions?.(renderSessions);
+        sessionsSlot.refresh(renderSessions);
       }
 
-      refreshers.timer?.(renderTimer);
+      timerSlot.refresh(renderTimer);
     }, 1000);
   };
 
@@ -285,25 +284,33 @@ export const App: Component = () => {
       timerInterval = null;
     }
     state.isRunning = false;
-    refreshers.controls?.(renderControls);
+    controlsSlot.refresh(renderControls);
   };
 
   const resetTimer = () => {
     stopTimer();
     state.timeLeft = DURATIONS[state.mode];
-    refreshers.timer?.(renderTimer);
+    timerSlot.refresh(renderTimer);
   };
 
   const switchMode = (mode: TimerMode) => {
     stopTimer();
     state.mode = mode;
     state.timeLeft = DURATIONS[mode];
-    refreshers.mode?.(renderModeButtons);
-    refreshers.timer?.(renderTimer);
+    modeSlot.refresh(renderModeButtons);
+    timerSlot.refresh(renderTimer);
   };
 
   return div(function* () {
     yield* clss(["flex", "flex-col", "items-center"]);
+
+    // ライフサイクルフック: アンマウント時にタイマーをクリア
+    yield* onUnmount(() => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    });
 
     // Title
     yield* h1(() => [
@@ -317,16 +324,16 @@ export const App: Component = () => {
     ]);
 
     // Mode selector
-    refreshers.mode = yield* div(renderModeButtons);
+    modeSlot = yield* div(renderModeButtons);
 
     // Timer display with progress ring
-    refreshers.timer = yield* div(renderTimer);
+    timerSlot = yield* div(renderTimer);
 
     // Control buttons
-    refreshers.controls = yield* div(renderControls);
+    controlsSlot = yield* div(renderControls);
 
     // Sessions completed
-    refreshers.sessions = yield* div(renderSessions);
+    sessionsSlot = yield* div(renderSessions);
 
     // Tips
     yield* div(() => [

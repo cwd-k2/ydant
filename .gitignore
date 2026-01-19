@@ -142,3 +142,8 @@ dist
 .svelte-kit
 
 # End of https://www.toptal.com/developers/gitignore/api/node
+
+# Flow documentation (not committed)
+MEMO.md
+FEATURE-PLAN.md
+IMPLEMENTATION-PLAN.md

@@ -3,7 +3,7 @@ import type {
   Child,
   ChildrenFn,
   ElementGenerator,
-  Refresher,
+  Slot,
   Component,
 } from "@ydant/core";
 import { toChildren, isTagged } from "@ydant/core";
@@ -11,12 +11,39 @@ import { toChildren, isTagged } from "@ydant/core";
 interface RenderContext {
   parent: Node;
   currentElement: globalThis.Element | null;
+  mountCallbacks: Array<() => void | (() => void)>;
+  unmountCallbacks: Array<() => void>;
+}
+
+function createContext(
+  parent: Node,
+  currentElement: globalThis.Element | null
+): RenderContext {
+  return {
+    parent,
+    currentElement,
+    mountCallbacks: [],
+    unmountCallbacks: [],
+  };
+}
+
+function executeMount(ctx: RenderContext): void {
+  // DOM 更新完了後にマウントコールバックを実行
+  requestAnimationFrame(() => {
+    for (const callback of ctx.mountCallbacks) {
+      const cleanup = callback();
+      if (typeof cleanup === "function") {
+        ctx.unmountCallbacks.push(cleanup);
+      }
+    }
+    ctx.mountCallbacks = [];
+  });
 }
 
 function processElement(
   element: Element,
   ctx: RenderContext
-): { node: globalThis.Element; refresher: Refresher } {
+): { node: globalThis.Element; slot: Slot } {
   const node = element.ns
     ? document.createElementNS(element.ns, element.tag)
     : document.createElement(element.tag);
@@ -28,34 +55,57 @@ function processElement(
       if (isTagged(extra, "attribute")) {
         node.setAttribute(extra.key as string, extra.value as string);
       } else if (isTagged(extra, "listener")) {
-        node.addEventListener(extra.key as string, extra.value as (e: Event) => void);
+        node.addEventListener(
+          extra.key as string,
+          extra.value as (e: Event) => void
+        );
       } else if (isTagged(extra, "tap")) {
         (extra.callback as (el: globalThis.Element) => void)(node);
       }
     }
   }
 
-  const childCtx: RenderContext = {
-    parent: node,
-    currentElement: node,
+  // 子コンテキストを作成
+  const childCtx = createContext(node, node);
+
+  // Slot オブジェクトを作成
+  const slot: Slot = {
+    node: node as HTMLElement,
+    refresh(childrenFn: ChildrenFn) {
+      // アンマウントコールバックを実行
+      for (const callback of childCtx.unmountCallbacks) {
+        callback();
+      }
+      childCtx.unmountCallbacks = [];
+      childCtx.mountCallbacks = [];
+
+      // DOM をクリアして再構築
+      node.innerHTML = "";
+      childCtx.currentElement = node;
+      const children = toChildren(childrenFn());
+      processIterator(children as Iterator<Child, void, Slot | void>, childCtx);
+
+      // マウントコールバックを実行
+      executeMount(childCtx);
+    },
   };
 
-  const refresher: Refresher = (childrenFn: ChildrenFn) => {
-    node.innerHTML = "";
-    childCtx.currentElement = node;
-    const children = toChildren(childrenFn());
-    processIterator(children as Iterator<Child, void, Refresher | void>, childCtx);
-  };
-
+  // 子要素を処理
   if (element.holds) {
-    processIterator(element.holds as Iterator<Child, void, Refresher | void>, childCtx);
+    processIterator(
+      element.holds as Iterator<Child, void, Slot | void>,
+      childCtx
+    );
   }
 
-  return { node, refresher };
+  // 初回マウントコールバックを実行
+  executeMount(childCtx);
+
+  return { node, slot };
 }
 
 function processIterator(
-  iter: Iterator<Child, void, Refresher | void>,
+  iter: Iterator<Child, void, Slot | void>,
   ctx: RenderContext
 ): void {
   let result = iter.next();
@@ -64,16 +114,32 @@ function processIterator(
     const value = result.value;
 
     if (isTagged(value, "element")) {
-      const { refresher } = processElement(value as Element, ctx);
-      result = iter.next(refresher);
+      const { slot } = processElement(value as Element, ctx);
+      result = iter.next(slot);
+    } else if (isTagged(value, "lifecycle")) {
+      // ライフサイクルイベントの処理
+      if (value.event === "mount") {
+        ctx.mountCallbacks.push(
+          value.callback as () => void | (() => void)
+        );
+      } else if (value.event === "unmount") {
+        ctx.unmountCallbacks.push(value.callback as () => void);
+      }
+      result = iter.next();
     } else if (isTagged(value, "attribute")) {
       if (ctx.currentElement) {
-        ctx.currentElement.setAttribute(value.key as string, value.value as string);
+        ctx.currentElement.setAttribute(
+          value.key as string,
+          value.value as string
+        );
       }
       result = iter.next();
     } else if (isTagged(value, "listener")) {
       if (ctx.currentElement) {
-        ctx.currentElement.addEventListener(value.key as string, value.value as (e: Event) => void);
+        ctx.currentElement.addEventListener(
+          value.key as string,
+          value.value as (e: Event) => void
+        );
       }
       result = iter.next();
     } else if (isTagged(value, "tap")) {
@@ -94,10 +160,7 @@ function processIterator(
 function render(gen: ElementGenerator, parent: HTMLElement): void {
   parent.innerHTML = "";
 
-  const ctx: RenderContext = {
-    parent,
-    currentElement: null,
-  };
+  const ctx = createContext(parent, null);
 
   let result = gen.next();
 
@@ -105,10 +168,10 @@ function render(gen: ElementGenerator, parent: HTMLElement): void {
     const { value } = result;
 
     if (isTagged(value, "element")) {
-      const { refresher } = processElement(value as Element, ctx);
-      result = gen.next(refresher);
+      const { slot } = processElement(value as Element, ctx);
+      result = gen.next(slot);
     } else {
-      result = gen.next(undefined as unknown as Refresher);
+      result = gen.next(undefined as unknown as Slot);
     }
   }
 }

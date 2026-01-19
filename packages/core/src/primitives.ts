@@ -1,4 +1,4 @@
-import type { Attribute, Listener, Tap, Text } from "./types";
+import type { Attribute, Listener, Tap, Text, Lifecycle } from "./types";
 
 /** プリミティブを yield するジェネレーター関数を作成するファクトリ */
 function createPrimitive<T, Args extends unknown[]>(
@@ -42,4 +42,39 @@ export function* tap<E extends HTMLElement = HTMLElement>(
   callback: (el: E) => void
 ): Generator<Tap, void, void> {
   yield { type: "tap", callback: callback as (el: HTMLElement) => void };
+}
+
+/**
+ * コンポーネントがマウントされた時に実行されるコールバックを登録する
+ *
+ * @param callback - マウント時に実行される関数。クリーンアップ関数を返すことができる。
+ *
+ * @example
+ * ```typescript
+ * yield* onMount(() => {
+ *   const interval = setInterval(() => console.log("tick"), 1000);
+ *   return () => clearInterval(interval);  // クリーンアップ
+ * });
+ * ```
+ */
+export function* onMount(
+  callback: () => void | (() => void)
+): Generator<Lifecycle, void, void> {
+  yield { type: "lifecycle", event: "mount", callback };
+}
+
+/**
+ * コンポーネントがアンマウントされる時に実行されるコールバックを登録する
+ *
+ * @param callback - アンマウント時に実行される関数
+ *
+ * @example
+ * ```typescript
+ * yield* onUnmount(() => {
+ *   console.log("Component unmounted");
+ * });
+ * ```
+ */
+export function* onUnmount(callback: () => void): Generator<Lifecycle, void, void> {
+  yield { type: "lifecycle", event: "unmount", callback };
 }

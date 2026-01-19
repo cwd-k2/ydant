@@ -1,4 +1,4 @@
-import { text, div, h1, h3, p, span, button, clss, on, type Component } from "@ydant/core";
+import { text, div, h1, h3, p, span, button, clss, on, type Slot, type Component } from "@ydant/core";
 import { mount } from "@ydant/dom";
 
 // ============================================================================
@@ -89,8 +89,8 @@ const Main: Component = () =>
     let counter = 0;
     const counterClss = ["text-center", "text-3xl", "font-mono", "mb-4", "p-4", "bg-gray-100", "rounded-lg", "border-2", "border-gray-300"];
 
-    // カウンター表示 - ジェネレーター形式で Refresher を取得
-    const counterRefresh = yield* p(function* () {
+    // カウンター表示 - ジェネレーター形式で Slot を取得
+    const counterSlot = yield* p(function* () {
       yield* clss(counterClss);
       yield* text(`Count: ${counter}`);
     });
@@ -104,7 +104,7 @@ const Main: Component = () =>
         yield* clss(["counter-btn", "mr-4", "px-4", "py-2", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600"]);
         yield* on("click", () => {
           counter++;
-          counterRefresh(() => [clss(counterClss), text(`Count: ${counter}`)]);
+          counterSlot.refresh(() => [clss(counterClss), text(`Count: ${counter}`)]);
         });
         yield* text("Increment");
       });
@@ -114,7 +114,7 @@ const Main: Component = () =>
         yield* clss(["counter-btn", "px-4", "py-2", "bg-red-600", "text-white", "rounded", "hover:bg-red-700"]);
         yield* on("click", () => {
           counter = 0;
-          counterRefresh(() => [
+          counterSlot.refresh(() => [
             clss(counterClss),
             span(() => [clss(["text-red-500"]), text("RESET: ")]),
             text(`${counter}`),
@@ -165,8 +165,8 @@ const Main: Component = () =>
     // ダイアログの状態
     let isDialogOpen = false;
 
-    // ダイアログコンテナ - ジェネレーター形式で Refresher を取得
-    const dialogContainerRefresh = yield* div(function* () {
+    // ダイアログコンテナ - ジェネレーター形式で Slot を取得
+    const dialogContainerSlot = yield* div(function* () {
       yield* clss(["dialog-container"]);
     });
 
@@ -178,13 +178,13 @@ const Main: Component = () =>
         yield* on("click", () => {
           if (!isDialogOpen) {
             isDialogOpen = true;
-            dialogContainerRefresh(function* () {
+            dialogContainerSlot.refresh(function* () {
               yield* Dialog({
                 title: "Welcome!",
                 content: "This dialog is now a simple function. Click outside or press a button to close.",
                 onClose: () => {
                   isDialogOpen = false;
-                  dialogContainerRefresh(() => []);
+                  dialogContainerSlot.refresh(() => []);
                 },
               });
             });

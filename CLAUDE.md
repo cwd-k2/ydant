@@ -60,7 +60,10 @@ type Attribute = Tagged<"attribute", { key: string; value: string }>;
 type Listener = Tagged<"listener", { key: string; value: (e: Event) => void }>;
 type Tap = Tagged<"tap", { callback: (el: HTMLElement) => void }>;
 type Text = Tagged<"text", { content: string }>;
-type Element = Tagged<"element", { tag: string; holds: Children; extras?: Decoration[]; ns?: string }>;
+type Element = Tagged<
+  "element",
+  { tag: string; holds: Children; extras?: Decoration[]; ns?: string }
+>;
 ```
 
 Use `isTagged(value, "tagname")` for type guards.
@@ -69,23 +72,23 @@ Use `isTagged(value, "tagname")` for type guards.
 
 Two syntaxes are supported:
 
-**Generator syntax** (when Refresher is needed):
+**Generator syntax** (when Slot is needed):
+
 ```typescript
 div(function* () {
   yield* clss(["container"]);
-  const refresh = yield* p(function* () {
+  const slot = yield* p(function* () {
     yield* text("Hello");
   });
-  // refresh can be used to re-render the <p> element
+  // slot.refresh() can be used to re-render the <p> element
+  // slot.node gives direct access to the DOM element
 });
 ```
 
 **Array syntax** (for static structures):
+
 ```typescript
-div(() => [
-  clss(["container"]),
-  p(() => [text("Hello")]),
-]);
+div(() => [clss(["container"]), p(() => [text("Hello")])]);
 ```
 
 ### Component System
@@ -123,25 +126,47 @@ function Dialog(props: DialogProps) {
 コンポーネントは呼び出して結果を yield:
 
 ```typescript
-yield* Dialog({
-  title: "Welcome",
-  onClose: () => console.log("closed"),
-});
+yield *
+  Dialog({
+    title: "Welcome",
+    onClose: () => console.log("closed"),
+  });
 ```
 
-### Refresher
+### Slot
 
-Elements return a `Refresher` function for re-rendering:
+Elements return a `Slot` object for re-rendering and DOM access:
+
+```typescript
+interface Slot {
+  readonly node: HTMLElement;  // DOM 要素への直接参照
+  refresh(children: ChildrenFn): void;  // 子要素を再レンダリング
+}
+```
+
+**使用例:**
 
 ```typescript
 let count = 0;
-const refresh = yield* p(function* () {
+const { refresh, node } = yield* p(function* () {
   yield* text(`Count: ${count}`);
 });
 
-// Later, to update:
+// 更新
 count++;
 refresh(() => [text(`Count: ${count}`)]);
+
+// DOM 要素への直接アクセス（tap 不要）
+(node as HTMLInputElement).focus();
+node.scrollIntoView();
+```
+
+**分割代入で必要なものだけ取得:**
+
+```typescript
+const { refresh } = yield* div(renderContent);  // node 不要
+const { node } = yield* div(renderContent);     // refresh 不要
+const slot = yield* div(renderContent);         // 両方必要
 ```
 
 ### Mount
@@ -168,18 +193,19 @@ mount(Main, document.getElementById("app")!);
 - `types.ts` - Core type definitions
   - `Tagged<T, P>` - Tagged union helper
   - `Attribute`, `Listener`, `Tap`, `Text` - Primitive types
+  - `Lifecycle` - ライフサイクルイベント（mount/unmount）
   - `Decoration` - Attribute | Listener | Tap
-  - `Child` - Element | Decoration | Text
+  - `Child` - Element | Decoration | Text | Lifecycle
   - `Children`, `ChildrenFn`, `ChildGen` - Child iteration types
   - `Element` - HTML element with holds, extras & ns (namespace for SVG)
-  - `ElementGenerator` - Generator yielding Elements, returning Refresher
-  - `Refresher` - Re-render callback
+  - `Slot` - DOM 要素参照と再レンダリング関数を持つオブジェクト
+  - `ElementGenerator` - Generator yielding Elements, returning Slot
   - `Component` - `() => ElementGenerator` (ルートコンポーネント用)
 - `utils.ts` - Utility functions
   - `isTagged(value, tag)` - Unified type guard
   - `toChildren(result)` - Normalize array/iterator to Children
 - `elements.ts` - HTML element factories (div, span, p, button, etc.) and SVG element factories (svg, circle, path, rect, etc.)
-- `primitives.ts` - `attr()`, `clss()`, `on()`, `text()`, `tap()`
+- `primitives.ts` - `attr()`, `clss()`, `on()`, `text()`, `tap()`, `onMount()`, `onUnmount()`
 - `index.ts` - Re-exports everything
 
 ### packages/dom/src/index.ts
@@ -217,9 +243,10 @@ src/
 ## Design Decisions
 
 1. **Simple function components**: Components are plain functions that take props and return Component
-2. **Generator for Refresher**: Use generator syntax when you need the Refresher return value
+2. **Generator for Slot**: Use generator syntax when you need the Slot return value (for re-rendering or DOM access)
 3. **Array for static**: Use array syntax for static structures that don't need updates
 4. **Two-package architecture**: `@ydant/core` provides DSL and types, `@ydant/dom` handles DOM rendering
+5. **Lifecycle hooks**: `onMount`/`onUnmount` for resource cleanup (e.g., timers, subscriptions)
 
 ## Development Notes
 
@@ -230,41 +257,39 @@ src/
 
 ## Implementation Patterns
 
-### Refresher の正しい使い方
+### Slot.refresh() の正しい使い方
 
-`Refresher` は引数として **コンテンツを返す関数** を必ず渡す必要がある。引数なしで呼び出すとエラーになる。
+`Slot.refresh()` は引数として **コンテンツを返す関数** を必ず渡す必要がある。引数なしで呼び出すとエラーになる。
 
 ```typescript
 // ❌ 間違い: 引数なしで呼び出し
-refresh();
+slot.refresh();
 
 // ✅ 正しい: コンテンツを返す関数を渡す
-refresh(() => [text(`Count: ${count}`)]);
+slot.refresh(() => [text(`Count: ${count}`)]);
 
 // ✅ ジェネレーター関数も可
-refresh(function* () {
+slot.refresh(function* () {
   yield* clss(["updated"]);
   yield* text(`Count: ${count}`);
 });
 ```
 
-### イベントハンドラから Refresher を使うパターン
+### イベントハンドラから Slot を使うパターン
 
-イベントハンドラ内から `Refresher` を呼び出す場合、変数のスコープに注意が必要。`yield*` で取得した `Refresher` はイベントハンドラ登録時点ではまだ定義されていない可能性がある。
+イベントハンドラ内から `Slot.refresh()` を呼び出す場合、変数のスコープに注意が必要。`yield*` で取得した `Slot` はイベントハンドラ登録時点ではまだ定義されていない可能性がある。
 
-**解決策: `refreshers` オブジェクトパターン**
+**解決策: Slot 変数を先に宣言**
 
 ```typescript
-import { type Refresher, type Component } from "@ydant/core";
+import { type Slot, type Component } from "@ydant/core";
 
 const Main: Component = () => {
-  // 1. Refresher を保持するオブジェクトを先に定義
-  const refreshers: {
-    list?: Refresher;
-    stats?: Refresher;
-  } = {};
+  // 1. Slot 変数を先に宣言
+  let listSlot: Slot;
+  let statsSlot: Slot;
 
-  // 2. render 関数を定義（refreshers 経由でアクセス）
+  // 2. render 関数を定義
   const renderList = function* () {
     yield* clss(["list"]);
     for (const item of items) {
@@ -277,33 +302,81 @@ const Main: Component = () => {
   };
 
   return div(function* () {
-    // 3. イベントハンドラでは refreshers 経由で呼び出し
+    // 3. イベントハンドラでは Slot 経由で呼び出し
     yield* button(function* () {
       yield* on("click", () => {
         items.push({ name: "New Item" });
-        refreshers.list?.(renderList);
-        refreshers.stats?.(renderStats);
+        listSlot.refresh(renderList);
+        statsSlot.refresh(renderStats);
       });
       yield* text("Add");
     });
 
-    // 4. Refresher を取得して refreshers に格納
-    refreshers.list = yield* div(renderList);
-    refreshers.stats = yield* div(renderStats);
+    // 4. Slot を取得して変数に格納
+    listSlot = yield* div(renderList);
+    statsSlot = yield* div(renderStats);
   });
 };
 ```
 
 このパターンにより:
-- イベントハンドラ登録時点で `refreshers` オブジェクトは存在する
-- 実際の `Refresher` は後から格納されるが、クロージャで参照可能
-- Optional chaining (`?.`) で安全に呼び出し可能
+
+- イベントハンドラ登録時点で Slot 変数は存在する（クロージャで参照可能）
+- 実際の Slot は後から代入される
+- Optional chaining 不要（変数は必ず代入されることが保証）
+
+### ライフサイクルフック（onMount / onUnmount）
+
+`onMount` と `onUnmount` は、コンポーネントのマウント/アンマウント時に処理を実行するためのプリミティブ。タイマー、イベントリスナー、購読などのリソースクリーンアップに使用する。
+
+```typescript
+import { onMount, onUnmount, type Component } from "@ydant/core";
+
+const Timer: Component = () => {
+  let interval: ReturnType<typeof setInterval> | null = null;
+
+  return div(function* () {
+    // パターン1: onMount のコールバックがクリーンアップ関数を返す
+    yield* onMount(() => {
+      interval = setInterval(() => console.log("tick"), 1000);
+
+      // クリーンアップ関数を返す（アンマウント時に実行される）
+      return () => {
+        if (interval) clearInterval(interval);
+      };
+    });
+
+    // パターン2: onMount と onUnmount を分離して書く
+    yield* onMount(() => {
+      console.log("Component mounted");
+    });
+
+    yield* onUnmount(() => {
+      console.log("Component unmounted");
+    });
+
+    yield* text("Timer content");
+  });
+};
+```
+
+**重要**: `onMount` のコールバックは DOM 更新完了後（`requestAnimationFrame` のタイミング）に実行される。`onUnmount` のコールバックは `Slot.refresh()` 呼び出し時に、DOM クリア前に実行される。
 
 ### tap による DOM 要素への直接アクセス
 
 `tap` は DOM 要素に直接アクセスするためのプリミティブ。`attr` や `on` では対応できない、要素固有のプロパティ操作が必要な場合に使用する。
 
+**注意**: `Slot.node` を使えば `tap` なしでも DOM 要素にアクセスできる。`tap` は Slot を取得しない場合（配列構文など）に使用する。
+
 ```typescript
+// 方法1: Slot.node を使用（推奨）
+const { node } = yield* input(function* () {
+  yield* attr("type", "text");
+  yield* on("input", (e) => { ... });
+});
+(node as HTMLInputElement).value = "";
+
+// 方法2: tap を使用（Slot を取得しない場合）
 let inputElement: HTMLInputElement | null = null;
 
 yield* input(function* () {
@@ -314,13 +387,12 @@ yield* input(function* () {
   yield* on("input", (e) => { ... });
 });
 
-// 後で使用
 if (inputElement) {
-  inputElement.value = "";  // DOM プロパティを直接操作
+  inputElement.value = "";
 }
 ```
 
-**注意**: `tap` は DSL の抽象化を破るため、`attr`, `clss`, `on` で対応できない場合にのみ使用すること。
+**注意**: `tap` は DSL の抽象化を破るため、`attr`, `clss`, `on`, `Slot.node` で対応できない場合にのみ使用すること。
 
 ### SVG 要素の使い方
 
@@ -329,27 +401,25 @@ SVG 要素は専用のファクトリ関数で生成する。namespace が自動
 ```typescript
 import { svg, circle, path, attr, clss } from "@ydant/core";
 
-yield* svg(function* () {
-  yield* attr("width", "240");
-  yield* attr("height", "240");
-  yield* clss(["my-svg"]);
+yield *
+  svg(function* () {
+    yield* attr("width", "240");
+    yield* attr("height", "240");
+    yield* clss(["my-svg"]);
 
-  // 背景の円
-  yield* circle(() => [
-    attr("cx", "120"),
-    attr("cy", "120"),
-    attr("r", "100"),
-    attr("fill", "none"),
-    attr("stroke", "#e5e7eb"),
-    attr("stroke-width", "8"),
-  ]);
+    // 背景の円
+    yield* circle(() => [
+      attr("cx", "120"),
+      attr("cy", "120"),
+      attr("r", "100"),
+      attr("fill", "none"),
+      attr("stroke", "#e5e7eb"),
+      attr("stroke-width", "8"),
+    ]);
 
-  // パス
-  yield* path(() => [
-    attr("d", "M10 10 L100 100"),
-    attr("stroke", "black"),
-  ]);
-});
+    // パス
+    yield* path(() => [attr("d", "M10 10 L100 100"), attr("stroke", "black")]);
+  });
 ```
 
 **利用可能な SVG 要素**: `svg`, `circle`, `ellipse`, `line`, `path`, `polygon`, `polyline`, `rect`, `g`, `defs`, `use`, `clipPath`, `mask`, `linearGradient`, `radialGradient`, `stop`, `svgText`, `tspan`
@@ -381,6 +451,83 @@ yield* svg(function* () {
 
 この知見の収集・記載は **タスクの一部** である。次の担当者がスムーズに作業できるよう、学んだことを必ず残すこと。
 
-### memo.md について
+---
 
-`memo.md` はプロジェクトルートにある一時的なメモファイル。コミットしないこと。showcase のアイデアなど、検討中の内容が記載されている場合がある。
+## Documentation Philosophy
+
+### ストック情報とフロー情報
+
+このプロジェクトでは、ドキュメントを **ストック情報** と **フロー情報** に区別して管理する。
+
+#### ストック情報（コミット対象）
+
+**CLAUDE.md** がストック情報の唯一の正式なドキュメントである。
+
+- プロジェクトの概要、構造、コマンド
+- 確定した設計決定
+- 実装パターンとベストプラクティス
+- 将来の担当者が必要とする知識
+
+**特性:**
+
+- 常に最新の状態を反映
+- 自己完結している（他のドキュメントを参照しなくても理解できる）
+- 事実のみを記載（検討中の内容は含まない）
+
+#### フロー情報（コミット対象外）
+
+以下のファイルはフロー情報であり、**コミットしないこと**:
+
+| ファイル                 | 目的                                 |
+| ------------------------ | ------------------------------------ |
+| `MEMO.md`                | 一時的な検討メモ、アイデアの記録     |
+| `FEATURE-PLAN.md`        | 検討中の機能案、設計オプションの比較 |
+| `IMPLEMENTATION-PLAN.md` | 実装作業中の詳細計画                 |
+
+**特性:**
+
+- 作業中の状態を記録
+- 検討中・未確定の内容を含む
+- 作業完了後に CLAUDE.md へ知見を反映し、削除または更新する
+
+### ドキュメントの自己完結性
+
+**各ドキュメントは自己完結していなければならない。**
+
+以下は **禁止** される記述:
+
+- 「前回の内容を維持」
+- 「上記を参照」（同一ドキュメント内の明確な参照は可）
+- 「別ファイルを見てください」（代わりに内容を転記するか、要約を記載）
+
+**理由:**
+
+- ドキュメントを読む人は、そのファイルだけで内容を理解できるべき
+- 参照先が削除・変更されると意味不明になる
+- 検索で該当ファイルにたどり着いた人が迷わない
+
+### 知見の反映フロー
+
+```
+作業開始
+    ↓
+MEMO.md / FEATURE-PLAN.md / IMPLEMENTATION-PLAN.md で検討・計画
+    ↓
+実装作業
+    ↓
+作業完了
+    ↓
+確定した知見を CLAUDE.md に反映
+    ↓
+フロー情報ファイルを削除または次のタスク用に更新
+```
+
+### .gitignore への追加
+
+以下のファイルが `.gitignore` に含まれていることを確認すること:
+
+```
+MEMO.md
+FEATURE-PLAN.md
+IMPLEMENTATION-PLAN.md
+```
