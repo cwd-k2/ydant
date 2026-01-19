@@ -36,6 +36,24 @@ export type Style = Tagged<"style", { properties: Record<string, string> }>;
 /** リスト要素のキー（差分更新用のマーカー） */
 export type Key = Tagged<"key", { value: string | number }>;
 
+/** Context オブジェクト（型定義のみ、実装は @ydant/context） */
+export interface Context<T> {
+  readonly id: symbol;
+  readonly defaultValue: T | undefined;
+}
+
+/** Context Provider（値を提供） */
+export type ContextProvide = Tagged<
+  "context-provide",
+  { context: Context<unknown>; value: unknown }
+>;
+
+/** Context Inject（値を取得） */
+export type ContextInject = Tagged<
+  "context-inject",
+  { context: Context<unknown> }
+>;
+
 // =============================================================================
 // Element Types
 // =============================================================================
@@ -50,7 +68,16 @@ export type ChildrenFn = () => Children | ChildGen[];
 export type Reactive = Tagged<"reactive", { childrenFn: ChildrenFn }>;
 
 /** 子要素として yield できるもの */
-export type Child = Element | Decoration | Text | Lifecycle | Style | Key | Reactive;
+export type Child =
+  | Element
+  | Decoration
+  | Text
+  | Lifecycle
+  | Style
+  | Key
+  | Reactive
+  | ContextProvide
+  | ContextInject;
 
 /** Child を yield するジェネレーター */
 export type ChildGen = Generator<Child, unknown, unknown>;

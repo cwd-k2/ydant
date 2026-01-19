@@ -51,6 +51,12 @@ importers:
         specifier: workspace:*
         version: link:../../packages/dom
 
+  packages/context:
+    devDependencies:
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/core: {}
 
   packages/dom:

@@ -5,6 +5,7 @@ import type {
   ElementGenerator,
   Slot,
   Component,
+  Context,
 } from "@ydant/core";
 import { toChildren, isTagged } from "@ydant/core";
 import { runWithSubscriber } from "@ydant/reactive";
@@ -25,12 +26,15 @@ interface RenderContext {
   pendingKey: string | number | null;
   /** キー付き要素のマップ */
   keyedNodes: Map<string | number, KeyedNode>;
+  /** Context の値を保持するマップ */
+  contextValues: Map<symbol, unknown>;
 }
 
-function createContext(
+function createRenderContext(
   parent: Node,
   currentElement: globalThis.Element | null,
-  keyedNodes?: Map<string | number, KeyedNode>
+  keyedNodes?: Map<string | number, KeyedNode>,
+  contextValues?: Map<symbol, unknown>
 ): RenderContext {
   return {
     parent,
@@ -39,6 +43,7 @@ function createContext(
     unmountCallbacks: [],
     pendingKey: null,
     keyedNodes: keyedNodes ?? new Map(),
+    contextValues: contextValues ?? new Map(),
   };
 }
 
@@ -104,8 +109,13 @@ function processElement(
     }
   }
 
-  // 子コンテキストを作成
-  const childCtx = createContext(node, node);
+  // 子コンテキストを作成（親の contextValues を継承）
+  const childCtx = createRenderContext(
+    node,
+    node,
+    undefined,
+    new Map(ctx.contextValues)
+  );
 
   // key があれば keyedNodes に登録
   if (elementKey !== null) {
@@ -262,8 +272,13 @@ function processIterator(
       container.setAttribute("data-reactive", "");
       ctx.parent.appendChild(container);
 
-      // リアクティブコンテキスト
-      const reactiveCtx = createContext(container, container);
+      // リアクティブコンテキスト（親の contextValues を継承）
+      const reactiveCtx = createRenderContext(
+        container,
+        container,
+        undefined,
+        new Map(ctx.contextValues)
+      );
 
       // 更新関数
       const update = () => {
@@ -302,6 +317,18 @@ function processIterator(
       });
 
       result = iter.next();
+    } else if (isTagged(value, "context-provide")) {
+      // Context に値を設定
+      const context = value.context as Context<unknown>;
+      ctx.contextValues.set(context.id, value.value);
+      result = iter.next();
+    } else if (isTagged(value, "context-inject")) {
+      // Context から値を取得
+      const context = value.context as Context<unknown>;
+      const contextValue = ctx.contextValues.has(context.id)
+        ? ctx.contextValues.get(context.id)
+        : context.defaultValue;
+      result = iter.next(contextValue as Slot | void);
     } else {
       result = iter.next();
     }
@@ -311,7 +338,7 @@ function processIterator(
 function render(gen: ElementGenerator, parent: HTMLElement): void {
   parent.innerHTML = "";
 
-  const ctx = createContext(parent, null);
+  const ctx = createRenderContext(parent, null);
 
   let result = gen.next();
 
