@@ -9,22 +9,36 @@ import type {
 import { toChildren, isTagged } from "@ydant/core";
 import { runWithSubscriber } from "@ydant/reactive";
 
+/** Keyed 要素の情報 */
+interface KeyedNode {
+  key: string | number;
+  node: globalThis.Element;
+  unmountCallbacks: Array<() => void>;
+}
+
 interface RenderContext {
   parent: Node;
   currentElement: globalThis.Element | null;
   mountCallbacks: Array<() => void | (() => void)>;
   unmountCallbacks: Array<() => void>;
+  /** 次の要素に関連付けるキー */
+  pendingKey: string | number | null;
+  /** キー付き要素のマップ */
+  keyedNodes: Map<string | number, KeyedNode>;
 }
 
 function createContext(
   parent: Node,
-  currentElement: globalThis.Element | null
+  currentElement: globalThis.Element | null,
+  keyedNodes?: Map<string | number, KeyedNode>
 ): RenderContext {
   return {
     parent,
     currentElement,
     mountCallbacks: [],
     unmountCallbacks: [],
+    pendingKey: null,
+    keyedNodes: keyedNodes ?? new Map(),
   };
 }
 
@@ -45,9 +59,29 @@ function processElement(
   element: Element,
   ctx: RenderContext
 ): { node: globalThis.Element; slot: Slot } {
-  const node = element.ns
-    ? document.createElementNS(element.ns, element.tag)
-    : document.createElement(element.tag);
+  // pending key があるか確認
+  const elementKey = ctx.pendingKey;
+  ctx.pendingKey = null;
+
+  // key があり、既存のノードが存在する場合は再利用
+  let node: globalThis.Element;
+  let isReused = false;
+
+  if (elementKey !== null && ctx.keyedNodes.has(elementKey)) {
+    const existing = ctx.keyedNodes.get(elementKey)!;
+    node = existing.node;
+    isReused = true;
+
+    // 古いアンマウントコールバックを新しいコンテキストに移行
+    ctx.unmountCallbacks.push(...existing.unmountCallbacks);
+    ctx.keyedNodes.delete(elementKey);
+  } else {
+    node = element.ns
+      ? document.createElementNS(element.ns, element.tag)
+      : document.createElement(element.tag);
+  }
+
+  // 親に追加（再利用時は移動になる）
   ctx.parent.appendChild(node);
 
   // extras (Attribute, Listener, Tap) を適用
@@ -56,10 +90,14 @@ function processElement(
       if (isTagged(extra, "attribute")) {
         node.setAttribute(extra.key as string, extra.value as string);
       } else if (isTagged(extra, "listener")) {
-        node.addEventListener(
-          extra.key as string,
-          extra.value as (e: Event) => void
-        );
+        // リスナーは再利用時に重複追加しないよう注意が必要
+        // 簡易実装: 毎回追加（本来は差分検出が必要）
+        if (!isReused) {
+          node.addEventListener(
+            extra.key as string,
+            extra.value as (e: Event) => void
+          );
+        }
       } else if (isTagged(extra, "tap")) {
         (extra.callback as (el: globalThis.Element) => void)(node);
       }
@@ -69,29 +107,79 @@ function processElement(
   // 子コンテキストを作成
   const childCtx = createContext(node, node);
 
+  // key があれば keyedNodes に登録
+  if (elementKey !== null) {
+    ctx.keyedNodes.set(elementKey, {
+      key: elementKey,
+      node,
+      unmountCallbacks: childCtx.unmountCallbacks,
+    });
+  }
+
   // Slot オブジェクトを作成
   const slot: Slot = {
     node: node as HTMLElement,
     refresh(childrenFn: ChildrenFn) {
-      // アンマウントコールバックを実行
+      // 古い keyed nodes を保存
+      const oldKeyedNodes = new Map(childCtx.keyedNodes);
+
+      // アンマウントコールバックを実行（keyed nodes は除く）
       for (const callback of childCtx.unmountCallbacks) {
         callback();
       }
       childCtx.unmountCallbacks = [];
       childCtx.mountCallbacks = [];
 
-      // DOM をクリアして再構築
-      node.innerHTML = "";
+      // DOM をクリア（ただし keyed nodes は一時的に退避）
+      const keyedElements: globalThis.Element[] = [];
+      for (const [, keyedNode] of oldKeyedNodes) {
+        if (keyedNode.node.parentNode === node) {
+          keyedElements.push(keyedNode.node);
+        }
+      }
+
+      // keyed でない要素を削除
+      while (node.firstChild) {
+        const child = node.firstChild;
+        if (keyedElements.includes(child as globalThis.Element)) {
+          // 一時的に退避
+          node.removeChild(child);
+        } else {
+          node.removeChild(child);
+        }
+      }
+
+      // 新しいコンテキストで再処理（古い keyed nodes を渡す）
       childCtx.currentElement = node;
+      childCtx.keyedNodes = oldKeyedNodes;
+      childCtx.pendingKey = null;
+
       const children = toChildren(childrenFn());
       processIterator(children as Iterator<Child, void, Slot | void>, childCtx);
+
+      // 使われなかった keyed nodes をクリーンアップ
+      for (const [, keyedNode] of childCtx.keyedNodes) {
+        // アンマウントコールバックを実行
+        for (const callback of keyedNode.unmountCallbacks) {
+          callback();
+        }
+        // DOM から削除（まだ存在していれば）
+        if (keyedNode.node.parentNode) {
+          keyedNode.node.parentNode.removeChild(keyedNode.node);
+        }
+      }
+      childCtx.keyedNodes.clear();
 
       // マウントコールバックを実行
       executeMount(childCtx);
     },
   };
 
-  // 子要素を処理
+  // 子要素を処理（再利用時は子要素もクリアして再構築）
+  if (isReused) {
+    node.innerHTML = "";
+  }
+
   if (element.holds) {
     processIterator(
       element.holds as Iterator<Child, void, Slot | void>,
@@ -162,8 +250,8 @@ function processIterator(
       }
       result = iter.next();
     } else if (isTagged(value, "key")) {
-      // key はマーカーとして記録（Phase 3 で差分更新に使用予定）
-      // 現時点では処理なし
+      // key を記録して次の要素に関連付ける
+      ctx.pendingKey = value.value as string | number;
       result = iter.next();
     } else if (isTagged(value, "reactive")) {
       // リアクティブブロックの処理
