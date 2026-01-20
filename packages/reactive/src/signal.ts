@@ -14,8 +14,44 @@
 
 type Subscriber = () => void;
 
-/** 現在アクティブな購読者（effect/computed 実行中に設定される） */
-let currentSubscriber: Subscriber | null = null;
+/**
+ * 購読者管理のシングルトン
+ *
+ * effect/computed 実行中の購読者を追跡する。
+ * モジュールトップレベル変数を避け、状態を明示的に管理する。
+ */
+class SubscriberManager {
+  private static instance: SubscriberManager;
+  private current: Subscriber | null = null;
+
+  private constructor() {}
+
+  static getInstance(): SubscriberManager {
+    if (!SubscriberManager.instance) {
+      SubscriberManager.instance = new SubscriberManager();
+    }
+    return SubscriberManager.instance;
+  }
+
+  /** 現在の購読者を取得 */
+  get(): Subscriber | null {
+    return this.current;
+  }
+
+  /** 購読者を設定して関数を実行（終了後に元に戻す） */
+  runWith<T>(subscriber: Subscriber, fn: () => T): T {
+    const prev = this.current;
+    this.current = subscriber;
+    try {
+      return fn();
+    } finally {
+      this.current = prev;
+    }
+  }
+}
+
+/** 購読者管理シングルトンのインスタンス */
+export const subscriberManager = SubscriberManager.getInstance();
 
 /** Signal インターフェース */
 export interface Signal<T> {
@@ -56,8 +92,9 @@ export function signal<T>(initialValue: T): Signal<T> {
 
   const read = (() => {
     // 現在の購読者がいれば登録
-    if (currentSubscriber) {
-      subscribers.add(currentSubscriber);
+    const subscriber = subscriberManager.get();
+    if (subscriber) {
+      subscribers.add(subscriber);
     }
     return value;
   }) as Signal<T>;
@@ -83,20 +120,18 @@ export function signal<T>(initialValue: T): Signal<T> {
 
 /**
  * 購読者を設定して関数を実行する（内部用）
+ *
+ * @deprecated subscriberManager.runWith を直接使用してください
  */
 export function runWithSubscriber<T>(subscriber: Subscriber, fn: () => T): T {
-  const prev = currentSubscriber;
-  currentSubscriber = subscriber;
-  try {
-    return fn();
-  } finally {
-    currentSubscriber = prev;
-  }
+  return subscriberManager.runWith(subscriber, fn);
 }
 
 /**
  * 現在の購読者を取得する（内部用）
+ *
+ * @deprecated subscriberManager.get を直接使用してください
  */
 export function getCurrentSubscriber(): Subscriber | null {
-  return currentSubscriber;
+  return subscriberManager.get();
 }

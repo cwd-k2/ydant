@@ -11,7 +11,7 @@
  * ```
  */
 
-import { runWithSubscriber } from "./signal";
+import { subscriberManager } from "./signal";
 
 /** Computed インターフェース（読み取り専用） */
 export interface Computed<T> {
@@ -55,14 +55,14 @@ export function computed<T>(fn: () => T): Computed<T> {
 
   const read = (() => {
     // 現在の購読者がいれば登録
-    const currentSub = getCurrentSubscriber();
+    const currentSub = subscriberManager.get();
     if (currentSub) {
       subscribers.add(currentSub);
     }
 
     if (isDirty) {
       // 依存関係を追跡しながら再計算
-      cachedValue = runWithSubscriber(recompute, fn);
+      cachedValue = subscriberManager.runWith(recompute, fn);
       isDirty = false;
     }
 
@@ -80,6 +80,3 @@ export function computed<T>(fn: () => T): Computed<T> {
   return read;
 }
 
-// signal.ts から getCurrentSubscriber をインポートする代わりに、
-// signal.ts からエクスポートして使用
-import { getCurrentSubscriber } from "./signal";

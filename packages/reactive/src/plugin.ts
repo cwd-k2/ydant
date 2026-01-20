@@ -15,7 +15,7 @@
  */
 
 import type { Child, ChildrenFn, DomPlugin, PluginAPI, PluginResult } from "@ydant/core";
-import { runWithSubscriber } from "./signal";
+import { subscriberManager } from "./signal";
 
 /**
  * Reactive プラグインを作成する
@@ -48,7 +48,7 @@ export function createReactivePlugin(): DomPlugin {
         container.innerHTML = "";
 
         // Signal 依存関係を追跡しながら子要素を処理
-        runWithSubscriber(update, () => {
+        subscriberManager.runWith(update, () => {
           api.processChildren(childrenFn, { parent: container });
         });
       };

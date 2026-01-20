@@ -18,7 +18,7 @@
  * ```
  */
 
-import { runWithSubscriber } from "./signal";
+import { subscriberManager } from "./signal";
 
 /**
  * Effect を作成する
@@ -61,7 +61,7 @@ export function effect(fn: () => void | (() => void)): () => void {
     }
 
     // 依存関係を追跡しながら実行
-    cleanup = runWithSubscriber(execute, fn);
+    cleanup = subscriberManager.runWith(execute, fn);
   };
 
   // 初回実行
