@@ -18,7 +18,7 @@
  * ```
  */
 
-import type { ElementGenerator, Element, Slot } from "@ydant/core";
+import type { Render, Element, Slot } from "@ydant/core";
 import { div } from "@ydant/core";
 
 /** children の型（戻り値は不要） */
@@ -27,7 +27,7 @@ type ChildGenerator = Generator<Element, unknown, Slot>;
 /** ErrorBoundary コンポーネントの props */
 export interface ErrorBoundaryProps {
   /** エラー発生時に表示するコンポーネント */
-  fallback: (error: Error, reset: () => void) => ElementGenerator;
+  fallback: (error: Error, reset: () => void) => Render;
   /** 子コンポーネント */
   children: () => ChildGenerator;
 }
@@ -39,7 +39,7 @@ export interface ErrorBoundaryProps {
  * キャッチするには特別な対応が必要です。
  * この実装は同期エラーのみをキャッチします。
  */
-export function* ErrorBoundary(props: ErrorBoundaryProps): ElementGenerator {
+export function* ErrorBoundary(props: ErrorBoundaryProps): Render {
   const { fallback, children } = props;
 
   const containerSlot = yield* div(function* () {

@@ -100,14 +100,14 @@ export type Element = Tagged<
 >;
 
 /** Element を yield し、最終的に Slot を返すジェネレーター */
-export type ElementGenerator = Generator<Element, Slot, Slot>;
+export type Render = Generator<Element, Slot, Slot>;
 
 // =============================================================================
 // Component Types
 // =============================================================================
 
-/** ルートコンポーネント（ElementGenerator を返す関数） */
-export type Component = () => ElementGenerator;
+/** ルートコンポーネント（Render を返す関数） */
+export type Component = () => Render;
 
 // =============================================================================
 // Plugin Types

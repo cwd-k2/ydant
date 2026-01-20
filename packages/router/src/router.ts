@@ -27,7 +27,7 @@
  * ```
  */
 
-import type { ElementGenerator, Component } from "@ydant/core";
+import type { Render, Component } from "@ydant/core";
 import { div, a, on, attr, onMount } from "@ydant/core";
 
 /** ルート定義 */
@@ -65,7 +65,7 @@ export interface RouterLinkProps {
   /** リンク先のパス */
   href: string;
   /** リンクの子要素 */
-  children: () => ElementGenerator;
+  children: () => Render;
   /** アクティブ時に追加するクラス */
   activeClass?: string;
 }
@@ -214,7 +214,7 @@ export function goForward(): void {
 function renderMatchedRouteArray(
   routes: RouteDefinition[],
   base: string
-): ElementGenerator[] {
+): Render[] {
   const path = currentRoute.path.startsWith(base)
     ? currentRoute.path.slice(base.length) || "/"
     : currentRoute.path;
@@ -251,7 +251,7 @@ function renderMatchedRouteArray(
  *
  * クリック時に navigate() を呼び出す <a> 要素を生成する。
  */
-export function RouterLink(props: RouterLinkProps): ElementGenerator {
+export function RouterLink(props: RouterLinkProps): Render {
   const { href, children, activeClass } = props;
 
   return a(function* () {
@@ -276,7 +276,7 @@ export function RouterLink(props: RouterLinkProps): ElementGenerator {
  *
  * 現在のパスに基づいて適切なコンポーネントを表示する。
  */
-export function RouterView(props: RouterViewProps): ElementGenerator {
+export function RouterView(props: RouterViewProps): Render {
   const { routes, base = "" } = props;
 
   return div(function* () {

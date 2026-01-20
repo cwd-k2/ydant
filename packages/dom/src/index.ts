@@ -2,7 +2,7 @@ import type {
   Element,
   Child,
   ChildrenFn,
-  ElementGenerator,
+  Render,
   Slot,
   Component,
 } from "@ydant/core";
@@ -345,7 +345,7 @@ function processIterator(
 }
 
 function render(
-  gen: ElementGenerator,
+  gen: Render,
   parent: HTMLElement,
   plugins: Map<string, DomPlugin>
 ): void {

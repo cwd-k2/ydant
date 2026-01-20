@@ -18,7 +18,8 @@ export type {
   Children,
   ChildrenFn,
   Element,
-  ElementGenerator,
+  Render,
+  Render as ElementGenerator, // 後方互換性のためのエイリアス
   Slot,
   Component,
   // Plugin types

@@ -16,7 +16,7 @@
  * ```
  */
 
-import type { ElementGenerator, Element, Slot } from "@ydant/core";
+import type { Render, Element, Slot } from "@ydant/core";
 import { div } from "@ydant/core";
 
 /** children の型（戻り値は不要） */
@@ -25,7 +25,7 @@ type ChildGenerator = Generator<Element, unknown, Slot>;
 /** Suspense コンポーネントの props */
 export interface SuspenseProps {
   /** ローディング中に表示するコンポーネント */
-  fallback: () => ElementGenerator;
+  fallback: () => Render;
   /** 子コンポーネント */
   children: () => ChildGenerator;
 }
@@ -38,7 +38,7 @@ export interface SuspenseProps {
  * 代替として、Resource の loading/error プロパティを使った
  * 明示的なローディング状態管理を推奨します。
  */
-export function* Suspense(props: SuspenseProps): ElementGenerator {
+export function* Suspense(props: SuspenseProps): Render {
   const { fallback, children } = props;
 
   const containerSlot = yield* div(function* () {

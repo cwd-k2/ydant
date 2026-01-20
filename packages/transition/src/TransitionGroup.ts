@@ -20,7 +20,7 @@
  * ```
  */
 
-import type { ElementGenerator, Slot } from "@ydant/core";
+import type { Render, Slot } from "@ydant/core";
 import { div, key as keyPrimitive, onMount } from "@ydant/core";
 
 export interface TransitionGroupProps<T> {
@@ -41,7 +41,7 @@ export interface TransitionGroupProps<T> {
   /** 退場終了時のクラス */
   leaveTo?: string;
   /** 各アイテムをレンダリングする関数 */
-  children: (item: T, index: number) => ElementGenerator;
+  children: (item: T, index: number) => Render;
 }
 
 /**
@@ -150,7 +150,7 @@ async function leaveTransition<T>(
  */
 export function* TransitionGroup<T>(
   props: TransitionGroupProps<T>
-): ElementGenerator {
+): Render {
   const { items, keyFn, children } = props;
 
   // 現在のキーセットを追跡

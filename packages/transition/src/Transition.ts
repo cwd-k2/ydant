@@ -18,7 +18,7 @@
  * ```
  */
 
-import type { ElementGenerator } from "@ydant/core";
+import type { Render } from "@ydant/core";
 import { div, onMount } from "@ydant/core";
 
 export interface TransitionProps {
@@ -37,7 +37,7 @@ export interface TransitionProps {
   /** 退場終了時のクラス */
   leaveTo?: string;
   /** トランジション対象の子要素 */
-  children: () => ElementGenerator;
+  children: () => Render;
 }
 
 /**
@@ -145,7 +145,7 @@ async function leaveTransition(
 /**
  * Transition コンポーネント
  */
-export function Transition(props: TransitionProps): ElementGenerator {
+export function Transition(props: TransitionProps): Render {
   const { show, children } = props;
 
   return div(function* () {
@@ -171,7 +171,7 @@ export function Transition(props: TransitionProps): ElementGenerator {
  */
 export function* TransitionWithState(
   props: TransitionProps
-): ElementGenerator {
+): Render {
   // 現在の状態を保持するコンテナを作成
   const containerSlot = yield* div(function* () {
     if (props.show) {
