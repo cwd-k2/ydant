@@ -97,9 +97,11 @@ async function enterTransition(
   el.offsetHeight;
 
   // 次のフレームでトランジションを開始
+  // enterTo を追加してから enterFrom を削除することで、
+  // CSS の優先順位により enterTo のスタイルが適用されトランジションが発生する
   requestAnimationFrame(() => {
-    removeClasses(el, props.enterFrom);
     addClasses(el, props.enterTo);
+    removeClasses(el, props.enterFrom);
   });
 
   // トランジション終了を待つ
@@ -125,9 +127,11 @@ async function leaveTransition(
   el.offsetHeight;
 
   // 次のフレームでトランジションを開始
+  // leaveTo を追加してから leaveFrom を削除することで、
+  // CSS の優先順位により leaveTo のスタイルが適用されトランジションが発生する
   requestAnimationFrame(() => {
-    removeClasses(el, props.leaveFrom);
     addClasses(el, props.leaveTo);
+    removeClasses(el, props.leaveFrom);
   });
 
   // トランジション終了を待つ
