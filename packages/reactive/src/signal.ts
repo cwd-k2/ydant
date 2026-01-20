@@ -12,46 +12,12 @@
  * ```
  */
 
+import { subscriberManager } from "./subscriber-manager";
+
+// subscriberManager を再エクスポート
+export { subscriberManager } from "./subscriber-manager";
+
 type Subscriber = () => void;
-
-/**
- * 購読者管理のシングルトン
- *
- * effect/computed 実行中の購読者を追跡する。
- * モジュールトップレベル変数を避け、状態を明示的に管理する。
- */
-class SubscriberManager {
-  private static instance: SubscriberManager;
-  private current: Subscriber | null = null;
-
-  private constructor() {}
-
-  static getInstance(): SubscriberManager {
-    if (!SubscriberManager.instance) {
-      SubscriberManager.instance = new SubscriberManager();
-    }
-    return SubscriberManager.instance;
-  }
-
-  /** 現在の購読者を取得 */
-  get(): Subscriber | null {
-    return this.current;
-  }
-
-  /** 購読者を設定して関数を実行（終了後に元に戻す） */
-  runWith<T>(subscriber: Subscriber, fn: () => T): T {
-    const prev = this.current;
-    this.current = subscriber;
-    try {
-      return fn();
-    } finally {
-      this.current = prev;
-    }
-  }
-}
-
-/** 購読者管理シングルトンのインスタンス */
-export const subscriberManager = SubscriberManager.getInstance();
 
 /** Signal インターフェース */
 export interface Signal<T> {

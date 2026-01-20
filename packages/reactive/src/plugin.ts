@@ -15,7 +15,7 @@
  */
 
 import type { Child, ChildrenFn, DomPlugin, PluginAPI, PluginResult } from "@ydant/core";
-import { subscriberManager } from "./signal";
+import { subscriberManager } from "./subscriber-manager";
 
 /**
  * Reactive プラグインを作成する

@@ -11,7 +11,7 @@
  * ```
  */
 
-import { subscriberManager } from "./signal";
+import { subscriberManager } from "./subscriber-manager";
 
 /** Computed インターフェース（読み取り専用） */
 export interface Computed<T> {

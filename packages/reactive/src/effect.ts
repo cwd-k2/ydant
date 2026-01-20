@@ -18,7 +18,7 @@
  * ```
  */
 
-import { subscriberManager } from "./signal";
+import { subscriberManager } from "./subscriber-manager";
 
 /**
  * Effect を作成する
