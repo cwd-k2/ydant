@@ -11,11 +11,17 @@ ydant/
 ├── packages/
 │   ├── core/          # DSL, types, element factories
 │   ├── dom/           # DOM rendering engine
-│   └── reactive/      # Reactivity system (signal, computed, effect)
+│   ├── reactive/      # Reactivity system (signal, computed, effect)
+│   ├── context/       # Context API and persistence helpers
+│   ├── router/        # SPA routing
+│   ├── async/         # Async components (Suspense, ErrorBoundary)
+│   ├── form/          # Form validation and state management
+│   └── transition/    # CSS transitions (Transition, TransitionGroup)
 ├── examples/
 │   ├── showcase1/     # Demo: Counter, Dialog component
 │   ├── showcase2/     # Demo: ToDo App (CRUD, localStorage)
-│   └── showcase3/     # Demo: Pomodoro Timer
+│   ├── showcase3/     # Demo: Pomodoro Timer
+│   └── showcase4/     # Demo: SPA with Router, Context, Form, Reactive
 ├── package.json       # Root workspace config
 ├── pnpm-workspace.yaml
 └── tsconfig.json
@@ -24,13 +30,19 @@ ydant/
 ## Package Dependencies
 
 ```
-@ydant/core     (DSL, types)
+@ydant/core      (DSL, types)
        ↑
-@ydant/reactive (peer depends on core)
+@ydant/reactive  (peer depends on core)
        ↑
-@ydant/dom      (peer depends on core, optional peer depends on reactive)
-       ↑
-showcase1       (depends on core & dom)
+@ydant/dom       (peer depends on core, optional peer depends on reactive)
+       |
+       +--- @ydant/context    (Context API, localStorage persistence)
+       +--- @ydant/router     (SPA routing with History API)
+       +--- @ydant/async      (Suspense, ErrorBoundary, createResource)
+       +--- @ydant/form       (Form validation and state management)
+       +--- @ydant/transition (CSS transition animations)
+       ↓
+showcase4        (depends on all packages)
 ```
 
 ## Commands
@@ -229,6 +241,46 @@ mount(Main, document.getElementById("app")!);
 - `processElement()` - Render Element to HTMLElement
 - `processIterator()` - Process child iterator
 
+### packages/context/src/
+
+- `context.ts` - Context 生成と provide/inject
+  - `createContext<T>(defaultValue?)` - Context オブジェクトを作成
+  - `provide(context, value)` - 子孫に値を提供
+  - `inject(context)` - 親から値を取得
+- `persist.ts` - localStorage 永続化ヘルパー
+  - `createStorage<T>(key, defaultValue)` - 永続化されたストレージを作成
+  - `persist(key, value)` / `save(key, value)` - 保存
+  - `remove(key)` - 削除
+
+### packages/router/src/router.ts
+
+- `Router(props)` - ルーティングコンテナ
+- `Link(props)` - ナビゲーションリンク
+- `useRoute()` - 現在のルート情報を取得
+- `navigate(path, replace?)` - プログラムによるナビゲーション
+- `goBack()` / `goForward()` - 履歴操作
+
+### packages/async/src/
+
+- `suspense.ts` - 非同期コンテンツのローディング表示
+- `error-boundary.ts` - エラーハンドリング
+- `resource.ts` - 非同期データフェッチ
+
+### packages/form/src/
+
+- `form.ts` - フォーム状態管理
+  - `createForm(options)` - フォームインスタンス作成
+- `validators.ts` - バリデーション関数
+  - `required(message?)`, `email(message?)`, `minLength(min, message?)`
+  - `maxLength(max, message?)`, `pattern(regex, message?)`
+  - `min(value, message?)`, `max(value, message?)`
+  - `custom(validator, message)`, `compose(...validators)`
+
+### packages/transition/src/
+
+- `Transition.ts` - 単一要素のトランジション
+- `TransitionGroup.ts` - リスト要素のトランジション
+
 ### examples/showcase2/src/ (ToDo App)
 
 ```
@@ -255,15 +307,33 @@ src/
 └── index.ts           # エントリーポイント (mount)
 ```
 
+### examples/showcase4/src/ (SPA Demo)
+
+Router, Context, Form, Reactive の組み合わせを示す SPA デモ。
+
+```
+src/
+└── index.ts           # 全機能を含むシングルファイル
+```
+
+**機能:**
+- **ルーティング**: Home, Users, User Detail, Contact, 404 ページ
+- **テーマ切り替え**: localStorage で永続化（Tailwind dark mode 使用）
+- **ユーザー管理**: リアクティブなユーザーリスト（CRUD 操作）
+- **フォーム**: バリデーション付きコンタクトフォーム
+
 ## Design Decisions
 
 1. **Simple function components**: Components are plain functions that take props and return Component
 2. **Generator for Slot**: Use generator syntax when you need the Slot return value (for re-rendering or DOM access)
 3. **Array for static**: Use array syntax for static structures that don't need updates
-4. **Three-package architecture**: `@ydant/core` provides DSL and types, `@ydant/reactive` provides reactivity, `@ydant/dom` handles DOM rendering
+4. **Modular package architecture**: 機能ごとに独立したパッケージ（core, reactive, dom, context, router, form, async, transition）
 5. **Lifecycle hooks**: `onMount`/`onUnmount` for resource cleanup (e.g., timers, subscriptions)
 6. **Signal-based reactivity**: Explicit reading with `signal()` call, similar to SolidJS/Preact Signals
 7. **Key-based diff**: `key` primitive enables efficient list updates by reusing DOM nodes
+8. **Generator-based Context**: `provide`/`inject` は `yield*` で使用（ジェネレーター構文を活用）
+9. **Form state as Signal**: フォーム状態を Signal で監視し、reactive と組み合わせて自動更新
+10. **History API routing**: `navigate()` で `pushState`、`useRoute()` で現在パスとパラメータ取得
 
 ## Development Notes
 
@@ -588,6 +658,184 @@ yield *
 **利用可能な SVG 要素**: `svg`, `circle`, `ellipse`, `line`, `path`, `polygon`, `polyline`, `rect`, `g`, `defs`, `use`, `clipPath`, `mask`, `linearGradient`, `radialGradient`, `stop`, `svgText`, `tspan`
 
 **注意**: SVG の `<text>` 要素は `svgText` として提供（`text` プリミティブとの名前衝突を回避）。
+
+### Context API（@ydant/context）
+
+コンポーネントツリーを通じて値を共有するための Context API。
+
+**Context の作成と使用:**
+
+```typescript
+import { createContext, provide, inject } from "@ydant/context";
+
+// Context を作成（デフォルト値はオプション）
+const ThemeContext = createContext<"light" | "dark">("light");
+
+// 親コンポーネントで値を提供
+const App: Component = () =>
+  div(function* () {
+    yield* provide(ThemeContext, "dark");
+
+    yield* ChildComponent();
+  });
+
+// 子コンポーネントで値を取得
+const ChildComponent: Component = () =>
+  div(function* () {
+    const theme = yield* inject(ThemeContext);
+    yield* text(`Current theme: ${theme}`);  // "dark"
+  });
+```
+
+**localStorage 永続化:**
+
+```typescript
+import { createStorage } from "@ydant/context";
+
+// 永続化されたストレージを作成
+const themeStorage = createStorage<"light" | "dark">("theme", "light");
+
+// 読み取り
+const theme = themeStorage.get();  // localStorage から取得
+
+// 書き込み
+themeStorage.set("dark");  // localStorage に保存
+
+// 削除
+themeStorage.remove();
+```
+
+### Router（@ydant/router）
+
+History API を使用した SPA ルーティング。
+
+**基本的な使い方:**
+
+```typescript
+import { Router, Link, useRoute, navigate } from "@ydant/router";
+
+const App: Component = () =>
+  div(function* () {
+    // ナビゲーションリンク
+    yield* nav(() => [
+      Link({ href: "/", children: () => text("Home") }),
+      Link({ href: "/users", children: () => text("Users") }),
+    ]);
+
+    // ルート定義
+    yield* Router({
+      routes: [
+        { path: "/", component: HomePage },
+        { path: "/users", component: UsersPage },
+        { path: "/users/:id", component: UserDetailPage },  // パスパラメータ
+        { path: "*", component: NotFoundPage },  // 404
+      ],
+    });
+  });
+
+// パスパラメータの取得
+const UserDetailPage: Component = () =>
+  div(function* () {
+    const route = useRoute();
+    const userId = route.params.id;  // "/users/123" → "123"
+
+    yield* text(`User ID: ${userId}`);
+  });
+
+// プログラムによるナビゲーション
+button(() => [
+  on("click", () => navigate("/users/456")),
+  text("Go to user 456"),
+]);
+```
+
+### Form（@ydant/form）
+
+フォームの状態管理とバリデーション。
+
+```typescript
+import { createForm, required, email, minLength } from "@ydant/form";
+import { signal } from "@ydant/reactive";
+
+const ContactForm: Component = () => {
+  const form = createForm({
+    initialValues: {
+      name: "",
+      email: "",
+      message: "",
+    },
+    validations: {
+      name: [required("Name is required"), minLength(2, "Min 2 characters")],
+      email: [required("Email is required"), email("Invalid email")],
+      message: [required("Message is required")],
+    },
+    onSubmit: async (values) => {
+      await sendMessage(values);
+      form.reset();
+    },
+  });
+
+  // フォーム状態を Signal で監視
+  const formState = signal(form.getState());
+  form.subscribe(() => formState.set(form.getState()));
+
+  return div(function* () {
+    yield* input(function* () {
+      yield* attr("type", "text");
+      yield* attr("value", form.getValue("name") as string);
+      yield* on("input", (e) => {
+        form.setValue("name", (e.target as HTMLInputElement).value);
+      });
+      yield* on("blur", () => form.setTouched("name"));
+    });
+
+    // エラー表示
+    yield* reactive(() => {
+      const state = formState();
+      const error = state.errors.name;
+      return error && state.touched.name
+        ? [span(() => [text(error)])]
+        : [];
+    });
+
+    yield* button(() => [
+      on("click", () => form.submit()),
+      text("Submit"),
+    ]);
+  });
+};
+```
+
+### Tailwind CDN でダークモードを使う場合
+
+Tailwind CDN のデフォルトは `media` 戦略（OS の設定に基づく）。`dark` クラスでトグルするには `class` 戦略を設定する必要がある。
+
+```html
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class'
+  }
+</script>
+```
+
+### Router のパスパラメータ実装の注意点
+
+`:param` 形式のパスパラメータを正規表現に変換する際、特殊文字のエスケープ順序に注意。
+
+```typescript
+// ❌ 問題: `:` は正規表現の特殊文字ではないため、エスケープされない
+// その後 `\\:` を探しても見つからない
+pattern
+  .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  .replace(/\\:([^/]+)/g, "([^/]+)");  // マッチしない
+
+// ✅ 解決: プレースホルダーを使用
+const placeholder = "___PARAM___";
+const withPlaceholders = pattern.replace(/:([^/]+)/g, placeholder);
+const escaped = withPlaceholders.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const regex = escaped.replace(/___PARAM___/g, "([^/]+)");
+```
 
 ### 新しい showcase の追加方法
 
