@@ -69,6 +69,39 @@ importers:
         specifier: workspace:*
         version: link:../../packages/router
 
+  examples/showcase5:
+    dependencies:
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@ydant/dom':
+        specifier: workspace:*
+        version: link:../../packages/dom
+
+  examples/showcase6:
+    dependencies:
+      '@ydant/async':
+        specifier: workspace:*
+        version: link:../../packages/async
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@ydant/dom':
+        specifier: workspace:*
+        version: link:../../packages/dom
+
+  examples/showcase7:
+    dependencies:
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@ydant/dom':
+        specifier: workspace:*
+        version: link:../../packages/dom
+      '@ydant/transition':
+        specifier: workspace:*
+        version: link:../../packages/transition
+
   packages/async:
     devDependencies:
       '@ydant/core':

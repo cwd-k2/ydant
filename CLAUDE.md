@@ -9,19 +9,21 @@ Ydant is a lightweight DOM rendering library using JavaScript generators as a DS
 ```
 ydant/
 ├── packages/
-│   ├── core/          # DSL, types, element factories
-│   ├── dom/           # DOM rendering engine
-│   ├── reactive/      # Reactivity system (signal, computed, effect)
-│   ├── context/       # Context API and persistence helpers
-│   ├── router/        # SPA routing
+│   ├── core/          # DSL, types, element factories, plugin types
+│   ├── dom/           # DOM rendering engine with plugin support
+│   ├── reactive/      # Reactivity system (signal, computed, effect, plugin)
+│   ├── context/       # Context API, persistence helpers, plugin
+│   ├── router/        # SPA routing (RouterView, RouterLink)
 │   ├── async/         # Async components (Suspense, ErrorBoundary)
-│   ├── form/          # Form validation and state management
 │   └── transition/    # CSS transitions (Transition, TransitionGroup)
 ├── examples/
 │   ├── showcase1/     # Demo: Counter, Dialog component
 │   ├── showcase2/     # Demo: ToDo App (CRUD, localStorage)
 │   ├── showcase3/     # Demo: Pomodoro Timer
-│   └── showcase4/     # Demo: SPA with Router, Context, Form, Reactive
+│   ├── showcase4/     # Demo: SPA with Plugin Architecture
+│   ├── showcase5/     # Demo: Sortable list with key()
+│   ├── showcase6/     # Demo: Async (Suspense, ErrorBoundary)
+│   └── showcase7/     # Demo: CSS Transitions
 ├── package.json       # Root workspace config
 ├── pnpm-workspace.yaml
 └── tsconfig.json
@@ -30,19 +32,18 @@ ydant/
 ## Package Dependencies
 
 ```
-@ydant/core      (DSL, types)
+@ydant/core      (DSL, types, plugin interface)
        ↑
-@ydant/reactive  (peer depends on core)
+@ydant/reactive  (peer depends on core, provides createReactivePlugin)
        ↑
-@ydant/dom       (peer depends on core, optional peer depends on reactive)
+@ydant/dom       (peer depends on core, plugin system)
        |
-       +--- @ydant/context    (Context API, localStorage persistence)
-       +--- @ydant/router     (SPA routing with History API)
+       +--- @ydant/context    (provides createContextPlugin)
+       +--- @ydant/router     (RouterView, RouterLink, navigate)
        +--- @ydant/async      (Suspense, ErrorBoundary, createResource)
-       +--- @ydant/form       (Form validation and state management)
        +--- @ydant/transition (CSS transition animations)
        ↓
-showcase4        (depends on all packages)
+showcase4        (plugin architecture demo)
 ```
 
 ## Commands
@@ -224,7 +225,6 @@ mount(Main, document.getElementById("app")!);
   - `toChildren(result)` - Normalize array/iterator to Children
 - `elements.ts` - HTML element factories (div, span, p, button, etc.) and SVG element factories (svg, circle, path, rect, etc.)
 - `primitives.ts` - `attr()`, `clss()`, `on()`, `text()`, `tap()`, `onMount()`, `onUnmount()`, `style()`, `key()`
-- `helpers.ts` - `show()`, `each()` ヘルパー関数
 - `index.ts` - Re-exports everything
 
 ### packages/reactive/src/
@@ -233,13 +233,16 @@ mount(Main, document.getElementById("app")!);
 - `computed.ts` - Computed 実装（派生値）
 - `effect.ts` - Effect 実装（副作用）
 - `reactive.ts` - reactive プリミティブ（Signal 追跡と自動更新）
+- `plugin.ts` - `createReactivePlugin()` DOM レンダラープラグイン
 - `index.ts` - Re-exports everything
 
-### packages/dom/src/index.ts
+### packages/dom/src/
 
-- `mount(app, parent)` - Mount Component to DOM element
-- `processElement()` - Render Element to HTMLElement
-- `processIterator()` - Process child iterator
+- `index.ts` - DOM レンダリングエンジン
+  - `mount(app, parent, options?)` - Component を DOM 要素にマウント（plugins オプション対応）
+  - `processElement()` - Element を HTMLElement にレンダリング
+  - `processIterator()` - Child iterator を処理
+- `plugin.ts` - Plugin 型の re-export
 
 ### packages/context/src/
 
@@ -251,30 +254,22 @@ mount(Main, document.getElementById("app")!);
   - `createStorage<T>(key, defaultValue)` - 永続化されたストレージを作成
   - `persist(key, value)` / `save(key, value)` - 保存
   - `remove(key)` - 削除
+- `plugin.ts` - `createContextPlugin()` DOM レンダラープラグイン
 
 ### packages/router/src/router.ts
 
-- `Router(props)` - ルーティングコンテナ
-- `Link(props)` - ナビゲーションリンク
+- `RouterView(props)` - ルーティングコンテナ（マッチしたルートをレンダリング）
+- `RouterLink(props)` - ナビゲーションリンク
 - `useRoute()` - 現在のルート情報を取得
 - `navigate(path, replace?)` - プログラムによるナビゲーション
 - `goBack()` / `goForward()` - 履歴操作
+- `Router` / `Link` - 非推奨エイリアス（後方互換性のため）
 
 ### packages/async/src/
 
 - `suspense.ts` - 非同期コンテンツのローディング表示
 - `error-boundary.ts` - エラーハンドリング
 - `resource.ts` - 非同期データフェッチ
-
-### packages/form/src/
-
-- `form.ts` - フォーム状態管理
-  - `createForm(options)` - フォームインスタンス作成
-- `validators.ts` - バリデーション関数
-  - `required(message?)`, `email(message?)`, `minLength(min, message?)`
-  - `maxLength(max, message?)`, `pattern(regex, message?)`
-  - `min(value, message?)`, `max(value, message?)`
-  - `custom(validator, message)`, `compose(...validators)`
 
 ### packages/transition/src/
 
@@ -309,31 +304,107 @@ src/
 
 ### examples/showcase4/src/ (SPA Demo)
 
-Router, Context, Form, Reactive の組み合わせを示す SPA デモ。
+Router, Context, Reactive, Plugin Architecture の組み合わせを示す SPA デモ。
 
 ```
 src/
-└── index.ts           # 全機能を含むシングルファイル
+├── types.ts           # User, Theme 型定義
+├── state/
+│   ├── theme.ts       # テーマ状態管理
+│   └── users.ts       # ユーザーデータ管理
+├── form/              # ユーザー実装のフォームバリデーション例
+│   ├── types.ts
+│   ├── validators.ts
+│   ├── createForm.ts
+│   └── index.ts
+├── components/
+│   └── NavBar.ts
+├── pages/
+│   ├── HomePage.ts
+│   ├── UsersPage.ts
+│   ├── UserDetailPage.ts
+│   ├── ContactPage.ts
+│   ├── NotFoundPage.ts
+│   └── index.ts
+├── App.ts
+└── index.ts
 ```
 
 **機能:**
 - **ルーティング**: Home, Users, User Detail, Contact, 404 ページ
 - **テーマ切り替え**: localStorage で永続化（Tailwind dark mode 使用）
 - **ユーザー管理**: リアクティブなユーザーリスト（CRUD 操作）
-- **フォーム**: バリデーション付きコンタクトフォーム
+- **フォーム**: ユーザー実装のバリデーション付きコンタクトフォーム
+- **Plugin Architecture**: createReactivePlugin(), createContextPlugin() の使用例
+
+### examples/showcase5/src/ (Sortable List with key())
+
+key() プリミティブを使用した効率的なリスト更新のデモ。
+
+```
+src/
+├── types.ts
+├── components/
+│   └── ListItemView.ts
+├── App.ts
+└── index.ts
+```
+
+**機能:**
+- 並び替え可能なリスト
+- key() による DOM ノードの再利用
+- ソート機能（ID、優先度、テキスト）
+
+### examples/showcase6/src/ (Async)
+
+Suspense, ErrorBoundary, createResource を使用した非同期データフェッチングのデモ。
+
+```
+src/
+├── types.ts
+├── api.ts             # fetch 関数
+├── components/
+│   ├── LoadingSpinner.ts
+│   └── ErrorDisplay.ts
+├── App.ts
+└── index.ts
+```
+
+**機能:**
+- Suspense によるローディング状態管理
+- ErrorBoundary によるエラーハンドリング
+- createResource による非同期データフェッチング
+- 手動ローディング状態パターンの例
+
+### examples/showcase7/src/ (CSS Transitions)
+
+Transition コンポーネントを使用したアニメーションのデモ。
+
+```
+src/
+├── types.ts
+├── App.ts
+└── index.ts
+```
+
+**機能:**
+- Fade トランジション
+- Slide トランジション
+- Toast 通知（動的リスト + トランジション）
 
 ## Design Decisions
 
 1. **Simple function components**: Components are plain functions that take props and return Component
 2. **Generator for Slot**: Use generator syntax when you need the Slot return value (for re-rendering or DOM access)
 3. **Array for static**: Use array syntax for static structures that don't need updates
-4. **Modular package architecture**: 機能ごとに独立したパッケージ（core, reactive, dom, context, router, form, async, transition）
+4. **Modular package architecture**: 機能ごとに独立したパッケージ（core, reactive, dom, context, router, async, transition）
 5. **Lifecycle hooks**: `onMount`/`onUnmount` for resource cleanup (e.g., timers, subscriptions)
 6. **Signal-based reactivity**: Explicit reading with `signal()` call, similar to SolidJS/Preact Signals
 7. **Key-based diff**: `key` primitive enables efficient list updates by reusing DOM nodes
 8. **Generator-based Context**: `provide`/`inject` は `yield*` で使用（ジェネレーター構文を活用）
-9. **Form state as Signal**: フォーム状態を Signal で監視し、reactive と組み合わせて自動更新
+9. **Plugin Architecture**: DOM renderer は plugin を通じて拡張可能（reactive, context など）
 10. **History API routing**: `navigate()` で `pushState`、`useRoute()` で現在パスとパラメータ取得
+11. **JS syntax preferred**: 条件分岐やループは JS の `if`/`for` を直接使用（専用ヘルパーより推奨）
 
 ## Development Notes
 
@@ -481,42 +552,6 @@ if (inputElement) {
 
 **注意**: `tap` は DSL の抽象化を破るため、`attr`, `clss`, `on`, `Slot.node` で対応できない場合にのみ使用すること。
 
-### ヘルパー関数（show, each）
-
-条件分岐やリストレンダリングを簡潔に書くためのヘルパー関数。
-
-**show: 条件分岐**
-
-```typescript
-import { show } from "@ydant/core";
-
-// 条件が真の時だけ表示
-yield* show(isLoggedIn, () => UserProfile({ user }));
-
-// else 付き
-yield* show(
-  isLoggedIn,
-  () => UserProfile({ user }),
-  () => LoginButton()
-);
-```
-
-**each: リストレンダリング**
-
-```typescript
-import { each } from "@ydant/core";
-
-yield* ul(function* () {
-  yield* each(todos, {
-    key: (todo) => todo.id,  // 一意なキー（差分更新に使用）
-    render: (todo, index) => li(() => [
-      text(`${index + 1}. ${todo.text}`),
-    ]),
-    empty: () => p(() => [text("No todos yet")]),  // 空の場合
-  });
-});
-```
-
 ### style プリミティブ
 
 型安全なインラインスタイルを設定するプリミティブ。CSS 変数もサポート。
@@ -548,16 +583,10 @@ for (const item of items) {
   yield* key(item.id);  // 次の要素にキーを関連付け
   yield* li(() => [text(item.name)]);
 }
-
-// または each ヘルパーを使用（key は自動設定される）
-yield* each(items, {
-  key: (item) => item.id,
-  render: (item) => li(() => [text(item.name)]),
-});
 ```
 
 **利点:**
-- DOM ノードの再利用による パフォーマンス向上
+- DOM ノードの再利用によるパフォーマンス向上
 - input のフォーカスやスクロール位置の保持
 - アニメーションの継続
 
@@ -712,18 +741,18 @@ History API を使用した SPA ルーティング。
 **基本的な使い方:**
 
 ```typescript
-import { Router, Link, useRoute, navigate } from "@ydant/router";
+import { RouterView, RouterLink, useRoute, navigate } from "@ydant/router";
 
 const App: Component = () =>
   div(function* () {
     // ナビゲーションリンク
     yield* nav(() => [
-      Link({ href: "/", children: () => text("Home") }),
-      Link({ href: "/users", children: () => text("Users") }),
+      RouterLink({ href: "/", children: () => text("Home") }),
+      RouterLink({ href: "/users", children: () => text("Users") }),
     ]);
 
     // ルート定義
-    yield* Router({
+    yield* RouterView({
       routes: [
         { path: "/", component: HomePage },
         { path: "/users", component: UsersPage },
@@ -749,61 +778,77 @@ button(() => [
 ]);
 ```
 
-### Form（@ydant/form）
+### Plugin Architecture（DOM Renderer の拡張）
 
-フォームの状態管理とバリデーション。
+DOM renderer はプラグインを通じて拡張可能。reactive や context は組み込みではなく、プラグインとして提供される。
+
+**プラグインの使用:**
 
 ```typescript
-import { createForm, required, email, minLength } from "@ydant/form";
-import { signal } from "@ydant/reactive";
+import { mount } from "@ydant/dom";
+import { createReactivePlugin } from "@ydant/reactive";
+import { createContextPlugin } from "@ydant/context";
 
-const ContactForm: Component = () => {
-  const form = createForm({
-    initialValues: {
-      name: "",
-      email: "",
-      message: "",
-    },
-    validations: {
-      name: [required("Name is required"), minLength(2, "Min 2 characters")],
-      email: [required("Email is required"), email("Invalid email")],
-      message: [required("Message is required")],
-    },
-    onSubmit: async (values) => {
-      await sendMessage(values);
-      form.reset();
-    },
-  });
+// プラグインを mount 時に登録
+mount(App, document.getElementById("app")!, {
+  plugins: [createReactivePlugin(), createContextPlugin()],
+});
+```
 
-  // フォーム状態を Signal で監視
-  const formState = signal(form.getState());
-  form.subscribe(() => formState.set(form.getState()));
+**プラグインインターフェース:**
 
-  return div(function* () {
-    yield* input(function* () {
-      yield* attr("type", "text");
-      yield* attr("value", form.getValue("name") as string);
-      yield* on("input", (e) => {
-        form.setValue("name", (e.target as HTMLInputElement).value);
-      });
-      yield* on("blur", () => form.setTouched("name"));
-    });
+```typescript
+interface DomPlugin {
+  /** プラグイン識別子 */
+  readonly name: string;
+  /** このプラグインが処理する type タグ */
+  readonly types: readonly string[];
+  /** Child を処理する */
+  process(child: Child, api: PluginAPI): PluginResult;
+}
 
-    // エラー表示
-    yield* reactive(() => {
-      const state = formState();
-      const error = state.errors.name;
-      return error && state.touched.name
-        ? [span(() => [text(error)])]
-        : [];
-    });
+interface PluginAPI {
+  readonly parent: Node;
+  readonly currentElement: globalThis.Element | null;
+  getContext<T>(id: symbol): T | undefined;
+  setContext<T>(id: symbol, value: T): void;
+  onMount(callback: () => void | (() => void)): void;
+  onUnmount(callback: () => void): void;
+  appendChild(node: Node): void;
+  processChildren(childrenFn: ChildrenFn, options?: { parent?: Node }): void;
+  createChildAPI(parent: Node): PluginAPI;
+}
 
-    yield* button(() => [
-      on("click", () => form.submit()),
-      text("Submit"),
-    ]);
-  });
+interface PluginResult {
+  value?: unknown;  // ジェネレータに返す値（inject 用）
+}
+```
+
+**カスタムプラグインの作成例:**
+
+```typescript
+import type { DomPlugin, Child, PluginAPI } from "@ydant/core";
+
+// カスタム型を定義
+interface MyCustomChild {
+  type: "my-custom";
+  data: string;
+}
+
+// プラグインを作成
+const myPlugin: DomPlugin = {
+  name: "my-plugin",
+  types: ["my-custom"],
+  process(child: Child, api: PluginAPI) {
+    const { data } = child as MyCustomChild;
+    const node = document.createTextNode(`Custom: ${data}`);
+    api.appendChild(node);
+    return {};
+  },
 };
+
+// 使用
+mount(App, root, { plugins: [myPlugin] });
 ```
 
 ### Tailwind CDN でダークモードを使う場合
