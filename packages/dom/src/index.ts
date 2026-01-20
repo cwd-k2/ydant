@@ -211,23 +211,10 @@ function processElement(
       childCtx.unmountCallbacks = [];
       childCtx.mountCallbacks = [];
 
-      // DOM をクリア（ただし keyed nodes は一時的に退避）
-      const keyedElements: globalThis.Element[] = [];
-      for (const [, keyedNode] of oldKeyedNodes) {
-        if (keyedNode.node.parentNode === node) {
-          keyedElements.push(keyedNode.node);
-        }
-      }
-
-      // keyed でない要素を削除
+      // すべての子要素を削除
+      // keyed 要素は Map に参照が残っているので、後で再利用可能
       while (node.firstChild) {
-        const child = node.firstChild;
-        if (keyedElements.includes(child as globalThis.Element)) {
-          // 一時的に退避
-          node.removeChild(child);
-        } else {
-          node.removeChild(child);
-        }
+        node.removeChild(node.firstChild);
       }
 
       // 新しいコンテキストで再処理（古い keyed nodes を渡す）
