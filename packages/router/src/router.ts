@@ -6,16 +6,16 @@
  *
  * @example
  * ```typescript
- * import { Router, Route, Link, useRoute } from "@ydant/router";
+ * import { RouterView, RouterLink, useRoute } from "@ydant/router";
  *
  * const App: Component = () =>
  *   div(function* () {
  *     yield* nav(() => [
- *       Link({ href: "/", children: () => [text("Home")] }),
- *       Link({ href: "/about", children: () => [text("About")] }),
+ *       RouterLink({ href: "/", children: () => text("Home") }),
+ *       RouterLink({ href: "/about", children: () => text("About") }),
  *     ]);
  *
- *     yield* Router({
+ *     yield* RouterView({
  *       routes: [
  *         { path: "/", component: Home },
  *         { path: "/about", component: About },
@@ -52,16 +52,16 @@ export interface RouteInfo {
   hash: string;
 }
 
-/** Router コンポーネントの props */
-export interface RouterProps {
+/** RouterView コンポーネントの props */
+export interface RouterViewProps {
   /** ルート定義の配列 */
   routes: RouteDefinition[];
   /** ベースパス（オプション） */
   base?: string;
 }
 
-/** Link コンポーネントの props */
-export interface LinkProps {
+/** RouterLink コンポーネントの props */
+export interface RouterLinkProps {
   /** リンク先のパス */
   href: string;
   /** リンクの子要素 */
@@ -88,7 +88,7 @@ const routeListeners: Set<() => void> = new Set();
 /** パスパターンからパラメータ名を抽出 */
 function extractParamNames(pattern: string): string[] {
   const matches = pattern.match(/:([^/]+)/g);
-  return matches ? matches.map(m => m.slice(1)) : [];
+  return matches ? matches.map((m) => m.slice(1)) : [];
 }
 
 /** パスパターンを正規表現に変換 */
@@ -247,11 +247,11 @@ function renderMatchedRouteArray(
 }
 
 /**
- * Link コンポーネント
+ * RouterLink コンポーネント
  *
  * クリック時に navigate() を呼び出す <a> 要素を生成する。
  */
-export function Link(props: LinkProps): ElementGenerator {
+export function RouterLink(props: RouterLinkProps): ElementGenerator {
   const { href, children, activeClass } = props;
 
   return a(function* () {
@@ -272,11 +272,11 @@ export function Link(props: LinkProps): ElementGenerator {
 }
 
 /**
- * Router コンポーネント
+ * RouterView コンポーネント
  *
  * 現在のパスに基づいて適切なコンポーネントを表示する。
  */
-export function Router(props: RouterProps): ElementGenerator {
+export function RouterView(props: RouterViewProps): ElementGenerator {
   const { routes, base = "" } = props;
 
   return div(function* () {
@@ -305,3 +305,13 @@ export function Router(props: RouterProps): ElementGenerator {
     });
   });
 }
+
+// Legacy aliases for backwards compatibility
+/** @deprecated Use RouterView instead */
+export const Router = RouterView;
+/** @deprecated Use RouterViewProps instead */
+export type RouterProps = RouterViewProps;
+/** @deprecated Use RouterLink instead */
+export const Link = RouterLink;
+/** @deprecated Use RouterLinkProps instead */
+export type LinkProps = RouterLinkProps;

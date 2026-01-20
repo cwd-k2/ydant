@@ -21,6 +21,10 @@ export type {
   ElementGenerator,
   Slot,
   Component,
+  // Plugin types
+  PluginAPI,
+  PluginResult,
+  DomPlugin,
 } from "./types";
 
 // Utilities
@@ -81,6 +85,3 @@ export {
 
 // Primitives
 export { attr, clss, on, text, tap, onMount, onUnmount, style, key } from "./primitives";
-
-// Helpers
-export { show, each } from "./helpers";

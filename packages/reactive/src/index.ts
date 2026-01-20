@@ -38,3 +38,6 @@ export { effect, batch, scheduleEffect } from "./effect";
 export { reactive } from "./reactive";
 // Reactive 型は @ydant/core から再エクスポート
 export type { Reactive } from "@ydant/core";
+
+// Plugin
+export { createReactivePlugin } from "./plugin";

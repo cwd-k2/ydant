@@ -62,9 +62,6 @@ importers:
       '@ydant/dom':
         specifier: workspace:*
         version: link:../../packages/dom
-      '@ydant/form':
-        specifier: workspace:*
-        version: link:../../packages/form
       '@ydant/reactive':
         specifier: workspace:*
         version: link:../../packages/reactive
@@ -95,12 +92,6 @@ importers:
       '@ydant/reactive':
         specifier: workspace:*
         version: link:../reactive
-
-  packages/form:
-    devDependencies:
-      '@ydant/core':
-        specifier: workspace:*
-        version: link:../core
 
   packages/reactive:
     devDependencies:

@@ -5,10 +5,12 @@ import type {
   ElementGenerator,
   Slot,
   Component,
-  Context,
 } from "@ydant/core";
 import { toChildren, isTagged } from "@ydant/core";
-import { runWithSubscriber } from "@ydant/reactive";
+import type { DomPlugin, PluginAPI, MountOptions } from "./plugin";
+
+// Re-export plugin types
+export type { DomPlugin, PluginAPI, PluginResult, MountOptions } from "./plugin";
 
 /** Keyed 要素の情報 */
 interface KeyedNode {
@@ -28,13 +30,16 @@ interface RenderContext {
   keyedNodes: Map<string | number, KeyedNode>;
   /** Context の値を保持するマップ */
   contextValues: Map<symbol, unknown>;
+  /** 登録されたプラグイン */
+  plugins: Map<string, DomPlugin>;
 }
 
 function createRenderContext(
   parent: Node,
   currentElement: globalThis.Element | null,
   keyedNodes?: Map<string | number, KeyedNode>,
-  contextValues?: Map<symbol, unknown>
+  contextValues?: Map<symbol, unknown>,
+  plugins?: Map<string, DomPlugin>
 ): RenderContext {
   return {
     parent,
@@ -44,6 +49,71 @@ function createRenderContext(
     pendingKey: null,
     keyedNodes: keyedNodes ?? new Map(),
     contextValues: contextValues ?? new Map(),
+    plugins: plugins ?? new Map(),
+  };
+}
+
+/**
+ * RenderContext から PluginAPI を作成
+ */
+function createPluginAPI(ctx: RenderContext): PluginAPI {
+  return {
+    get parent() {
+      return ctx.parent;
+    },
+    get currentElement() {
+      return ctx.currentElement;
+    },
+    getContext<T>(id: symbol): T | undefined {
+      return ctx.contextValues.get(id) as T | undefined;
+    },
+    setContext<T>(id: symbol, value: T): void {
+      ctx.contextValues.set(id, value);
+    },
+    onMount(callback: () => void | (() => void)): void {
+      ctx.mountCallbacks.push(callback);
+    },
+    onUnmount(callback: () => void): void {
+      ctx.unmountCallbacks.push(callback);
+    },
+    appendChild(node: Node): void {
+      ctx.parent.appendChild(node);
+    },
+    processChildren(
+      childrenFn: ChildrenFn,
+      options?: { parent?: Node; inheritContext?: boolean }
+    ): void {
+      const targetParent = options?.parent ?? ctx.parent;
+      const inheritContext = options?.inheritContext ?? true;
+
+      const childCtx = createRenderContext(
+        targetParent,
+        targetParent instanceof globalThis.Element ? targetParent : null,
+        undefined,
+        inheritContext ? new Map(ctx.contextValues) : new Map(),
+        ctx.plugins
+      );
+
+      const children = toChildren(childrenFn());
+      processIterator(
+        children as Iterator<Child, void, Slot | void>,
+        childCtx
+      );
+
+      // 子コンテキストのコールバックを親に伝搬
+      ctx.mountCallbacks.push(...childCtx.mountCallbacks);
+      ctx.unmountCallbacks.push(...childCtx.unmountCallbacks);
+    },
+    createChildAPI(parent: Node): PluginAPI {
+      const childCtx = createRenderContext(
+        parent,
+        parent instanceof globalThis.Element ? parent : null,
+        undefined,
+        new Map(ctx.contextValues),
+        ctx.plugins
+      );
+      return createPluginAPI(childCtx);
+    },
   };
 }
 
@@ -109,12 +179,13 @@ function processElement(
     }
   }
 
-  // 子コンテキストを作成（親の contextValues を継承）
+  // 子コンテキストを作成（親の contextValues と plugins を継承）
   const childCtx = createRenderContext(
     node,
     node,
     undefined,
-    new Map(ctx.contextValues)
+    new Map(ctx.contextValues),
+    ctx.plugins
   );
 
   // key があれば keyedNodes に登録
@@ -212,6 +283,20 @@ function processIterator(
   while (!result.done) {
     const value = result.value;
 
+    // まずプラグインをチェック
+    if (value && typeof value === "object" && "type" in value) {
+      const type = (value as { type: string }).type;
+      const plugin = ctx.plugins.get(type);
+
+      if (plugin) {
+        const api = createPluginAPI(ctx);
+        const pluginResult = plugin.process(value as Child, api);
+        result = iter.next(pluginResult.value as Slot | void);
+        continue;
+      }
+    }
+
+    // 組み込みハンドラ
     if (isTagged(value, "element")) {
       const { slot } = processElement(value as Element, ctx);
       result = iter.next(slot);
@@ -263,82 +348,21 @@ function processIterator(
       // key を記録して次の要素に関連付ける
       ctx.pendingKey = value.value as string | number;
       result = iter.next();
-    } else if (isTagged(value, "reactive")) {
-      // リアクティブブロックの処理
-      const childrenFn = value.childrenFn as ChildrenFn;
-
-      // コンテナ要素を作成（リアクティブ更新のため）
-      const container = document.createElement("span");
-      container.setAttribute("data-reactive", "");
-      ctx.parent.appendChild(container);
-
-      // リアクティブコンテキスト（親の contextValues を継承）
-      const reactiveCtx = createRenderContext(
-        container,
-        container,
-        undefined,
-        new Map(ctx.contextValues)
-      );
-
-      // 更新関数
-      const update = () => {
-        // アンマウントコールバックを実行
-        for (const callback of reactiveCtx.unmountCallbacks) {
-          callback();
-        }
-        reactiveCtx.unmountCallbacks = [];
-        reactiveCtx.mountCallbacks = [];
-
-        // DOM をクリアして再構築
-        container.innerHTML = "";
-        reactiveCtx.currentElement = container;
-
-        // Signal 依存関係を追跡しながら子要素を処理
-        runWithSubscriber(update, () => {
-          const children = toChildren(childrenFn());
-          processIterator(
-            children as Iterator<Child, void, Slot | void>,
-            reactiveCtx
-          );
-        });
-
-        // マウントコールバックを実行
-        executeMount(reactiveCtx);
-      };
-
-      // 初回レンダリング（依存関係を追跡）
-      update();
-
-      // アンマウント時にリアクティブ購読を解除するためのクリーンアップ
-      ctx.unmountCallbacks.push(() => {
-        for (const callback of reactiveCtx.unmountCallbacks) {
-          callback();
-        }
-      });
-
-      result = iter.next();
-    } else if (isTagged(value, "context-provide")) {
-      // Context に値を設定
-      const context = value.context as Context<unknown>;
-      ctx.contextValues.set(context.id, value.value);
-      result = iter.next();
-    } else if (isTagged(value, "context-inject")) {
-      // Context から値を取得
-      const context = value.context as Context<unknown>;
-      const contextValue = ctx.contextValues.has(context.id)
-        ? ctx.contextValues.get(context.id)
-        : context.defaultValue;
-      result = iter.next(contextValue as Slot | void);
     } else {
+      // 未知の type はスキップ
       result = iter.next();
     }
   }
 }
 
-function render(gen: ElementGenerator, parent: HTMLElement): void {
+function render(
+  gen: ElementGenerator,
+  parent: HTMLElement,
+  plugins: Map<string, DomPlugin>
+): void {
   parent.innerHTML = "";
 
-  const ctx = createRenderContext(parent, null);
+  const ctx = createRenderContext(parent, null, undefined, undefined, plugins);
 
   let result = gen.next();
 
@@ -355,6 +379,21 @@ function render(gen: ElementGenerator, parent: HTMLElement): void {
 }
 
 /** Component を DOM にマウントする */
-export function mount(app: Component, parent: HTMLElement): void {
-  render(app(), parent);
+export function mount(
+  app: Component,
+  parent: HTMLElement,
+  options?: MountOptions
+): void {
+  // プラグインを Map に変換（type -> plugin）
+  const plugins = new Map<string, DomPlugin>();
+
+  if (options?.plugins) {
+    for (const plugin of options.plugins) {
+      for (const type of plugin.types) {
+        plugins.set(type, plugin);
+      }
+    }
+  }
+
+  render(app(), parent, plugins);
 }

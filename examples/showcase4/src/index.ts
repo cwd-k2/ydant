@@ -1,7 +1,12 @@
 /**
  * Showcase 4 - SPA Demo
  *
- * Router, Context, Form, Reactive の使用例
+ * Router, Context, Reactive の使用例
+ * Form バリデーションはユーザー実装例として示す
+ *
+ * プラグインアーキテクチャの使用例:
+ * - createReactivePlugin() で reactive プリミティブを有効化
+ * - createContextPlugin() で provide/inject を有効化
  */
 
 import { mount } from "@ydant/dom";
@@ -24,10 +29,143 @@ import {
   on,
   onMount,
 } from "@ydant/core";
-import { Router, Link, useRoute, navigate } from "@ydant/router";
+import { RouterView, RouterLink, useRoute, navigate } from "@ydant/router";
 import { createStorage } from "@ydant/context";
-import { createForm, required, email, minLength } from "@ydant/form";
-import { signal, reactive } from "@ydant/reactive";
+import { signal, reactive, createReactivePlugin } from "@ydant/reactive";
+import { createContextPlugin } from "@ydant/context";
+
+// =============================================================================
+// Form Validation (User-implemented example)
+// =============================================================================
+
+type ValidationResult = string | null;
+type Validator = (value: unknown) => ValidationResult;
+
+/** 必須バリデータ */
+function required(message = "This field is required"): Validator {
+  return (value: unknown) => {
+    if (value === null || value === undefined || value === "") {
+      return message;
+    }
+    return null;
+  };
+}
+
+/** メールバリデータ */
+function email(message = "Invalid email address"): Validator {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return (value: unknown) => {
+    if (typeof value !== "string" || !value) return null;
+    return emailRegex.test(value) ? null : message;
+  };
+}
+
+/** 最小文字数バリデータ */
+function minLength(min: number, message?: string): Validator {
+  return (value: unknown) => {
+    if (typeof value !== "string" || !value) return null;
+    return value.length >= min
+      ? null
+      : message || `Minimum ${min} characters required`;
+  };
+}
+
+/** シンプルなフォーム状態管理 */
+interface FormState<T extends Record<string, unknown>> {
+  values: T;
+  errors: Partial<Record<keyof T, string | null>>;
+  touched: Partial<Record<keyof T, boolean>>;
+  isSubmitting: boolean;
+}
+
+function createSimpleForm<T extends Record<string, unknown>>(options: {
+  initialValues: T;
+  validations?: Partial<Record<keyof T, Validator[]>>;
+  onSubmit?: (values: T) => void;
+}) {
+  const {
+    initialValues,
+    validations = {} as Partial<Record<keyof T, Validator[]>>,
+    onSubmit,
+  } = options;
+
+  let values = { ...initialValues };
+  let errors: Partial<Record<keyof T, string | null>> = {};
+  let touched: Partial<Record<keyof T, boolean>> = {};
+  let isSubmitting = false;
+  const listeners: Array<() => void> = [];
+
+  const notify = () => {
+    for (const fn of listeners) fn();
+  };
+
+  const validateField = (field: keyof T): string | null => {
+    const fieldValidators = validations[field];
+    if (!fieldValidators) return null;
+    for (const validator of fieldValidators) {
+      const result = validator(values[field]);
+      if (result) return result;
+    }
+    return null;
+  };
+
+  const validate = (): boolean => {
+    let isValid = true;
+    for (const key of Object.keys(validations) as Array<keyof T>) {
+      const error = validateField(key);
+      errors[key] = error;
+      if (error) isValid = false;
+    }
+    notify();
+    return isValid;
+  };
+
+  return {
+    getState(): FormState<T> {
+      return { values, errors, touched, isSubmitting };
+    },
+    getValue<K extends keyof T>(field: K): T[K] {
+      return values[field];
+    },
+    setValue<K extends keyof T>(field: K, value: T[K]): void {
+      values[field] = value;
+      errors[field] = validateField(field);
+      notify();
+    },
+    setTouched<K extends keyof T>(field: K): void {
+      touched[field] = true;
+      errors[field] = validateField(field);
+      notify();
+    },
+    submit(): void {
+      // Mark all as touched
+      for (const key of Object.keys(values) as Array<keyof T>) {
+        touched[key] = true;
+      }
+      if (validate() && onSubmit) {
+        isSubmitting = true;
+        notify();
+        onSubmit(values);
+        isSubmitting = false;
+        notify();
+      }
+    },
+    reset(): void {
+      values = { ...initialValues };
+      errors = {};
+      touched = {};
+      isSubmitting = false;
+      notify();
+    },
+    subscribe(listener: () => void): () => void {
+      listeners.push(listener);
+      return () => {
+        const idx = listeners.indexOf(listener);
+        if (idx >= 0) listeners.splice(idx, 1);
+      };
+    },
+  };
+}
 
 // =============================================================================
 // Context: Theme
@@ -78,7 +216,7 @@ function NavBar() {
       "border-b",
     ]);
 
-    yield* Link({
+    yield* RouterLink({
       href: "/",
       children: () =>
         span(function* () {
@@ -87,7 +225,7 @@ function NavBar() {
         }),
     });
 
-    yield* Link({
+    yield* RouterLink({
       href: "/users",
       children: () =>
         span(function* () {
@@ -96,7 +234,7 @@ function NavBar() {
         }),
     });
 
-    yield* Link({
+    yield* RouterLink({
       href: "/contact",
       children: () =>
         span(function* () {
@@ -132,7 +270,7 @@ const HomePage: Component = () =>
     yield* p(() => [
       clss(["text-gray-600", "dark:text-gray-300"]),
       text(
-        "This is a demo of Ydant SPA with Router, Context, Form, and Reactive features."
+        "This is a demo of Ydant SPA with Router, Context, and Reactive features."
       ),
     ]);
 
@@ -141,10 +279,22 @@ const HomePage: Component = () =>
       yield* h2(() => [clss(["font-semibold", "mb-2"]), text("Features used:")]);
       yield* ul(() => [
         clss(["list-disc", "list-inside", "space-y-1"]),
-        li(() => [text("Router - Client-side navigation")]),
-        li(() => [text("Context - Theme switching with persistence")]),
-        li(() => [text("Reactive - Signal-based state management")]),
-        li(() => [text("Form - Validation and state management")]),
+        li(() => [text("RouterView/RouterLink - Client-side navigation")]),
+        li(() => [text("Context Plugin - Theme switching with persistence")]),
+        li(() => [text("Reactive Plugin - Signal-based state management")]),
+        li(() => [text("User-implemented Form validation")]),
+      ]);
+    });
+
+    yield* div(function* () {
+      yield* clss(["mt-6", "p-4", "bg-green-50", "dark:bg-green-900", "rounded"]);
+      yield* h2(() => [clss(["font-semibold", "mb-2"]), text("Plugin Architecture:")]);
+      yield* p(() => [
+        clss(["text-sm"]),
+        text(
+          "This app uses the plugin system: createReactivePlugin() and createContextPlugin() " +
+            "are passed to mount() to enable reactive and context features."
+        ),
       ]);
     });
   });
@@ -193,9 +343,7 @@ const UsersPage: Component = () =>
               "items-center",
             ]);
 
-            yield* span(() => [
-              text(`${user.name} (${user.email})`),
-            ]);
+            yield* span(() => [text(`${user.name} (${user.email})`)]);
 
             yield* div(() => [
               clss(["flex", "gap-2"]),
@@ -221,7 +369,9 @@ const UsersPage: Component = () =>
                   "rounded",
                 ]);
                 yield* on("click", () => {
-                  users.update((list: User[]) => list.filter((u: User) => u.id !== user.id));
+                  users.update((list: User[]) =>
+                    list.filter((u: User) => u.id !== user.id)
+                  );
                 });
                 yield* text("Delete");
               }),
@@ -277,10 +427,10 @@ const UserDetailPage: Component = () =>
     });
   });
 
-/** コンタクトフォームページ */
+/** コンタクトフォームページ（ユーザー実装のフォームバリデーション例） */
 const ContactPage: Component = () => {
-  // フォーム状態の作成
-  const form = createForm({
+  // フォーム状態の作成（ユーザー実装）
+  const form = createSimpleForm({
     initialValues: {
       name: "",
       email: "",
@@ -309,6 +459,11 @@ const ContactPage: Component = () => {
   return div(function* () {
     yield* clss(["p-6", "max-w-md"]);
     yield* h1(() => [clss(["text-2xl", "font-bold", "mb-4"]), text("Contact")]);
+
+    yield* p(() => [
+      clss(["text-sm", "text-gray-500", "mb-4"]),
+      text("This form uses user-implemented validation (not a library)."),
+    ]);
 
     yield* div(function* () {
       yield* clss(["space-y-4"]);
@@ -477,11 +632,16 @@ const App: Component = () =>
       return () => clearInterval(interval);
     });
 
-    yield* clss(["min-h-screen", "bg-white", "dark:bg-gray-900", "dark:text-white"]);
+    yield* clss([
+      "min-h-screen",
+      "bg-white",
+      "dark:bg-gray-900",
+      "dark:text-white",
+    ]);
 
     yield* NavBar();
 
-    yield* Router({
+    yield* RouterView({
       routes: [
         { path: "/", component: HomePage },
         { path: "/users", component: UsersPage },
@@ -493,7 +653,9 @@ const App: Component = () =>
   });
 
 // =============================================================================
-// Mount
+// Mount with Plugins
 // =============================================================================
 
-mount(App, document.getElementById("app")!);
+mount(App, document.getElementById("app")!, {
+  plugins: [createReactivePlugin(), createContextPlugin()],
+});

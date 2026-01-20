@@ -14,3 +14,6 @@ export {
   createPersistedValue,
   createStorage,
 } from "./persist";
+
+// Plugin
+export { createContextPlugin } from "./plugin";
