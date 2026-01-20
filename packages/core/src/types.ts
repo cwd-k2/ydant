@@ -6,7 +6,7 @@
 export type Tagged<T extends string, P = {}> = { type: T } & P;
 
 // =============================================================================
-// Primitive Types (Leaf nodes)
+// Core Primitive Types
 // =============================================================================
 
 /** HTML 属性 */
@@ -36,23 +36,38 @@ export type Style = Tagged<"style", { properties: Record<string, string> }>;
 /** リスト要素のキー（差分更新用のマーカー） */
 export type Key = Tagged<"key", { value: string | number }>;
 
-/** Context オブジェクト（型定義のみ、実装は @ydant/context） */
+// =============================================================================
+// Plugin Extension Types
+// -----------------------------------------------------------------------------
+// 以下の型は各プラグインパッケージで使用されるが、Child union 型に含める
+// 必要があるため core で定義している。これにより循環依存を回避している。
+// - Reactive: @ydant/reactive で使用
+// - ContextProvide, ContextInject: @ydant/context で使用
+// =============================================================================
+
+/** Context オブジェクト（実装は @ydant/context） */
 export interface Context<T> {
   readonly id: symbol;
   readonly defaultValue: T | undefined;
 }
 
-/** Context Provider（値を提供） */
+/** Context Provider - 値を提供（実装は @ydant/context） */
 export type ContextProvide = Tagged<
   "context-provide",
   { context: Context<unknown>; value: unknown }
 >;
 
-/** Context Inject（値を取得） */
+/** Context Inject - 値を取得（実装は @ydant/context） */
 export type ContextInject = Tagged<
   "context-inject",
   { context: Context<unknown> }
 >;
+
+/** 子要素を生成する関数（前方宣言用） */
+export type ChildrenFn = () => Children | ChildGen[];
+
+/** リアクティブブロック - Signal の変更を追跡して自動更新（実装は @ydant/reactive） */
+export type Reactive = Tagged<"reactive", { childrenFn: ChildrenFn }>;
 
 // =============================================================================
 // Element Types
@@ -60,12 +75,6 @@ export type ContextInject = Tagged<
 
 /** HTML 要素の装飾 (Attribute, Listener, Tap) */
 export type Decoration = Attribute | Listener | Tap;
-
-/** 子要素を生成する関数（前方宣言用） */
-export type ChildrenFn = () => Children | ChildGen[];
-
-/** リアクティブブロック（Signal の変更を追跡して自動更新） */
-export type Reactive = Tagged<"reactive", { childrenFn: ChildrenFn }>;
 
 /** 子要素として yield できるもの */
 export type Child =

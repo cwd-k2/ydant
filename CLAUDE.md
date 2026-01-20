@@ -405,6 +405,7 @@ src/
 9. **Plugin Architecture**: DOM renderer は plugin を通じて拡張可能（reactive, context など）
 10. **History API routing**: `navigate()` で `pushState`、`useRoute()` で現在パスとパラメータ取得
 11. **JS syntax preferred**: 条件分岐やループは JS の `if`/`for` を直接使用（専用ヘルパーより推奨）
+12. **Plugin extension types in core**: `Reactive`, `ContextProvide`, `ContextInject` などプラグイン用の型は core/types.ts で定義。これらは `Child` union 型に含める必要があり、循環依存を避けるため core に配置している
 
 ## Development Notes
 
