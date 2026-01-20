@@ -32,10 +32,10 @@ export function required(message = "This field is required"): Validator<unknown>
  *
  * @param message - エラーメッセージ
  */
-export function email(message = "Invalid email address"): Validator<string> {
+export function email(message = "Invalid email address"): Validator<unknown> {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return (value: string) => {
-    if (!value) return null;
+  return (value: unknown) => {
+    if (typeof value !== "string" || !value) return null;
     return emailRegex.test(value) ? null : message;
   };
 }
@@ -49,9 +49,9 @@ export function email(message = "Invalid email address"): Validator<string> {
 export function minLength(
   min: number,
   message?: string
-): Validator<string> {
-  return (value: string) => {
-    if (!value) return null;
+): Validator<unknown> {
+  return (value: unknown) => {
+    if (typeof value !== "string" || !value) return null;
     return value.length >= min ? null : (message || `Minimum ${min} characters required`);
   };
 }
@@ -65,9 +65,9 @@ export function minLength(
 export function maxLength(
   max: number,
   message?: string
-): Validator<string> {
-  return (value: string) => {
-    if (!value) return null;
+): Validator<unknown> {
+  return (value: unknown) => {
+    if (typeof value !== "string" || !value) return null;
     return value.length <= max ? null : (message || `Maximum ${max} characters allowed`);
   };
 }
@@ -81,9 +81,9 @@ export function maxLength(
 export function pattern(
   regex: RegExp,
   message = "Invalid format"
-): Validator<string> {
-  return (value: string) => {
-    if (!value) return null;
+): Validator<unknown> {
+  return (value: unknown) => {
+    if (typeof value !== "string" || !value) return null;
     return regex.test(value) ? null : message;
   };
 }
@@ -97,9 +97,9 @@ export function pattern(
 export function min(
   minValue: number,
   message?: string
-): Validator<number> {
-  return (value: number) => {
-    if (value === null || value === undefined) return null;
+): Validator<unknown> {
+  return (value: unknown) => {
+    if (typeof value !== "number") return null;
     return value >= minValue ? null : (message || `Minimum value is ${minValue}`);
   };
 }
@@ -113,9 +113,9 @@ export function min(
 export function max(
   maxValue: number,
   message?: string
-): Validator<number> {
-  return (value: number) => {
-    if (value === null || value === undefined) return null;
+): Validator<unknown> {
+  return (value: unknown) => {
+    if (typeof value !== "number") return null;
     return value <= maxValue ? null : (message || `Maximum value is ${maxValue}`);
   };
 }

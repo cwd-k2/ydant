@@ -95,7 +95,12 @@ export interface FormInstance<T extends Record<string, unknown>> {
 export function createForm<T extends Record<string, unknown>>(
   options: CreateFormOptions<T>
 ): FormInstance<T> {
-  const { initialValues, validations = {}, onSubmit, onChange } = options;
+  const {
+    initialValues,
+    validations = {} as Partial<Record<keyof T, Validator<unknown>[]>>,
+    onSubmit,
+    onChange,
+  } = options;
 
   // 内部状態
   let values: T = { ...initialValues };

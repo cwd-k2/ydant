@@ -96,10 +96,21 @@ function patternToRegex(pattern: string): RegExp {
   if (pattern === "*") {
     return /.*/;
   }
-  const escaped = pattern
-    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-    .replace(/\\:([^/]+)/g, "([^/]+)");
-  return new RegExp(`^${escaped}$`);
+  // まず :param を一時的なプレースホルダーに置き換え
+  // その後、正規表現の特殊文字をエスケープ
+  // 最後にプレースホルダーをキャプチャグループに置換
+  const placeholder = "___PARAM___";
+
+  // パラメータをプレースホルダーに置換
+  const withPlaceholders = pattern.replace(/:([^/]+)/g, placeholder);
+
+  // 正規表現の特殊文字をエスケープ
+  const escaped = withPlaceholders.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  // プレースホルダーをキャプチャグループに置換
+  const regexStr = escaped.replace(new RegExp(placeholder, "g"), "([^/]+)");
+
+  return new RegExp(`^${regexStr}$`);
 }
 
 /** クエリ文字列をパース */
