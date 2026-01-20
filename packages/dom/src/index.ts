@@ -226,7 +226,9 @@ function processElement(
       processIterator(children as Iterator<Child, void, Slot | void>, childCtx);
 
       // 使われなかった keyed nodes をクリーンアップ
-      for (const [, keyedNode] of childCtx.keyedNodes) {
+      // oldKeyedNodes に残っているもの = 今回の処理で使われなかったもの
+      // (processElement で再利用された keyed nodes は delete されている)
+      for (const [, keyedNode] of oldKeyedNodes) {
         // アンマウントコールバックを実行
         for (const callback of keyedNode.unmountCallbacks) {
           callback();
@@ -236,7 +238,7 @@ function processElement(
           keyedNode.node.parentNode.removeChild(keyedNode.node);
         }
       }
-      childCtx.keyedNodes.clear();
+      // childCtx.keyedNodes には新しく登録された keyed nodes が入っているので、クリアしない
 
       // マウントコールバックを実行
       executeMount(childCtx);
