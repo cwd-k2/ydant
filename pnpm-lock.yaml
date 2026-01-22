@@ -113,6 +113,9 @@ importers:
       '@ydant/core':
         specifier: workspace:*
         version: link:../core
+      '@ydant/dom':
+        specifier: workspace:*
+        version: link:../dom
 
   packages/core: {}
 
@@ -131,6 +134,9 @@ importers:
       '@ydant/core':
         specifier: workspace:*
         version: link:../core
+      '@ydant/dom':
+        specifier: workspace:*
+        version: link:../dom
 
   packages/router:
     devDependencies:
