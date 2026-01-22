@@ -39,35 +39,27 @@ export type Key = Tagged<"key", { value: string | number }>;
 // =============================================================================
 // Plugin Extension Types
 // -----------------------------------------------------------------------------
-// 以下の型は各プラグインパッケージで使用されるが、Child union 型に含める
-// 必要があるため core で定義している。これにより循環依存を回避している。
-// - Reactive: @ydant/reactive で使用
-// - ContextProvide, ContextInject: @ydant/context で使用
+// プラグインは declare module "@ydant/core" を使って PluginChildExtensions
+// インターフェースを拡張することで、独自の Child 型を追加できる。
 // =============================================================================
-
-/** Context オブジェクト（実装は @ydant/context） */
-export interface Context<T> {
-  readonly id: symbol;
-  readonly defaultValue: T | undefined;
-}
-
-/** Context Provider - 値を提供（実装は @ydant/context） */
-export type ContextProvide = Tagged<
-  "context-provide",
-  { context: Context<unknown>; value: unknown }
->;
-
-/** Context Inject - 値を取得（実装は @ydant/context） */
-export type ContextInject = Tagged<
-  "context-inject",
-  { context: Context<unknown> }
->;
 
 /** 子要素を生成する関数（前方宣言用） */
 export type ChildrenFn = () => Children | ChildGen[];
 
-/** リアクティブブロック - Signal の変更を追跡して自動更新（実装は @ydant/reactive） */
-export type Reactive = Tagged<"reactive", { childrenFn: ChildrenFn }>;
+/**
+ * プラグインが Child 型を拡張するためのインターフェース
+ *
+ * @example
+ * ```typescript
+ * // @ydant/reactive で Reactive 型を追加
+ * declare module "@ydant/core" {
+ *   interface PluginChildExtensions {
+ *     Reactive: Tagged<"reactive", { childrenFn: ChildrenFn }>;
+ *   }
+ * }
+ * ```
+ */
+export interface PluginChildExtensions {}
 
 // =============================================================================
 // Element Types
@@ -76,17 +68,13 @@ export type Reactive = Tagged<"reactive", { childrenFn: ChildrenFn }>;
 /** HTML 要素の装飾 (Attribute, Listener) */
 export type Decoration = Attribute | Listener;
 
-/** 子要素として yield できるもの */
+/** コアが定義する基本的な Child 型 */
+type CoreChild = Element | Decoration | Text | Lifecycle | Style | Key;
+
+/** 子要素として yield できるもの（プラグインによって拡張可能） */
 export type Child =
-  | Element
-  | Decoration
-  | Text
-  | Lifecycle
-  | Style
-  | Key
-  | Reactive
-  | ContextProvide
-  | ContextInject;
+  | CoreChild
+  | PluginChildExtensions[keyof PluginChildExtensions];
 
 /** Child を yield するジェネレーター */
 export type ChildGen = Generator<Child, unknown, unknown>;

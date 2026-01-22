@@ -24,10 +24,17 @@
  * ```
  */
 
-import type { ChildrenFn, Reactive } from "@ydant/core";
+import type { Tagged, ChildrenFn } from "@ydant/core";
 
-// Reactive 型は @ydant/core からエクスポートされる
-export type { Reactive } from "@ydant/core";
+/** リアクティブブロック - Signal の変更を追跡して自動更新 */
+export type Reactive = Tagged<"reactive", { childrenFn: ChildrenFn }>;
+
+// @ydant/core の Child 型を拡張
+declare module "@ydant/core" {
+  interface PluginChildExtensions {
+    Reactive: Reactive;
+  }
+}
 
 /**
  * Signal を追跡して自動的に再レンダリングするリアクティブブロックを作成

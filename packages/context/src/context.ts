@@ -45,6 +45,14 @@ export interface ContextInject {
   context: Context<unknown>;
 }
 
+// @ydant/core の Child 型を拡張
+declare module "@ydant/core" {
+  interface PluginChildExtensions {
+    ContextProvide: ContextProvide;
+    ContextInject: ContextInject;
+  }
+}
+
 /**
  * Context を作成する
  *

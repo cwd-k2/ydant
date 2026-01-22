@@ -7,10 +7,6 @@ export type {
   Lifecycle,
   Style,
   Key,
-  Reactive,
-  Context,
-  ContextProvide,
-  ContextInject,
   Decoration,
   Child,
   ChildGen,
@@ -21,6 +17,7 @@ export type {
   Slot,
   Component,
   // Plugin types
+  PluginChildExtensions,
   PluginAPI,
   PluginResult,
   DomPlugin,

@@ -14,7 +14,8 @@
  * ```
  */
 
-import type { Child, DomPlugin, PluginAPI, PluginResult, Context } from "@ydant/core";
+import type { Child, DomPlugin, PluginAPI, PluginResult } from "@ydant/core";
+import type { Context } from "./context";
 
 /**
  * Context プラグインを作成する
