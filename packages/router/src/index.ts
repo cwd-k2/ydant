@@ -12,9 +12,6 @@ export {
   navigate,
   goBack,
   goForward,
-  // Legacy aliases (deprecated)
-  Router,
-  Link,
 } from "./router";
 
 export type {
@@ -22,7 +19,4 @@ export type {
   RouteInfo,
   RouterViewProps,
   RouterLinkProps,
-  // Legacy aliases (deprecated)
-  RouterProps,
-  LinkProps,
 } from "./router";

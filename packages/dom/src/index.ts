@@ -159,9 +159,9 @@ function processElement(
   // 親に追加（再利用時は移動になる）
   ctx.parent.appendChild(node);
 
-  // extras (Attribute, Listener, Tap) を適用
-  if (element.extras) {
-    for (const extra of element.extras) {
+  // decorations (Attribute, Listener) を適用
+  if (element.decorations) {
+    for (const extra of element.decorations) {
       if (isTagged(extra, "attribute")) {
         node.setAttribute(extra.key as string, extra.value as string);
       } else if (isTagged(extra, "listener")) {
@@ -173,8 +173,6 @@ function processElement(
             extra.value as (e: Event) => void
           );
         }
-      } else if (isTagged(extra, "tap")) {
-        (extra.callback as (el: globalThis.Element) => void)(node);
       }
     }
   }
@@ -250,9 +248,9 @@ function processElement(
     node.innerHTML = "";
   }
 
-  if (element.holds) {
+  if (element.children) {
     processIterator(
-      element.holds as Iterator<Child, void, Slot | void>,
+      element.children as Iterator<Child, void, Slot | void>,
       childCtx
     );
   }
@@ -313,11 +311,6 @@ function processIterator(
           value.key as string,
           value.value as (e: Event) => void
         );
-      }
-      result = iter.next();
-    } else if (isTagged(value, "tap")) {
-      if (ctx.currentElement) {
-        (value.callback as (el: globalThis.Element) => void)(ctx.currentElement);
       }
       result = iter.next();
     } else if (isTagged(value, "text")) {

@@ -1,8 +1,8 @@
-import type { Attribute, Listener, Tap, Text, Lifecycle, Style, Key } from "./types";
+import type { Attribute, Listener, Text, Lifecycle, Style, Key } from "./types";
 
 /** プリミティブを yield するジェネレーター関数を作成するファクトリ */
 function createPrimitive<T, Args extends unknown[]>(
-  factory: (...args: Args) => T
+  factory: (...args: Args) => T,
 ) {
   return function* (...args: Args): Generator<T, void, void> {
     yield factory(...args);
@@ -11,7 +11,11 @@ function createPrimitive<T, Args extends unknown[]>(
 
 /** HTML 属性を yield */
 export const attr = createPrimitive(
-  (key: string, value: string): Attribute => ({ type: "attribute", key, value })
+  (key: string, value: string): Attribute => ({
+    type: "attribute",
+    key,
+    value,
+  }),
 );
 
 /** class 属性のショートハンド */
@@ -20,7 +24,7 @@ export const clss = createPrimitive(
     type: "attribute",
     key: "class",
     value: classes.join(" "),
-  })
+  }),
 );
 
 /** イベントリスナを yield */
@@ -29,20 +33,13 @@ export const on = createPrimitive(
     type: "listener",
     key,
     value: handler,
-  })
+  }),
 );
 
 /** テキストノードを yield */
 export const text = createPrimitive(
-  (content: string): Text => ({ type: "text", content })
+  (content: string): Text => ({ type: "text", content }),
 );
-
-/** DOM 要素に直接アクセスして操作 */
-export function* tap<E extends HTMLElement = HTMLElement>(
-  callback: (el: E) => void
-): Generator<Tap, void, void> {
-  yield { type: "tap", callback: callback as (el: HTMLElement) => void };
-}
 
 /**
  * コンポーネントがマウントされた時に実行されるコールバックを登録する
@@ -58,7 +55,7 @@ export function* tap<E extends HTMLElement = HTMLElement>(
  * ```
  */
 export function* onMount(
-  callback: () => void | (() => void)
+  callback: () => void | (() => void),
 ): Generator<Lifecycle, void, void> {
   yield { type: "lifecycle", event: "mount", callback };
 }
@@ -75,7 +72,9 @@ export function* onMount(
  * });
  * ```
  */
-export function* onUnmount(callback: () => void): Generator<Lifecycle, void, void> {
+export function* onUnmount(
+  callback: () => void,
+): Generator<Lifecycle, void, void> {
   yield { type: "lifecycle", event: "unmount", callback };
 }
 
@@ -94,7 +93,7 @@ export function* onUnmount(callback: () => void): Generator<Lifecycle, void, voi
  * ```
  */
 export function* style(
-  properties: Partial<CSSStyleDeclaration> & Record<`--${string}`, string>
+  properties: Partial<CSSStyleDeclaration> & Record<`--${string}`, string>,
 ): Generator<Style, void, void> {
   yield { type: "style", properties: properties as Record<string, string> };
 }

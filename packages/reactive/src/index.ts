@@ -24,7 +24,7 @@
  */
 
 // Signal
-export { signal, subscriberManager, runWithSubscriber, getCurrentSubscriber } from "./signal";
+export { signal } from "./signal";
 export type { Signal } from "./signal";
 
 // Computed

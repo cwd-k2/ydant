@@ -78,7 +78,9 @@ export interface RouterLinkProps {
 let currentRoute: RouteInfo = {
   path: typeof window !== "undefined" ? window.location.pathname : "/",
   params: {},
-  query: parseQuery(typeof window !== "undefined" ? window.location.search : ""),
+  query: parseQuery(
+    typeof window !== "undefined" ? window.location.search : "",
+  ),
   hash: typeof window !== "undefined" ? window.location.hash : "",
 };
 
@@ -133,7 +135,7 @@ function parseQuery(search: string): Record<string, string> {
 /** パスがパターンにマッチするか確認し、パラメータを抽出 */
 function matchPath(
   path: string,
-  pattern: string
+  pattern: string,
 ): { match: boolean; params: Record<string, string> } {
   const regex = patternToRegex(pattern);
   const match = path.match(regex);
@@ -213,7 +215,7 @@ export function goForward(): void {
  */
 function renderMatchedRouteArray(
   routes: RouteDefinition[],
-  base: string
+  base: string,
 ): Render[] {
   const path = currentRoute.path.startsWith(base)
     ? currentRoute.path.slice(base.length) || "/"
@@ -305,13 +307,3 @@ export function RouterView(props: RouterViewProps): Render {
     });
   });
 }
-
-// Legacy aliases for backwards compatibility
-/** @deprecated Use RouterView instead */
-export const Router = RouterView;
-/** @deprecated Use RouterViewProps instead */
-export type RouterProps = RouterViewProps;
-/** @deprecated Use RouterLink instead */
-export const Link = RouterLink;
-/** @deprecated Use RouterLinkProps instead */
-export type LinkProps = RouterLinkProps;

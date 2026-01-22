@@ -83,21 +83,3 @@ export function signal<T>(initialValue: T): Signal<T> {
 
   return read;
 }
-
-/**
- * 購読者を設定して関数を実行する（内部用）
- *
- * @deprecated subscriberManager.runWith を直接使用してください
- */
-export function runWithSubscriber<T>(subscriber: Subscriber, fn: () => T): T {
-  return subscriberManager.runWith(subscriber, fn);
-}
-
-/**
- * 現在の購読者を取得する（内部用）
- *
- * @deprecated subscriberManager.get を直接使用してください
- */
-export function getCurrentSubscriber(): Subscriber | null {
-  return subscriberManager.get();
-}

@@ -3,7 +3,6 @@ export type {
   Tagged,
   Attribute,
   Listener,
-  Tap,
   Text,
   Lifecycle,
   Style,
@@ -19,7 +18,6 @@ export type {
   ChildrenFn,
   Element,
   Render,
-  Render as ElementGenerator, // 後方互換性のためのエイリアス
   Slot,
   Component,
   // Plugin types
@@ -85,4 +83,13 @@ export {
 } from "./elements";
 
 // Primitives
-export { attr, clss, on, text, tap, onMount, onUnmount, style, key } from "./primitives";
+export {
+  attr,
+  clss,
+  on,
+  text,
+  onMount,
+  onUnmount,
+  style,
+  key,
+} from "./primitives";

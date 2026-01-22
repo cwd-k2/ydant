@@ -13,10 +13,10 @@ export type Tagged<T extends string, P = {}> = { type: T } & P;
 export type Attribute = Tagged<"attribute", { key: string; value: string }>;
 
 /** イベントリスナ */
-export type Listener = Tagged<"listener", { key: string; value: (e: Event) => void }>;
-
-/** DOM 要素への直接アクセス */
-export type Tap = Tagged<"tap", { callback: (el: HTMLElement) => void }>;
+export type Listener = Tagged<
+  "listener",
+  { key: string; value: (e: Event) => void }
+>;
 
 /** テキストノード */
 export type Text = Tagged<"text", { content: string }>;
@@ -73,8 +73,8 @@ export type Reactive = Tagged<"reactive", { childrenFn: ChildrenFn }>;
 // Element Types
 // =============================================================================
 
-/** HTML 要素の装飾 (Attribute, Listener, Tap) */
-export type Decoration = Attribute | Listener | Tap;
+/** HTML 要素の装飾 (Attribute, Listener) */
+export type Decoration = Attribute | Listener;
 
 /** 子要素として yield できるもの */
 export type Child =
@@ -105,7 +105,7 @@ export interface Slot {
 /** HTML 要素 */
 export type Element = Tagged<
   "element",
-  { tag: string; holds: Children; extras?: Decoration[]; ns?: string }
+  { tag: string; children: Children; decorations?: Decoration[]; ns?: string }
 >;
 
 /** Element を yield し、最終的に Slot を返すジェネレーター */
@@ -150,7 +150,7 @@ export interface PluginAPI {
     options?: {
       parent?: Node;
       inheritContext?: boolean;
-    }
+    },
   ): void;
 
   /** 新しい子コンテキストの API を作成 */
