@@ -14,7 +14,8 @@
  * ```
  */
 
-import type { Child, DomPlugin, PluginAPI, PluginResult } from "@ydant/core";
+import type { Child } from "@ydant/core";
+import type { DomPlugin, PluginAPI, PluginResult } from "@ydant/dom";
 import type { Context } from "./context";
 
 /**

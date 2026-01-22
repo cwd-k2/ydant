@@ -16,11 +16,8 @@ export type {
   Render,
   Slot,
   Component,
-  // Plugin types
+  // Plugin extension point
   PluginChildExtensions,
-  PluginAPI,
-  PluginResult,
-  DomPlugin,
 } from "./types";
 
 // Utilities

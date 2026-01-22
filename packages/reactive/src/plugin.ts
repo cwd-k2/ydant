@@ -14,7 +14,8 @@
  * ```
  */
 
-import type { Child, ChildrenFn, DomPlugin, PluginAPI, PluginResult } from "@ydant/core";
+import type { Child, ChildrenFn } from "@ydant/core";
+import type { DomPlugin, PluginAPI, PluginResult } from "@ydant/dom";
 import { subscriberManager } from "./subscriber-manager";
 
 /**
