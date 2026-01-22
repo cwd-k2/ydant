@@ -163,25 +163,3 @@ export function Transition(props: TransitionProps): Render {
   });
 }
 
-/**
- * 状態を持つ Transition（show の変化に対応）
- *
- * 注意: この実装は show の初期値に基づいて動作する。
- * show の変化に対応するには、親コンポーネントで Slot.refresh() を使用する。
- */
-export function* TransitionWithState(
-  props: TransitionProps
-): Render {
-  // 現在の状態を保持するコンテナを作成
-  const containerSlot = yield* div(function* () {
-    if (props.show) {
-      const childSlot = yield* props.children();
-
-      yield* onMount(() => {
-        enterTransition(childSlot.node, props);
-      });
-    }
-  });
-
-  return containerSlot;
-}

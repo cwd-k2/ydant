@@ -4,7 +4,7 @@
  * CSS トランジションを適用するためのコンポーネント群
  */
 
-export { Transition, TransitionWithState } from "./Transition";
+export { Transition } from "./Transition";
 export type { TransitionProps } from "./Transition";
 
 export {
