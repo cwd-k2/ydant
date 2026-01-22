@@ -5,15 +5,19 @@
  *
  * @example
  * ```typescript
- * import { persist, createPersistedSignal } from "@ydant/context";
- * import { signal } from "@ydant/reactive";
+ * import { createStorage } from "@ydant/context";
  *
- * // 初期値を localStorage から取得（なければデフォルト値）
- * const theme = persist("theme", "light");
+ * // ストレージを作成
+ * const themeStorage = createStorage<"light" | "dark">("theme", "light");
  *
- * // Signal と組み合わせる場合
- * const count = createPersistedSignal("count", 0);
- * count.set(10);  // localStorage にも保存される
+ * // 読み込み
+ * const theme = themeStorage.get();
+ *
+ * // 保存
+ * themeStorage.set("dark");
+ *
+ * // 削除
+ * themeStorage.clear();
  * ```
  */
 
@@ -72,48 +76,6 @@ export function remove(key: string): void {
   } catch {
     // localStorage が使用できない場合は何もしない
   }
-}
-
-/**
- * 永続化された Signal を作成するためのヘルパー
- *
- * @ydant/reactive の signal と組み合わせて使用する。
- * 値が変更されるたびに自動的に localStorage に保存される。
- *
- * 注意: この関数は @ydant/reactive に依存しないため、
- * Signal の作成は呼び出し側で行う必要がある。
- *
- * @example
- * ```typescript
- * import { signal } from "@ydant/reactive";
- * import { createPersistedValue } from "@ydant/context";
- *
- * // 初期値の取得と保存関数を作成
- * const { initialValue, save } = createPersistedValue("count", 0);
- *
- * // Signal を作成
- * const count = signal(initialValue);
- *
- * // 更新時に保存
- * function setCount(value: number) {
- *   count.set(value);
- *   save(value);
- * }
- * ```
- */
-export function createPersistedValue<T>(
-  key: string,
-  defaultValue: T
-): {
-  initialValue: T;
-  save: (value: T) => void;
-  remove: () => void;
-} {
-  return {
-    initialValue: persist(key, defaultValue),
-    save: (value: T) => save(key, value),
-    remove: () => remove(key),
-  };
 }
 
 /**
