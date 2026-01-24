@@ -32,39 +32,37 @@ export const App: Component = () => {
   let nextId = 6;
   let newItemText = "";
   let newItemPriority: ListItem["priority"] = "medium";
-  let sortOrder: SortOrder = "id";
 
   let listSlot: Slot;
   let statsSlot: Slot;
 
-  // Sort items
-  const sortItems = (): ListItem[] => {
-    const sorted = [...items];
-    switch (sortOrder) {
+  // Sort items in place (one-time action)
+  const sortItemsBy = (order: SortOrder) => {
+    switch (order) {
       case "id":
-        return sorted.sort((a, b) => a.id - b.id);
+        items.sort((a, b) => a.id - b.id);
+        break;
       case "priority":
         const priorityOrder = { high: 0, medium: 1, low: 2 };
-        return sorted.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+        items.sort(
+          (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority],
+        );
+        break;
       case "text":
-        return sorted.sort((a, b) => a.text.localeCompare(b.text));
-      default:
-        return sorted;
+        items.sort((a, b) => a.text.localeCompare(b.text));
+        break;
     }
+    listSlot.refresh(renderList);
   };
 
   // Move item in array
   const moveItem = (index: number, direction: -1 | 1) => {
-    const sorted = sortItems();
     const newIndex = index + direction;
-    if (newIndex < 0 || newIndex >= sorted.length) return;
+    if (newIndex < 0 || newIndex >= items.length) return;
 
     // Swap items
-    [sorted[index], sorted[newIndex]] = [sorted[newIndex], sorted[index]];
+    [items[index], items[newIndex]] = [items[newIndex], items[index]];
 
-    // Update original items array with new order
-    items = sorted;
-    sortOrder = "id"; // Reset to id order to preserve manual order
     listSlot.refresh(renderList);
     statsSlot.refresh(renderStats);
   };
@@ -72,16 +70,21 @@ export const App: Component = () => {
   const renderList = function* () {
     yield* clss(["space-y-2"]);
 
-    const sortedItems = sortItems();
-
-    if (sortedItems.length === 0) {
+    if (items.length === 0) {
       yield* div(() => [
-        clss(["p-8", "text-center", "text-gray-400", "border", "rounded-lg", "border-dashed"]),
+        clss([
+          "p-8",
+          "text-center",
+          "text-gray-400",
+          "border",
+          "rounded-lg",
+          "border-dashed",
+        ]),
         text("No items. Add one above!"),
       ]);
     } else {
-      for (let i = 0; i < sortedItems.length; i++) {
-        const item = sortedItems[i];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
 
         // key() を使用して DOM ノードを再利用
         // 並び替え時に同じ key を持つ要素は DOM が再利用される
@@ -90,7 +93,7 @@ export const App: Component = () => {
         yield* ListItemView({
           item,
           isFirst: i === 0,
-          isLast: i === sortedItems.length - 1,
+          isLast: i === items.length - 1,
           onMoveUp: () => moveItem(i, -1),
           onMoveDown: () => moveItem(i, 1),
           onDelete: () => {
@@ -133,7 +136,7 @@ export const App: Component = () => {
       clss(["text-center", "text-gray-500", "text-sm"]),
       text(
         "Demonstrates key() for efficient DOM updates. " +
-          "Move items around and watch DOM IDs stay stable."
+          "Move items around and watch DOM IDs stay stable.",
       ),
     ]);
 
@@ -162,11 +165,16 @@ export const App: Component = () => {
       yield* select(function* () {
         yield* clss(["px-3", "py-2", "border", "rounded"]);
         yield* on("change", (e) => {
-          newItemPriority = (e.target as HTMLSelectElement).value as ListItem["priority"];
+          newItemPriority = (e.target as HTMLSelectElement)
+            .value as ListItem["priority"];
         });
 
         yield* option(() => [attr("value", "high"), text("High")]);
-        yield* option(() => [attr("value", "medium"), attr("selected", ""), text("Medium")]);
+        yield* option(() => [
+          attr("value", "medium"),
+          attr("selected", ""),
+          text("Medium"),
+        ]);
         yield* option(() => [attr("value", "low"), text("Low")]);
       });
 
@@ -198,7 +206,10 @@ export const App: Component = () => {
     // Sort controls
     yield* div(function* () {
       yield* clss(["flex", "gap-2", "items-center"]);
-      yield* h2(() => [clss(["text-sm", "font-medium", "text-gray-700"]), text("Sort by:")]);
+      yield* h2(() => [
+        clss(["text-sm", "font-medium", "text-gray-700"]),
+        text("Sort by:"),
+      ]);
 
       const sortButtons: { order: SortOrder; label: string }[] = [
         { order: "id", label: "ID" },
@@ -213,14 +224,10 @@ export const App: Component = () => {
             "py-1",
             "text-sm",
             "rounded",
-            sortOrder === btn.order
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 hover:bg-gray-300",
+            "bg-gray-200",
+            "hover:bg-gray-300",
           ]);
-          yield* on("click", () => {
-            sortOrder = btn.order;
-            listSlot.refresh(renderList);
-          });
+          yield* on("click", () => sortItemsBy(btn.order));
           yield* text(btn.label);
         });
       }
@@ -240,7 +247,7 @@ export const App: Component = () => {
         text(
           "The key() primitive tells the renderer to reuse existing DOM nodes " +
             "when refreshing a list. Without key(), all items would be recreated. " +
-            "With key(), only the order changes - watch the DOM inspector!"
+            "With key(), only the order changes - watch the DOM inspector!",
         ),
       ]),
     ]);

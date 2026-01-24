@@ -10,7 +10,12 @@ import { toChildren, isTagged } from "@ydant/core";
 import type { DomPlugin, PluginAPI, MountOptions } from "./plugin";
 
 // Re-export plugin types
-export type { DomPlugin, PluginAPI, PluginResult, MountOptions } from "./plugin";
+export type {
+  DomPlugin,
+  PluginAPI,
+  PluginResult,
+  MountOptions,
+} from "./plugin";
 
 /** Keyed 要素の情報 */
 interface KeyedNode {
@@ -39,7 +44,7 @@ function createRenderContext(
   currentElement: globalThis.Element | null,
   keyedNodes?: Map<string | number, KeyedNode>,
   contextValues?: Map<symbol, unknown>,
-  plugins?: Map<string, DomPlugin>
+  plugins?: Map<string, DomPlugin>,
 ): RenderContext {
   return {
     parent,
@@ -81,7 +86,7 @@ function createPluginAPI(ctx: RenderContext): PluginAPI {
     },
     processChildren(
       childrenFn: ChildrenFn,
-      options?: { parent?: Node; inheritContext?: boolean }
+      options?: { parent?: Node; inheritContext?: boolean },
     ): void {
       const targetParent = options?.parent ?? ctx.parent;
       const inheritContext = options?.inheritContext ?? true;
@@ -91,14 +96,11 @@ function createPluginAPI(ctx: RenderContext): PluginAPI {
         targetParent instanceof globalThis.Element ? targetParent : null,
         undefined,
         inheritContext ? new Map(ctx.contextValues) : new Map(),
-        ctx.plugins
+        ctx.plugins,
       );
 
       const children = toChildren(childrenFn());
-      processIterator(
-        children as Iterator<Child, void, Slot | void>,
-        childCtx
-      );
+      processIterator(children as Iterator<Child, void, Slot | void>, childCtx);
 
       // 子コンテキストのコールバックを親に伝搬
       ctx.mountCallbacks.push(...childCtx.mountCallbacks);
@@ -110,7 +112,7 @@ function createPluginAPI(ctx: RenderContext): PluginAPI {
         parent instanceof globalThis.Element ? parent : null,
         undefined,
         new Map(ctx.contextValues),
-        ctx.plugins
+        ctx.plugins,
       );
       return createPluginAPI(childCtx);
     },
@@ -132,7 +134,7 @@ function executeMount(ctx: RenderContext): void {
 
 function processElement(
   element: Element,
-  ctx: RenderContext
+  ctx: RenderContext,
 ): { node: globalThis.Element; slot: Slot } {
   // pending key があるか確認
   const elementKey = ctx.pendingKey;
@@ -170,7 +172,7 @@ function processElement(
         if (!isReused) {
           node.addEventListener(
             extra.key as string,
-            extra.value as (e: Event) => void
+            extra.value as (e: Event) => void,
           );
         }
       }
@@ -183,7 +185,7 @@ function processElement(
     node,
     undefined,
     new Map(ctx.contextValues),
-    ctx.plugins
+    ctx.plugins,
   );
 
   // key があれば keyedNodes に登録
@@ -199,8 +201,12 @@ function processElement(
   const slot: Slot = {
     node: node as HTMLElement,
     refresh(childrenFn: ChildrenFn) {
-      // 古い keyed nodes を保存
+      // 古い keyed nodes を保存（再利用チェック用）
       const oldKeyedNodes = new Map(childCtx.keyedNodes);
+
+      // 新しい keyed nodes 用の Map を作成
+      // これにより、oldKeyedNodes は検索用、childCtx.keyedNodes は新規登録用に分離
+      childCtx.keyedNodes = new Map();
 
       // アンマウントコールバックを実行（keyed nodes は除く）
       for (const callback of childCtx.unmountCallbacks) {
@@ -210,15 +216,19 @@ function processElement(
       childCtx.mountCallbacks = [];
 
       // すべての子要素を削除
-      // keyed 要素は Map に参照が残っているので、後で再利用可能
+      // keyed 要素は oldKeyedNodes に参照が残っているので、後で再利用可能
       while (node.firstChild) {
         node.removeChild(node.firstChild);
       }
 
-      // 新しいコンテキストで再処理（古い keyed nodes を渡す）
+      // 新しいコンテキストで再処理
       childCtx.currentElement = node;
-      childCtx.keyedNodes = oldKeyedNodes;
       childCtx.pendingKey = null;
+
+      // processIterator に渡す前に oldKeyedNodes を設定
+      // （processElement は ctx.keyedNodes を参照するため、一時的に設定）
+      const newKeyedNodes = childCtx.keyedNodes;
+      childCtx.keyedNodes = oldKeyedNodes;
 
       const children = toChildren(childrenFn());
       processIterator(children as Iterator<Child, void, Slot | void>, childCtx);
@@ -231,12 +241,18 @@ function processElement(
         for (const callback of keyedNode.unmountCallbacks) {
           callback();
         }
-        // DOM から削除（まだ存在していれば）
-        if (keyedNode.node.parentNode) {
-          keyedNode.node.parentNode.removeChild(keyedNode.node);
-        }
       }
-      // childCtx.keyedNodes には新しく登録された keyed nodes が入っているので、クリアしない
+
+      // 新しく登録された keyed nodes を反映
+      // processElement は oldKeyedNodes に新しいノードを追加しているので、
+      // oldKeyedNodes から新しいノードを取り出して newKeyedNodes にマージ
+      for (const [key, keyedNode] of childCtx.keyedNodes) {
+        // oldKeyedNodes にまだ残っている = 再利用されなかった or 新規追加
+        // 新規追加の場合のみ newKeyedNodes に追加
+        // 判定: 再利用されたノードは delete されているので、残っているのは新規のみ
+        newKeyedNodes.set(key, keyedNode);
+      }
+      childCtx.keyedNodes = newKeyedNodes;
 
       // マウントコールバックを実行
       executeMount(childCtx);
@@ -251,7 +267,7 @@ function processElement(
   if (element.children) {
     processIterator(
       element.children as Iterator<Child, void, Slot | void>,
-      childCtx
+      childCtx,
     );
   }
 
@@ -263,7 +279,7 @@ function processElement(
 
 function processIterator(
   iter: Iterator<Child, void, Slot | void>,
-  ctx: RenderContext
+  ctx: RenderContext,
 ): void {
   let result = iter.next();
 
@@ -290,9 +306,7 @@ function processIterator(
     } else if (isTagged(value, "lifecycle")) {
       // ライフサイクルイベントの処理
       if (value.event === "mount") {
-        ctx.mountCallbacks.push(
-          value.callback as () => void | (() => void)
-        );
+        ctx.mountCallbacks.push(value.callback as () => void | (() => void));
       } else if (value.event === "unmount") {
         ctx.unmountCallbacks.push(value.callback as () => void);
       }
@@ -301,7 +315,7 @@ function processIterator(
       if (ctx.currentElement) {
         ctx.currentElement.setAttribute(
           value.key as string,
-          value.value as string
+          value.value as string,
         );
       }
       result = iter.next();
@@ -309,7 +323,7 @@ function processIterator(
       if (ctx.currentElement) {
         ctx.currentElement.addEventListener(
           value.key as string,
-          value.value as (e: Event) => void
+          value.value as (e: Event) => void,
         );
       }
       result = iter.next();
@@ -340,7 +354,7 @@ function processIterator(
 function render(
   gen: Render,
   parent: HTMLElement,
-  plugins: Map<string, DomPlugin>
+  plugins: Map<string, DomPlugin>,
 ): void {
   parent.innerHTML = "";
 
@@ -364,7 +378,7 @@ function render(
 export function mount(
   app: Component,
   parent: HTMLElement,
-  options?: MountOptions
+  options?: MountOptions,
 ): void {
   // プラグインを Map に変換（type -> plugin）
   const plugins = new Map<string, DomPlugin>();
