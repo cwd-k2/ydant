@@ -12,12 +12,8 @@
  * ```
  */
 
+import type { Subscriber } from "./types";
 import { subscriberManager } from "./subscriber-manager";
-
-// subscriberManager を再エクスポート
-export { subscriberManager } from "./subscriber-manager";
-
-type Subscriber = () => void;
 
 /** Signal インターフェース */
 export interface Signal<T> {

@@ -5,7 +5,7 @@
  * モジュールシステムによりシングルトンが保証される。
  */
 
-type Subscriber = () => void;
+import type { Subscriber } from "./types";
 
 class SubscriberManager {
   private current: Subscriber | null = null;

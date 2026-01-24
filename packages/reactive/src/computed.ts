@@ -11,6 +11,7 @@
  * ```
  */
 
+import type { Subscriber } from "./types";
 import { subscriberManager } from "./subscriber-manager";
 
 /** Computed インターフェース（読み取り専用） */
@@ -42,7 +43,7 @@ export interface Computed<T> {
 export function computed<T>(fn: () => T): Computed<T> {
   let cachedValue: T;
   let isDirty = true;
-  let subscribers = new Set<() => void>();
+  const subscribers = new Set<Subscriber>();
 
   // この computed 自身が購読者として依存関係を追跡
   const recompute = () => {
@@ -79,4 +80,3 @@ export function computed<T>(fn: () => T): Computed<T> {
 
   return read;
 }
-

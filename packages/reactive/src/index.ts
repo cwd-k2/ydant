@@ -23,6 +23,9 @@
  * ```
  */
 
+// Types
+export type { Subscriber } from "./types";
+
 // Signal
 export { signal } from "./signal";
 export type { Signal } from "./signal";
@@ -32,7 +35,10 @@ export { computed } from "./computed";
 export type { Computed } from "./computed";
 
 // Effect
-export { effect, batch, scheduleEffect } from "./effect";
+export { effect } from "./effect";
+
+// Batch
+export { batch, scheduleEffect } from "./batch";
 
 // Reactive primitive
 export { reactive } from "./reactive";
