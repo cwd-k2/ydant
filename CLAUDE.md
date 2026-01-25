@@ -30,6 +30,10 @@ pnpm run dev              # 統合 dev サーバー
 pnpm test                 # テスト（watch）
 pnpm test:run             # テスト（単発）
 pnpm test:coverage        # カバレッジ付きテスト
+pnpm lint                 # リント実行
+pnpm lint:fix             # リント + 自動修正
+pnpm format               # フォーマット適用
+pnpm format:check         # フォーマットチェック
 ```
 
 ## Essential Patterns
