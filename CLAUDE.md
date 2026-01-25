@@ -229,19 +229,36 @@ mount(Main, document.getElementById("app")!);
 
 ### packages/reactive/src/
 
+- `types.ts` - 共有型定義（Subscriber）
 - `signal.ts` - Signal 実装（リアクティブな値コンテナ）
 - `computed.ts` - Computed 実装（派生値）
 - `effect.ts` - Effect 実装（副作用）
+- `batch.ts` - バッチ処理（複数更新の最適化）
 - `reactive.ts` - reactive プリミティブ（Signal 追跡と自動更新）
+- `subscriber-manager.ts` - 購読管理
 - `plugin.ts` - `createReactivePlugin()` DOM レンダラープラグイン
 - `index.ts` - Re-exports everything
 
 ### packages/dom/src/
 
-- `index.ts` - DOM レンダリングエンジン
-  - `mount(app, parent, options?)` - Component を DOM 要素にマウント（plugins オプション対応）
+- `types.ts` - 内部型定義（KeyedNode, RenderContext）
+- `context.ts` - レンダリングコンテキスト生成
+  - `createRenderContext()` - RenderContext を作成
+  - `createPluginAPIFactory()` - PluginAPI ファクトリを作成
+- `lifecycle.ts` - ライフサイクル管理
+  - `executeMount()` - マウントコールバック実行
+  - `executeUnmount()` - アンマウントコールバック実行
+- `element.ts` - 要素処理
   - `processElement()` - Element を HTMLElement にレンダリング
+  - `applyDecorations()` - 属性・イベント・tap を適用
+  - `createSlot()` - Slot オブジェクトを作成
+- `iterator.ts` - 子要素処理
   - `processIterator()` - Child iterator を処理
+  - `processBuiltinChild()` - 組み込み Child 型を処理
+- `render.ts` - レンダリングエントリーポイント
+  - `render()` - Component をレンダリング
+- `index.ts` - 公開 API
+  - `mount(app, parent, options?)` - Component を DOM 要素にマウント
 - `plugin.ts` - Plugin 型の re-export
 
 ### packages/context/src/
@@ -256,14 +273,29 @@ mount(Main, document.getElementById("app")!);
   - `remove(key)` - 削除
 - `plugin.ts` - `createContextPlugin()` DOM レンダラープラグイン
 
-### packages/router/src/router.ts
+### packages/router/src/
 
-- `RouterView(props)` - ルーティングコンテナ（マッチしたルートをレンダリング）
-- `RouterLink(props)` - ナビゲーションリンク
-- `useRoute()` - 現在のルート情報を取得
-- `navigate(path, replace?)` - プログラムによるナビゲーション
-- `goBack()` / `goForward()` - 履歴操作
-- `Router` / `Link` - 非推奨エイリアス（後方互換性のため）
+- `types.ts` - 型定義
+  - `RouteDefinition` - ルート定義
+  - `RouteInfo` - 現在のルート情報
+  - `RouterViewProps` / `RouterLinkProps` - コンポーネント props
+- `matching.ts` - パスマッチング
+  - `extractParamNames()` - パスからパラメータ名を抽出
+  - `patternToRegex()` - パスパターンを正規表現に変換
+  - `parseQuery()` - クエリ文字列をパース
+  - `matchPath()` - パスのマッチング判定
+- `state.ts` - ルート状態管理
+  - `currentRoute` - 現在のルート情報
+  - `routeListeners` - ルート変更リスナー
+  - `updateRoute()` - ルート状態を更新
+- `navigation.ts` - ナビゲーション関数
+  - `useRoute()` - 現在のルート情報を取得
+  - `navigate(path, replace?)` - プログラムによるナビゲーション
+  - `goBack()` / `goForward()` - 履歴操作
+- `components.ts` - Router コンポーネント
+  - `RouterView(props)` - ルーティングコンテナ
+  - `RouterLink(props)` - ナビゲーションリンク
+- `index.ts` - Re-exports everything
 
 ### packages/async/src/
 
