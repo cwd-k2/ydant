@@ -4,8 +4,13 @@
  * CSS トランジションを適用するためのコンポーネント群
  */
 
-export { Transition } from "./Transition";
-export type { TransitionProps } from "./Transition";
+export {
+  Transition,
+  createTransition,
+  enterTransition,
+  leaveTransition,
+} from "./Transition";
+export type { TransitionProps, TransitionHandle } from "./Transition";
 
 export {
   TransitionGroup,
