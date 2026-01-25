@@ -2,10 +2,13 @@
   "name": "@ydant/dom",
   "version": "0.0.0",
   "description": "DOM renderer for Ydant",
+  "keywords": [],
+  "license": "MIT",
+  "author": "",
   "exports": {
     ".": {
-      "@ydant/dev": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "@ydant/dev": "./src/index.ts",
       "import": "./dist/index.es.js",
       "require": "./dist/index.umd.js"
     }
@@ -14,10 +17,9 @@
     "build": "vite build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
-  "packageManager": "pnpm@10.22.0",
+  "devDependencies": {
+    "@ydant/reactive": "workspace:*"
+  },
   "peerDependencies": {
     "@ydant/core": "workspace:*",
     "@ydant/reactive": "workspace:*"
@@ -27,7 +29,5 @@
       "optional": true
     }
   },
-  "devDependencies": {
-    "@ydant/reactive": "workspace:*"
-  }
+  "packageManager": "pnpm@10.22.0"
 }

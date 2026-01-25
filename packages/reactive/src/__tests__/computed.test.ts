@@ -1,17 +1,17 @@
-import { describe, it, expect, vi } from 'vitest';
-import { signal } from '../signal';
-import { computed } from '../computed';
-import { runWithSubscriber } from '../tracking';
+import { describe, it, expect, vi } from "vitest";
+import { signal } from "../signal";
+import { computed } from "../computed";
+import { runWithSubscriber } from "../tracking";
 
-describe('computed', () => {
-  it('computes derived value', () => {
+describe("computed", () => {
+  it("computes derived value", () => {
     const count = signal(5);
     const doubled = computed(() => count() * 2);
 
     expect(doubled()).toBe(10);
   });
 
-  it('is lazy - does not compute until read', () => {
+  it("is lazy - does not compute until read", () => {
     const count = signal(5);
     const computeFn = vi.fn(() => count() * 2);
     const doubled = computed(computeFn);
@@ -22,7 +22,7 @@ describe('computed', () => {
     expect(computeFn).toHaveBeenCalledTimes(1);
   });
 
-  it('caches value until dependency changes', () => {
+  it("caches value until dependency changes", () => {
     const count = signal(5);
     const computeFn = vi.fn(() => count() * 2);
     const doubled = computed(computeFn);
@@ -34,7 +34,7 @@ describe('computed', () => {
     expect(computeFn).toHaveBeenCalledTimes(1);
   });
 
-  it('recomputes when dependency changes', () => {
+  it("recomputes when dependency changes", () => {
     const count = signal(5);
     const computeFn = vi.fn(() => count() * 2);
     const doubled = computed(computeFn);
@@ -47,7 +47,7 @@ describe('computed', () => {
     expect(computeFn).toHaveBeenCalledTimes(2);
   });
 
-  it('tracks multiple dependencies', () => {
+  it("tracks multiple dependencies", () => {
     const a = signal(1);
     const b = signal(2);
     const c = signal(3);
@@ -65,15 +65,15 @@ describe('computed', () => {
     expect(sum()).toBe(60);
   });
 
-  describe('peek', () => {
-    it('returns current value without subscribing', () => {
+  describe("peek", () => {
+    it("returns current value without subscribing", () => {
       const count = signal(5);
       const doubled = computed(() => count() * 2);
 
       expect(doubled.peek()).toBe(10);
     });
 
-    it('computes value if not yet computed', () => {
+    it("computes value if not yet computed", () => {
       const count = signal(5);
       const computeFn = vi.fn(() => count() * 2);
       const doubled = computed(computeFn);
@@ -82,7 +82,7 @@ describe('computed', () => {
       expect(computeFn).toHaveBeenCalledTimes(1);
     });
 
-    it('does not register subscriber as dependency when using peek', () => {
+    it("does not register subscriber as dependency when using peek", () => {
       const count = signal(5);
       const doubled = computed(() => count() * 2);
 
@@ -102,8 +102,8 @@ describe('computed', () => {
     });
   });
 
-  describe('nested computed', () => {
-    it('tracks nested computed dependencies', () => {
+  describe("nested computed", () => {
+    it("tracks nested computed dependencies", () => {
       const base = signal(5);
       const doubled = computed(() => base() * 2);
       const quadrupled = computed(() => doubled() * 2);
@@ -114,7 +114,7 @@ describe('computed', () => {
       expect(quadrupled()).toBe(40);
     });
 
-    it('propagates changes through chain of computeds', () => {
+    it("propagates changes through chain of computeds", () => {
       const count = signal(1);
       const level1 = computed(() => count() + 1);
       const level2 = computed(() => level1() + 1);
@@ -127,8 +127,8 @@ describe('computed', () => {
     });
   });
 
-  describe('conditional dependencies', () => {
-    it('handles conditional dependency access', () => {
+  describe("conditional dependencies", () => {
+    it("handles conditional dependency access", () => {
       const condition = signal(true);
       const a = signal(1);
       const b = signal(2);
@@ -147,8 +147,8 @@ describe('computed', () => {
     });
   });
 
-  describe('subscriber notification', () => {
-    it('notifies subscribers when computed value changes', () => {
+  describe("subscriber notification", () => {
+    it("notifies subscribers when computed value changes", () => {
       const count = signal(5);
       const doubled = computed(() => count() * 2);
 

@@ -66,10 +66,7 @@ function UsersSection() {
               clss(["p-4", "bg-blue-50", "rounded-lg"]),
               h3(() => [clss(["font-medium", "text-blue-800"]), text(user.name)]),
               p(() => [clss(["text-sm", "text-blue-600"]), text(user.email)]),
-              p(() => [
-                clss(["text-xs", "text-blue-500", "mt-1"]),
-                text(`@ ${user.company.name}`),
-              ]),
+              p(() => [clss(["text-xs", "text-blue-500", "mt-1"]), text(`@ ${user.company.name}`)]),
             ]);
           }
         });
@@ -89,19 +86,9 @@ function ErrorDemoSection() {
     if (!showError) {
       yield* div(() => [
         clss(["text-center"]),
-        p(() => [
-          clss(["text-gray-600", "mb-4"]),
-          text("Click the button to simulate an error."),
-        ]),
+        p(() => [clss(["text-gray-600", "mb-4"]), text("Click the button to simulate an error.")]),
         button(function* () {
-          yield* clss([
-            "px-4",
-            "py-2",
-            "bg-red-500",
-            "text-white",
-            "rounded",
-            "hover:bg-red-600",
-          ]);
+          yield* clss(["px-4", "py-2", "bg-red-500", "text-white", "rounded", "hover:bg-red-600"]);
           yield* on("click", () => {
             showError = true;
             errorSlot.refresh(renderContent);
@@ -166,10 +153,7 @@ function ManualLoadingSection() {
       yield* ul(function* () {
         yield* clss(["space-y-2"]);
         for (const post of data!) {
-          yield* li(() => [
-            clss(["p-2", "bg-white", "rounded", "border"]),
-            text(post.title),
-          ]);
+          yield* li(() => [clss(["p-2", "bg-white", "rounded", "border"]), text(post.title)]);
         }
       });
     } else {
@@ -193,10 +177,7 @@ function ManualLoadingSection() {
   };
 
   return div(function* () {
-    yield* h2(() => [
-      clss(["text-xl", "font-semibold", "mb-4"]),
-      text("Manual Loading Pattern"),
-    ]);
+    yield* h2(() => [clss(["text-xl", "font-semibold", "mb-4"]), text("Manual Loading Pattern")]);
     yield* p(() => [
       clss(["text-sm", "text-gray-500", "mb-4"]),
       text("Alternative to Suspense: explicitly manage loading/error/data states."),

@@ -11,15 +11,7 @@ export function TodoItem(props: TodoItemProps) {
   const { todo, onToggle, onDelete } = props;
 
   return div(() => [
-    clss([
-      "todo-item",
-      "flex",
-      "items-center",
-      "gap-3",
-      "p-3",
-      "border-b",
-      "border-gray-100",
-    ]),
+    clss(["todo-item", "flex", "items-center", "gap-3", "p-3", "border-b", "border-gray-100"]),
 
     // Checkbox
     input(() => [
@@ -31,11 +23,7 @@ export function TodoItem(props: TodoItemProps) {
 
     // Todo text
     span(() => [
-      clss([
-        "flex-1",
-        "text-gray-700",
-        ...(todo.completed ? ["todo-completed"] : []),
-      ]),
+      clss(["flex-1", "text-gray-700", ...(todo.completed ? ["todo-completed"] : [])]),
       text(todo.text),
     ]),
 

@@ -9,9 +9,7 @@ import { parseQuery } from "./matching";
 export let currentRoute: RouteInfo = {
   path: typeof window !== "undefined" ? window.location.pathname : "/",
   params: {},
-  query: parseQuery(
-    typeof window !== "undefined" ? window.location.search : "",
-  ),
+  query: parseQuery(typeof window !== "undefined" ? window.location.search : ""),
   hash: typeof window !== "undefined" ? window.location.hash : "",
 };
 

@@ -19,11 +19,11 @@ const userResource = createResource(() => fetchUser(userId));
 
 // 状態に応じた表示
 if (userResource.loading) {
-  yield* LoadingSpinner();
+  yield * LoadingSpinner();
 } else if (userResource.error) {
-  yield* ErrorDisplay({ error: userResource.error });
+  yield * ErrorDisplay({ error: userResource.error });
 } else {
-  yield* UserCard({ user: userResource.data });
+  yield * UserCard({ user: userResource.data });
 }
 
 // 再取得
@@ -35,14 +35,15 @@ userResource.refetch();
 ```typescript
 import { Suspense, ErrorBoundary } from "@ydant/async";
 
-yield* ErrorBoundary({
-  fallback: (error) => ErrorDisplay({ error }),
-  children: () =>
-    Suspense({
-      fallback: () => LoadingSpinner(),
-      children: () => AsyncContent(),
-    }),
-});
+yield *
+  ErrorBoundary({
+    fallback: (error) => ErrorDisplay({ error }),
+    children: () =>
+      Suspense({
+        fallback: () => LoadingSpinner(),
+        children: () => AsyncContent(),
+      }),
+  });
 ```
 
 ## 実行

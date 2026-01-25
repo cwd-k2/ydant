@@ -2,10 +2,13 @@
   "name": "@ydant/context",
   "version": "0.0.0",
   "description": "Context API for Ydant",
+  "keywords": [],
+  "license": "MIT",
+  "author": "",
   "exports": {
     ".": {
-      "@ydant/dev": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "@ydant/dev": "./src/index.ts",
       "import": "./dist/index.es.js",
       "require": "./dist/index.umd.js"
     }
@@ -14,16 +17,13 @@
     "build": "vite build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "peerDependencies": {
-    "@ydant/core": "workspace:*",
-    "@ydant/dom": "workspace:*"
-  },
   "devDependencies": {
     "@ydant/core": "workspace:*",
     "@ydant/dom": "workspace:*"
   },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
+  "peerDependencies": {
+    "@ydant/core": "workspace:*",
+    "@ydant/dom": "workspace:*"
+  },
   "packageManager": "pnpm@10.22.0"
 }

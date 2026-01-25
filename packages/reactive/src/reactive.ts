@@ -51,8 +51,6 @@ declare module "@ydant/core" {
  * ]);
  * ```
  */
-export function* reactive(
-  childrenFn: ChildrenFn
-): Generator<Reactive, void, void> {
+export function* reactive(childrenFn: ChildrenFn): Generator<Reactive, void, void> {
   yield { type: "reactive", childrenFn };
 }

@@ -32,7 +32,7 @@ const App: Component = () =>
 const ChildComponent: Component = () =>
   div(function* () {
     const theme = yield* inject(ThemeContext);
-    yield* text(`Theme: ${theme}`);  // "dark"
+    yield* text(`Theme: ${theme}`); // "dark"
   });
 
 // Mount with context plugin
@@ -59,9 +59,9 @@ themeStorage.set("dark");
 themeStorage.remove();
 
 // Alternative: direct functions
-persist("key", value);  // Save
-save("key", value);     // Alias for persist
-remove("key");          // Remove
+persist("key", value); // Save
+save("key", value); // Alias for persist
+remove("key"); // Remove
 ```
 
 ## API

@@ -13,10 +13,7 @@ export type Tagged<T extends string, P = {}> = { type: T } & P;
 export type Attribute = Tagged<"attribute", { key: string; value: string }>;
 
 /** イベントリスナ */
-export type Listener = Tagged<
-  "listener",
-  { key: string; value: (e: Event) => void }
->;
+export type Listener = Tagged<"listener", { key: string; value: (e: Event) => void }>;
 
 /** テキストノード */
 export type Text = Tagged<"text", { content: string }>;
@@ -72,9 +69,7 @@ export type Decoration = Attribute | Listener;
 type CoreChild = Element | Decoration | Text | Lifecycle | Style | Key;
 
 /** 子要素として yield できるもの（プラグインによって拡張可能） */
-export type Child =
-  | CoreChild
-  | PluginChildExtensions[keyof PluginChildExtensions];
+export type Child = CoreChild | PluginChildExtensions[keyof PluginChildExtensions];
 
 /** Child を yield するジェネレーター */
 export type ChildGen = Generator<Child, unknown, unknown>;
@@ -105,4 +100,3 @@ export type Render = Generator<Element, Slot, Slot>;
 
 /** ルートコンポーネント（Render を返す関数） */
 export type Component = () => Render;
-

@@ -14,18 +14,18 @@
 イベントハンドラ内で `Slot.refresh()` を使う場合、Slot 変数を先に宣言する:
 
 ```typescript
-let countSlot: Slot;  // 先に宣言
+let countSlot: Slot; // 先に宣言
 
 return div(function* () {
   yield* button(function* () {
     yield* on("click", () => {
       count++;
-      countSlot.refresh(() => [text(`Count: ${count}`)]);  // ここで使用
+      countSlot.refresh(() => [text(`Count: ${count}`)]); // ここで使用
     });
     yield* text("+1");
   });
 
-  countSlot = yield* div(() => [text(`Count: ${count}`)]);  // 後から代入
+  countSlot = yield* div(() => [text(`Count: ${count}`)]); // 後から代入
 });
 ```
 

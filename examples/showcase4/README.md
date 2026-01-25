@@ -30,13 +30,14 @@ mount(App, root, {
 import { RouterView, RouterLink, useRoute, navigate } from "@ydant/router";
 
 // ルート定義
-yield* RouterView({
-  routes: [
-    { path: "/", component: HomePage },
-    { path: "/users/:id", component: UserDetailPage },
-    { path: "*", component: NotFoundPage },
-  ],
-});
+yield *
+  RouterView({
+    routes: [
+      { path: "/", component: HomePage },
+      { path: "/users/:id", component: UserDetailPage },
+      { path: "*", component: NotFoundPage },
+    ],
+  });
 
 // パラメータ取得
 const route = useRoute();
@@ -52,7 +53,7 @@ navigate("/users/123");
 
 ```html
 <script>
-  tailwind.config = { darkMode: 'class' }
+  tailwind.config = { darkMode: "class" };
 </script>
 ```
 

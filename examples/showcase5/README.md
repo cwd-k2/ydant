@@ -16,12 +16,13 @@
 
 ```typescript
 for (const item of items) {
-  yield* key(item.id);  // 次の要素にキーを関連付け
-  yield* li(() => [text(item.name)]);
+  yield * key(item.id); // 次の要素にキーを関連付け
+  yield * li(() => [text(item.name)]);
 }
 ```
 
 **利点:**
+
 - パフォーマンス向上（DOM 再作成を回避）
 - input のフォーカスやスクロール位置の保持
 - アニメーションの継続
@@ -31,13 +32,13 @@ for (const item of items) {
 ```typescript
 // key なし: ソート時にすべての li が再作成される
 for (const item of items) {
-  yield* li(() => [text(item.name)]);
+  yield * li(() => [text(item.name)]);
 }
 
 // key あり: 同じ key を持つ li は DOM ノードが再利用される
 for (const item of items) {
-  yield* key(item.id);
-  yield* li(() => [text(item.name)]);
+  yield * key(item.id);
+  yield * li(() => [text(item.name)]);
 }
 ```
 

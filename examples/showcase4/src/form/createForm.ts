@@ -4,9 +4,7 @@ import type { Form, FormState, FormOptions, Validator } from "./types";
  * シンプルなフォーム状態管理
  * ユーザー実装例として、ライブラリを使用せずにフォームを管理
  */
-export function createForm<T extends Record<string, unknown>>(
-  options: FormOptions<T>
-): Form<T> {
+export function createForm<T extends Record<string, unknown>>(options: FormOptions<T>): Form<T> {
   const {
     initialValues,
     validations = {} as Partial<Record<keyof T, Validator[]>>,

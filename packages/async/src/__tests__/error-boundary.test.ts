@@ -1,68 +1,67 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { div, text } from '@ydant/core';
-import { mount } from '@ydant/dom';
-import { ErrorBoundary } from '../error-boundary';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { div, text } from "@ydant/core";
+import { mount } from "@ydant/dom";
+import { ErrorBoundary } from "../error-boundary";
 
-describe('ErrorBoundary', () => {
+describe("ErrorBoundary", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    container = document.createElement('div');
+    container = document.createElement("div");
     document.body.appendChild(container);
     vi.useFakeTimers();
   });
 
-  it('renders children when no error is thrown', () => {
+  it("renders children when no error is thrown", () => {
     mount(
       () =>
         ErrorBoundary({
           fallback: (error) => div(() => [text(`Error: ${error.message}`)]),
           children: function* () {
-            yield* div(() => [text('Content')]);
+            yield* div(() => [text("Content")]);
           },
         }),
-      container
+      container,
     );
 
-    expect(container.textContent).toContain('Content');
-    expect(container.textContent).not.toContain('Error');
+    expect(container.textContent).toContain("Content");
+    expect(container.textContent).not.toContain("Error");
   });
 
-  it('renders fallback when error is thrown', () => {
+  it("renders fallback when error is thrown", () => {
     mount(
       () =>
         ErrorBoundary({
           fallback: (error) => div(() => [text(`Error: ${error.message}`)]),
           children: function* () {
-            throw new Error('Something went wrong');
+            throw new Error("Something went wrong");
           },
         }),
-      container
+      container,
     );
 
-    expect(container.textContent).toContain('Error: Something went wrong');
-    expect(container.textContent).not.toContain('Content');
+    expect(container.textContent).toContain("Error: Something went wrong");
+    expect(container.textContent).not.toContain("Content");
   });
 
-  it('provides error object to fallback', () => {
-    const testError = new Error('Test error message');
+  it("provides error object to fallback", () => {
+    const testError = new Error("Test error message");
 
     mount(
       () =>
         ErrorBoundary({
-          fallback: (error) =>
-            div(() => [text(`Caught: ${error.name} - ${error.message}`)]),
+          fallback: (error) => div(() => [text(`Caught: ${error.name} - ${error.message}`)]),
           children: function* () {
             throw testError;
           },
         }),
-      container
+      container,
     );
 
-    expect(container.textContent).toContain('Caught: Error - Test error message');
+    expect(container.textContent).toContain("Caught: Error - Test error message");
   });
 
-  it('provides reset function to fallback', () => {
+  it("provides reset function to fallback", () => {
     let shouldError = true;
     let resetFn: (() => void) | null = null;
 
@@ -73,20 +72,20 @@ describe('ErrorBoundary', () => {
             resetFn = reset;
             return div(function* () {
               yield* text(`Error: ${error.message}`);
-              yield* div(() => [text('Retry')]);
+              yield* div(() => [text("Retry")]);
             });
           },
           children: function* () {
             if (shouldError) {
-              throw new Error('Failed');
+              throw new Error("Failed");
             }
-            yield* div(() => [text('Success!')]);
+            yield* div(() => [text("Success!")]);
           },
         }),
-      container
+      container,
     );
 
-    expect(container.textContent).toContain('Error: Failed');
+    expect(container.textContent).toContain("Error: Failed");
     expect(resetFn).not.toBeNull();
 
     // Call reset directly after fixing the error condition
@@ -95,10 +94,10 @@ describe('ErrorBoundary', () => {
 
     vi.advanceTimersToNextFrame();
 
-    expect(container.textContent).toContain('Success!');
+    expect(container.textContent).toContain("Success!");
   });
 
-  it('re-throws Promise (suspense pattern)', () => {
+  it("re-throws Promise (suspense pattern)", () => {
     const pendingPromise = new Promise(() => {});
     let thrownValue: unknown = null;
 
@@ -111,7 +110,7 @@ describe('ErrorBoundary', () => {
               throw pendingPromise;
             },
           }),
-        container
+        container,
       );
     } catch (e) {
       thrownValue = e;
@@ -120,7 +119,7 @@ describe('ErrorBoundary', () => {
     expect(thrownValue).toBe(pendingPromise);
   });
 
-  it('catches error after reset', () => {
+  it("catches error after reset", () => {
     let errorCount = 0;
     let resetFn: (() => void) | null = null;
 
@@ -131,7 +130,7 @@ describe('ErrorBoundary', () => {
             resetFn = reset;
             return div(function* () {
               yield* text(`Error #${errorCount}: ${error.message}`);
-              yield* div(() => [text('Retry')]);
+              yield* div(() => [text("Retry")]);
             });
           },
           children: function* () {
@@ -139,16 +138,16 @@ describe('ErrorBoundary', () => {
             throw new Error(`Failure ${errorCount}`);
           },
         }),
-      container
+      container,
     );
 
-    expect(container.textContent).toContain('Error #1: Failure 1');
+    expect(container.textContent).toContain("Error #1: Failure 1");
 
     // Call reset - should catch new error
     resetFn!();
 
     vi.advanceTimersToNextFrame();
 
-    expect(container.textContent).toContain('Error #2: Failure 2');
+    expect(container.textContent).toContain("Error #2: Failure 2");
   });
 });

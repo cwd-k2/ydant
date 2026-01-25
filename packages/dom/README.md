@@ -14,8 +14,7 @@ pnpm add @ydant/dom
 import { div, text, type Component } from "@ydant/core";
 import { mount } from "@ydant/dom";
 
-const App: Component = () =>
-  div(() => [text("Hello World!")]);
+const App: Component = () => div(() => [text("Hello World!")]);
 
 mount(App, document.getElementById("app")!);
 ```
@@ -25,11 +24,7 @@ mount(App, document.getElementById("app")!);
 ### mount
 
 ```typescript
-function mount(
-  app: Component,
-  parent: HTMLElement,
-  options?: MountOptions
-): void;
+function mount(app: Component, parent: HTMLElement, options?: MountOptions): void;
 
 interface MountOptions {
   plugins?: DomPlugin[];
@@ -46,10 +41,7 @@ import { createReactivePlugin } from "@ydant/reactive";
 import { createContextPlugin } from "@ydant/context";
 
 mount(App, document.getElementById("app")!, {
-  plugins: [
-    createReactivePlugin(),
-    createContextPlugin(),
-  ],
+  plugins: [createReactivePlugin(), createContextPlugin()],
 });
 ```
 

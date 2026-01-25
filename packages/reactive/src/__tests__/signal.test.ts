@@ -1,33 +1,33 @@
-import { describe, it, expect, vi } from 'vitest';
-import { signal } from '../signal';
-import { runWithSubscriber } from '../tracking';
+import { describe, it, expect, vi } from "vitest";
+import { signal } from "../signal";
+import { runWithSubscriber } from "../tracking";
 
-describe('signal', () => {
-  it('returns initial value', () => {
+describe("signal", () => {
+  it("returns initial value", () => {
     const count = signal(0);
     expect(count()).toBe(0);
   });
 
-  it('returns initial value with different types', () => {
-    const str = signal('hello');
+  it("returns initial value with different types", () => {
+    const str = signal("hello");
     const obj = signal({ x: 1, y: 2 });
     const arr = signal([1, 2, 3]);
     const bool = signal(true);
 
-    expect(str()).toBe('hello');
+    expect(str()).toBe("hello");
     expect(obj()).toEqual({ x: 1, y: 2 });
     expect(arr()).toEqual([1, 2, 3]);
     expect(bool()).toBe(true);
   });
 
-  describe('set', () => {
-    it('updates value with set()', () => {
+  describe("set", () => {
+    it("updates value with set()", () => {
       const count = signal(0);
       count.set(5);
       expect(count()).toBe(5);
     });
 
-    it('notifies subscribers on change', () => {
+    it("notifies subscribers on change", () => {
       const count = signal(0);
       const subscriber = vi.fn();
 
@@ -41,7 +41,7 @@ describe('signal', () => {
       expect(subscriber).toHaveBeenCalledTimes(2);
     });
 
-    it('does not notify when value is same (Object.is)', () => {
+    it("does not notify when value is same (Object.is)", () => {
       const count = signal(5);
       const subscriber = vi.fn();
 
@@ -51,7 +51,7 @@ describe('signal', () => {
       expect(subscriber).not.toHaveBeenCalled();
     });
 
-    it('handles NaN equality correctly', () => {
+    it("handles NaN equality correctly", () => {
       const num = signal(NaN);
       const subscriber = vi.fn();
 
@@ -62,7 +62,7 @@ describe('signal', () => {
       expect(subscriber).not.toHaveBeenCalled();
     });
 
-    it('treats -0 and +0 as equal', () => {
+    it("treats -0 and +0 as equal", () => {
       const num = signal(0);
       const subscriber = vi.fn();
 
@@ -76,14 +76,14 @@ describe('signal', () => {
     });
   });
 
-  describe('update', () => {
-    it('updates value with update()', () => {
+  describe("update", () => {
+    it("updates value with update()", () => {
       const count = signal(5);
       count.update((n) => n + 1);
       expect(count()).toBe(6);
     });
 
-    it('passes previous value to updater function', () => {
+    it("passes previous value to updater function", () => {
       const count = signal(10);
       const updater = vi.fn((n: number) => n * 2);
 
@@ -93,7 +93,7 @@ describe('signal', () => {
       expect(count()).toBe(20);
     });
 
-    it('notifies subscribers when value changes', () => {
+    it("notifies subscribers when value changes", () => {
       const count = signal(0);
       const subscriber = vi.fn();
 
@@ -103,7 +103,7 @@ describe('signal', () => {
       expect(subscriber).toHaveBeenCalledTimes(1);
     });
 
-    it('does not notify when update returns same value', () => {
+    it("does not notify when update returns same value", () => {
       const count = signal(5);
       const subscriber = vi.fn();
 
@@ -114,13 +114,13 @@ describe('signal', () => {
     });
   });
 
-  describe('peek', () => {
-    it('returns current value without subscribing', () => {
+  describe("peek", () => {
+    it("returns current value without subscribing", () => {
       const count = signal(42);
       expect(count.peek()).toBe(42);
     });
 
-    it('does not register as subscriber', () => {
+    it("does not register as subscriber", () => {
       const count = signal(0);
       const subscriber = vi.fn();
 
@@ -131,15 +131,15 @@ describe('signal', () => {
       expect(subscriber).not.toHaveBeenCalled();
     });
 
-    it('returns updated value after set', () => {
+    it("returns updated value after set", () => {
       const count = signal(0);
       count.set(10);
       expect(count.peek()).toBe(10);
     });
   });
 
-  describe('multiple subscribers', () => {
-    it('notifies all subscribers', () => {
+  describe("multiple subscribers", () => {
+    it("notifies all subscribers", () => {
       const count = signal(0);
       const sub1 = vi.fn();
       const sub2 = vi.fn();

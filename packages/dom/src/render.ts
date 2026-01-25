@@ -12,11 +12,7 @@ import { processIterator } from "./iterator";
 /**
  * Render（ジェネレータ）を DOM に描画
  */
-export function render(
-  gen: Render,
-  parent: HTMLElement,
-  plugins: Map<string, DomPlugin>,
-): void {
+export function render(gen: Render, parent: HTMLElement, plugins: Map<string, DomPlugin>): void {
   parent.innerHTML = "";
 
   const ctx = createRenderContext(parent, null, undefined, undefined, plugins);

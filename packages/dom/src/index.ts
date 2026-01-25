@@ -9,12 +9,7 @@ import type { DomPlugin, MountOptions } from "./plugin";
 import { render } from "./render";
 
 // Re-export plugin types
-export type {
-  DomPlugin,
-  PluginAPI,
-  PluginResult,
-  MountOptions,
-} from "./plugin";
+export type { DomPlugin, PluginAPI, PluginResult, MountOptions } from "./plugin";
 
 /**
  * Component を DOM にマウントする
@@ -33,11 +28,7 @@ export type {
  * });
  * ```
  */
-export function mount(
-  app: Component,
-  parent: HTMLElement,
-  options?: MountOptions,
-): void {
+export function mount(app: Component, parent: HTMLElement, options?: MountOptions): void {
   // プラグインを Map に変換（type -> plugin）
   const plugins = new Map<string, DomPlugin>();
 

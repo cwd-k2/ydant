@@ -36,10 +36,7 @@ export function createRenderContext(
  * ファクトリ関数として実装
  */
 export function createPluginAPIFactory(
-  processIterator: (
-    iter: Iterator<Child, void, Slot | void>,
-    ctx: RenderContext,
-  ) => void,
+  processIterator: (iter: Iterator<Child, void, Slot | void>, ctx: RenderContext) => void,
 ) {
   return function createPluginAPI(ctx: RenderContext): PluginAPI {
     return {
@@ -80,10 +77,7 @@ export function createPluginAPIFactory(
         );
 
         const children = toChildren(childrenFn());
-        processIterator(
-          children as Iterator<Child, void, Slot | void>,
-          childCtx,
-        );
+        processIterator(children as Iterator<Child, void, Slot | void>, childCtx);
 
         // 子コンテキストのコールバックを親に伝搬
         ctx.mountCallbacks.push(...childCtx.mountCallbacks);

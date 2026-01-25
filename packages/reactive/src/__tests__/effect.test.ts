@@ -1,16 +1,16 @@
-import { describe, it, expect, vi } from 'vitest';
-import { signal } from '../signal';
-import { effect } from '../effect';
+import { describe, it, expect, vi } from "vitest";
+import { signal } from "../signal";
+import { effect } from "../effect";
 
-describe('effect', () => {
-  it('executes immediately on creation', () => {
+describe("effect", () => {
+  it("executes immediately on creation", () => {
     const effectFn = vi.fn();
     effect(effectFn);
 
     expect(effectFn).toHaveBeenCalledTimes(1);
   });
 
-  it('re-executes when dependency changes', () => {
+  it("re-executes when dependency changes", () => {
     const count = signal(0);
     const effectFn = vi.fn(() => {
       count(); // Read to track dependency
@@ -26,7 +26,7 @@ describe('effect', () => {
     expect(effectFn).toHaveBeenCalledTimes(3);
   });
 
-  it('tracks multiple dependencies', () => {
+  it("tracks multiple dependencies", () => {
     const a = signal(1);
     const b = signal(2);
     const effectFn = vi.fn(() => {
@@ -44,8 +44,8 @@ describe('effect', () => {
     expect(effectFn).toHaveBeenCalledTimes(3);
   });
 
-  describe('cleanup', () => {
-    it('runs cleanup before re-execution', () => {
+  describe("cleanup", () => {
+    it("runs cleanup before re-execution", () => {
       const count = signal(0);
       const cleanup = vi.fn();
       const effectFn = vi.fn(() => {
@@ -66,7 +66,7 @@ describe('effect', () => {
       expect(effectFn).toHaveBeenCalledTimes(3);
     });
 
-    it('runs cleanup on dispose', () => {
+    it("runs cleanup on dispose", () => {
       const cleanup = vi.fn();
       const dispose = effect(() => cleanup);
 
@@ -77,13 +77,13 @@ describe('effect', () => {
     });
   });
 
-  describe('dispose', () => {
-    it('returns dispose function', () => {
+  describe("dispose", () => {
+    it("returns dispose function", () => {
       const dispose = effect(() => {});
-      expect(typeof dispose).toBe('function');
+      expect(typeof dispose).toBe("function");
     });
 
-    it('stops effect after dispose', () => {
+    it("stops effect after dispose", () => {
       const count = signal(0);
       const effectFn = vi.fn(() => {
         count();
@@ -99,7 +99,7 @@ describe('effect', () => {
       expect(effectFn).toHaveBeenCalledTimes(1); // No re-executions
     });
 
-    it('does not re-execute after dispose', () => {
+    it("does not re-execute after dispose", () => {
       const count = signal(0);
       let runCount = 0;
 
@@ -119,7 +119,7 @@ describe('effect', () => {
       expect(runCount).toBe(1);
     });
 
-    it('is safe to call dispose multiple times', () => {
+    it("is safe to call dispose multiple times", () => {
       const cleanup = vi.fn();
       const dispose = effect(() => cleanup);
 
@@ -131,8 +131,8 @@ describe('effect', () => {
     });
   });
 
-  describe('reading values', () => {
-    it('can read signal values', () => {
+  describe("reading values", () => {
+    it("can read signal values", () => {
       const count = signal(42);
       let capturedValue: number = 0;
 
@@ -146,7 +146,7 @@ describe('effect', () => {
       expect(capturedValue).toBe(100);
     });
 
-    it('does not track peek() calls', () => {
+    it("does not track peek() calls", () => {
       const count = signal(0);
       const effectFn = vi.fn(() => {
         count.peek();
@@ -160,8 +160,8 @@ describe('effect', () => {
     });
   });
 
-  describe('conditional tracking', () => {
-    it('updates tracked dependencies based on execution path', () => {
+  describe("conditional tracking", () => {
+    it("updates tracked dependencies based on execution path", () => {
       const condition = signal(true);
       const a = signal(1);
       const b = signal(2);

@@ -99,7 +99,7 @@ export function remove(key: string): void {
  */
 export function createStorage<T>(
   key: string,
-  defaultValue: T
+  defaultValue: T,
 ): {
   get: () => T;
   set: (value: T) => void;

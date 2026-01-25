@@ -1,15 +1,15 @@
 {
   "name": "showcase7",
   "version": "1.0.0",
-  "description": "Demo: CSS Transitions with Transition and TransitionGroup",
   "private": true,
+  "description": "Demo: CSS Transitions with Transition and TransitionGroup",
   "scripts": {
     "dev": "vite"
   },
-  "packageManager": "pnpm@10.22.0",
   "dependencies": {
     "@ydant/core": "workspace:*",
     "@ydant/dom": "workspace:*",
     "@ydant/transition": "workspace:*"
-  }
+  },
+  "packageManager": "pnpm@10.22.0"
 }

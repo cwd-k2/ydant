@@ -85,16 +85,13 @@ function waitForTransition(el: HTMLElement): Promise<void> {
 /**
  * 入場トランジションを実行
  */
-export async function enterTransition(
-  el: HTMLElement,
-  props: TransitionProps
-): Promise<void> {
+export async function enterTransition(el: HTMLElement, props: TransitionProps): Promise<void> {
   // 初期状態を設定
   addClasses(el, props.enter);
   addClasses(el, props.enterFrom);
 
   // 強制リフロー
-  el.offsetHeight;
+  void el.offsetHeight;
 
   // 次のフレームでトランジションを開始
   await new Promise<void>((resolve) => {
@@ -116,16 +113,13 @@ export async function enterTransition(
 /**
  * 退場トランジションを実行
  */
-export async function leaveTransition(
-  el: HTMLElement,
-  props: TransitionProps
-): Promise<void> {
+export async function leaveTransition(el: HTMLElement, props: TransitionProps): Promise<void> {
   // 初期状態を設定
   addClasses(el, props.leave);
   addClasses(el, props.leaveFrom);
 
   // 強制リフロー
-  el.offsetHeight;
+  void el.offsetHeight;
 
   // 次のフレームでトランジションを開始
   await new Promise<void>((resolve) => {
@@ -248,7 +242,7 @@ export interface TransitionHandle {
  * ```
  */
 export function* createTransition(
-  props: Omit<TransitionProps, "show">
+  props: Omit<TransitionProps, "show">,
 ): Generator<unknown, TransitionHandle, Slot> {
   const { children } = props;
 

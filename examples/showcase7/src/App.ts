@@ -23,7 +23,7 @@ const TOAST_COLORS: Record<Toast["type"], string[]> = {
 
 // Section: Simple toggle with createTransition (supports leave animation)
 function ToggleSection() {
-  let sectionSlot: Slot;
+  let _sectionSlot: Slot;
   let fadeTransition: TransitionHandle;
 
   const renderSection = function* () {
@@ -68,13 +68,13 @@ function ToggleSection() {
 
   return div(function* () {
     yield* h2(() => [clss(["text-xl", "font-semibold", "mb-4"]), text("Fade Transition")]);
-    sectionSlot = yield* div(renderSection);
+    _sectionSlot = yield* div(renderSection);
   });
 }
 
 // Section: Slide transition with createTransition
 function SlideSection() {
-  let sectionSlot: Slot;
+  let _sectionSlot: Slot;
   let slideTransition: TransitionHandle;
 
   const renderSection = function* () {
@@ -114,7 +114,7 @@ function SlideSection() {
 
   return div(function* () {
     yield* h2(() => [clss(["text-xl", "font-semibold", "mb-4"]), text("Slide Transition")]);
-    sectionSlot = yield* div(renderSection);
+    _sectionSlot = yield* div(renderSection);
   });
 }
 
@@ -195,7 +195,14 @@ function ToastSection() {
       yield* clss(["flex", "gap-2", "mb-4"]);
 
       yield* button(function* () {
-        yield* clss(["px-4", "py-2", "bg-green-500", "text-white", "rounded", "hover:bg-green-600"]);
+        yield* clss([
+          "px-4",
+          "py-2",
+          "bg-green-500",
+          "text-white",
+          "rounded",
+          "hover:bg-green-600",
+        ]);
         yield* on("click", () => addToast("success"));
         yield* text("Success Toast");
       });
@@ -254,7 +261,7 @@ export const App: Component = () =>
       p(() => [
         text(
           "The createTransition API returns a handle with setShow(boolean) for programmatic control. " +
-            "It properly supports both enter and leave animations by managing the element lifecycle."
+            "It properly supports both enter and leave animations by managing the element lifecycle.",
         ),
       ]),
     ]);

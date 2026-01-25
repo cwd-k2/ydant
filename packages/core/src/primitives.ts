@@ -1,9 +1,7 @@
 import type { Attribute, Listener, Text, Lifecycle, Style, Key } from "./types";
 
 /** プリミティブを yield するジェネレーター関数を作成するファクトリ */
-function createPrimitive<T, Args extends unknown[]>(
-  factory: (...args: Args) => T,
-) {
+function createPrimitive<T, Args extends unknown[]>(factory: (...args: Args) => T) {
   return function* (...args: Args): Generator<T, void, void> {
     yield factory(...args);
   };
@@ -37,9 +35,7 @@ export const on = createPrimitive(
 );
 
 /** テキストノードを yield */
-export const text = createPrimitive(
-  (content: string): Text => ({ type: "text", content }),
-);
+export const text = createPrimitive((content: string): Text => ({ type: "text", content }));
 
 /**
  * コンポーネントがマウントされた時に実行されるコールバックを登録する
@@ -54,9 +50,7 @@ export const text = createPrimitive(
  * });
  * ```
  */
-export function* onMount(
-  callback: () => void | (() => void),
-): Generator<Lifecycle, void, void> {
+export function* onMount(callback: () => void | (() => void)): Generator<Lifecycle, void, void> {
   yield { type: "lifecycle", event: "mount", callback };
 }
 
@@ -72,9 +66,7 @@ export function* onMount(
  * });
  * ```
  */
-export function* onUnmount(
-  callback: () => void,
-): Generator<Lifecycle, void, void> {
+export function* onUnmount(callback: () => void): Generator<Lifecycle, void, void> {
   yield { type: "lifecycle", event: "unmount", callback };
 }
 

@@ -1,12 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
-import { getCurrentSubscriber, runWithSubscriber } from '../tracking';
+import { describe, it, expect, vi } from "vitest";
+import { getCurrentSubscriber, runWithSubscriber } from "../tracking";
 
-describe('getCurrentSubscriber', () => {
-  it('returns null when no subscriber is active', () => {
+describe("getCurrentSubscriber", () => {
+  it("returns null when no subscriber is active", () => {
     expect(getCurrentSubscriber()).toBeNull();
   });
 
-  it('returns current subscriber during runWithSubscriber', () => {
+  it("returns current subscriber during runWithSubscriber", () => {
     const subscriber = vi.fn();
 
     runWithSubscriber(subscriber, () => {
@@ -14,7 +14,7 @@ describe('getCurrentSubscriber', () => {
     });
   });
 
-  it('returns null after runWithSubscriber completes', () => {
+  it("returns null after runWithSubscriber completes", () => {
     const subscriber = vi.fn();
 
     runWithSubscriber(subscriber, () => {});
@@ -23,8 +23,8 @@ describe('getCurrentSubscriber', () => {
   });
 });
 
-describe('runWithSubscriber', () => {
-  it('sets subscriber during function execution', () => {
+describe("runWithSubscriber", () => {
+  it("sets subscriber during function execution", () => {
     const subscriber = vi.fn();
     let capturedSubscriber: unknown = null;
 
@@ -35,14 +35,14 @@ describe('runWithSubscriber', () => {
     expect(capturedSubscriber).toBe(subscriber);
   });
 
-  it('returns the result of the function', () => {
+  it("returns the result of the function", () => {
     const subscriber = vi.fn();
     const result = runWithSubscriber(subscriber, () => 42);
 
     expect(result).toBe(42);
   });
 
-  it('restores previous subscriber after execution', () => {
+  it("restores previous subscriber after execution", () => {
     const outer = vi.fn();
     const inner = vi.fn();
 
@@ -59,26 +59,26 @@ describe('runWithSubscriber', () => {
     expect(getCurrentSubscriber()).toBeNull();
   });
 
-  it('restores subscriber even if function throws', () => {
+  it("restores subscriber even if function throws", () => {
     const subscriber = vi.fn();
 
     expect(() => {
       runWithSubscriber(subscriber, () => {
-        throw new Error('Test error');
+        throw new Error("Test error");
       });
-    }).toThrow('Test error');
+    }).toThrow("Test error");
 
     expect(getCurrentSubscriber()).toBeNull();
   });
 
-  it('restores nested subscriber even if inner function throws', () => {
+  it("restores nested subscriber even if inner function throws", () => {
     const outer = vi.fn();
     const inner = vi.fn();
 
     runWithSubscriber(outer, () => {
       try {
         runWithSubscriber(inner, () => {
-          throw new Error('Inner error');
+          throw new Error("Inner error");
         });
       } catch {
         // Ignore error
@@ -90,7 +90,7 @@ describe('runWithSubscriber', () => {
     expect(getCurrentSubscriber()).toBeNull();
   });
 
-  it('handles deeply nested subscribers', () => {
+  it("handles deeply nested subscribers", () => {
     const subs = [vi.fn(), vi.fn(), vi.fn(), vi.fn()];
     const captured: unknown[] = [];
 
@@ -116,14 +116,6 @@ describe('runWithSubscriber', () => {
       captured.push(getCurrentSubscriber());
     });
 
-    expect(captured).toEqual([
-      subs[0],
-      subs[1],
-      subs[2],
-      subs[3],
-      subs[2],
-      subs[1],
-      subs[0],
-    ]);
+    expect(captured).toEqual([subs[0], subs[1], subs[2], subs[3], subs[2], subs[1], subs[0]]);
   });
 });

@@ -31,7 +31,7 @@ const App: Component = () => {
             show,
             name: "fade",
             children: () => div(() => [text("Fade me!")]),
-          })
+          }),
         );
       }),
       text("Toggle"),
@@ -42,7 +42,7 @@ const App: Component = () => {
         show,
         name: "fade",
         children: () => div(() => [text("Fade me!")]),
-      })
+      }),
     );
   });
 };
@@ -85,25 +85,25 @@ const App: Component = () => {
 
 #### For `Transition` (name-based)
 
-| Class | When Applied |
-|-------|--------------|
-| `{name}-enter` | Start of enter |
-| `{name}-enter-active` | During enter |
-| `{name}-enter-to` | End of enter |
-| `{name}-leave` | Start of leave |
-| `{name}-leave-active` | During leave |
-| `{name}-leave-to` | End of leave |
+| Class                 | When Applied   |
+| --------------------- | -------------- |
+| `{name}-enter`        | Start of enter |
+| `{name}-enter-active` | During enter   |
+| `{name}-enter-to`     | End of enter   |
+| `{name}-leave`        | Start of leave |
+| `{name}-leave-active` | During leave   |
+| `{name}-leave-to`     | End of leave   |
 
 #### For `createTransition` (explicit classes)
 
-| Prop | When Applied |
-|------|--------------|
-| `enter` | During enter animation |
+| Prop        | When Applied               |
+| ----------- | -------------------------- |
+| `enter`     | During enter animation     |
 | `enterFrom` | Initial state before enter |
-| `enterTo` | Final state after enter |
-| `leave` | During leave animation |
+| `enterTo`   | Final state after enter    |
+| `leave`     | During leave animation     |
 | `leaveFrom` | Initial state before leave |
-| `leaveTo` | Final state after leave |
+| `leaveTo`   | Final state after leave    |
 
 ### Example CSS
 

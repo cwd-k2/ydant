@@ -68,13 +68,7 @@ export const App: Component = () => {
   };
 
   const renderTodoList = function* () {
-    yield* clss([
-      "border",
-      "border-gray-200",
-      "rounded-lg",
-      "overflow-hidden",
-      "mb-4",
-    ]);
+    yield* clss(["border", "border-gray-200", "rounded-lg", "overflow-hidden", "mb-4"]);
 
     const filteredTodos = getFilteredTodos();
 
@@ -86,7 +80,7 @@ export const App: Component = () => {
             ? "No todos yet. Add one above!"
             : filter === "active"
               ? "No active todos."
-              : "No completed todos."
+              : "No completed todos.",
         ),
       ]);
     } else {
@@ -116,17 +110,11 @@ export const App: Component = () => {
     const activeCount = getActiveCount();
     const completedCount = todos.length - activeCount;
 
-    yield* span(() => [
-      text(`${activeCount} item${activeCount !== 1 ? "s" : ""} left`),
-    ]);
+    yield* span(() => [text(`${activeCount} item${activeCount !== 1 ? "s" : ""} left`)]);
 
     if (completedCount > 0) {
       yield* button(function* () {
-        yield* clss([
-          "text-red-500",
-          "hover:text-red-700",
-          "hover:underline",
-        ]);
+        yield* clss(["text-red-500", "hover:text-red-700", "hover:underline"]);
         yield* on("click", () => {
           todos = todos.filter((t) => !t.completed);
           saveTodos(todos);

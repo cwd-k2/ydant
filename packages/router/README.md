@@ -16,8 +16,7 @@ import { mount } from "@ydant/dom";
 import { RouterView, RouterLink, useRoute, navigate } from "@ydant/router";
 
 // Define pages
-const HomePage: Component = () =>
-  div(() => [text("Home Page")]);
+const HomePage: Component = () => div(() => [text("Home Page")]);
 
 const UserPage: Component = () =>
   div(function* () {
@@ -25,8 +24,7 @@ const UserPage: Component = () =>
     yield* text(`User ID: ${route.params.id}`);
   });
 
-const NotFoundPage: Component = () =>
-  div(() => [text("404 - Not Found")]);
+const NotFoundPage: Component = () => div(() => [text("404 - Not Found")]);
 
 // Main app with routing
 const App: Component = () =>

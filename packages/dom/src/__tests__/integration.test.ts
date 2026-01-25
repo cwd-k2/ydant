@@ -1,62 +1,59 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { div, p, button, ul, li } from '@ydant/core';
-import { text, attr, on, key, onUnmount } from '@ydant/core';
-import type { Component, Slot } from '@ydant/core';
-import { mount } from '../index';
-import type { DomPlugin, PluginAPI } from '../plugin';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { div, p, button, ul, li } from "@ydant/core";
+import { text, attr, on, key, onUnmount } from "@ydant/core";
+import type { Component, Slot } from "@ydant/core";
+import { mount } from "../index";
+import type { DomPlugin, PluginAPI } from "../plugin";
 
-describe('integration', () => {
+describe("integration", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    container = document.createElement('div');
+    container = document.createElement("div");
     document.body.appendChild(container);
   });
 
-  describe('mount', () => {
-    it('mounts component to DOM', () => {
-      const App: Component = () =>
-        div(() => [
-          p(() => [text('Hello World')]),
-        ]);
+  describe("mount", () => {
+    it("mounts component to DOM", () => {
+      const App: Component = () => div(() => [p(() => [text("Hello World")])]);
 
       mount(App, container);
 
       expect(container.children).toHaveLength(1);
-      expect(container.children[0].tagName).toBe('DIV');
-      expect(container.querySelector('p')?.textContent).toBe('Hello World');
+      expect(container.children[0].tagName).toBe("DIV");
+      expect(container.querySelector("p")?.textContent).toBe("Hello World");
     });
 
-    it('clears container before mounting', () => {
-      container.innerHTML = '<p>Old content</p>';
+    it("clears container before mounting", () => {
+      container.innerHTML = "<p>Old content</p>";
 
-      mount(() => div(() => [text('New')]), container);
+      mount(() => div(() => [text("New")]), container);
 
       expect(container.children).toHaveLength(1);
-      expect(container.textContent).toBe('New');
+      expect(container.textContent).toBe("New");
     });
   });
 
-  describe('nested components', () => {
-    it('renders nested component functions', () => {
+  describe("nested components", () => {
+    it("renders nested component functions", () => {
       function Header() {
         return div(function* () {
-          yield* attr('class', 'header');
-          yield* text('Header');
+          yield* attr("class", "header");
+          yield* text("Header");
         });
       }
 
       function Footer() {
         return div(function* () {
-          yield* attr('class', 'footer');
-          yield* text('Footer');
+          yield* attr("class", "footer");
+          yield* text("Footer");
         });
       }
 
       const App: Component = () =>
         div(function* () {
           yield* Header();
-          yield* p(() => [text('Content')]);
+          yield* p(() => [text("Content")]);
           yield* Footer();
         });
 
@@ -64,14 +61,14 @@ describe('integration', () => {
 
       const root = container.children[0];
       expect(root.children).toHaveLength(3);
-      expect(root.children[0].className).toBe('header');
-      expect(root.children[1].tagName).toBe('P');
-      expect(root.children[2].className).toBe('footer');
+      expect(root.children[0].className).toBe("header");
+      expect(root.children[1].tagName).toBe("P");
+      expect(root.children[2].className).toBe("footer");
     });
   });
 
-  describe('Slot.refresh()', () => {
-    it('re-renders element content', () => {
+  describe("Slot.refresh()", () => {
+    it("re-renders element content", () => {
       let count = 0;
       let slot: Slot;
 
@@ -82,33 +79,33 @@ describe('integration', () => {
           });
 
           yield* button(function* () {
-            yield* on('click', () => {
+            yield* on("click", () => {
               count++;
               slot.refresh(() => [text(`Count: ${count}`)]);
             });
-            yield* text('Increment');
+            yield* text("Increment");
           });
         });
 
       mount(App, container);
 
-      expect(container.querySelector('p')?.textContent).toBe('Count: 0');
+      expect(container.querySelector("p")?.textContent).toBe("Count: 0");
 
-      (container.querySelector('button') as HTMLButtonElement).click();
-      expect(container.querySelector('p')?.textContent).toBe('Count: 1');
+      (container.querySelector("button") as HTMLButtonElement).click();
+      expect(container.querySelector("p")?.textContent).toBe("Count: 1");
 
-      (container.querySelector('button') as HTMLButtonElement).click();
-      expect(container.querySelector('p')?.textContent).toBe('Count: 2');
+      (container.querySelector("button") as HTMLButtonElement).click();
+      expect(container.querySelector("p")?.textContent).toBe("Count: 2");
     });
   });
 
-  describe('keyed elements', () => {
-    it('reuses DOM nodes with same key on refresh', () => {
+  describe("keyed elements", () => {
+    it("reuses DOM nodes with same key on refresh", () => {
       let slot: Slot;
       let items = [
-        { id: 1, text: 'Item 1' },
-        { id: 2, text: 'Item 2' },
-        { id: 3, text: 'Item 3' },
+        { id: 1, text: "Item 1" },
+        { id: 2, text: "Item 2" },
+        { id: 3, text: "Item 3" },
       ];
 
       const renderList = function* () {
@@ -125,7 +122,7 @@ describe('integration', () => {
 
       mount(App, container);
 
-      const list = container.querySelector('ul')!;
+      const list = container.querySelector("ul")!;
       expect(list.children).toHaveLength(3);
 
       // Save references to original nodes
@@ -135,9 +132,9 @@ describe('integration', () => {
 
       // Reorder items
       items = [
-        { id: 3, text: 'Item 3 updated' },
-        { id: 1, text: 'Item 1 updated' },
-        { id: 2, text: 'Item 2 updated' },
+        { id: 3, text: "Item 3 updated" },
+        { id: 1, text: "Item 1 updated" },
+        { id: 2, text: "Item 2 updated" },
       ];
       slot.refresh(renderList);
 
@@ -147,17 +144,17 @@ describe('integration', () => {
       expect(list.children[2]).toBe(originalNode2);
 
       // Content should be updated
-      expect(list.children[0].textContent).toBe('Item 3 updated');
-      expect(list.children[1].textContent).toBe('Item 1 updated');
-      expect(list.children[2].textContent).toBe('Item 2 updated');
+      expect(list.children[0].textContent).toBe("Item 3 updated");
+      expect(list.children[1].textContent).toBe("Item 1 updated");
+      expect(list.children[2].textContent).toBe("Item 2 updated");
     });
   });
 
-  describe('plugin integration', () => {
-    it('registers and uses plugins', () => {
+  describe("plugin integration", () => {
+    it("registers and uses plugins", () => {
       const customPlugin: DomPlugin = {
-        name: 'custom',
-        types: ['custom-element'],
+        name: "custom",
+        types: ["custom-element"],
         process(child, api: PluginAPI) {
           const data = (child as any).content;
           const textNode = document.createTextNode(`[Custom: ${data}]`);
@@ -169,32 +166,32 @@ describe('integration', () => {
       mount(
         () =>
           div(function* () {
-            yield* text('Before ');
-            yield { type: 'custom-element', content: 'Hello' } as any;
-            yield* text(' After');
+            yield* text("Before ");
+            yield { type: "custom-element", content: "Hello" } as any;
+            yield* text(" After");
           }),
         container,
         { plugins: [customPlugin] },
       );
 
-      expect(container.children[0].textContent).toBe('Before [Custom: Hello] After');
+      expect(container.children[0].textContent).toBe("Before [Custom: Hello] After");
     });
 
-    it('plugin can access PluginAPI methods', () => {
+    it("plugin can access PluginAPI methods", () => {
       vi.useFakeTimers();
 
       const mountCalls: string[] = [];
       const unmountCalls: string[] = [];
 
       const lifecyclePlugin: DomPlugin = {
-        name: 'lifecycle-test',
-        types: ['lifecycle-test'],
+        name: "lifecycle-test",
+        types: ["lifecycle-test"],
         process(_child, api: PluginAPI) {
           api.onMount(() => {
-            mountCalls.push('mounted');
-            return () => unmountCalls.push('cleanup from mount');
+            mountCalls.push("mounted");
+            return () => unmountCalls.push("cleanup from mount");
           });
-          api.onUnmount(() => unmountCalls.push('unmounted'));
+          api.onUnmount(() => unmountCalls.push("unmounted"));
           return {};
         },
       };
@@ -205,8 +202,8 @@ describe('integration', () => {
         () =>
           div(function* () {
             slot = yield* p(function* () {
-              yield { type: 'lifecycle-test' } as any;
-              yield* text('Content');
+              yield { type: "lifecycle-test" } as any;
+              yield* text("Content");
             });
           }),
         container,
@@ -214,25 +211,25 @@ describe('integration', () => {
       );
 
       vi.advanceTimersToNextFrame();
-      expect(mountCalls).toEqual(['mounted']);
+      expect(mountCalls).toEqual(["mounted"]);
       expect(unmountCalls).toEqual([]);
 
-      slot.refresh(() => [text('New')]);
+      slot.refresh(() => [text("New")]);
       // The order depends on internal implementation:
       // - onUnmount callbacks are stored first, then cleanup from onMount
       // Current implementation runs them in order they were added
-      expect(unmountCalls).toEqual(['unmounted', 'cleanup from mount']);
+      expect(unmountCalls).toEqual(["unmounted", "cleanup from mount"]);
     });
   });
 
-  describe('PluginAPI extended methods', () => {
-    it('provides parent and currentElement in PluginAPI', () => {
+  describe("PluginAPI extended methods", () => {
+    it("provides parent and currentElement in PluginAPI", () => {
       let capturedParent: Node | null = null;
       let capturedCurrentElement: globalThis.Element | null = null;
 
       const inspectorPlugin: DomPlugin = {
-        name: 'inspector',
-        types: ['inspector'],
+        name: "inspector",
+        types: ["inspector"],
         process(_child, api: PluginAPI) {
           capturedParent = api.parent;
           capturedCurrentElement = api.currentElement;
@@ -243,26 +240,26 @@ describe('integration', () => {
       mount(
         () =>
           div(function* () {
-            yield* attr('id', 'parent-element');
-            yield { type: 'inspector' } as any;
+            yield* attr("id", "parent-element");
+            yield { type: "inspector" } as any;
           }),
         container,
         { plugins: [inspectorPlugin] },
       );
 
       expect(capturedParent).not.toBeNull();
-      expect((capturedParent as Node).nodeName).toBe('DIV');
+      expect((capturedParent as Node).nodeName).toBe("DIV");
       expect(capturedCurrentElement).not.toBeNull();
-      expect((capturedCurrentElement as HTMLElement).id).toBe('parent-element');
+      expect((capturedCurrentElement as HTMLElement).id).toBe("parent-element");
     });
 
-    it('plugin can use processChildren to render nested content', () => {
+    it("plugin can use processChildren to render nested content", () => {
       const wrapperPlugin: DomPlugin = {
-        name: 'wrapper',
-        types: ['wrapper'],
+        name: "wrapper",
+        types: ["wrapper"],
         process(child, api: PluginAPI) {
-          const wrapper = document.createElement('section');
-          wrapper.setAttribute('class', 'wrapper');
+          const wrapper = document.createElement("section");
+          wrapper.setAttribute("class", "wrapper");
           api.appendChild(wrapper);
 
           // Use processChildren to render the nested content
@@ -279,30 +276,30 @@ describe('integration', () => {
         () =>
           div(function* () {
             yield {
-              type: 'wrapper',
-              children: () => [text('Nested content')],
+              type: "wrapper",
+              children: () => [text("Nested content")],
             } as any;
           }),
         container,
         { plugins: [wrapperPlugin] },
       );
 
-      const wrapper = container.querySelector('.wrapper');
+      const wrapper = container.querySelector(".wrapper");
       expect(wrapper).not.toBeNull();
-      expect(wrapper?.textContent).toBe('Nested content');
+      expect(wrapper?.textContent).toBe("Nested content");
     });
 
-    it('plugin can use createChildAPI for nested rendering', () => {
+    it("plugin can use createChildAPI for nested rendering", () => {
       const nestedPlugin: DomPlugin = {
-        name: 'nested',
-        types: ['nested-container'],
+        name: "nested",
+        types: ["nested-container"],
         process(child, api: PluginAPI) {
-          const wrapper = document.createElement('aside');
+          const wrapper = document.createElement("aside");
           api.appendChild(wrapper);
 
           // Use createChildAPI for a new context
           const childApi = api.createChildAPI(wrapper);
-          const childNode = document.createTextNode('Child content');
+          const childNode = document.createTextNode("Child content");
           childApi.appendChild(childNode);
 
           return {};
@@ -312,24 +309,24 @@ describe('integration', () => {
       mount(
         () =>
           div(function* () {
-            yield { type: 'nested-container' } as any;
+            yield { type: "nested-container" } as any;
           }),
         container,
         { plugins: [nestedPlugin] },
       );
 
-      const aside = container.querySelector('aside');
+      const aside = container.querySelector("aside");
       expect(aside).not.toBeNull();
-      expect(aside?.textContent).toBe('Child content');
+      expect(aside?.textContent).toBe("Child content");
     });
 
-    it('plugin context and getContext/setContext work correctly', () => {
-      const contextSymbol = Symbol('test-context');
+    it("plugin context and getContext/setContext work correctly", () => {
+      const contextSymbol = Symbol("test-context");
       let retrievedValue: string | undefined;
 
       const setterPlugin: DomPlugin = {
-        name: 'setter',
-        types: ['context-setter'],
+        name: "setter",
+        types: ["context-setter"],
         process(child, api: PluginAPI) {
           api.setContext(contextSymbol, (child as any).value);
           return {};
@@ -337,8 +334,8 @@ describe('integration', () => {
       };
 
       const getterPlugin: DomPlugin = {
-        name: 'getter',
-        types: ['context-getter'],
+        name: "getter",
+        types: ["context-getter"],
         process(_child, api: PluginAPI) {
           retrievedValue = api.getContext<string>(contextSymbol);
           return {};
@@ -348,19 +345,19 @@ describe('integration', () => {
       mount(
         () =>
           div(function* () {
-            yield { type: 'context-setter', value: 'test-value' } as any;
-            yield { type: 'context-getter' } as any;
+            yield { type: "context-setter", value: "test-value" } as any;
+            yield { type: "context-getter" } as any;
           }),
         container,
         { plugins: [setterPlugin, getterPlugin] },
       );
 
-      expect(retrievedValue).toBe('test-value');
+      expect(retrievedValue).toBe("test-value");
     });
   });
 
-  describe('keyed element edge cases', () => {
-    it('runs unmount callbacks on removed keyed elements', () => {
+  describe("keyed element edge cases", () => {
+    it("runs unmount callbacks on removed keyed elements", () => {
       vi.useFakeTimers();
       const unmountedIds: number[] = [];
       let slot: Slot;
@@ -385,7 +382,7 @@ describe('integration', () => {
       );
 
       vi.advanceTimersToNextFrame();
-      expect(container.querySelectorAll('li')).toHaveLength(3);
+      expect(container.querySelectorAll("li")).toHaveLength(3);
       expect(unmountedIds).toEqual([]);
 
       // Remove item 2
@@ -394,20 +391,20 @@ describe('integration', () => {
 
       // Item 2's unmount callback should have been called
       expect(unmountedIds).toContain(2);
-      expect(container.querySelectorAll('li')).toHaveLength(2);
-      expect(container.querySelectorAll('li')[0].textContent).toBe('Item 1');
-      expect(container.querySelectorAll('li')[1].textContent).toBe('Item 3');
+      expect(container.querySelectorAll("li")).toHaveLength(2);
+      expect(container.querySelectorAll("li")[0].textContent).toBe("Item 1");
+      expect(container.querySelectorAll("li")[1].textContent).toBe("Item 3");
     });
 
-    it('reuses keyed element with attributes preserved', () => {
+    it("reuses keyed element with attributes preserved", () => {
       let slot: Slot;
-      let items = [{ id: 'a', label: 'Item A' }];
+      let items = [{ id: "a", label: "Item A" }];
 
       const renderList = function* () {
         for (const item of items) {
           yield* key(item.id);
           yield* li(function* () {
-            yield* attr('data-id', item.id);
+            yield* attr("data-id", item.id);
             yield* text(item.label);
           });
         }
@@ -421,30 +418,30 @@ describe('integration', () => {
         container,
       );
 
-      const originalLi = container.querySelector('li');
-      expect(originalLi?.getAttribute('data-id')).toBe('a');
+      const originalLi = container.querySelector("li");
+      expect(originalLi?.getAttribute("data-id")).toBe("a");
 
       // Refresh with updated content but same key
-      items = [{ id: 'a', label: 'Updated A' }];
+      items = [{ id: "a", label: "Updated A" }];
       slot.refresh(renderList);
 
-      const updatedLi = container.querySelector('li');
+      const updatedLi = container.querySelector("li");
       // Node is reused (same reference)
       expect(updatedLi).toBe(originalLi);
       // Content is updated
-      expect(updatedLi?.textContent).toBe('Updated A');
+      expect(updatedLi?.textContent).toBe("Updated A");
     });
   });
 
-  describe('complex scenarios', () => {
-    it('handles conditional rendering', () => {
+  describe("complex scenarios", () => {
+    it("handles conditional rendering", () => {
       let showDetails = false;
       let slot: Slot;
 
       const renderContent = function* () {
-        yield* text('Header');
+        yield* text("Header");
         if (showDetails) {
-          yield* p(() => [text('Details')]);
+          yield* p(() => [text("Details")]);
         }
       };
 
@@ -456,16 +453,16 @@ describe('integration', () => {
         container,
       );
 
-      expect(container.querySelector('p')).toBeNull();
+      expect(container.querySelector("p")).toBeNull();
 
       showDetails = true;
       slot!.refresh(renderContent);
 
-      expect(container.querySelector('p')?.textContent).toBe('Details');
+      expect(container.querySelector("p")?.textContent).toBe("Details");
     });
 
-    it('handles list rendering with dynamic items', () => {
-      let items = ['A', 'B', 'C'];
+    it("handles list rendering with dynamic items", () => {
+      let items = ["A", "B", "C"];
       let slot: Slot;
 
       const renderList = function* () {
@@ -483,14 +480,14 @@ describe('integration', () => {
         container,
       );
 
-      expect(container.querySelectorAll('li')).toHaveLength(3);
+      expect(container.querySelectorAll("li")).toHaveLength(3);
 
-      items = ['X', 'Y'];
+      items = ["X", "Y"];
       slot!.refresh(renderList);
 
-      expect(container.querySelectorAll('li')).toHaveLength(2);
-      expect(container.querySelectorAll('li')[0].textContent).toBe('X');
-      expect(container.querySelectorAll('li')[1].textContent).toBe('Y');
+      expect(container.querySelectorAll("li")).toHaveLength(2);
+      expect(container.querySelectorAll("li")[0].textContent).toBe("X");
+      expect(container.querySelectorAll("li")[1].textContent).toBe("Y");
     });
   });
 });

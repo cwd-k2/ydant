@@ -20,7 +20,7 @@ function* ArraySyntaxSection() {
     p(() => [
       clss(["text-gray-600", "mt-2", "text-sm"]),
       text(
-        "Array syntax is more concise for static structures. Use generator syntax when you need Slot."
+        "Array syntax is more concise for static structures. Use generator syntax when you need Slot.",
       ),
     ]),
   ]);

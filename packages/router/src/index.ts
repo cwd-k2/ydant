@@ -28,12 +28,7 @@
  */
 
 // Types
-export type {
-  RouteDefinition,
-  RouteInfo,
-  RouterViewProps,
-  RouterLinkProps,
-} from "./types";
+export type { RouteDefinition, RouteInfo, RouterViewProps, RouterLinkProps } from "./types";
 
 // Navigation API
 export { useRoute, navigate, goBack, goForward } from "./navigation";

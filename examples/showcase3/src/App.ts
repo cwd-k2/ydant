@@ -34,7 +34,7 @@ export const App: Component = () => {
   // Slot references (set later)
   let modeSlot: Slot;
   let timerSlot: Slot;
-  let progressRingSlot: Slot;
+  let _progressRingSlot: Slot;
   let controlsSlot: Slot;
   let sessionsSlot: Slot;
 
@@ -102,7 +102,7 @@ export const App: Component = () => {
       // SVG progress ring
       yield* div(function* () {
         yield* clss(["absolute", "inset-0", "flex", "items-center", "justify-center"]);
-        progressRingSlot = yield* svg(renderProgressRing);
+        _progressRingSlot = yield* svg(renderProgressRing);
       });
 
       // Timer text overlay
@@ -193,15 +193,7 @@ export const App: Component = () => {
   };
 
   const renderSessions = function* () {
-    yield* clss([
-      "flex",
-      "flex-col",
-      "items-center",
-      "p-4",
-      "bg-gray-50",
-      "rounded-xl",
-      "w-full",
-    ]);
+    yield* clss(["flex", "flex-col", "items-center", "p-4", "bg-gray-50", "rounded-xl", "w-full"]);
 
     yield* h2(() => [
       clss(["text-sm", "font-medium", "text-gray-500", "mb-2"]),
@@ -214,17 +206,11 @@ export const App: Component = () => {
       // Show pomodoro icons for completed sessions (max 8)
       const displayCount = Math.min(state.sessionsCompleted, 8);
       for (let i = 0; i < displayCount; i++) {
-        yield* span(() => [
-          clss(["text-2xl"]),
-          text("🍅"),
-        ]);
+        yield* span(() => [clss(["text-2xl"]), text("🍅")]);
       }
 
       if (state.sessionsCompleted === 0) {
-        yield* span(() => [
-          clss(["text-gray-400"]),
-          text("No sessions yet"),
-        ]);
+        yield* span(() => [clss(["text-gray-400"]), text("No sessions yet")]);
       } else if (state.sessionsCompleted > 8) {
         yield* span(() => [
           clss(["text-gray-600", "font-medium"]),
@@ -264,7 +250,7 @@ export const App: Component = () => {
         // Play notification sound (if supported)
         try {
           const audio = new Audio(
-            "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleogNX3WkuKh4Rz1Xj6y0oXlGPVePrLSheUY9V4+stKF5Rj1Xj6y0oXlGPVePrLShd0RAV46stJ95REBYjqy0n3lEQFiOrLSfeURAWI6stJ95REBYjqy0n3lEQFiOrLSfeURAWI6stJ95REBYjqy0n3lEQFiOrLSfeUQ="
+            "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleogNX3WkuKh4Rz1Xj6y0oXlGPVePrLSheUY9V4+stKF5Rj1Xj6y0oXlGPVePrLShd0RAV46stJ95REBYjqy0n3lEQFiOrLSfeURAWI6stJ95REBYjqy0n3lEQFiOrLSfeURAWI6stJ95REBYjqy0n3lEQFiOrLSfeUQ=",
           );
           audio.play().catch(() => {});
         } catch {

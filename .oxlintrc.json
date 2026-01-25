@@ -1,11 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "unicorn",
-    "typescript",
-    "oxc",
-    "vitest"
-  ],
+  "plugins": ["unicorn", "typescript", "oxc", "vitest"],
   "categories": {},
   "rules": {
     "constructor-super": "warn",
@@ -58,7 +53,7 @@
     "no-useless-escape": "warn",
     "no-useless-rename": "warn",
     "no-with": "warn",
-    "require-yield": "warn",
+    "require-yield": "off",
     "use-isnan": "warn",
     "valid-typeof": "warn",
     "oxc/bad-array-method-on-arguments": "warn",
@@ -145,9 +140,5 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": [
-    "node_modules",
-    "dist",
-    "coverage"
-  ]
+  "ignorePatterns": ["node_modules", "dist", "coverage"]
 }

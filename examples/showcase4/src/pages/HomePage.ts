@@ -31,7 +31,7 @@ export const HomePage: Component = () =>
         clss(["text-sm"]),
         text(
           "This app uses the plugin system: createReactivePlugin() and createContextPlugin() " +
-            "are passed to mount() to enable reactive and context features."
+            "are passed to mount() to enable reactive and context features.",
         ),
       ]);
     });

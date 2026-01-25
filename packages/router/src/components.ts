@@ -12,10 +12,7 @@ import { navigate } from "./navigation";
 /**
  * マッチするルートをレンダリング（配列を返す）
  */
-function renderMatchedRouteArray(
-  routes: RouteDefinition[],
-  base: string,
-): Render[] {
+function renderMatchedRouteArray(routes: RouteDefinition[], base: string): Render[] {
   const path = currentRoute.path.startsWith(base)
     ? currentRoute.path.slice(base.length) || "/"
     : currentRoute.path;

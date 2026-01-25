@@ -1,17 +1,17 @@
-import { describe, it, expect, vi } from 'vitest';
-import { signal } from '../signal';
-import { effect } from '../effect';
-import { batch, scheduleEffect } from '../batch';
+import { describe, it, expect, vi } from "vitest";
+import { signal } from "../signal";
+import { effect } from "../effect";
+import { batch, scheduleEffect } from "../batch";
 
-describe('batch', () => {
+describe("batch", () => {
   // Note: The current signal implementation does not integrate with batch.
   // Signal.set() directly notifies subscribers without checking scheduleEffect.
   // These tests verify the current behavior where batch only works for
   // manually scheduled effects via scheduleEffect(), not for signal updates.
 
-  it('executes function synchronously', () => {
-    const firstName = signal('John');
-    const lastName = signal('Doe');
+  it("executes function synchronously", () => {
+    const firstName = signal("John");
+    const lastName = signal("Doe");
 
     const effectFn = vi.fn(() => {
       firstName();
@@ -22,8 +22,8 @@ describe('batch', () => {
     expect(effectFn).toHaveBeenCalledTimes(1);
 
     batch(() => {
-      firstName.set('Jane');
-      lastName.set('Smith');
+      firstName.set("Jane");
+      lastName.set("Smith");
     });
 
     // Current implementation: signal.set() notifies immediately,
@@ -31,7 +31,7 @@ describe('batch', () => {
     expect(effectFn).toHaveBeenCalledTimes(3);
   });
 
-  it('executes nested batches correctly', () => {
+  it("executes nested batches correctly", () => {
     const a = signal(1);
     const b = signal(2);
 
@@ -55,7 +55,7 @@ describe('batch', () => {
     expect(effectFn).toHaveBeenCalledTimes(4);
   });
 
-  it('tracks all signal changes', () => {
+  it("tracks all signal changes", () => {
     const count = signal(0);
     const calls: number[] = [];
 
@@ -75,7 +75,7 @@ describe('batch', () => {
     expect(calls).toEqual([0, 1, 2, 3]);
   });
 
-  it('handles errors in batch', () => {
+  it("handles errors in batch", () => {
     const count = signal(0);
     const effectFn = vi.fn(() => {
       count();
@@ -87,9 +87,9 @@ describe('batch', () => {
     expect(() => {
       batch(() => {
         count.set(1);
-        throw new Error('Test error');
+        throw new Error("Test error");
       });
-    }).toThrow('Test error');
+    }).toThrow("Test error");
 
     // Batch depth should be reset even after error
     count.set(2);
@@ -97,8 +97,8 @@ describe('batch', () => {
   });
 });
 
-describe('scheduleEffect', () => {
-  it('returns false when not in batch', () => {
+describe("scheduleEffect", () => {
+  it("returns false when not in batch", () => {
     const effectFn = vi.fn();
     const result = scheduleEffect(effectFn);
 
@@ -106,7 +106,7 @@ describe('scheduleEffect', () => {
     expect(effectFn).not.toHaveBeenCalled();
   });
 
-  it('returns true and schedules effect when in batch', () => {
+  it("returns true and schedules effect when in batch", () => {
     const effectFn = vi.fn();
 
     batch(() => {
@@ -118,7 +118,7 @@ describe('scheduleEffect', () => {
     expect(effectFn).toHaveBeenCalledTimes(1);
   });
 
-  it('deduplicates scheduled effects', () => {
+  it("deduplicates scheduled effects", () => {
     const effectFn = vi.fn();
 
     batch(() => {
