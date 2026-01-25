@@ -1,0 +1,14 @@
+{
+  "name": "showcase5",
+  "version": "1.0.0",
+  "description": "Demo: Sortable List with key() for efficient updates",
+  "private": true,
+  "scripts": {
+    "dev": "vite"
+  },
+  "packageManager": "pnpm@10.22.0",
+  "dependencies": {
+    "@ydant/core": "workspace:*",
+    "@ydant/dom": "workspace:*"
+  }
+}

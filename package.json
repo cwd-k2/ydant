@@ -1,8 +1,13 @@
 {
+  "name": "ydant",
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "pnpm --filter examples run dev",
+    "build": "pnpm -r run build",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [],
   "author": "",
@@ -10,9 +15,11 @@
   "packageManager": "pnpm@10.22.0",
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "@vitest/coverage-istanbul": "^4.0.18",
+    "happy-dom": "^20.3.7",
     "typescript": "^5.9.3",
     "vite": "^7.2.2",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "^4.0.10"
+    "vitest": "^4.0.18"
   }
 }

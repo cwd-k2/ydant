@@ -1,0 +1,17 @@
+{
+  "name": "showcase4",
+  "version": "1.0.0",
+  "description": "Demo: SPA with Router, Context, Reactive + Plugin Architecture",
+  "private": true,
+  "scripts": {
+    "dev": "vite"
+  },
+  "packageManager": "pnpm@10.22.0",
+  "dependencies": {
+    "@ydant/core": "workspace:*",
+    "@ydant/dom": "workspace:*",
+    "@ydant/router": "workspace:*",
+    "@ydant/context": "workspace:*",
+    "@ydant/reactive": "workspace:*"
+  }
+}

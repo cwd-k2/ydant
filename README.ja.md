@@ -9,47 +9,52 @@
 Ydant は、JavaScript のジェネレーターをドメイン固有言語として使い、DOM 構造を構築する実験的な UI ライブラリです。意図的にミニマルで型破りなアプローチを取っています。ジェネレーターと DOM が出会うとき、何が可能になるかを探求する遊び場です。
 
 ```typescript
-import { div, span, button, text, clss, on } from "@ydant/core";
+import { div, button, text, clss, on, type Slot } from "@ydant/core";
+import { mount } from "@ydant/dom";
 
 function Counter(initial: number) {
   let count = initial;
+  let countSlot: Slot;
 
   return div(function* () {
     yield* clss(["counter"]);
 
-    const refresh = yield* span(function* () {
-      yield* text(`Count: ${count}`);
-    });
+    countSlot = yield* div(() => [text(`Count: ${count}`)]);
 
     yield* button(function* () {
       yield* on("click", () => {
         count++;
-        refresh(() => [text(`Count: ${count}`)]);
+        countSlot.refresh(() => [text(`Count: ${count}`)]);
       });
       yield* text("+1");
     });
   });
 }
+
+mount(() => Counter(0), document.getElementById("app")!);
 ```
 
 ## 特徴
 
 - **ジェネレーターベースの DSL** - `yield*` を使って DOM 要素を自然に合成
-- **2つの構文** - リアクティブ更新にはジェネレーター構文、静的構造には配列構文
+- **2つの構文** - Slot アクセスにはジェネレーター構文、静的構造には配列構文
 - **シンプルな関数コンポーネント** - props を受け取りジェネレーターを返すプレーンな関数
-- **Refresher パターン** - 仮想 DOM の差分計算なしに細粒度の更新
+- **Slot パターン** - 仮想 DOM の差分計算なしに細粒度の更新
+- **プラグインアーキテクチャ** - Signal、Context などで拡張可能なレンダラー
 - **軽量** - 依存関係なし、最小限の抽象化
 - **TypeScript ファースト** - Tagged Union 型による完全な型安全性
 
-## インストール
+## パッケージ
 
-```bash
-# モノレポです - クローンしてローカルで使用してください
-git clone https://github.com/your-username/ydant.git
-cd ydant
-pnpm install
-pnpm -r run build
-```
+| パッケージ | 説明 | README |
+|------------|------|--------|
+| **@ydant/core** | 型定義、要素ファクトリ、プリミティブ | [詳細](./packages/core/README.md) |
+| **@ydant/dom** | レンダリングエンジン、プラグインシステム | [詳細](./packages/dom/README.md) |
+| **@ydant/reactive** | Signal ベースのリアクティビティ | [詳細](./packages/reactive/README.md) |
+| **@ydant/context** | Context API、localStorage 永続化 | [詳細](./packages/context/README.md) |
+| **@ydant/router** | SPA ルーティング | [詳細](./packages/router/README.md) |
+| **@ydant/async** | Suspense、ErrorBoundary | [詳細](./packages/async/README.md) |
+| **@ydant/transition** | CSS トランジション | [詳細](./packages/transition/README.md) |
 
 ## クイックスタート
 
@@ -58,145 +63,70 @@ import { div, text, clss, type Component } from "@ydant/core";
 import { mount } from "@ydant/dom";
 
 const App: Component = () =>
-  div(() => [
-    clss(["app"]),
-    text("Hello, Ydant!"),
-  ]);
+  div(() => [clss(["app"]), text("Hello, Ydant!")]);
 
 mount(App, document.getElementById("root")!);
 ```
 
-## 構文オプション
-
-### ジェネレーター構文
-
-更新用の `Refresher` が必要な場合に使用：
+### プラグインを使用
 
 ```typescript
-div(function* () {
-  yield* clss(["container"]);
+import { mount } from "@ydant/dom";
+import { createReactivePlugin, signal, reactive } from "@ydant/reactive";
+import { createContextPlugin } from "@ydant/context";
 
-  const refresh = yield* p(function* () {
-    yield* text("動的コンテンツ");
+const count = signal(0);
+
+const App: Component = () =>
+  div(function* () {
+    yield* reactive(() => [text(`Count: ${count()}`)]);
+    yield* button(() => [
+      on("click", () => count.update(n => n + 1)),
+      text("+1"),
+    ]);
   });
 
-  // 後で: refresh(() => [text("更新されました！")]);
+mount(App, document.getElementById("root")!, {
+  plugins: [createReactivePlugin(), createContextPlugin()],
 });
-```
-
-### 配列構文
-
-静的な構造に使用：
-
-```typescript
-div(() => [
-  clss(["container"]),
-  p(() => [text("静的コンテンツ")]),
-]);
-```
-
-## コンポーネント
-
-コンポーネントは props を受け取りジェネレーターを返すシンプルな関数です：
-
-```typescript
-interface ButtonProps {
-  label: string;
-  onClick: () => void;
-}
-
-function Button(props: ButtonProps) {
-  const { label, onClick } = props;
-
-  return button(() => [
-    clss(["btn"]),
-    on("click", onClick),
-    text(label),
-  ]);
-}
-```
-
-関数を呼び出して結果を yield することでコンポーネントを使用：
-
-```typescript
-yield* Button({
-  label: "クリック",
-  onClick: () => alert("クリックされました！"),
-});
-```
-
-## API リファレンス
-
-### プリミティブ
-
-| 関数 | 説明 |
-|------|------|
-| `text(content)` | テキストノードを作成 |
-| `attr(key, value)` | HTML 属性を設定 |
-| `clss(classes[])` | class 属性を設定（ショートハンド） |
-| `on(event, handler)` | イベントリスナーを追加 |
-| `tap(callback)` | DOM 要素への直接アクセス |
-
-### 要素
-
-標準的な HTML 要素がすべて利用可能：`div`, `span`, `p`, `button`, `input`, `h1`-`h3`, `ul`, `li`, `a`, `form`, `table` など
-
-SVG 要素も利用可能：`svg`, `circle`, `path`, `rect`, `g` など
-
-### マウント
-
-| 関数 | 説明 |
-|------|------|
-| `mount(component, element)` | コンポーネントを DOM 要素にマウント |
-
-### 型ガード
-
-| 関数 | 説明 |
-|------|------|
-| `isTagged(value, tag)` | 値が指定された type タグを持つか確認 |
-
-## プロジェクト構造
-
-```
-packages/
-├── core/        # DSL、型定義、要素ファクトリ
-└── dom/         # DOM レンダリングエンジン
-
-examples/
-├── showcase1/   # カウンター、ダイアログコンポーネント
-├── showcase2/   # ToDo アプリ
-└── showcase3/   # ポモドーロタイマー
 ```
 
 ## 実装例
 
-Ydant の動作を確認できるサンプルを用意しています：
+| サンプル | 説明 |
+|----------|------|
+| [showcase1](./examples/showcase1/) | カウンター、ダイアログ - 基本的な Slot の使い方 |
+| [showcase2](./examples/showcase2/) | ToDo アプリ - CRUD、localStorage |
+| [showcase3](./examples/showcase3/) | ポモドーロタイマー - SVG、ライフサイクル |
+| [showcase4](./examples/showcase4/) | SPA - Router、Context、プラグイン |
+| [showcase5](./examples/showcase5/) | ソート可能リスト - key() による効率的な更新 |
+| [showcase6](./examples/showcase6/) | 非同期 - Suspense、ErrorBoundary |
+| [showcase7](./examples/showcase7/) | トランジション - enter/leave アニメーション |
 
-| サンプル | 説明 | 主な機能 |
-|----------|------|----------|
-| [showcase1](./examples/showcase1/) | 基本デモ | Refresher を使ったカウンター、ダイアログコンポーネント |
-| [showcase2](./examples/showcase2/) | ToDo アプリ | CRUD 操作、localStorage への永続化、フィルタリング |
-| [showcase3](./examples/showcase3/) | ポモドーロタイマー | タイマー状態管理、SVG プログレスリング、モード切り替え |
-
-サンプルを実行するには：
+各サンプルには実装のヒントを含む README があります。全サンプルを実行:
 
 ```bash
-cd examples/showcase1  # または showcase2, showcase3
-pnpm run dev
+pnpm run dev  # http://localhost:5173
+```
+
+## インストール
+
+```bash
+git clone https://github.com/your-username/ydant.git
+cd ydant
+pnpm install
+pnpm -r run build
 ```
 
 ## 開発
 
 ```bash
-# 依存関係のインストール
-pnpm install
-
-# 全パッケージのビルド
-pnpm -r run build
-
-# デモの実行
-cd examples/showcase1
-pnpm run dev
+pnpm install        # 依存関係のインストール
+pnpm -r run build   # 全パッケージのビルド
+pnpm run dev        # 統合 dev サーバーを起動
+pnpm test           # テスト実行（watch モード）
+pnpm test:run       # テスト実行（単発）
+pnpm test:coverage  # カバレッジ付きテスト
 ```
 
 ## なぜ "You Don't Actually Need This"？

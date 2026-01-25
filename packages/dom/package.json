@@ -19,6 +19,15 @@
   "license": "MIT",
   "packageManager": "pnpm@10.22.0",
   "peerDependencies": {
-    "@ydant/core": "workspace:*"
+    "@ydant/core": "workspace:*",
+    "@ydant/reactive": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@ydant/reactive": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@ydant/reactive": "workspace:*"
   }
 }

@@ -3,17 +3,21 @@ export type {
   Tagged,
   Attribute,
   Listener,
-  Tap,
   Text,
+  Lifecycle,
+  Style,
+  Key,
   Decoration,
   Child,
   ChildGen,
   Children,
   ChildrenFn,
   Element,
-  ElementGenerator,
-  Refresher,
+  Render,
+  Slot,
   Component,
+  // Plugin extension point
+  PluginChildExtensions,
 } from "./types";
 
 // Utilities
@@ -73,4 +77,13 @@ export {
 } from "./elements";
 
 // Primitives
-export { attr, clss, on, text, tap } from "./primitives";
+export {
+  attr,
+  clss,
+  on,
+  text,
+  onMount,
+  onUnmount,
+  style,
+  key,
+} from "./primitives";

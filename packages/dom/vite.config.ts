@@ -12,7 +12,7 @@ export default defineConfig({
       fileName: format => `index.${format}.js`,
     },
     rollupOptions: {
-      external: ["@ydant/core"],
+      external: ["@ydant/core", "@ydant/reactive"],
     },
   },
 });
