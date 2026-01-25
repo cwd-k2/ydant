@@ -96,6 +96,12 @@ function processBuiltinChild(
 
 /** ライフサイクルイベントを処理 */
 function processLifecycle(value: Child, ctx: RenderContext): void {
+  // 再利用された要素ではライフサイクルコールバックを再登録しない
+  // （既存のコールバックが移行されているため）
+  if (ctx.isCurrentElementReused) {
+    return;
+  }
+
   const lifecycle = value as { event: string; callback: () => void };
   if (lifecycle.event === "mount") {
     ctx.mountCallbacks.push(lifecycle.callback as () => void | (() => void));
@@ -114,6 +120,12 @@ function processAttribute(value: Child, ctx: RenderContext): void {
 
 /** イベントリスナーを処理 */
 function processListener(value: Child, ctx: RenderContext): void {
+  // 再利用された要素ではリスナーを再登録しない
+  // （元のリスナーがまだ有効なため）
+  if (ctx.isCurrentElementReused) {
+    return;
+  }
+
   if (ctx.currentElement) {
     const listener = value as { key: string; value: (e: Event) => void };
     ctx.currentElement.addEventListener(listener.key, listener.value);

@@ -52,12 +52,14 @@ export function processElement(
   applyDecorations(element, node, isReused);
 
   // 子コンテキストを作成（親の contextValues と plugins を継承）
+  // isReused フラグを渡すことで、リスナーやライフサイクルの重複登録を防ぐ
   const childCtx = createRenderContext(
     node,
     node,
     undefined,
     new Map(ctx.contextValues),
     ctx.plugins,
+    isReused,
   );
 
   // key があれば keyedNodes に登録
@@ -167,9 +169,18 @@ function createSlot(
       // 使われなかった keyed nodes をクリーンアップ
       // oldKeyedNodes に残っているもの = 今回の処理で使われなかったもの
       // (processElement で再利用された keyed nodes は delete されている)
-      for (const [, keyedNode] of oldKeyedNodes) {
-        for (const callback of keyedNode.unmountCallbacks) {
-          callback();
+      // 注意: childCtx.keyedNodes は oldKeyedNodes を参照しているため、
+      // 新規追加されたエントリも含まれている。oldKeys で元のキーを追跡し、
+      // 再利用されなかった（まだ存在する）古いエントリのみクリーンアップする。
+      for (const [key, keyedNode] of oldKeyedNodes) {
+        // childCtx.keyedNodes にまだ存在する = 再利用されなかった古いエントリ
+        // (再利用された場合は delete されている)
+        if (childCtx.keyedNodes.has(key) && childCtx.keyedNodes.get(key) === keyedNode) {
+          for (const callback of keyedNode.unmountCallbacks) {
+            callback();
+          }
+          // 未使用エントリを削除して再利用を防ぐ
+          childCtx.keyedNodes.delete(key);
         }
       }
 

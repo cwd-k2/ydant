@@ -14,10 +14,12 @@ export function createRenderContext(
   keyedNodes?: Map<string | number, KeyedNode>,
   contextValues?: Map<symbol, unknown>,
   plugins?: Map<string, DomPlugin>,
+  isCurrentElementReused?: boolean,
 ): RenderContext {
   return {
     parent,
     currentElement,
+    isCurrentElementReused: isCurrentElementReused ?? false,
     mountCallbacks: [],
     unmountCallbacks: [],
     pendingKey: null,

@@ -17,6 +17,8 @@ export interface RenderContext {
   parent: Node;
   /** 現在処理中の要素 */
   currentElement: globalThis.Element | null;
+  /** 現在の要素が再利用されたかどうか（リスナー・ライフサイクルの重複登録を防ぐ） */
+  isCurrentElementReused: boolean;
   /** マウント時に実行するコールバック */
   mountCallbacks: Array<() => void | (() => void)>;
   /** アンマウント時に実行するコールバック */
