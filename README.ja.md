@@ -9,22 +9,23 @@
 Ydant は、JavaScript のジェネレーターをドメイン固有言語として使い、DOM 構造を構築する実験的な UI ライブラリです。意図的にミニマルで型破りなアプローチを取っています。ジェネレーターと DOM が出会うとき、何が可能になるかを探求する遊び場です。
 
 ```typescript
-import { div, span, button, text, clss, on } from "@ydant/core";
+import { div, span, button, text, clss, on, type Slot } from "@ydant/core";
 
 function Counter(initial: number) {
   let count = initial;
+  let countSlot: Slot;
 
   return div(function* () {
     yield* clss(["counter"]);
 
-    const refresh = yield* span(function* () {
+    countSlot = yield* span(function* () {
       yield* text(`Count: ${count}`);
     });
 
     yield* button(function* () {
       yield* on("click", () => {
         count++;
-        refresh(() => [text(`Count: ${count}`)]);
+        countSlot.refresh(() => [text(`Count: ${count}`)]);
       });
       yield* text("+1");
     });
@@ -35,11 +36,83 @@ function Counter(initial: number) {
 ## 特徴
 
 - **ジェネレーターベースの DSL** - `yield*` を使って DOM 要素を自然に合成
-- **2つの構文** - リアクティブ更新にはジェネレーター構文、静的構造には配列構文
+- **2つの構文** - Slot アクセスにはジェネレーター構文、静的構造には配列構文
 - **シンプルな関数コンポーネント** - props を受け取りジェネレーターを返すプレーンな関数
-- **Refresher パターン** - 仮想 DOM の差分計算なしに細粒度の更新
+- **Slot パターン** - 仮想 DOM の差分計算なしに細粒度の更新
+- **Signal ベースのリアクティビティ** - Signal と Computed による任意のリアクティブシステム
+- **プラグインアーキテクチャ** - 拡張可能なレンダラーとプラグイン機能
 - **軽量** - 依存関係なし、最小限の抽象化
 - **TypeScript ファースト** - Tagged Union 型による完全な型安全性
+
+## アーキテクチャ
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Application                              │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │
+│  │ router   │ │ context  │ │ async    │ │transition│           │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘           │
+│       │            │            │            │                  │
+│       └────────────┴─────┬──────┴────────────┘                  │
+│                          │                                      │
+│  ┌───────────────────────┴───────────────────────┐              │
+│  │                    @ydant/dom                 │              │
+│  │  ┌─────────────────────────────────────────┐  │              │
+│  │  │            Plugin System                │  │              │
+│  │  │  ┌─────────────┐  ┌─────────────────┐   │  │              │
+│  │  │  │  reactive   │  │     context     │   │  │              │
+│  │  │  │   plugin    │  │     plugin      │   │  │              │
+│  │  │  └─────────────┘  └─────────────────┘   │  │              │
+│  │  └─────────────────────────────────────────┘  │              │
+│  │                                               │              │
+│  │  ┌─────────────────────────────────────────┐  │              │
+│  │  │           Rendering Engine              │  │              │
+│  │  │  render() → processElement() → DOM      │  │              │
+│  │  └─────────────────────────────────────────┘  │              │
+│  └───────────────────────────────────────────────┘              │
+│                          │                                      │
+│  ┌───────────────────────┴───────────────────────┐              │
+│  │                  @ydant/core                  │              │
+│  │  ┌─────────────┐  ┌─────────────┐             │              │
+│  │  │   Types     │  │  Elements   │             │              │
+│  │  │  Tagged<T>  │  │  div, span  │             │              │
+│  │  │  Child      │  │  button ... │             │              │
+│  │  │  Slot       │  │             │             │              │
+│  │  └─────────────┘  └─────────────┘             │              │
+│  │  ┌─────────────┐  ┌─────────────┐             │              │
+│  │  │ Primitives  │  │  Utilities  │             │              │
+│  │  │ text, attr  │  │  isTagged   │             │              │
+│  │  │ on, clss    │  │  toChildren │             │              │
+│  │  └─────────────┘  └─────────────┘             │              │
+│  └───────────────────────────────────────────────┘              │
+│                          │                                      │
+│  ┌───────────────────────┴───────────────────────┐              │
+│  │                @ydant/reactive                │              │
+│  │  ┌─────────────────────────────────────────┐  │              │
+│  │  │  signal  │  computed  │  effect  │ batch│  │              │
+│  │  └─────────────────────────────────────────┘  │              │
+│  │  ┌─────────────────────────────────────────┐  │              │
+│  │  │           tracking (internal)           │  │              │
+│  │  │  getCurrentSubscriber, runWithSubscriber│  │              │
+│  │  └─────────────────────────────────────────┘  │              │
+│  └───────────────────────────────────────────────┘              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### パッケージ依存関係
+
+```
+@ydant/core      ← 基盤（型、要素ファクトリ、プリミティブ）
+       ↑
+@ydant/reactive  ← リアクティビティ（signal, computed, effect）
+       ↑
+@ydant/dom       ← レンダリングエンジン + プラグインシステム
+       ↑
+       ├── @ydant/context    ← Context API（provide/inject）
+       ├── @ydant/router     ← SPA ルーティング
+       ├── @ydant/async      ← 非同期コンポーネント
+       └── @ydant/transition ← CSS トランジション
+```
 
 ## インストール
 
@@ -70,17 +143,18 @@ mount(App, document.getElementById("root")!);
 
 ### ジェネレーター構文
 
-更新用の `Refresher` が必要な場合に使用：
+更新用の `Slot` や DOM アクセスが必要な場合に使用：
 
 ```typescript
 div(function* () {
   yield* clss(["container"]);
 
-  const refresh = yield* p(function* () {
+  const { refresh, node } = yield* p(function* () {
     yield* text("動的コンテンツ");
   });
 
   // 後で: refresh(() => [text("更新されました！")]);
+  // DOM アクセス: node.scrollIntoView();
 });
 ```
 
@@ -127,7 +201,7 @@ yield* Button({
 
 ## API リファレンス
 
-### プリミティブ
+### プリミティブ（@ydant/core）
 
 | 関数 | 説明 |
 |------|------|
@@ -136,18 +210,33 @@ yield* Button({
 | `clss(classes[])` | class 属性を設定（ショートハンド） |
 | `on(event, handler)` | イベントリスナーを追加 |
 | `tap(callback)` | DOM 要素への直接アクセス |
+| `style(styles)` | インラインスタイルを設定 |
+| `key(value)` | リスト差分用のキーを設定 |
+| `onMount(callback)` | マウント時のライフサイクルフック |
+| `onUnmount(callback)` | アンマウント時のライフサイクルフック |
 
 ### 要素
 
-標準的な HTML 要素がすべて利用可能：`div`, `span`, `p`, `button`, `input`, `h1`-`h3`, `ul`, `li`, `a`, `form`, `table` など
+標準的な HTML 要素がすべて利用可能：`div`, `span`, `p`, `button`, `input`, `h1`-`h6`, `ul`, `li`, `a`, `form`, `table` など
 
 SVG 要素も利用可能：`svg`, `circle`, `path`, `rect`, `g` など
 
-### マウント
+### マウント（@ydant/dom）
 
 | 関数 | 説明 |
 |------|------|
-| `mount(component, element)` | コンポーネントを DOM 要素にマウント |
+| `mount(component, element, options?)` | コンポーネントを DOM 要素にマウント |
+
+オプションにはレンダラーを拡張するための `plugins` が含まれます。
+
+### リアクティビティ（@ydant/reactive）
+
+| 関数 | 説明 |
+|------|------|
+| `signal(value)` | リアクティブな Signal を作成 |
+| `computed(fn)` | 派生値を作成 |
+| `effect(fn)` | Signal 変更時に副作用を実行 |
+| `reactive(fn)` | Signal 変更時に DOM を自動更新 |
 
 ### 型ガード
 
@@ -155,17 +244,38 @@ SVG 要素も利用可能：`svg`, `circle`, `path`, `rect`, `g` など
 |------|------|
 | `isTagged(value, tag)` | 値が指定された type タグを持つか確認 |
 
+## パッケージ
+
+| パッケージ | 説明 |
+|------------|------|
+| [@ydant/core](./packages/core) | DSL、型定義、要素ファクトリ、プラグインインターフェース |
+| [@ydant/dom](./packages/dom) | プラグインサポート付き DOM レンダリングエンジン |
+| [@ydant/reactive](./packages/reactive) | リアクティビティシステム（signal, computed, effect） |
+| [@ydant/context](./packages/context) | Context API と永続化ヘルパー |
+| [@ydant/router](./packages/router) | SPA ルーティング（RouterView, RouterLink） |
+| [@ydant/async](./packages/async) | 非同期コンポーネント（Suspense, ErrorBoundary） |
+| [@ydant/transition](./packages/transition) | CSS トランジション（Transition, TransitionGroup） |
+
 ## プロジェクト構造
 
 ```
 packages/
-├── core/        # DSL、型定義、要素ファクトリ
-└── dom/         # DOM レンダリングエンジン
+├── core/        # DSL、型定義、要素ファクトリ、プラグインインターフェース
+├── dom/         # プラグインサポート付き DOM レンダリングエンジン
+├── reactive/    # リアクティビティシステム（signal, computed, effect）
+├── context/     # Context API と永続化ヘルパー
+├── router/      # SPA ルーティング
+├── async/       # 非同期コンポーネント（Suspense, ErrorBoundary）
+└── transition/  # CSS トランジション
 
 examples/
 ├── showcase1/   # カウンター、ダイアログコンポーネント
-├── showcase2/   # ToDo アプリ
-└── showcase3/   # ポモドーロタイマー
+├── showcase2/   # ToDo アプリ（CRUD、localStorage）
+├── showcase3/   # ポモドーロタイマー（SVG）
+├── showcase4/   # SPA とプラグインアーキテクチャ
+├── showcase5/   # key() を使ったソート可能リスト
+├── showcase6/   # 非同期（Suspense, ErrorBoundary）
+└── showcase7/   # CSS トランジション
 ```
 
 ## 実装例
@@ -174,14 +284,18 @@ Ydant の動作を確認できるサンプルを用意しています：
 
 | サンプル | 説明 | 主な機能 |
 |----------|------|----------|
-| [showcase1](./examples/showcase1/) | 基本デモ | Refresher を使ったカウンター、ダイアログコンポーネント |
+| [showcase1](./examples/showcase1/) | 基本デモ | Slot を使ったカウンター、ダイアログコンポーネント |
 | [showcase2](./examples/showcase2/) | ToDo アプリ | CRUD 操作、localStorage への永続化、フィルタリング |
 | [showcase3](./examples/showcase3/) | ポモドーロタイマー | タイマー状態管理、SVG プログレスリング、モード切り替え |
+| [showcase4](./examples/showcase4/) | SPA デモ | Router、Context、Reactive、プラグインアーキテクチャ |
+| [showcase5](./examples/showcase5/) | ソート可能リスト | key() による効率的なリスト更新 |
+| [showcase6](./examples/showcase6/) | 非同期デモ | Suspense、ErrorBoundary、createResource |
+| [showcase7](./examples/showcase7/) | トランジション | Fade、Slide、Toast と CSS トランジション |
 
 サンプルを実行するには：
 
 ```bash
-cd examples/showcase1  # または showcase2, showcase3
+cd examples/showcase1  # または showcase2, ..., showcase7
 pnpm run dev
 ```
 
