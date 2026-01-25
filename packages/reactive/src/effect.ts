@@ -18,7 +18,7 @@
  * ```
  */
 
-import { subscriberManager } from "./subscriber-manager";
+import { runWithSubscriber } from "./tracking";
 
 /**
  * Effect を作成する
@@ -61,7 +61,7 @@ export function effect(fn: () => void | (() => void)): () => void {
     }
 
     // 依存関係を追跡しながら実行
-    cleanup = subscriberManager.runWith(execute, fn);
+    cleanup = runWithSubscriber(execute, fn);
   };
 
   // 初回実行

@@ -12,7 +12,7 @@
  */
 
 import type { Subscriber } from "./types";
-import { subscriberManager } from "./subscriber-manager";
+import { getCurrentSubscriber, runWithSubscriber } from "./tracking";
 
 /** Computed インターフェース（読み取り専用） */
 export interface Computed<T> {
@@ -56,14 +56,14 @@ export function computed<T>(fn: () => T): Computed<T> {
 
   const read = (() => {
     // 現在の購読者がいれば登録
-    const currentSub = subscriberManager.get();
+    const currentSub = getCurrentSubscriber();
     if (currentSub) {
       subscribers.add(currentSub);
     }
 
     if (isDirty) {
       // 依存関係を追跡しながら再計算
-      cachedValue = subscriberManager.runWith(recompute, fn);
+      cachedValue = runWithSubscriber(recompute, fn);
       isDirty = false;
     }
 

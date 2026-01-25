@@ -13,7 +13,7 @@
  */
 
 import type { Subscriber } from "./types";
-import { subscriberManager } from "./subscriber-manager";
+import { getCurrentSubscriber } from "./tracking";
 
 /** Signal インターフェース */
 export interface Signal<T> {
@@ -54,7 +54,7 @@ export function signal<T>(initialValue: T): Signal<T> {
 
   const read = (() => {
     // 現在の購読者がいれば登録
-    const subscriber = subscriberManager.get();
+    const subscriber = getCurrentSubscriber();
     if (subscriber) {
       subscribers.add(subscriber);
     }

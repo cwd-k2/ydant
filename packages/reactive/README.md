@@ -128,4 +128,4 @@ Creates a DOM plugin that handles `reactive` blocks. Must be passed to `mount()`
 - `batch.ts` - Batch functionality
 - `reactive.ts` - reactive primitive
 - `plugin.ts` - DOM plugin
-- `subscriber-manager.ts` - Subscription tracking
+- `tracking.ts` - Subscription tracking (internal)
