@@ -44,6 +44,76 @@ function Counter(initial: number) {
 - **Tiny footprint** - No dependencies, minimal abstraction
 - **TypeScript-first** - Full type safety with tagged union types
 
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Application                              │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │
+│  │ router   │ │ context  │ │ async    │ │transition│           │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘           │
+│       │            │            │            │                  │
+│       └────────────┴─────┬──────┴────────────┘                  │
+│                          │                                      │
+│  ┌───────────────────────┴───────────────────────┐              │
+│  │                    @ydant/dom                 │              │
+│  │  ┌─────────────────────────────────────────┐  │              │
+│  │  │            Plugin System                │  │              │
+│  │  │  ┌─────────────┐  ┌─────────────────┐   │  │              │
+│  │  │  │  reactive   │  │     context     │   │  │              │
+│  │  │  │   plugin    │  │     plugin      │   │  │              │
+│  │  │  └─────────────┘  └─────────────────┘   │  │              │
+│  │  └─────────────────────────────────────────┘  │              │
+│  │                                               │              │
+│  │  ┌─────────────────────────────────────────┐  │              │
+│  │  │           Rendering Engine              │  │              │
+│  │  │  render() → processElement() → DOM      │  │              │
+│  │  └─────────────────────────────────────────┘  │              │
+│  └───────────────────────────────────────────────┘              │
+│                          │                                      │
+│  ┌───────────────────────┴───────────────────────┐              │
+│  │                  @ydant/core                  │              │
+│  │  ┌─────────────┐  ┌─────────────┐             │              │
+│  │  │   Types     │  │  Elements   │             │              │
+│  │  │  Tagged<T>  │  │  div, span  │             │              │
+│  │  │  Child      │  │  button ... │             │              │
+│  │  │  Slot       │  │             │             │              │
+│  │  └─────────────┘  └─────────────┘             │              │
+│  │  ┌─────────────┐  ┌─────────────┐             │              │
+│  │  │ Primitives  │  │  Utilities  │             │              │
+│  │  │ text, attr  │  │  isTagged   │             │              │
+│  │  │ on, clss    │  │  toChildren │             │              │
+│  │  └─────────────┘  └─────────────┘             │              │
+│  └───────────────────────────────────────────────┘              │
+│                          │                                      │
+│  ┌───────────────────────┴───────────────────────┐              │
+│  │                @ydant/reactive                │              │
+│  │  ┌─────────────────────────────────────────┐  │              │
+│  │  │  signal  │  computed  │  effect  │ batch│  │              │
+│  │  └─────────────────────────────────────────┘  │              │
+│  │  ┌─────────────────────────────────────────┐  │              │
+│  │  │           tracking (internal)           │  │              │
+│  │  │  getCurrentSubscriber, runWithSubscriber│  │              │
+│  │  └─────────────────────────────────────────┘  │              │
+│  └───────────────────────────────────────────────┘              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Package Dependencies
+
+```
+@ydant/core      ← Foundation (types, element factories, primitives)
+       ↑
+@ydant/reactive  ← Reactivity (signal, computed, effect)
+       ↑
+@ydant/dom       ← Rendering engine + plugin system
+       ↑
+       ├── @ydant/context    ← Context API (provide/inject)
+       ├── @ydant/router     ← SPA routing
+       ├── @ydant/async      ← Async components
+       └── @ydant/transition ← CSS transitions
+```
+
 ## Installation
 
 ```bash
