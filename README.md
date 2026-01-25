@@ -9,22 +9,23 @@
 Ydant is an experimental UI library that uses JavaScript generators as a domain-specific language for building DOM structures. It's deliberately minimal and unconventional—a playground for exploring what's possible when generators meet the DOM.
 
 ```typescript
-import { div, span, button, text, clss, on } from "@ydant/core";
+import { div, span, button, text, clss, on, type Slot } from "@ydant/core";
 
 function Counter(initial: number) {
   let count = initial;
+  let countSlot: Slot;
 
   return div(function* () {
     yield* clss(["counter"]);
 
-    const refresh = yield* span(function* () {
+    countSlot = yield* span(function* () {
       yield* text(`Count: ${count}`);
     });
 
     yield* button(function* () {
       yield* on("click", () => {
         count++;
-        refresh(() => [text(`Count: ${count}`)]);
+        countSlot.refresh(() => [text(`Count: ${count}`)]);
       });
       yield* text("+1");
     });
@@ -35,9 +36,11 @@ function Counter(initial: number) {
 ## Features
 
 - **Generator-based DSL** - Use `yield*` to compose DOM elements naturally
-- **Two syntaxes** - Generator syntax for reactive updates, array syntax for static structures
+- **Two syntaxes** - Generator syntax for Slot access, array syntax for static structures
 - **Simple function components** - Plain functions that take props and return generators
-- **Refresher pattern** - Fine-grained updates without virtual DOM diffing
+- **Slot pattern** - Fine-grained updates without virtual DOM diffing
+- **Signal-based reactivity** - Optional reactive system with signals and computed values
+- **Plugin architecture** - Extensible renderer with pluggable features
 - **Tiny footprint** - No dependencies, minimal abstraction
 - **TypeScript-first** - Full type safety with tagged union types
 
@@ -70,17 +73,18 @@ mount(App, document.getElementById("root")!);
 
 ### Generator Syntax
 
-Use when you need the `Refresher` for updates:
+Use when you need the `Slot` for updates or DOM access:
 
 ```typescript
 div(function* () {
   yield* clss(["container"]);
 
-  const refresh = yield* p(function* () {
+  const { refresh, node } = yield* p(function* () {
     yield* text("Dynamic content");
   });
 
   // Later: refresh(() => [text("Updated!")]);
+  // DOM access: node.scrollIntoView();
 });
 ```
 
@@ -127,7 +131,7 @@ yield* Button({
 
 ## API Reference
 
-### Primitives
+### Primitives (from @ydant/core)
 
 | Function | Description |
 |----------|-------------|
@@ -136,18 +140,33 @@ yield* Button({
 | `clss(classes[])` | Set class attribute (shorthand) |
 | `on(event, handler)` | Add event listener |
 | `tap(callback)` | Direct access to DOM element |
+| `style(styles)` | Set inline styles |
+| `key(value)` | Set key for list diffing |
+| `onMount(callback)` | Lifecycle hook for mount |
+| `onUnmount(callback)` | Lifecycle hook for unmount |
 
 ### Elements
 
-All standard HTML elements are available: `div`, `span`, `p`, `button`, `input`, `h1`-`h3`, `ul`, `li`, `a`, `form`, `table`, etc.
+All standard HTML elements are available: `div`, `span`, `p`, `button`, `input`, `h1`-`h6`, `ul`, `li`, `a`, `form`, `table`, etc.
 
 SVG elements are also available: `svg`, `circle`, `path`, `rect`, `g`, etc.
 
-### Mount
+### Mount (from @ydant/dom)
 
 | Function | Description |
 |----------|-------------|
-| `mount(component, element)` | Mount a component to a DOM element |
+| `mount(component, element, options?)` | Mount a component to a DOM element |
+
+Options include `plugins` for extending the renderer.
+
+### Reactivity (from @ydant/reactive)
+
+| Function | Description |
+|----------|-------------|
+| `signal(value)` | Create a reactive signal |
+| `computed(fn)` | Create a derived value |
+| `effect(fn)` | Run side effects on signal changes |
+| `reactive(fn)` | Auto-update DOM on signal changes |
 
 ### Type Guards
 
@@ -155,17 +174,38 @@ SVG elements are also available: `svg`, `circle`, `path`, `rect`, `g`, etc.
 |----------|-------------|
 | `isTagged(value, tag)` | Check if value has the specified type tag |
 
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| [@ydant/core](./packages/core) | DSL, types, element factories, plugin interface |
+| [@ydant/dom](./packages/dom) | DOM rendering engine with plugin support |
+| [@ydant/reactive](./packages/reactive) | Reactivity system (signal, computed, effect) |
+| [@ydant/context](./packages/context) | Context API and persistence helpers |
+| [@ydant/router](./packages/router) | SPA routing (RouterView, RouterLink) |
+| [@ydant/async](./packages/async) | Async components (Suspense, ErrorBoundary) |
+| [@ydant/transition](./packages/transition) | CSS transitions (Transition, TransitionGroup) |
+
 ## Project Structure
 
 ```
 packages/
-├── core/        # DSL, types, element factories
-└── dom/         # DOM rendering engine
+├── core/        # DSL, types, element factories, plugin interface
+├── dom/         # DOM rendering engine with plugin support
+├── reactive/    # Reactivity system (signal, computed, effect)
+├── context/     # Context API and persistence helpers
+├── router/      # SPA routing
+├── async/       # Async components (Suspense, ErrorBoundary)
+└── transition/  # CSS transitions
 
 examples/
 ├── showcase1/   # Counter, Dialog component
-├── showcase2/   # ToDo App
-└── showcase3/   # Pomodoro Timer
+├── showcase2/   # ToDo App (CRUD, localStorage)
+├── showcase3/   # Pomodoro Timer with SVG
+├── showcase4/   # SPA with Plugin Architecture
+├── showcase5/   # Sortable list with key()
+├── showcase6/   # Async (Suspense, ErrorBoundary)
+└── showcase7/   # CSS Transitions
 ```
 
 ## Examples
@@ -174,14 +214,18 @@ Explore working examples to see Ydant in action:
 
 | Example | Description | Key Features |
 |---------|-------------|--------------|
-| [showcase1](./examples/showcase1/) | Basic demos | Counter with Refresher, Dialog component |
+| [showcase1](./examples/showcase1/) | Basic demos | Counter with Slot, Dialog component |
 | [showcase2](./examples/showcase2/) | ToDo App | CRUD operations, localStorage persistence, filtering |
 | [showcase3](./examples/showcase3/) | Pomodoro Timer | Timer state management, SVG progress ring, mode switching |
+| [showcase4](./examples/showcase4/) | SPA Demo | Router, Context, Reactive, Plugin Architecture |
+| [showcase5](./examples/showcase5/) | Sortable List | Efficient list updates with key() |
+| [showcase6](./examples/showcase6/) | Async Demo | Suspense, ErrorBoundary, createResource |
+| [showcase7](./examples/showcase7/) | Transitions | Fade, Slide, Toast with CSS transitions |
 
 To run an example:
 
 ```bash
-cd examples/showcase1  # or showcase2, showcase3
+cd examples/showcase1  # or showcase2, ..., showcase7
 pnpm run dev
 ```
 
