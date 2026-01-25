@@ -9,7 +9,8 @@
 Ydant is an experimental UI library that uses JavaScript generators as a domain-specific language for building DOM structures. It's deliberately minimal and unconventional—a playground for exploring what's possible when generators meet the DOM.
 
 ```typescript
-import { div, span, button, text, clss, on, type Slot } from "@ydant/core";
+import { div, button, text, clss, on, type Slot } from "@ydant/core";
+import { mount } from "@ydant/dom";
 
 function Counter(initial: number) {
   let count = initial;
@@ -18,9 +19,7 @@ function Counter(initial: number) {
   return div(function* () {
     yield* clss(["counter"]);
 
-    countSlot = yield* span(function* () {
-      yield* text(`Count: ${count}`);
-    });
+    countSlot = yield* div(() => [text(`Count: ${count}`)]);
 
     yield* button(function* () {
       yield* on("click", () => {
@@ -31,6 +30,8 @@ function Counter(initial: number) {
     });
   });
 }
+
+mount(() => Counter(0), document.getElementById("app")!);
 ```
 
 ## Features
@@ -39,90 +40,21 @@ function Counter(initial: number) {
 - **Two syntaxes** - Generator syntax for Slot access, array syntax for static structures
 - **Simple function components** - Plain functions that take props and return generators
 - **Slot pattern** - Fine-grained updates without virtual DOM diffing
-- **Signal-based reactivity** - Optional reactive system with signals and computed values
-- **Plugin architecture** - Extensible renderer with pluggable features
+- **Plugin architecture** - Extensible renderer with signals, context, and more
 - **Tiny footprint** - No dependencies, minimal abstraction
 - **TypeScript-first** - Full type safety with tagged union types
 
-## Architecture
+## Packages
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Application                              │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │
-│  │ router   │ │ context  │ │ async    │ │transition│           │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘           │
-│       │            │            │            │                  │
-│       └────────────┴─────┬──────┴────────────┘                  │
-│                          │                                      │
-│  ┌───────────────────────┴───────────────────────┐              │
-│  │                    @ydant/dom                 │              │
-│  │  ┌─────────────────────────────────────────┐  │              │
-│  │  │            Plugin System                │  │              │
-│  │  │  ┌─────────────┐  ┌─────────────────┐   │  │              │
-│  │  │  │  reactive   │  │     context     │   │  │              │
-│  │  │  │   plugin    │  │     plugin      │   │  │              │
-│  │  │  └─────────────┘  └─────────────────┘   │  │              │
-│  │  └─────────────────────────────────────────┘  │              │
-│  │                                               │              │
-│  │  ┌─────────────────────────────────────────┐  │              │
-│  │  │           Rendering Engine              │  │              │
-│  │  │  render() → processElement() → DOM      │  │              │
-│  │  └─────────────────────────────────────────┘  │              │
-│  └───────────────────────────────────────────────┘              │
-│                          │                                      │
-│  ┌───────────────────────┴───────────────────────┐              │
-│  │                  @ydant/core                  │              │
-│  │  ┌─────────────┐  ┌─────────────┐             │              │
-│  │  │   Types     │  │  Elements   │             │              │
-│  │  │  Tagged<T>  │  │  div, span  │             │              │
-│  │  │  Child      │  │  button ... │             │              │
-│  │  │  Slot       │  │             │             │              │
-│  │  └─────────────┘  └─────────────┘             │              │
-│  │  ┌─────────────┐  ┌─────────────┐             │              │
-│  │  │ Primitives  │  │  Utilities  │             │              │
-│  │  │ text, attr  │  │  isTagged   │             │              │
-│  │  │ on, clss    │  │  toChildren │             │              │
-│  │  └─────────────┘  └─────────────┘             │              │
-│  └───────────────────────────────────────────────┘              │
-│                          │                                      │
-│  ┌───────────────────────┴───────────────────────┐              │
-│  │                @ydant/reactive                │              │
-│  │  ┌─────────────────────────────────────────┐  │              │
-│  │  │  signal  │  computed  │  effect  │ batch│  │              │
-│  │  └─────────────────────────────────────────┘  │              │
-│  │  ┌─────────────────────────────────────────┐  │              │
-│  │  │           tracking (internal)           │  │              │
-│  │  │  getCurrentSubscriber, runWithSubscriber│  │              │
-│  │  └─────────────────────────────────────────┘  │              │
-│  └───────────────────────────────────────────────┘              │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Package Dependencies
-
-```
-@ydant/core      ← Foundation (types, element factories, primitives)
-       ↑
-@ydant/reactive  ← Reactivity (signal, computed, effect)
-       ↑
-@ydant/dom       ← Rendering engine + plugin system
-       ↑
-       ├── @ydant/context    ← Context API (provide/inject)
-       ├── @ydant/router     ← SPA routing
-       ├── @ydant/async      ← Async components
-       └── @ydant/transition ← CSS transitions
-```
-
-## Installation
-
-```bash
-# This is a monorepo - clone and use locally
-git clone https://github.com/your-username/ydant.git
-cd ydant
-pnpm install
-pnpm -r run build
-```
+| Package | Description | README |
+|---------|-------------|--------|
+| **@ydant/core** | Types, element factories, primitives | [Details](./packages/core/README.md) |
+| **@ydant/dom** | Rendering engine, plugin system | [Details](./packages/dom/README.md) |
+| **@ydant/reactive** | Signal-based reactivity | [Details](./packages/reactive/README.md) |
+| **@ydant/context** | Context API, localStorage persistence | [Details](./packages/context/README.md) |
+| **@ydant/router** | SPA routing | [Details](./packages/router/README.md) |
+| **@ydant/async** | Suspense, ErrorBoundary | [Details](./packages/async/README.md) |
+| **@ydant/transition** | CSS transitions | [Details](./packages/transition/README.md) |
 
 ## Quick Start
 
@@ -131,222 +63,70 @@ import { div, text, clss, type Component } from "@ydant/core";
 import { mount } from "@ydant/dom";
 
 const App: Component = () =>
-  div(() => [
-    clss(["app"]),
-    text("Hello, Ydant!"),
-  ]);
+  div(() => [clss(["app"]), text("Hello, Ydant!")]);
 
 mount(App, document.getElementById("root")!);
 ```
 
-## Syntax Options
-
-### Generator Syntax
-
-Use when you need the `Slot` for updates or DOM access:
+### With Plugins
 
 ```typescript
-div(function* () {
-  yield* clss(["container"]);
+import { mount } from "@ydant/dom";
+import { createReactivePlugin, signal, reactive } from "@ydant/reactive";
+import { createContextPlugin } from "@ydant/context";
 
-  const { refresh, node } = yield* p(function* () {
-    yield* text("Dynamic content");
+const count = signal(0);
+
+const App: Component = () =>
+  div(function* () {
+    yield* reactive(() => [text(`Count: ${count()}`)]);
+    yield* button(() => [
+      on("click", () => count.update(n => n + 1)),
+      text("+1"),
+    ]);
   });
 
-  // Later: refresh(() => [text("Updated!")]);
-  // DOM access: node.scrollIntoView();
+mount(App, document.getElementById("root")!, {
+  plugins: [createReactivePlugin(), createContextPlugin()],
 });
-```
-
-### Array Syntax
-
-Use for static structures:
-
-```typescript
-div(() => [
-  clss(["container"]),
-  p(() => [text("Static content")]),
-]);
-```
-
-## Components
-
-Components are simple functions that take props and return a generator:
-
-```typescript
-interface ButtonProps {
-  label: string;
-  onClick: () => void;
-}
-
-function Button(props: ButtonProps) {
-  const { label, onClick } = props;
-
-  return button(() => [
-    clss(["btn"]),
-    on("click", onClick),
-    text(label),
-  ]);
-}
-```
-
-Use components by calling the function and yielding the result:
-
-```typescript
-yield* Button({
-  label: "Click me",
-  onClick: () => alert("Clicked!"),
-});
-```
-
-## API Reference
-
-### Primitives (from @ydant/core)
-
-| Function | Description |
-|----------|-------------|
-| `text(content)` | Create a text node |
-| `attr(key, value)` | Set an HTML attribute |
-| `clss(classes[])` | Set class attribute (shorthand) |
-| `on(event, handler)` | Add event listener |
-| `tap(callback)` | Direct access to DOM element |
-| `style(styles)` | Set inline styles |
-| `key(value)` | Set key for list diffing |
-| `onMount(callback)` | Lifecycle hook for mount |
-| `onUnmount(callback)` | Lifecycle hook for unmount |
-
-### Elements
-
-All standard HTML elements are available: `div`, `span`, `p`, `button`, `input`, `h1`-`h6`, `ul`, `li`, `a`, `form`, `table`, etc.
-
-SVG elements are also available: `svg`, `circle`, `path`, `rect`, `g`, etc.
-
-### Mount (from @ydant/dom)
-
-| Function | Description |
-|----------|-------------|
-| `mount(component, element, options?)` | Mount a component to a DOM element |
-
-Options include `plugins` for extending the renderer.
-
-### Reactivity (from @ydant/reactive)
-
-| Function | Description |
-|----------|-------------|
-| `signal(value)` | Create a reactive signal |
-| `computed(fn)` | Create a derived value |
-| `effect(fn)` | Run side effects on signal changes |
-| `reactive(fn)` | Auto-update DOM on signal changes |
-
-### Transitions (from @ydant/transition)
-
-| Function | Description |
-|----------|-------------|
-| `Transition(props)` | Enter transitions for show/hide |
-| `createTransition(props)` | Full enter + leave animation support |
-| `TransitionGroup(props)` | List item transitions |
-
-**createTransition** returns a handle for programmatic control:
-
-```typescript
-const transition = yield* createTransition({
-  enter: "fade-enter",
-  enterFrom: "opacity-0",
-  enterTo: "opacity-100",
-  leave: "fade-leave",
-  leaveFrom: "opacity-100",
-  leaveTo: "opacity-0",
-  children: () => div(() => [text("Content")]),
-});
-
-// Show with enter animation
-await transition.setShow(true);
-
-// Hide with leave animation
-await transition.setShow(false);
-```
-
-### Type Guards
-
-| Function | Description |
-|----------|-------------|
-| `isTagged(value, tag)` | Check if value has the specified type tag |
-
-## Packages
-
-| Package | Description |
-|---------|-------------|
-| [@ydant/core](./packages/core) | DSL, types, element factories, plugin interface |
-| [@ydant/dom](./packages/dom) | DOM rendering engine with plugin support |
-| [@ydant/reactive](./packages/reactive) | Reactivity system (signal, computed, effect) |
-| [@ydant/context](./packages/context) | Context API and persistence helpers |
-| [@ydant/router](./packages/router) | SPA routing (RouterView, RouterLink) |
-| [@ydant/async](./packages/async) | Async components (Suspense, ErrorBoundary) |
-| [@ydant/transition](./packages/transition) | CSS transitions (Transition, TransitionGroup) |
-
-## Project Structure
-
-```
-packages/
-├── core/        # DSL, types, element factories, plugin interface
-├── dom/         # DOM rendering engine with plugin support
-├── reactive/    # Reactivity system (signal, computed, effect)
-├── context/     # Context API and persistence helpers
-├── router/      # SPA routing
-├── async/       # Async components (Suspense, ErrorBoundary)
-└── transition/  # CSS transitions
-
-examples/
-├── showcase1/   # Counter, Dialog component
-├── showcase2/   # ToDo App (CRUD, localStorage)
-├── showcase3/   # Pomodoro Timer with SVG
-├── showcase4/   # SPA with Plugin Architecture
-├── showcase5/   # Sortable list with key()
-├── showcase6/   # Async (Suspense, ErrorBoundary)
-└── showcase7/   # CSS Transitions
 ```
 
 ## Examples
 
-Explore working examples to see Ydant in action:
+| Example | Description |
+|---------|-------------|
+| [showcase1](./examples/showcase1/) | Counter, Dialog - basic Slot usage |
+| [showcase2](./examples/showcase2/) | ToDo App - CRUD, localStorage |
+| [showcase3](./examples/showcase3/) | Pomodoro Timer - SVG, lifecycle |
+| [showcase4](./examples/showcase4/) | SPA - Router, Context, plugins |
+| [showcase5](./examples/showcase5/) | Sortable list - key() for efficient updates |
+| [showcase6](./examples/showcase6/) | Async - Suspense, ErrorBoundary |
+| [showcase7](./examples/showcase7/) | Transitions - enter/leave animations |
 
-| Example | Description | Key Features |
-|---------|-------------|--------------|
-| [showcase1](./examples/showcase1/) | Basic demos | Counter with Slot, Dialog component |
-| [showcase2](./examples/showcase2/) | ToDo App | CRUD operations, localStorage persistence, filtering |
-| [showcase3](./examples/showcase3/) | Pomodoro Timer | Timer state management, SVG progress ring, mode switching |
-| [showcase4](./examples/showcase4/) | SPA Demo | Router, Context, Reactive, Plugin Architecture |
-| [showcase5](./examples/showcase5/) | Sortable List | Efficient list updates with key() |
-| [showcase6](./examples/showcase6/) | Async Demo | Suspense, ErrorBoundary, createResource |
-| [showcase7](./examples/showcase7/) | Transitions | Fade, Slide, Toast with CSS transitions |
-
-To run an example:
+Each example has a README with implementation tips. Run all examples:
 
 ```bash
-cd examples/showcase1  # or showcase2, ..., showcase7
-pnpm run dev
+pnpm run dev  # http://localhost:5173
+```
+
+## Installation
+
+```bash
+git clone https://github.com/your-username/ydant.git
+cd ydant
+pnpm install
+pnpm -r run build
 ```
 
 ## Development
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Build all packages
-pnpm -r run build
-
-# Run unified dev server (all examples)
-pnpm run dev
-
-# Or run a specific example
-cd examples/showcase1
-pnpm run dev
-
-# Run tests
-pnpm test          # watch mode
-pnpm test:run      # single run
-pnpm test:coverage # with coverage report
+pnpm install        # Install dependencies
+pnpm -r run build   # Build all packages
+pnpm run dev        # Run unified dev server
+pnpm test           # Run tests (watch mode)
+pnpm test:run       # Run tests (single run)
+pnpm test:coverage  # Run tests with coverage
 ```
 
 ## Why "You Don't Actually Need This"?
