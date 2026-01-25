@@ -238,6 +238,34 @@ SVG 要素も利用可能：`svg`, `circle`, `path`, `rect`, `g` など
 | `effect(fn)` | Signal 変更時に副作用を実行 |
 | `reactive(fn)` | Signal 変更時に DOM を自動更新 |
 
+### トランジション（@ydant/transition）
+
+| 関数 | 説明 |
+|------|------|
+| `Transition(props)` | 表示/非表示の enter トランジション |
+| `createTransition(props)` | enter + leave アニメーション完全サポート |
+| `TransitionGroup(props)` | リストアイテムのトランジション |
+
+**createTransition** はプログラム制御用のハンドルを返します：
+
+```typescript
+const transition = yield* createTransition({
+  enter: "fade-enter",
+  enterFrom: "opacity-0",
+  enterTo: "opacity-100",
+  leave: "fade-leave",
+  leaveFrom: "opacity-100",
+  leaveTo: "opacity-0",
+  children: () => div(() => [text("Content")]),
+});
+
+// enter アニメーションで表示
+await transition.setShow(true);
+
+// leave アニメーションで非表示
+await transition.setShow(false);
+```
+
 ### 型ガード
 
 | 関数 | 説明 |
@@ -308,9 +336,17 @@ pnpm install
 # 全パッケージのビルド
 pnpm -r run build
 
-# デモの実行
+# 統合 dev サーバーを起動（全サンプル）
+pnpm run dev
+
+# または個別サンプルを実行
 cd examples/showcase1
 pnpm run dev
+
+# テスト実行
+pnpm test          # watch モード
+pnpm test:run      # 単発実行
+pnpm test:coverage # カバレッジレポート付き
 ```
 
 ## なぜ "You Don't Actually Need This"？

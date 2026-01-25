@@ -55,11 +55,19 @@ pnpm install
 # Build all packages
 pnpm -r run build
 
-# Run showcase1 dev server
+# Run unified dev server (all examples at http://localhost:5173)
+pnpm run dev
+
+# Run individual example
 cd examples/showcase1 && pnpm run dev
 
 # Type check (in any package or example)
 pnpm tsc --noEmit
+
+# Run tests
+pnpm test          # watch mode
+pnpm test:run      # single run
+pnpm test:coverage # with coverage report (93%+ coverage)
 ```
 
 ## Core Concepts
@@ -306,6 +314,9 @@ mount(Main, document.getElementById("app")!);
 ### packages/transition/src/
 
 - `Transition.ts` - 単一要素のトランジション
+  - `Transition(props)` - 基本的な show/hide トランジション（enter のみ）
+  - `createTransition(props)` - enter/leave 両方サポート、TransitionHandle を返す
+  - `enterTransition(el, props)` / `leaveTransition(el, props)` - 低レベル API
 - `TransitionGroup.ts` - リスト要素のトランジション
 
 ### examples/showcase2/src/ (ToDo App)
@@ -410,7 +421,7 @@ src/
 
 ### examples/showcase7/src/ (CSS Transitions)
 
-Transition コンポーネントを使用したアニメーションのデモ。
+createTransition を使用したアニメーションのデモ。
 
 ```
 src/
@@ -420,9 +431,9 @@ src/
 ```
 
 **機能:**
-- Fade トランジション
-- Slide トランジション
-- Toast 通知（動的リスト + トランジション）
+- Fade トランジション（enter/leave 両対応）
+- Slide トランジション（enter/leave 両対応）
+- Toast 通知（key() によるリスト管理）
 
 ## Design Decisions
 
@@ -688,6 +699,41 @@ const { refresh } = yield* div(() => [text(`Manual: ${manualCount}`)]);
 manualCount++;
 refresh(() => [text(`Manual: ${manualCount}`)]);
 ```
+
+### createTransition による enter/leave アニメーション
+
+`Transition` コンポーネントは enter アニメーションのみサポートする。leave アニメーションも必要な場合は `createTransition` を使用する。
+
+```typescript
+import { createTransition, type TransitionHandle } from "@ydant/transition";
+
+// createTransition は TransitionHandle を返す
+let fadeTransition: TransitionHandle;
+
+return div(function* () {
+  yield* button(function* () {
+    yield* on("click", async () => {
+      // 現在の表示状態を確認
+      const isVisible = fadeTransition.slot.node.firstElementChild !== null;
+      // アニメーション付きでトグル
+      await fadeTransition.setShow(!isVisible);
+    });
+    yield* text("Toggle");
+  });
+
+  fadeTransition = yield* createTransition({
+    enter: "fade-enter",
+    enterFrom: "opacity-0",
+    enterTo: "opacity-100",
+    leave: "fade-leave",
+    leaveFrom: "opacity-100",
+    leaveTo: "opacity-0",
+    children: () => div(() => [text("Animated content")]),
+  });
+});
+```
+
+**注意**: `createTransition` は `TransitionHandle` を返すため、通常の `Slot` とは異なる。`TransitionHandle.slot` で内部の `Slot` にアクセスできる。
 
 ### SVG 要素の使い方
 

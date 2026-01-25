@@ -238,6 +238,34 @@ Options include `plugins` for extending the renderer.
 | `effect(fn)` | Run side effects on signal changes |
 | `reactive(fn)` | Auto-update DOM on signal changes |
 
+### Transitions (from @ydant/transition)
+
+| Function | Description |
+|----------|-------------|
+| `Transition(props)` | Enter transitions for show/hide |
+| `createTransition(props)` | Full enter + leave animation support |
+| `TransitionGroup(props)` | List item transitions |
+
+**createTransition** returns a handle for programmatic control:
+
+```typescript
+const transition = yield* createTransition({
+  enter: "fade-enter",
+  enterFrom: "opacity-0",
+  enterTo: "opacity-100",
+  leave: "fade-leave",
+  leaveFrom: "opacity-100",
+  leaveTo: "opacity-0",
+  children: () => div(() => [text("Content")]),
+});
+
+// Show with enter animation
+await transition.setShow(true);
+
+// Hide with leave animation
+await transition.setShow(false);
+```
+
 ### Type Guards
 
 | Function | Description |
@@ -308,9 +336,17 @@ pnpm install
 # Build all packages
 pnpm -r run build
 
-# Run the demo
+# Run unified dev server (all examples)
+pnpm run dev
+
+# Or run a specific example
 cd examples/showcase1
 pnpm run dev
+
+# Run tests
+pnpm test          # watch mode
+pnpm test:run      # single run
+pnpm test:coverage # with coverage report
 ```
 
 ## Why "You Don't Actually Need This"?
