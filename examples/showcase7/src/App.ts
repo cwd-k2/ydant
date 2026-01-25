@@ -12,7 +12,7 @@ import {
   on,
   key,
 } from "@ydant/core";
-import { Transition } from "@ydant/transition";
+import { createTransition, type TransitionHandle } from "@ydant/transition";
 import type { Toast } from "./types";
 
 const TOAST_COLORS: Record<Toast["type"], string[]> = {
@@ -21,10 +21,10 @@ const TOAST_COLORS: Record<Toast["type"], string[]> = {
   info: ["bg-blue-500", "text-white"],
 };
 
-// Section: Simple toggle with Transition
+// Section: Simple toggle with createTransition (supports leave animation)
 function ToggleSection() {
-  let isVisible = false;
   let sectionSlot: Slot;
+  let fadeTransition: TransitionHandle;
 
   const renderSection = function* () {
     yield* clss(["p-4", "bg-gray-50", "rounded-lg"]);
@@ -39,15 +39,15 @@ function ToggleSection() {
         "hover:bg-blue-600",
         "mb-4",
       ]);
-      yield* on("click", () => {
-        isVisible = !isVisible;
-        sectionSlot.refresh(renderSection);
+      yield* on("click", async () => {
+        // Toggle visibility with animation
+        const isVisible = fadeTransition.slot.node.firstElementChild !== null;
+        await fadeTransition.setShow(!isVisible);
       });
-      yield* text(isVisible ? "Hide Content" : "Show Content");
+      yield* text("Toggle Content");
     });
 
-    yield* Transition({
-      show: isVisible,
+    fadeTransition = yield* createTransition({
       enter: "fade-enter",
       enterFrom: "fade-enter-from",
       enterTo: "fade-enter-to",
@@ -60,7 +60,7 @@ function ToggleSection() {
           p(() => [text("This content fades in and out!")]),
           p(() => [
             clss(["text-sm", "text-blue-600", "mt-2"]),
-            text("The Transition component handles the animation."),
+            text("The createTransition API handles enter AND leave animations."),
           ]),
         ]),
     });
@@ -72,10 +72,10 @@ function ToggleSection() {
   });
 }
 
-// Section: Slide transition
+// Section: Slide transition with createTransition
 function SlideSection() {
-  let isVisible = false;
   let sectionSlot: Slot;
+  let slideTransition: TransitionHandle;
 
   const renderSection = function* () {
     yield* clss(["p-4", "bg-gray-50", "rounded-lg"]);
@@ -90,22 +90,24 @@ function SlideSection() {
         "hover:bg-green-600",
         "mb-4",
       ]);
-      yield* on("click", () => {
-        isVisible = !isVisible;
-        sectionSlot.refresh(renderSection);
+      yield* on("click", async () => {
+        const isVisible = slideTransition.slot.node.firstElementChild !== null;
+        await slideTransition.setShow(!isVisible);
       });
-      yield* text(isVisible ? "Hide Panel" : "Show Panel");
+      yield* text("Toggle Panel");
     });
 
-    yield* Transition({
-      show: isVisible,
+    slideTransition = yield* createTransition({
       enter: "slide-enter",
       enterFrom: "slide-enter-from",
       enterTo: "slide-enter-to",
+      leave: "slide-leave",
+      leaveFrom: "slide-leave-from",
+      leaveTo: "slide-leave-to",
       children: () =>
         div(() => [
           clss(["p-4", "bg-green-100", "rounded-lg"]),
-          p(() => [text("This panel slides in from the left!")]),
+          p(() => [text("This panel slides in and out!")]),
         ]),
     });
   };
@@ -116,7 +118,7 @@ function SlideSection() {
   });
 }
 
-// Section: Toast notifications (simplified - no TransitionGroup)
+// Section: Toast notifications with scale animation
 function ToastSection() {
   let toasts: Toast[] = [];
   let nextId = 1;
@@ -163,29 +165,24 @@ function ToastSection() {
         // Using key for efficient updates
         yield* key(toast.id);
 
-        yield* Transition({
-          show: true,
-          enter: "scale-enter",
-          enterFrom: "scale-enter-from",
-          enterTo: "scale-enter-to",
-          children: () =>
-            div(function* () {
-              yield* clss([
-                "flex",
-                "items-center",
-                "justify-between",
-                "p-3",
-                "rounded-lg",
-                "shadow",
-                ...TOAST_COLORS[toast.type],
-              ]);
-              yield* span(() => [text(toast.message)]);
-              yield* button(function* () {
-                yield* clss(["ml-2", "hover:opacity-75"]);
-                yield* on("click", () => removeToast(toast.id));
-                yield* text("×");
-              });
-            }),
+        yield* div(function* () {
+          yield* clss([
+            "flex",
+            "items-center",
+            "justify-between",
+            "p-3",
+            "rounded-lg",
+            "shadow",
+            "scale-enter",
+            "scale-enter-to",
+            ...TOAST_COLORS[toast.type],
+          ]);
+          yield* span(() => [text(toast.message)]);
+          yield* button(function* () {
+            yield* clss(["ml-2", "hover:opacity-75"]);
+            yield* on("click", () => removeToast(toast.id));
+            yield* text("×");
+          });
         });
       }
     }
@@ -232,7 +229,7 @@ export const App: Component = () =>
 
     yield* p(() => [
       clss(["text-center", "text-gray-500", "text-sm", "mb-6"]),
-      text("Demonstrates Transition component for animated UI elements."),
+      text("Demonstrates createTransition for animated UI elements with enter AND leave support."),
     ]);
 
     // Toggle section (fade)
@@ -253,11 +250,11 @@ export const App: Component = () =>
     // Info
     yield* div(() => [
       clss(["mt-6", "p-4", "bg-blue-50", "rounded-lg", "text-sm"]),
-      h2(() => [clss(["font-semibold", "mb-2"]), text("How Transition Works:")]),
+      h2(() => [clss(["font-semibold", "mb-2"]), text("How createTransition Works:")]),
       p(() => [
         text(
-          "The Transition component applies CSS classes at different stages of enter/leave. " +
-            "Combined with CSS transitions, this creates smooth animations."
+          "The createTransition API returns a handle with setShow(boolean) for programmatic control. " +
+            "It properly supports both enter and leave animations by managing the element lifecycle."
         ),
       ]),
     ]);

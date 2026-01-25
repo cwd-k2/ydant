@@ -51,6 +51,17 @@
         transform: translateX(0);
         opacity: 1;
       }
+      .slide-leave {
+        transition: transform 300ms ease, opacity 300ms ease;
+      }
+      .slide-leave-from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      .slide-leave-to {
+        transform: translateX(-20px);
+        opacity: 0;
+      }
       .scale-enter {
         transition: transform 200ms ease, opacity 200ms ease;
       }
