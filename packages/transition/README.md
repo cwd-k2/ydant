@@ -10,10 +10,12 @@ pnpm add @ydant/transition
 
 ## Usage
 
-### Transition
+### Transition (Enter-only)
+
+For simple show/hide with enter animation only:
 
 ```typescript
-import { div, button, text, on, type Component } from "@ydant/core";
+import { div, button, text, on, type Component, type Slot } from "@ydant/core";
 import { Transition } from "@ydant/transition";
 
 const App: Component = () => {
@@ -46,9 +48,42 @@ const App: Component = () => {
 };
 ```
 
+### createTransition (Enter + Leave)
+
+For full enter/leave animation support with programmatic control:
+
+```typescript
+import { div, button, text, on, clss, type Component } from "@ydant/core";
+import { createTransition, type TransitionHandle } from "@ydant/transition";
+
+const App: Component = () => {
+  let fadeTransition: TransitionHandle;
+
+  return div(function* () {
+    yield* button(function* () {
+      yield* on("click", async () => {
+        const isVisible = fadeTransition.slot.node.firstElementChild !== null;
+        await fadeTransition.setShow(!isVisible);
+      });
+      yield* text("Toggle");
+    });
+
+    fadeTransition = yield* createTransition({
+      enter: "fade-enter",
+      enterFrom: "fade-enter-from",
+      enterTo: "fade-enter-to",
+      leave: "fade-leave",
+      leaveFrom: "fade-leave-from",
+      leaveTo: "fade-leave-to",
+      children: () => div(() => [text("Animated content")]),
+    });
+  });
+};
+```
+
 ### CSS Classes
 
-Transition applies these CSS classes during animations:
+#### For `Transition` (name-based)
 
 | Class | When Applied |
 |-------|--------------|
@@ -59,9 +94,21 @@ Transition applies these CSS classes during animations:
 | `{name}-leave-active` | During leave |
 | `{name}-leave-to` | End of leave |
 
+#### For `createTransition` (explicit classes)
+
+| Prop | When Applied |
+|------|--------------|
+| `enter` | During enter animation |
+| `enterFrom` | Initial state before enter |
+| `enterTo` | Final state after enter |
+| `leave` | During leave animation |
+| `leaveFrom` | Initial state before leave |
+| `leaveTo` | Final state after leave |
+
 ### Example CSS
 
 ```css
+/* For Transition (name="fade") */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -72,17 +119,24 @@ Transition applies these CSS classes during animations:
   opacity: 0;
 }
 
-.slide-enter-active,
-.slide-leave-active {
-  transition: transform 0.3s ease;
+/* For createTransition */
+.fade-enter {
+  transition: opacity 300ms ease;
 }
-
-.slide-enter {
-  transform: translateX(-100%);
+.fade-enter-from {
+  opacity: 0;
 }
-
-.slide-leave-to {
-  transform: translateX(100%);
+.fade-enter-to {
+  opacity: 1;
+}
+.fade-leave {
+  transition: opacity 300ms ease;
+}
+.fade-leave-from {
+  opacity: 1;
+}
+.fade-leave-to {
+  opacity: 0;
 }
 ```
 
@@ -91,11 +145,11 @@ Transition applies these CSS classes during animations:
 For animating lists of items:
 
 ```typescript
-import { TransitionGroup, createTransitionGroupRefresher } from "@ydant/transition";
+import { TransitionGroup } from "@ydant/transition";
 
 const App: Component = () => {
   const items = [{ id: 1, text: "Item 1" }];
-  
+
   return div(function* () {
     const { slot, refresh } = yield* TransitionGroup({
       name: "list",
@@ -129,6 +183,29 @@ interface TransitionProps {
 }
 ```
 
+### createTransition
+
+```typescript
+function* createTransition(
+  props: CreateTransitionProps
+): Generator<unknown, TransitionHandle, Slot>;
+
+interface CreateTransitionProps {
+  enter: string;
+  enterFrom: string;
+  enterTo: string;
+  leave: string;
+  leaveFrom: string;
+  leaveTo: string;
+  children: () => Render;
+}
+
+interface TransitionHandle {
+  slot: Slot;
+  setShow(show: boolean): Promise<void>;
+}
+```
+
 ### TransitionGroup
 
 ```typescript
@@ -142,18 +219,14 @@ interface TransitionGroupProps<T> {
 }
 ```
 
-### createTransitionGroupRefresher
+### Low-level APIs
 
 ```typescript
-function createTransitionGroupRefresher<T>(
-  slot: Slot,
-  props: TransitionGroupProps<T>
-): (newItems: T[]) => void;
+function enterTransition(el: HTMLElement, props: EnterProps): Promise<void>;
+function leaveTransition(el: HTMLElement, props: LeaveProps): Promise<void>;
 ```
-
-Creates a refresh function for updating TransitionGroup items.
 
 ## Module Structure
 
-- `Transition.ts` - Single element transitions
+- `Transition.ts` - Single element transitions (Transition, createTransition)
 - `TransitionGroup.ts` - List transitions
