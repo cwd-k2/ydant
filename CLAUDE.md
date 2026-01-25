@@ -1,257 +1,101 @@
-# Ydant - Generator-based DOM Rendering DSL
+# Ydant Development Guide
 
-## Overview
+## What is Ydant?
 
-Ydant は JavaScript ジェネレーターを DSL として使用する軽量 DOM レンダリングライブラリ。シンプルな関数ベースのコンポジションで UI コンポーネントを構築する。
+JavaScript ジェネレーターを DSL として使用する DOM レンダリングライブラリ。
 
-**詳細な API ドキュメントは各パッケージの README を参照。**
+## Architecture
 
-## Project Structure
+**基盤:**
+- `@ydant/core` - 型定義、要素ファクトリ、プリミティブ
+- `@ydant/dom` - レンダリングエンジン、プラグインシステム
 
-```
-ydant/
-├── packages/
-│   ├── core/          # DSL, types, element factories
-│   ├── dom/           # DOM rendering engine, plugin system
-│   ├── reactive/      # Reactivity (signal, computed, effect)
-│   ├── context/       # Context API, persistence
-│   ├── router/        # SPA routing
-│   ├── async/         # Suspense, ErrorBoundary
-│   └── transition/    # CSS transitions
-├── examples/
-│   └── showcase1-7/   # Demo applications
-├── README.md          # English documentation
-├── README.ja.md       # Japanese documentation
-└── CLAUDE.md          # Development guide (this file)
-```
+**拡張（プラグイン）:**
+- `@ydant/reactive` - Signal ベースのリアクティビティ
+- `@ydant/context` - Context API、永続化
 
-## Package Dependencies
+**追加 DSL:**
+- `@ydant/router` - SPA ルーティング
+- `@ydant/async` - Suspense、ErrorBoundary
+- `@ydant/transition` - CSS トランジション
 
-```
-@ydant/core      ← Foundation (types, elements, primitives)
-       ↑
-@ydant/reactive  ← Reactivity (signal, computed, effect)
-       ↑
-@ydant/dom       ← Rendering engine + plugin system
-       ↑
-       ├── @ydant/context    ← Context API
-       ├── @ydant/router     ← SPA routing
-       ├── @ydant/async      ← Async components
-       └── @ydant/transition ← CSS transitions
-```
+プラグインは `mount()` 時に登録し、DSL は `yield*` で使用する。
 
 ## Commands
 
 ```bash
-pnpm install              # Install dependencies
-pnpm -r run build         # Build all packages
-pnpm run dev              # Unified dev server (http://localhost:5173)
-pnpm test                 # Run tests (watch mode)
-pnpm test:run             # Run tests (single run)
-pnpm test:coverage        # Run tests with coverage (93%+)
-pnpm tsc --noEmit         # Type check
+pnpm install              # 依存関係インストール
+pnpm -r run build         # 全パッケージビルド
+pnpm run dev              # 統合 dev サーバー
+pnpm test                 # テスト（watch）
+pnpm test:run             # テスト（単発）
+pnpm test:coverage        # カバレッジ付きテスト
 ```
 
-## Core Concepts
+## Essential Patterns
 
-### Generator-based DSL
-
-2つの構文をサポート:
+### Generator vs Array Syntax
 
 ```typescript
-// Generator syntax - Slot が必要な場合
+// Generator: Slot が必要な場合
 const { refresh, node } = yield* div(function* () {
-  yield* clss(["container"]);
-  yield* text("Content");
+  yield* text("content");
 });
 
-// Array syntax - 静的構造用
-yield* div(() => [clss(["container"]), text("Content")]);
+// Array: 静的構造
+yield* div(() => [text("content")]);
 ```
 
-### Component & Slot
+### Slot の使い方
 
 ```typescript
-import { type Component, type Slot, div, text, button, on } from "@ydant/core";
-import { mount } from "@ydant/dom";
+let slot: Slot;  // 先に宣言
 
-const Counter: Component = () => {
-  let count = 0;
-  let countSlot: Slot;
+yield* button(() => [
+  on("click", () => slot.refresh(() => [text("updated")])),  // 使用
+  text("click"),
+]);
 
-  return div(function* () {
-    yield* button(function* () {
-      yield* on("click", () => {
-        count++;
-        countSlot.refresh(() => [text(`Count: ${count}`)]);
-      });
-      yield* text("+1");
-    });
-
-    countSlot = yield* div(() => [text(`Count: ${count}`)]);
-  });
-};
-
-mount(Counter, document.getElementById("app")!);
-```
-
-**重要パターン**: Slot 変数は先に宣言し、イベントハンドラ内で使用する。
-
-### Plugin System
-
-```typescript
-import { mount } from "@ydant/dom";
-import { createReactivePlugin } from "@ydant/reactive";
-import { createContextPlugin } from "@ydant/context";
-
-mount(App, root, {
-  plugins: [createReactivePlugin(), createContextPlugin()],
-});
-```
-
-## Design Decisions
-
-1. **Simple function components** - props を受け取りジェネレーターを返すプレーン関数
-2. **Generator for Slot** - 再レンダリングや DOM アクセスが必要な場合はジェネレーター構文
-3. **Array for static** - 静的構造には配列構文
-4. **Modular packages** - 機能ごとに独立したパッケージ
-5. **Signal-based reactivity** - SolidJS/Preact Signals に影響を受けた設計
-6. **Plugin architecture** - DOM renderer はプラグインで拡張可能
-7. **JS syntax preferred** - 条件分岐やループは JS の `if`/`for` を直接使用
-
-## Development Notes
-
-- `@ydant/dev` condition で開発時はソース `.ts` を直接参照
-- Production は `dist/` を使用
-- Vite で dev server と build を処理
-- pnpm workspaces でモノレポ管理
-
-## Key Implementation Patterns
-
-### Slot.refresh() の使い方
-
-```typescript
-// ✅ コンテンツを返す関数を渡す
-slot.refresh(() => [text(`Count: ${count}`)]);
-
-// ❌ 引数なしは不可
-slot.refresh();
-```
-
-### ライフサイクル
-
-```typescript
-yield* onMount(() => {
-  const timer = setInterval(() => console.log("tick"), 1000);
-  return () => clearInterval(timer);  // クリーンアップ
-});
-```
-
-### key による差分更新
-
-```typescript
-for (const item of items) {
-  yield* key(item.id);  // DOM ノード再利用のためのキー
-  yield* li(() => [text(item.name)]);
-}
+slot = yield* div(() => [text("initial")]);  // 代入
 ```
 
 ---
 
-## Documentation Guidelines
+## Documentation Structure
 
-### ドキュメント構成
-
-| ファイル | 役割 |
+| ファイル | 内容 |
 |----------|------|
-| `README.md` | プロジェクト概要、API リファレンス、使用例（英語） |
-| `README.ja.md` | 日本語版 README（内容は英語版と同期） |
-| `packages/*/README.md` | 各パッケージの詳細な API ドキュメント |
-| `CLAUDE.md` | 開発ガイド、実装パターン、設計判断（このファイル） |
+| `README.md` / `README.ja.md` | プロジェクト概要、API 一覧（**常に同期**） |
+| `packages/*/README.md` | 各パッケージの詳細 API |
+| `examples/*/README.md` | 各 showcase の実装パターン・ヒント |
+| `CLAUDE.md` | 開発ガイド（このファイル） |
 
-### README 同期の原則
+### 原則
 
-**日本語・英語の README は常に同期すること。**
+1. **README 同期**: 日英 README は内容を一致させる
+2. **CLAUDE.md は簡潔に**: 詳細は適切な場所（パッケージ/showcase README）に委ねる
+3. **情報の重複を避ける**: 同じ情報を複数箇所に書かない
 
-- 一方を更新したら、必ず他方も更新する
-- 内容の差異は許容しない（翻訳の質の差は許容）
-- API 表、コード例、セクション構成を一致させる
+### 情報の配置
 
-### CLAUDE.md の管理原則
-
-**CLAUDE.md は適切なサイズに保つこと。**
-
-1. **コンパクトに保つ**: 詳細な API ドキュメントは各パッケージ README に委ねる
-2. **開発者向け**: IDE 操作方法や基本的な Git コマンドは記載しない
-3. **実装知見を記録**: つまずきやすいポイント、解決パターンを追記する
-4. **設計判断を文書化**: なぜそうなっているかを残す
-
-### ストック情報とフロー情報
-
-**ストック情報（コミット対象）:**
-- `CLAUDE.md` - 確定した設計決定、実装パターン
-- `README.md` / `README.ja.md` - ユーザー向けドキュメント
-- `packages/*/README.md` - パッケージ API ドキュメント
-
-**フロー情報（コミット対象外）:**
-- `MEMO.md` - 一時的な検討メモ
-- `FEATURE-PLAN.md` - 検討中の機能案
-- `IMPLEMENTATION-PLAN.md` - 実装作業中の計画
-
-### 情報の配置基準
-
-| 情報の種類 | 配置先 |
-|-----------|--------|
-| パッケージの API、使用例 | `packages/*/README.md` |
-| プロジェクト概要、機能一覧 | `README.md` / `README.ja.md` |
-| 開発コマンド、構造 | `CLAUDE.md` |
-| 実装パターン、設計判断 | `CLAUDE.md` |
-| つまずきポイント、知見 | `CLAUDE.md` |
+| 情報 | 配置先 |
+|------|--------|
+| API 仕様、型定義 | `packages/*/README.md` |
+| 使用例、機能一覧 | `README.md` / `README.ja.md` |
+| 実装パターン、躓きポイント | `examples/*/README.md` |
+| アーキテクチャ、開発コマンド | `CLAUDE.md` |
 
 ---
 
-## For Future Contributors
+## For Contributors
 
-### タスク完了時の知見記録
+### 知見の記録
 
-実装タスクを完了した際は、以下を CLAUDE.md に追記すること:
+実装中に発見した躓きポイントや解決パターンは、関連する showcase の README に追記する。
 
-1. **つまずいたポイント**: 遭遇したエラーや問題
-2. **解決パターン**: 問題をどのように解決したか
-3. **推奨パターン**: 今後の実装で使うべきパターン
-
-### 新しい showcase の追加方法
+### 新しい showcase の追加
 
 1. `examples/showcaseN/` を作成
-2. `showcase1` から `package.json`, `tsconfig.json`, `vite.config.ts`, `index.html` をコピー
-3. `package.json` の name を変更
+2. `showcase1` から設定ファイルをコピー
+3. `README.md` を作成（機能説明と実装のポイント）
 4. ルートで `pnpm install`
-5. `pnpm run dev` で確認
-
----
-
-## Known Patterns & Gotchas
-
-### Router のパスパラメータ実装
-
-`:param` を正規表現に変換する際、エスケープ順序に注意:
-
-```typescript
-// ✅ プレースホルダーを使用
-const placeholder = "___PARAM___";
-const withPlaceholders = pattern.replace(/:([^/]+)/g, placeholder);
-const escaped = withPlaceholders.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const regex = escaped.replace(/___PARAM___/g, "([^/]+)");
-```
-
-### Tailwind CDN でダークモード
-
-```html
-<script>
-  tailwind.config = { darkMode: 'class' }
-</script>
-```
-
-### SVG の text 要素
-
-`text` プリミティブとの衝突を避けるため、SVG の `<text>` は `svgText` として提供。
