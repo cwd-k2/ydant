@@ -1,7 +1,10 @@
 {
+  "name": "ydant",
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "dev": "pnpm --filter examples run dev",
+    "build": "pnpm -r run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

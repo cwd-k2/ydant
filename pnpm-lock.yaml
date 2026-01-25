@@ -24,6 +24,30 @@ importers:
         specifier: ^4.0.10
         version: 4.0.10(@types/node@24.10.1)
 
+  examples:
+    dependencies:
+      '@ydant/async':
+        specifier: workspace:*
+        version: link:../packages/async
+      '@ydant/context':
+        specifier: workspace:*
+        version: link:../packages/context
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../packages/core
+      '@ydant/dom':
+        specifier: workspace:*
+        version: link:../packages/dom
+      '@ydant/reactive':
+        specifier: workspace:*
+        version: link:../packages/reactive
+      '@ydant/router':
+        specifier: workspace:*
+        version: link:../packages/router
+      '@ydant/transition':
+        specifier: workspace:*
+        version: link:../packages/transition
+
   examples/showcase1:
     dependencies:
       '@ydant/core':
@@ -143,9 +167,6 @@ importers:
       '@ydant/core':
         specifier: workspace:*
         version: link:../core
-      '@ydant/reactive':
-        specifier: workspace:*
-        version: link:../reactive
 
   packages/transition:
     devDependencies:
