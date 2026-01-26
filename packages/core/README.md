@@ -1,6 +1,6 @@
 # @ydant/core
 
-Core DSL, types, and element factories for Ydant.
+Rendering engine and plugin system for Ydant.
 
 ## Installation
 
@@ -11,48 +11,77 @@ pnpm add @ydant/core
 ## Usage
 
 ```typescript
-import { div, p, text, clss, on, type Component } from "@ydant/core";
+import { mount } from "@ydant/core";
+import { createBasePlugin, div, text, type Component } from "@ydant/base";
 
-const Greeting: Component = () =>
-  div(function* () {
-    yield* clss(["greeting"]);
-    yield* p(() => [text("Hello World!")]);
-  });
+const App: Component = () => div(() => [text("Hello!")]);
+
+mount(App, document.getElementById("app")!, {
+  plugins: [createBasePlugin()],
+});
 ```
 
 ## API
 
-### Element Factories
+### Mount
 
-HTML elements: `div`, `span`, `p`, `button`, `input`, `h1`-`h6`, `ul`, `li`, `a`, `form`, `table`, `thead`, `tbody`, `tr`, `th`, `td`, `label`, `textarea`, `select`, `option`, `nav`, `header`, `footer`, `section`, `article`, `aside`, `main`, `dialog`
+```typescript
+function mount(component: Component, container: HTMLElement, options?: MountOptions): void;
 
-SVG elements: `svg`, `circle`, `ellipse`, `line`, `path`, `polygon`, `polyline`, `rect`, `g`, `defs`, `use`, `clipPath`, `mask`, `linearGradient`, `radialGradient`, `stop`, `svgText`, `tspan`
+interface MountOptions {
+  plugins?: Plugin[];
+}
+```
 
-### Primitives
+### Plugin System
 
-| Function              | Description                  |
-| --------------------- | ---------------------------- |
-| `text(content)`       | Create a text node           |
-| `attr(key, value)`    | Set an HTML attribute        |
-| `clss(classes[])`     | Set class attribute          |
-| `on(event, handler)`  | Add event listener           |
-| `tap(callback)`       | Direct access to DOM element |
-| `style(styles)`       | Set inline styles            |
-| `key(value)`          | Set key for list diffing     |
-| `onMount(callback)`   | Lifecycle hook for mount     |
-| `onUnmount(callback)` | Lifecycle hook for unmount   |
+```typescript
+interface Plugin {
+  name: string;
+  types: string[];
+  process(child: Child, api: PluginAPI): PluginResult;
+}
+
+interface PluginResult {
+  value?: unknown; // Value to pass back via next()
+  stop?: boolean; // Stop processing this child
+}
+```
 
 ### Types
 
-| Type          | Description                                                                |
-| ------------- | -------------------------------------------------------------------------- |
-| `Component`   | `() => Render`                                                             |
-| `Render`      | `Generator<Element, Slot, Slot>` - Generator yielding Elements             |
-| `Slot`        | `{ node: HTMLElement, refresh: (fn) => void }`                             |
-| `Builder`     | `() => Instructor \| Instruction[]` - Element factory argument type        |
-| `Instructor`  | `Iterator<Child, ChildReturn, ChildNext>` - Rendering instruction iterator |
-| `Instruction` | `Generator<Child, ChildReturn, ChildNext>` - Rendering instruction         |
-| `Child`       | Element \| Decoration \| Text \| Lifecycle \| Style \| Key \| (plugins)    |
+| Type          | Description                                                           |
+| ------------- | --------------------------------------------------------------------- |
+| `Tagged<T,P>` | Helper type for tagged unions: `{ type: T } & P`                      |
+| `Child`       | Union of all yieldable types (extended by plugins)                    |
+| `ChildNext`   | Union of values passed via `next()` (extended by plugins)             |
+| `ChildReturn` | Union of return values (extended by plugins)                          |
+| `Render`      | `Generator<Child, ChildReturn, ChildNext>` - Base rendering generator |
+| `Component`   | `() => Render` - Root component type                                  |
+| `Builder`     | `() => Instructor \| Instruction[]` - Element factory argument        |
+| `Instructor`  | `Iterator<Child, ChildReturn, ChildNext>` - Internal iterator         |
+| `Instruction` | `Generator<Child, ChildReturn, ChildNext>` - Primitive return type    |
+
+### Plugin Extension Interfaces
+
+Plugins can extend these interfaces via module augmentation:
+
+```typescript
+declare module "@ydant/core" {
+  interface PluginChildExtensions {
+    MyType: Tagged<"mytype", { value: string }>;
+  }
+  interface PluginNextExtensions {
+    MyResult: MyResultType;
+  }
+  interface PluginReturnExtensions {
+    MyResult: MyResultType;
+  }
+  interface PluginAPIExtensions {
+    myMethod(): void;
+  }
+}
+```
 
 ### Utilities
 
@@ -61,24 +90,22 @@ SVG elements: `svg`, `circle`, `ellipse`, `line`, `path`, `polygon`, `polyline`,
 | `isTagged(value, tag)` | Type guard for tagged union types      |
 | `toChildren(result)`   | Normalize array/iterator to Instructor |
 
-## Syntax
-
-### Generator Syntax
-
-Use when you need the `Slot` return value:
+## Creating Plugins
 
 ```typescript
-const { refresh, node } =
-  yield *
-  div(function* () {
-    yield* text("Content");
-  });
-```
+import type { Plugin, PluginAPI, PluginResult, Child } from "@ydant/core";
 
-### Array Syntax
-
-Use for static structures:
-
-```typescript
-yield * div(() => [clss(["container"]), text("Static content")]);
+export function createMyPlugin(): Plugin {
+  return {
+    name: "my-plugin",
+    types: ["mytype"],
+    process(child: Child, api: PluginAPI): PluginResult {
+      if ((child as { type: string }).type === "mytype") {
+        // Process the child
+        return { value: result };
+      }
+      return {};
+    },
+  };
+}
 ```
