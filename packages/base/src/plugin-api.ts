@@ -4,7 +4,8 @@
  * core の PluginAPI を拡張し、DOM 操作に必要なメソッドを追加する
  */
 
-import type { Builder } from "@ydant/core";
+import type { Builder, PluginAPI } from "@ydant/core";
+import type { Element, Attribute, Listener, Text, Lifecycle, Key, Slot } from "./types";
 
 /** Keyed 要素の情報 */
 export interface KeyedNode {
@@ -48,7 +49,7 @@ export interface BasePluginAPI {
   ): void;
 
   /** 新しい子コンテキストの API を作成（戻り値は PluginAPIExtensions） */
-  createChildAPI(parent: Node): import("@ydant/core").PluginAPI;
+  createChildAPI(parent: Node): PluginAPI;
 }
 
 /**
@@ -110,7 +111,7 @@ declare module "@ydant/core" {
 
     /** 子要素を処理する */
     processChildren(
-      builder: import("@ydant/core").Builder,
+      builder: Builder,
       options?: {
         parent?: Node;
         inheritContext?: boolean;
@@ -118,7 +119,7 @@ declare module "@ydant/core" {
     ): void;
 
     /** 新しい子コンテキストの API を作成 */
-    createChildAPI(parent: Node): import("@ydant/core").PluginAPI;
+    createChildAPI(parent: Node): PluginAPI;
 
     // === ElementPluginAPIExtensions ===
     /** 次の要素に関連付けるキー */
@@ -130,9 +131,9 @@ declare module "@ydant/core" {
     readonly isCurrentElementReused: boolean;
 
     /** keyed node を取得 */
-    getKeyedNode(key: string | number): import("./plugin-api").KeyedNode | undefined;
+    getKeyedNode(key: string | number): KeyedNode | undefined;
     /** keyed node を設定 */
-    setKeyedNode(key: string | number, node: import("./plugin-api").KeyedNode): void;
+    setKeyedNode(key: string | number, node: KeyedNode): void;
     /** keyed node を削除 */
     deleteKeyedNode(key: string | number): void;
 
@@ -151,21 +152,21 @@ declare module "@ydant/core" {
 
   // base の DSL 型を Child に追加
   interface PluginChildExtensions {
-    Element: import("./types").Element;
-    Attribute: import("./types").Attribute;
-    Listener: import("./types").Listener;
-    Text: import("./types").Text;
-    Lifecycle: import("./types").Lifecycle;
-    Key: import("./types").Key;
+    Element: Element;
+    Attribute: Attribute;
+    Listener: Listener;
+    Text: Text;
+    Lifecycle: Lifecycle;
+    Key: Key;
   }
 
   // Slot を ChildNext に追加（Element の yield* で受け取る値）
   interface PluginNextExtensions {
-    Slot: import("./types").Slot;
+    Slot: Slot;
   }
 
   // Slot を ChildReturn に追加（Component の戻り値）
   interface PluginReturnExtensions {
-    Slot: import("./types").Slot;
+    Slot: Slot;
   }
 }
