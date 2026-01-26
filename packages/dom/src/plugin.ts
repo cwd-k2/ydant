@@ -4,7 +4,7 @@
  * プラグインを使って DOM レンダラーの機能を拡張する。
  */
 
-import type { Child, ChildBuilder } from "@ydant/core";
+import type { Child, Builder } from "@ydant/core";
 
 /**
  * プラグインが使用できる API
@@ -30,7 +30,7 @@ export interface PluginAPI {
 
   /** 子要素を処理する */
   processChildren(
-    childrenFn: ChildBuilder,
+    builder: Builder,
     options?: {
       parent?: Node;
       inheritContext?: boolean;

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { div, text, clss, type Slot, type ChildBuilder } from "@ydant/core";
+import { div, text, clss, type Slot, type Builder } from "@ydant/core";
 import { mount } from "@ydant/dom";
 import {
   Transition,
@@ -451,7 +451,7 @@ describe("createTransition", () => {
             leaveTo: "fade-leave-to",
             children: () => div(() => [text("Transition Content")]),
           });
-        } as ChildBuilder),
+        } as Builder),
       container,
     );
     vi.advanceTimersToNextFrame();
@@ -476,7 +476,7 @@ describe("createTransition", () => {
             enterTo: "fade-enter-to",
             children: () => div(() => [clss(["transition-child"]), text("Content")]),
           });
-        } as ChildBuilder),
+        } as Builder),
       container,
     );
     vi.advanceTimersToNextFrame();
@@ -508,7 +508,7 @@ describe("createTransition", () => {
             leaveTo: "fade-leave-to",
             children: () => div(() => [clss(["transition-child"]), text("Content")]),
           });
-        } as ChildBuilder),
+        } as Builder),
       container,
     );
     vi.advanceTimersToNextFrame();
@@ -538,7 +538,7 @@ describe("createTransition", () => {
           handle = yield* createTransition({
             children: () => div(() => [text("Content")]),
           });
-        } as ChildBuilder),
+        } as Builder),
       container,
     );
     vi.advanceTimersToNextFrame();
@@ -575,7 +575,7 @@ describe("createTransition", () => {
             enter: "fade-enter",
             children: () => div(() => [clss(["child"]), text("Content")]),
           });
-        } as ChildBuilder),
+        } as Builder),
       container,
     );
     vi.advanceTimersToNextFrame();

@@ -8,7 +8,7 @@ export function isTagged<T extends string>(
   return value.type === tag;
 }
 
-/** ChildBuilder の結果を Instructor に正規化する */
+/** Builder の結果を Instructor に正規化する */
 export function toChildren(result: Instructor | Instruction[]): Instructor {
   if (Array.isArray(result)) {
     return (function* () {

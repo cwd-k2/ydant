@@ -263,9 +263,9 @@ describe("integration", () => {
           api.appendChild(wrapper);
 
           // Use processChildren to render the nested content
-          const childrenFn = (child as any).children;
-          if (childrenFn) {
-            api.processChildren(childrenFn, { parent: wrapper });
+          const builder = (child as any).children;
+          if (builder) {
+            api.processChildren(builder, { parent: wrapper });
           }
 
           return {};

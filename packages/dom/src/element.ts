@@ -2,7 +2,7 @@
  * DOM 要素の処理
  */
 
-import type { Element, ChildBuilder, Instructor, Slot } from "@ydant/core";
+import type { Element, Builder, Instructor, Slot } from "@ydant/core";
 import { toChildren, isTagged } from "@ydant/core";
 import type { RenderContext } from "./types";
 import { createRenderContext } from "./context";
@@ -117,7 +117,7 @@ function createSlot(
 ): Slot {
   return {
     node: node as HTMLElement,
-    refresh(childrenFn: ChildBuilder) {
+    refresh(builder: Builder) {
       // 古い keyed nodes を保存（再利用チェック用）
       const oldKeyedNodes = new Map(childCtx.keyedNodes);
 
@@ -147,7 +147,7 @@ function createSlot(
       const newKeyedNodes = childCtx.keyedNodes;
       childCtx.keyedNodes = oldKeyedNodes;
 
-      const children = toChildren(childrenFn());
+      const children = toChildren(builder());
       processIterator(children, childCtx);
 
       // 使われなかった keyed nodes をクリーンアップ

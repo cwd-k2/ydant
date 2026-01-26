@@ -18,7 +18,7 @@
  * ```
  */
 
-import type { Render, Slot, ChildBuilder, Element } from "@ydant/core";
+import type { Render, Slot, Builder, Element } from "@ydant/core";
 import { div, onMount } from "@ydant/core";
 
 // @ydant/core の型を拡張
@@ -256,7 +256,7 @@ export function* createTransition(
   let isShowing = false;
   let isAnimating = false;
 
-  const renderContent: ChildBuilder = function* () {
+  const renderContent: Builder = function* () {
     if (isShowing) {
       yield* children();
     }

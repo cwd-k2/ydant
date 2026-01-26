@@ -11,7 +11,7 @@ export type {
   Child,
   ChildNext,
   ChildReturn,
-  ChildBuilder,
+  Builder,
   Instructor,
   Instruction,
   Element,

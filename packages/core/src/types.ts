@@ -48,7 +48,7 @@ export type Key = Tagged<"key", { value: string | number }>;
  * // @ydant/reactive で Reactive 型を追加
  * declare module "@ydant/core" {
  *   interface PluginChildExtensions {
- *     Reactive: Tagged<"reactive", { childrenFn: ChildBuilder }>;
+ *     Reactive: Tagged<"reactive", { builder: Builder }>;
  *   }
  * }
  * ```
@@ -117,14 +117,14 @@ export type Decoration = Attribute | Listener;
 export type Instructor = Iterator<Child, ChildReturn, ChildNext>;
 
 /** 要素ファクトリ（div, span 等）の引数型 */
-export type ChildBuilder = () => Instructor | Instruction[];
+export type Builder = () => Instructor | Instruction[];
 
 /** 要素のスロット（DOM 参照と更新関数を持つ） */
 export interface Slot {
   /** マウントされた DOM 要素 */
   readonly node: HTMLElement;
   /** 子要素を再レンダリングする */
-  refresh(children: ChildBuilder): void;
+  refresh(children: Builder): void;
 }
 
 /** HTML 要素 */

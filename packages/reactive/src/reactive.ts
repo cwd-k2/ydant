@@ -24,10 +24,10 @@
  * ```
  */
 
-import type { Tagged, ChildBuilder } from "@ydant/core";
+import type { Tagged, Builder } from "@ydant/core";
 
 /** リアクティブブロック - Signal の変更を追跡して自動更新 */
-export type Reactive = Tagged<"reactive", { childrenFn: ChildBuilder }>;
+export type Reactive = Tagged<"reactive", { builder: Builder }>;
 
 // @ydant/core の Child 型を拡張
 declare module "@ydant/core" {
@@ -39,7 +39,7 @@ declare module "@ydant/core" {
 /**
  * Signal を追跡して自動的に再レンダリングするリアクティブブロックを作成
  *
- * @param childrenFn - 子要素を生成する関数
+ * @param builder - 子要素を生成する関数
  *
  * @example
  * ```typescript
@@ -51,6 +51,6 @@ declare module "@ydant/core" {
  * ]);
  * ```
  */
-export function* reactive(childrenFn: ChildBuilder): Generator<Reactive, void, void> {
-  yield { type: "reactive", childrenFn };
+export function* reactive(builder: Builder): Generator<Reactive, void, void> {
+  yield { type: "reactive", builder };
 }
