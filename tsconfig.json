@@ -11,16 +11,6 @@
     "strict": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@ydant/core": ["packages/core/src"],
-      "@ydant/dom": ["packages/dom/src"],
-      "@ydant/reactive": ["packages/reactive/src"],
-      "@ydant/context": ["packages/context/src"],
-      "@ydant/router": ["packages/router/src"],
-      "@ydant/async": ["packages/async/src"],
-      "@ydant/transition": ["packages/transition/src"]
-    }
+    "skipLibCheck": true
   }
 }
