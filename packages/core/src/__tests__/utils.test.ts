@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { isTagged, toChildren } from "../utils";
-import type { Text, Children, ChildGen } from "../types";
+import type { Text, Instruction } from "../types";
 
 describe("isTagged", () => {
   it("returns true when type matches the tag", () => {
@@ -14,9 +14,21 @@ describe("isTagged", () => {
   });
 
   it("works with various tagged types", () => {
-    const attribute = { type: "attribute", key: "class", value: "container" } as const;
-    const listener = { type: "listener", key: "click", value: () => {} } as const;
-    const element = { type: "element", tag: "div", children: [][Symbol.iterator]() } as const;
+    const attribute = {
+      type: "attribute",
+      key: "class",
+      value: "container",
+    } as const;
+    const listener = {
+      type: "listener",
+      key: "click",
+      value: () => {},
+    } as const;
+    const element = {
+      type: "element",
+      tag: "div",
+      children: [][Symbol.iterator](),
+    } as const;
 
     expect(isTagged(attribute, "attribute")).toBe(true);
     expect(isTagged(listener, "listener")).toBe(true);
@@ -34,12 +46,12 @@ describe("toChildren", () => {
       { type: "text", content: "hello" },
       { type: "text", content: "world" },
     ];
-    // Create a proper iterator that matches the Children type signature
+    // Create a proper iterator that matches the ChildIterator type signature
     const iterator = (function* () {
       for (const item of items) {
         yield item;
       }
-    })() as Children;
+    })();
 
     const result = toChildren(iterator);
     expect(result).toBe(iterator);
@@ -53,7 +65,7 @@ describe("toChildren", () => {
       yield { type: "text", content: "world" } as const;
     }
 
-    const result = toChildren([gen1(), gen2()] as ChildGen[]);
+    const result = toChildren([gen1(), gen2()] as Instruction[]);
     const items: unknown[] = [];
     let next = result.next();
     while (!next.done) {
@@ -84,7 +96,7 @@ describe("toChildren", () => {
       yield { type: "text", content: "b" } as const;
     }
 
-    const result = toChildren([gen()] as ChildGen[]);
+    const result = toChildren([gen()] as Instruction[]);
     const items: unknown[] = [];
     let next = result.next();
     while (!next.done) {

@@ -2,7 +2,7 @@
  * DOM 要素の処理
  */
 
-import type { Element, Child, ChildrenFn, Slot } from "@ydant/core";
+import type { Element, ChildBuilder, Instructor, Slot } from "@ydant/core";
 import { toChildren, isTagged } from "@ydant/core";
 import type { RenderContext } from "./types";
 import { createRenderContext } from "./context";
@@ -18,7 +18,7 @@ import { executeMount } from "./lifecycle";
 export function processElement(
   element: Element,
   ctx: RenderContext,
-  processIterator: (iter: Iterator<Child, void, Slot | void>, ctx: RenderContext) => void,
+  processIterator: (iter: Instructor, ctx: RenderContext) => void,
 ): { node: globalThis.Element; slot: Slot } {
   // pending key があるか確認
   const elementKey = ctx.pendingKey;
@@ -77,7 +77,7 @@ export function processElement(
   }
 
   if (element.children) {
-    processIterator(element.children as Iterator<Child, void, Slot | void>, childCtx);
+    processIterator(element.children, childCtx);
   }
 
   // 初回マウントコールバックを実行
@@ -113,11 +113,11 @@ function applyDecorations(element: Element, node: globalThis.Element, isReused: 
 function createSlot(
   node: globalThis.Element,
   childCtx: RenderContext,
-  processIterator: (iter: Iterator<Child, void, Slot | void>, ctx: RenderContext) => void,
+  processIterator: (iter: Instructor, ctx: RenderContext) => void,
 ): Slot {
   return {
     node: node as HTMLElement,
-    refresh(childrenFn: ChildrenFn) {
+    refresh(childrenFn: ChildBuilder) {
       // 古い keyed nodes を保存（再利用チェック用）
       const oldKeyedNodes = new Map(childCtx.keyedNodes);
 
@@ -148,7 +148,7 @@ function createSlot(
       childCtx.keyedNodes = oldKeyedNodes;
 
       const children = toChildren(childrenFn());
-      processIterator(children as Iterator<Child, void, Slot | void>, childCtx);
+      processIterator(children, childCtx);
 
       // 使われなかった keyed nodes をクリーンアップ
       // oldKeyedNodes に残っているもの = 今回の処理で使われなかったもの

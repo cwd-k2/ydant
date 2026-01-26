@@ -14,7 +14,7 @@
  * ```
  */
 
-import type { Child, ChildrenFn } from "@ydant/core";
+import type { Child, ChildBuilder } from "@ydant/core";
 import type { DomPlugin, PluginAPI, PluginResult } from "@ydant/dom";
 import { runWithSubscriber } from "./tracking";
 
@@ -27,7 +27,7 @@ export function createReactivePlugin(): DomPlugin {
     types: ["reactive"],
 
     process(child: Child, api: PluginAPI): PluginResult {
-      const childrenFn = (child as { childrenFn: ChildrenFn }).childrenFn;
+      const childrenFn = (child as { childrenFn: ChildBuilder }).childrenFn;
 
       // コンテナ要素を作成
       const container = document.createElement("span");

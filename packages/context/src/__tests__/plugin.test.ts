@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { div, p } from "@ydant/core";
 import { text } from "@ydant/core";
-import type { ChildrenFn } from "@ydant/core";
+import type { ChildBuilder } from "@ydant/core";
 import { mount } from "@ydant/dom";
 import { createContext, provide, inject } from "../context";
 import { createContextPlugin } from "../plugin";
@@ -34,7 +34,7 @@ describe("createContextPlugin", () => {
             yield* p(function* () {
               capturedTheme = yield* inject(ThemeContext);
               yield* text(capturedTheme);
-            } as unknown as ChildrenFn);
+            } as ChildBuilder);
           }),
         container,
         { plugins: [createContextPlugin()] },
@@ -64,7 +64,7 @@ describe("createContextPlugin", () => {
               yield* div(function* () {
                 const level3 = yield* inject(LevelContext);
                 capturedLevels.push(level3);
-              } as unknown as ChildrenFn);
+              } as ChildBuilder);
             });
           }),
         container,
@@ -99,7 +99,7 @@ describe("createContextPlugin", () => {
         () =>
           div(function* () {
             capturedValue = yield* inject(NoDefaultContext);
-          } as unknown as ChildrenFn),
+          } as ChildBuilder),
         container,
         { plugins: [createContextPlugin()] },
       );
@@ -125,7 +125,7 @@ describe("createContextPlugin", () => {
             yield* p(function* () {
               theme = yield* inject(ThemeContext);
               user = yield* inject(UserContext);
-            } as unknown as ChildrenFn);
+            } as ChildBuilder);
           }),
         container,
         { plugins: [createContextPlugin()] },

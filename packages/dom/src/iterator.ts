@@ -2,7 +2,7 @@
  * Child イテレータの処理
  */
 
-import type { Element, Child, Slot } from "@ydant/core";
+import type { Element, Child, Instructor, ChildNext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 import type { PluginAPI } from "./plugin";
 import type { RenderContext } from "./types";
@@ -15,10 +15,7 @@ let createPluginAPI: ((ctx: RenderContext) => PluginAPI) | null = null;
 /**
  * Child イテレータを処理し、DOM に反映する
  */
-export function processIterator(
-  iter: Iterator<Child, void, Slot | void>,
-  ctx: RenderContext,
-): void {
+export function processIterator(iter: Instructor, ctx: RenderContext): void {
   // 初回呼び出し時に PluginAPI ファクトリを初期化
   if (!createPluginAPI) {
     createPluginAPI = createPluginAPIFactory(processIterator);
@@ -37,7 +34,7 @@ export function processIterator(
       if (plugin) {
         const api = createPluginAPI(ctx);
         const pluginResult = plugin.process(value as Child, api);
-        result = iter.next(pluginResult.value as Slot | void);
+        result = iter.next(pluginResult.value as ChildNext);
         continue;
       }
     }
@@ -53,8 +50,8 @@ export function processIterator(
 function processBuiltinChild(
   value: Child,
   ctx: RenderContext,
-  iter: Iterator<Child, void, Slot | void>,
-): IteratorResult<Child, void> {
+  iter: Instructor,
+): IteratorResult<Child> {
   if (isTagged(value, "element")) {
     const { slot } = processElement(value as Element, ctx, processIterator);
     return iter.next(slot);

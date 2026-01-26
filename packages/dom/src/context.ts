@@ -2,7 +2,7 @@
  * RenderContext 管理
  */
 
-import type { ChildrenFn, Child, Slot } from "@ydant/core";
+import type { ChildBuilder, Instructor } from "@ydant/core";
 import { toChildren } from "@ydant/core";
 import type { DomPlugin, PluginAPI } from "./plugin";
 import type { RenderContext, KeyedNode } from "./types";
@@ -36,7 +36,7 @@ export function createRenderContext(
  * ファクトリ関数として実装
  */
 export function createPluginAPIFactory(
-  processIterator: (iter: Iterator<Child, void, Slot | void>, ctx: RenderContext) => void,
+  processIterator: (iter: Instructor, ctx: RenderContext) => void,
 ) {
   return function createPluginAPI(ctx: RenderContext): PluginAPI {
     return {
@@ -62,7 +62,7 @@ export function createPluginAPIFactory(
         ctx.parent.appendChild(node);
       },
       processChildren(
-        childrenFn: ChildrenFn,
+        childrenFn: ChildBuilder,
         options?: { parent?: Node; inheritContext?: boolean },
       ): void {
         const targetParent = options?.parent ?? ctx.parent;
@@ -77,7 +77,7 @@ export function createPluginAPIFactory(
         );
 
         const children = toChildren(childrenFn());
-        processIterator(children as Iterator<Child, void, Slot | void>, childCtx);
+        processIterator(children, childCtx);
 
         // 子コンテキストのコールバックを親に伝搬
         ctx.mountCallbacks.push(...childCtx.mountCallbacks);

@@ -18,8 +18,15 @@
  * ```
  */
 
-import type { Render, Slot, ChildrenFn } from "@ydant/core";
+import type { Render, Slot, ChildBuilder, Element } from "@ydant/core";
 import { div, onMount } from "@ydant/core";
+
+// @ydant/core の型を拡張
+declare module "@ydant/core" {
+  interface PluginReturnExtensions {
+    TransitionHandle: TransitionHandle;
+  }
+}
 
 export interface TransitionProps {
   /** 要素を表示するかどうか */
@@ -243,13 +250,13 @@ export interface TransitionHandle {
  */
 export function* createTransition(
   props: Omit<TransitionProps, "show">,
-): Generator<unknown, TransitionHandle, Slot> {
+): Generator<Element, TransitionHandle, Slot> {
   const { children } = props;
 
   let isShowing = false;
   let isAnimating = false;
 
-  const renderContent: ChildrenFn = function* () {
+  const renderContent: ChildBuilder = function* () {
     if (isShowing) {
       yield* children();
     }

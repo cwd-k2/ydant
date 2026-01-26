@@ -1,8 +1,8 @@
-import type { ChildrenFn, Render } from "./types";
+import type { ChildBuilder, Render } from "./types";
 import { toChildren } from "./utils";
 
 function createHTMLElement(tag: string) {
-  return function* (childrenFn: ChildrenFn): Render {
+  return function* (childrenFn: ChildBuilder): Render {
     const children = toChildren(childrenFn());
     const slot = yield { type: "element", tag, children };
     return slot;
@@ -12,7 +12,7 @@ function createHTMLElement(tag: string) {
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 function createSVGElement(tag: string) {
-  return function* (childrenFn: ChildrenFn): Render {
+  return function* (childrenFn: ChildBuilder): Render {
     const children = toChildren(childrenFn());
     const slot = yield { type: "element", tag, children, ns: SVG_NS };
     return slot;
