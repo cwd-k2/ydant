@@ -3,8 +3,6 @@
   "include": ["src"],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist",
     "baseUrl": ".",
     "paths": {
       "@ydant/core": ["../../packages/core/src"],
@@ -15,6 +13,5 @@
       "@ydant/async": ["../../packages/async/src"],
       "@ydant/transition": ["../../packages/transition/src"]
     }
-  },
-  "files": ["src/index.ts"]
+  }
 }
