@@ -4,8 +4,34 @@
 
 import type { Plugin } from "../plugin";
 
-/** レンダリングコンテキスト */
-export interface RenderContext {
+// =============================================================================
+// RenderContext Extension Types
+// -----------------------------------------------------------------------------
+// プラグインは declare module "@ydant/core" を使って RenderContextExtensions を
+// 拡張することで、RenderContext に独自のプロパティを追加できる。
+//
+// @ydant/base が pendingKey, keyedNodes を追加
+// @ydant/context が contextValues を追加
+// =============================================================================
+
+/**
+ * プラグインが RenderContext を拡張するためのインターフェース
+ *
+ * @example
+ * ```typescript
+ * // @ydant/base で keyed 要素管理用のプロパティを追加
+ * declare module "@ydant/core" {
+ *   interface RenderContextExtensions {
+ *     pendingKey: string | number | null;
+ *     keyedNodes: Map<string | number, unknown>;
+ *   }
+ * }
+ * ```
+ */
+export interface RenderContextExtensions {}
+
+/** レンダリングコンテキスト（コア部分） */
+export interface RenderContextCore {
   /** 親ノード */
   parent: Node;
   /** 現在処理中の要素 */
@@ -16,12 +42,9 @@ export interface RenderContext {
   mountCallbacks: Array<() => void | (() => void)>;
   /** アンマウント時に実行するコールバック */
   unmountCallbacks: Array<() => void>;
-  /** 次の要素に関連付けるキー */
-  pendingKey: string | number | null;
-  /** キー付き要素のマップ（プラグインが管理） */
-  keyedNodes: Map<string | number, unknown>;
-  /** Context の値を保持するマップ */
-  contextValues: Map<symbol, unknown>;
   /** 登録されたプラグイン */
   plugins: Map<string, Plugin>;
 }
+
+/** レンダリングコンテキスト */
+export type RenderContext = RenderContextCore & RenderContextExtensions;

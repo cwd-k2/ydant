@@ -19,6 +19,21 @@ import type { Child, Plugin, PluginAPI, PluginResult } from "@ydant/core";
 import "@ydant/base";
 import type { Context } from "./context";
 
+// RenderContext と PluginAPI に context プラグイン用の拡張を追加
+declare module "@ydant/core" {
+  interface RenderContextExtensions {
+    /** Context の値を保持するマップ */
+    contextValues: Map<symbol, unknown>;
+  }
+
+  interface PluginAPIExtensions {
+    /** Context から値を取得 */
+    getContext<T>(id: symbol): T | undefined;
+    /** Context に値を設定 */
+    setContext<T>(id: symbol, value: T): void;
+  }
+}
+
 /**
  * Context プラグインを作成する
  */
@@ -26,6 +41,22 @@ export function createContextPlugin(): Plugin {
   return {
     name: "context",
     types: ["context-provide", "context-inject"],
+
+    initContext(ctx: Record<string, unknown>, parentCtx?: Record<string, unknown>) {
+      // 親コンテキストがあれば値を継承、なければ新規作成
+      const parentValues = parentCtx?.contextValues as Map<symbol, unknown> | undefined;
+      ctx.contextValues = parentValues ? new Map(parentValues) : new Map();
+    },
+
+    extendAPI(api: Record<string, unknown>, ctx: Record<string, unknown>) {
+      const contextValues = ctx.contextValues as Map<symbol, unknown>;
+      api.getContext = <T>(id: symbol): T | undefined => {
+        return contextValues.get(id) as T | undefined;
+      };
+      api.setContext = <T>(id: symbol, value: T): void => {
+        contextValues.set(id, value);
+      };
+    },
 
     process(child: Child, api: PluginAPI): PluginResult {
       if (child.type === "context-provide") {

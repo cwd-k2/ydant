@@ -47,4 +47,4 @@ export { mount } from "./mount";
 // =============================================================================
 
 export { render, processIterator, createRenderContext, createPluginAPIFactory } from "./render";
-export type { RenderContext } from "./render";
+export type { RenderContext, RenderContextCore, RenderContextExtensions } from "./render";

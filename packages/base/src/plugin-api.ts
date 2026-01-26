@@ -26,11 +26,6 @@ export interface BasePluginAPI {
   /** 現在処理中の要素 */
   readonly currentElement: globalThis.Element | null;
 
-  /** Context から値を取得 */
-  getContext<T>(id: symbol): T | undefined;
-  /** Context に値を設定 */
-  setContext<T>(id: symbol, value: T): void;
-
   /** マウント時のコールバックを登録 */
   onMount(callback: () => void | (() => void)): void;
   /** アンマウント時のコールバックを登録 */
@@ -86,8 +81,16 @@ export interface ElementPluginAPIExtensions {
   setParent(parent: Node): void;
 }
 
-// Module augmentation で PluginAPI と Child/Next/Return 型を拡張
+// Module augmentation で RenderContext, PluginAPI, Child/Next/Return 型を拡張
 declare module "@ydant/core" {
+  // RenderContext に base プラグイン用のプロパティを追加
+  interface RenderContextExtensions {
+    /** 次の要素に関連付けるキー */
+    pendingKey: string | number | null;
+    /** キー付き要素のマップ */
+    keyedNodes: Map<string | number, KeyedNode>;
+  }
+
   // BasePluginAPI と ElementPluginAPIExtensions のすべてのメソッドを追加
   interface PluginAPIExtensions {
     // === BasePluginAPI ===
@@ -95,11 +98,6 @@ declare module "@ydant/core" {
     readonly parent: Node;
     /** 現在処理中の要素 */
     readonly currentElement: globalThis.Element | null;
-
-    /** Context から値を取得 */
-    getContext<T>(id: symbol): T | undefined;
-    /** Context に値を設定 */
-    setContext<T>(id: symbol, value: T): void;
 
     /** マウント時のコールバックを登録 */
     onMount(callback: () => void | (() => void)): void;

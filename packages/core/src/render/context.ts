@@ -5,29 +5,61 @@
 import type { Builder, Instructor } from "../types";
 import { toChildren } from "../utils";
 import type { Plugin, PluginAPI } from "../plugin";
-import type { RenderContext } from "./types";
+import type { RenderContext, RenderContextCore } from "./types";
 import { executeMount } from "./lifecycle";
 
-/** RenderContext を作成 */
-export function createRenderContext(
+/** RenderContext のコア部分を作成 */
+export function createRenderContextCore(
   parent: Node,
   currentElement: globalThis.Element | null,
-  keyedNodes?: Map<string | number, unknown>,
-  contextValues?: Map<symbol, unknown>,
-  plugins?: Map<string, Plugin>,
+  plugins: Map<string, Plugin>,
   isCurrentElementReused?: boolean,
-): RenderContext {
+): RenderContextCore {
   return {
     parent,
     currentElement,
     isCurrentElementReused: isCurrentElementReused ?? false,
     mountCallbacks: [],
     unmountCallbacks: [],
-    pendingKey: null,
-    keyedNodes: keyedNodes ?? new Map(),
-    contextValues: contextValues ?? new Map(),
-    plugins: plugins ?? new Map(),
+    plugins,
   };
+}
+
+/**
+ * RenderContext を作成し、各プラグインで初期化
+ *
+ * @param parent - 親ノード
+ * @param currentElement - 現在の要素
+ * @param plugins - 登録されたプラグイン
+ * @param parentCtx - 親コンテキスト（子コンテキスト作成時）
+ * @param isCurrentElementReused - 要素が再利用されたかどうか
+ */
+export function createRenderContext(
+  parent: Node,
+  currentElement: globalThis.Element | null,
+  plugins: Map<string, Plugin>,
+  parentCtx?: RenderContext,
+  isCurrentElementReused?: boolean,
+): RenderContext {
+  const ctx = createRenderContextCore(
+    parent,
+    currentElement,
+    plugins,
+    isCurrentElementReused,
+  ) as RenderContext;
+
+  // 各プラグインの initContext を呼び出し
+  const calledPlugins = new Set<string>();
+  for (const plugin of plugins.values()) {
+    if (calledPlugins.has(plugin.name)) continue;
+    calledPlugins.add(plugin.name);
+    plugin.initContext?.(
+      ctx as unknown as Record<string, unknown>,
+      parentCtx as unknown as Record<string, unknown>,
+    );
+  }
+
+  return ctx;
 }
 
 /**
@@ -35,14 +67,17 @@ export function createRenderContext(
  *
  * processIterator を循環参照で受け取る必要があるため、
  * ファクトリ関数として実装
+ *
+ * NOTE: core は基本的な API のみを提供し、プラグイン固有のメソッドは
+ * 各プラグインの extendAPI で追加される。
  */
 export function createPluginAPIFactory(
   processIterator: (iter: Instructor, ctx: RenderContext) => void,
 ) {
   return function createPluginAPI(ctx: RenderContext): PluginAPI {
-    return {
+    const api: Record<string, unknown> = {
       // ========================================================================
-      // 基本機能
+      // コア機能（全プラグインで使用可能）
       // ========================================================================
       get parent() {
         return ctx.parent;
@@ -50,11 +85,8 @@ export function createPluginAPIFactory(
       get currentElement() {
         return ctx.currentElement;
       },
-      getContext<T>(id: symbol): T | undefined {
-        return ctx.contextValues.get(id) as T | undefined;
-      },
-      setContext<T>(id: symbol, value: T): void {
-        ctx.contextValues.set(id, value);
+      get isCurrentElementReused() {
+        return ctx.isCurrentElementReused;
       },
       onMount(callback: () => void | (() => void)): void {
         ctx.mountCallbacks.push(callback);
@@ -64,61 +96,6 @@ export function createPluginAPIFactory(
       },
       appendChild(node: Node): void {
         ctx.parent.appendChild(node);
-      },
-      processChildren(
-        builder: Builder,
-        options?: { parent?: Node; inheritContext?: boolean },
-      ): void {
-        const targetParent = options?.parent ?? ctx.parent;
-        const inheritContext = options?.inheritContext ?? true;
-
-        const childCtx = createRenderContext(
-          targetParent,
-          targetParent instanceof globalThis.Element ? targetParent : null,
-          undefined,
-          inheritContext ? new Map(ctx.contextValues) : new Map(),
-          ctx.plugins,
-        );
-
-        const children = toChildren(builder());
-        processIterator(children, childCtx);
-
-        // 子コンテキストのコールバックを親に伝搬
-        ctx.mountCallbacks.push(...childCtx.mountCallbacks);
-        ctx.unmountCallbacks.push(...childCtx.unmountCallbacks);
-      },
-      createChildAPI(parent: Node): PluginAPI {
-        const childCtx = createRenderContext(
-          parent,
-          parent instanceof globalThis.Element ? parent : null,
-          undefined,
-          new Map(ctx.contextValues),
-          ctx.plugins,
-        );
-        return createPluginAPI(childCtx);
-      },
-
-      // ========================================================================
-      // base プラグイン用の拡張機能
-      // これらは PluginAPIExtensions を通じて利用可能になる
-      // ========================================================================
-      get pendingKey() {
-        return ctx.pendingKey;
-      },
-      setPendingKey(key: string | number | null): void {
-        ctx.pendingKey = key;
-      },
-      get isCurrentElementReused() {
-        return ctx.isCurrentElementReused;
-      },
-      getKeyedNode(key: string | number) {
-        return ctx.keyedNodes.get(key);
-      },
-      setKeyedNode(key: string | number, node: unknown): void {
-        ctx.keyedNodes.set(key, node);
-      },
-      deleteKeyedNode(key: string | number): void {
-        ctx.keyedNodes.delete(key);
       },
       pushUnmountCallbacks(...callbacks: Array<() => void>): void {
         ctx.unmountCallbacks.push(...callbacks);
@@ -132,6 +109,45 @@ export function createPluginAPIFactory(
       setParent(parent: Node): void {
         ctx.parent = parent;
       },
-    } as PluginAPI;
+      processChildren(
+        builder: Builder,
+        options?: { parent?: Node; inheritContext?: boolean },
+      ): void {
+        const targetParent = options?.parent ?? ctx.parent;
+
+        const childCtx = createRenderContext(
+          targetParent,
+          targetParent instanceof globalThis.Element ? targetParent : null,
+          ctx.plugins,
+          ctx,
+        );
+
+        const children = toChildren(builder());
+        processIterator(children, childCtx);
+
+        // 子コンテキストのコールバックを親に伝搬
+        ctx.mountCallbacks.push(...childCtx.mountCallbacks);
+        ctx.unmountCallbacks.push(...childCtx.unmountCallbacks);
+      },
+      createChildAPI(parent: Node): PluginAPI {
+        const childCtx = createRenderContext(
+          parent,
+          parent instanceof globalThis.Element ? parent : null,
+          ctx.plugins,
+          ctx,
+        );
+        return createPluginAPI(childCtx);
+      },
+    };
+
+    // 各プラグインの extendAPI を呼び出して API を拡張
+    const calledPlugins = new Set<string>();
+    for (const plugin of ctx.plugins.values()) {
+      if (calledPlugins.has(plugin.name)) continue;
+      calledPlugins.add(plugin.name);
+      plugin.extendAPI?.(api, ctx as unknown as Record<string, unknown>);
+    }
+
+    return api as unknown as PluginAPI;
   };
 }

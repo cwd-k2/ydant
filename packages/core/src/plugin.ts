@@ -49,6 +49,27 @@ export interface Plugin {
   readonly name: string;
   /** このプラグインが処理する type タグの配列 */
   readonly types: readonly string[];
+  /**
+   * RenderContext を初期化する
+   *
+   * mount 時および子コンテキスト作成時に呼び出される。
+   * プラグインは RenderContextExtensions で定義した独自プロパティを
+   * ここで初期化する。
+   *
+   * @param ctx - 初期化対象のコンテキスト（型は RenderContextCore & Partial<RenderContextExtensions>）
+   * @param parentCtx - 親コンテキスト（ルートの場合は undefined）
+   */
+  initContext?(ctx: Record<string, unknown>, parentCtx?: Record<string, unknown>): void;
+  /**
+   * PluginAPI を拡張する
+   *
+   * プラグイン固有のメソッドを PluginAPI に追加する。
+   * PluginAPIExtensions で定義した独自のメソッドをここで実装する。
+   *
+   * @param api - 拡張対象の PluginAPI オブジェクト
+   * @param ctx - 現在の RenderContext
+   */
+  extendAPI?(api: Record<string, unknown>, ctx: Record<string, unknown>): void;
   /** Child を処理する */
   process(child: Child, api: PluginAPI): PluginResult;
 }

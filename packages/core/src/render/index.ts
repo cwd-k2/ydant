@@ -16,7 +16,7 @@ let createPluginAPI: ((ctx: ReturnType<typeof createRenderContext>) => PluginAPI
 export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Plugin>): void {
   parent.innerHTML = "";
 
-  const ctx = createRenderContext(parent, null, undefined, undefined, plugins);
+  const ctx = createRenderContext(parent, null, plugins);
 
   // PluginAPI ファクトリを初期化
   if (!createPluginAPI) {
@@ -50,4 +50,4 @@ export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Pl
 export { processIterator } from "./iterator";
 export { createRenderContext, createPluginAPIFactory } from "./context";
 export { executeMount, executeUnmount } from "./lifecycle";
-export type { RenderContext } from "./types";
+export type { RenderContext, RenderContextCore, RenderContextExtensions } from "./types";

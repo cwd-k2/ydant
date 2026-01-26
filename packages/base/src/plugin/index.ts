@@ -25,6 +25,35 @@ export function createBasePlugin(): Plugin {
   return {
     name: "base",
     types: ["element", "text", "attribute", "listener", "key", "lifecycle"],
+
+    initContext(ctx: Record<string, unknown>) {
+      ctx.pendingKey = null;
+      ctx.keyedNodes = new Map();
+    },
+
+    extendAPI(api: Record<string, unknown>, ctx: Record<string, unknown>) {
+      // pendingKey 関連
+      Object.defineProperty(api, "pendingKey", {
+        get() {
+          return ctx.pendingKey;
+        },
+        enumerable: true,
+      });
+      api.setPendingKey = (key: string | number | null) => {
+        ctx.pendingKey = key;
+      };
+
+      // keyedNodes 関連
+      const keyedNodes = ctx.keyedNodes as Map<string | number, unknown>;
+      api.getKeyedNode = (key: string | number) => keyedNodes.get(key);
+      api.setKeyedNode = (key: string | number, node: unknown) => {
+        keyedNodes.set(key, node);
+      };
+      api.deleteKeyedNode = (key: string | number) => {
+        keyedNodes.delete(key);
+      };
+    },
+
     process(child: Child, api: PluginAPI): PluginResult {
       const typed = child as { type: string };
 
