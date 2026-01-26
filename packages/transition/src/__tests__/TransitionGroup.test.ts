@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { div, text } from "@ydant/core";
+import { type Slot, div, text } from "@ydant/core";
 import { mount } from "@ydant/dom";
 import { TransitionGroup, createTransitionGroupRefresher } from "../TransitionGroup";
 
@@ -176,7 +176,7 @@ describe("createTransitionGroupRefresher", () => {
       children: (item) => div(() => [text(item.name)]),
     });
 
-    let containerSlot: ReturnType<typeof mount>;
+    let containerSlot!: Slot;
 
     mount(
       () =>

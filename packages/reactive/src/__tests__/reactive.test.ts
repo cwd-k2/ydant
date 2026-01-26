@@ -18,7 +18,7 @@ describe("reactive", () => {
     const gen = reactive(childrenFn);
     const result = gen.next();
 
-    expect((result.value as { childrenFn: () => [] }).childrenFn).toBe(childrenFn);
+    expect((result.value as unknown as { childrenFn: () => [] }).childrenFn).toBe(childrenFn);
   });
 
   it("completes after yielding", () => {

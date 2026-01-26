@@ -101,7 +101,7 @@ describe("integration", () => {
 
   describe("keyed elements", () => {
     it("reuses DOM nodes with same key on refresh", () => {
-      let slot: Slot;
+      let slot!: Slot;
       let items = [
         { id: 1, text: "Item 1" },
         { id: 2, text: "Item 2" },
@@ -196,7 +196,7 @@ describe("integration", () => {
         },
       };
 
-      let slot: Slot;
+      let slot!: Slot;
 
       mount(
         () =>
@@ -248,9 +248,9 @@ describe("integration", () => {
       );
 
       expect(capturedParent).not.toBeNull();
-      expect((capturedParent as Node).nodeName).toBe("DIV");
+      expect(capturedParent!.nodeName).toBe("DIV");
       expect(capturedCurrentElement).not.toBeNull();
-      expect((capturedCurrentElement as HTMLElement).id).toBe("parent-element");
+      expect(capturedCurrentElement!.id).toBe("parent-element");
     });
 
     it("plugin can use processChildren to render nested content", () => {
@@ -360,7 +360,7 @@ describe("integration", () => {
     it("runs unmount callbacks on removed keyed elements", () => {
       vi.useFakeTimers();
       const unmountedIds: number[] = [];
-      let slot: Slot;
+      let slot!: Slot;
       let items = [1, 2, 3];
 
       const renderList = function* () {
@@ -397,7 +397,7 @@ describe("integration", () => {
     });
 
     it("reuses keyed element with attributes preserved", () => {
-      let slot: Slot;
+      let slot!: Slot;
       let items = [{ id: "a", label: "Item A" }];
 
       const renderList = function* () {

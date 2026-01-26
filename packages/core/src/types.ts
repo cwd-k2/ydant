@@ -41,7 +41,10 @@ export type Key = Tagged<"key", { value: string | number }>;
 // =============================================================================
 
 /** 子要素を生成する関数（前方宣言用） */
-export type ChildrenFn = () => Children | ChildGen[];
+export type ChildrenFn =
+  | (() => Children | ChildGen[])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | (() => Generator<any, any, any>);
 
 /**
  * プラグインが Child 型を拡張するためのインターフェース
@@ -75,7 +78,7 @@ export type Child = CoreChild | PluginChildExtensions[keyof PluginChildExtension
 export type ChildGen = Generator<Child, unknown, unknown>;
 
 /** 子要素の Iterator */
-export type Children = Iterator<Child, void, Slot | void>;
+export type Children = Iterator<Child, unknown, Slot | void>;
 
 /** 要素のスロット（DOM 参照と更新関数を持つ） */
 export interface Slot {
