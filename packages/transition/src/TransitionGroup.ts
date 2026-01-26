@@ -20,8 +20,8 @@
  * ```
  */
 
-import type { Render, Slot } from "@ydant/core";
-import { div, key as keyPrimitive, onMount } from "@ydant/core";
+import type { Render, Slot, ElementRender } from "@ydant/base";
+import { div, key as keyPrimitive, onMount } from "@ydant/base";
 
 export interface TransitionGroupProps<T> {
   /** トランジション対象のアイテム配列 */
@@ -40,8 +40,8 @@ export interface TransitionGroupProps<T> {
   leaveFrom?: string;
   /** 退場終了時のクラス */
   leaveTo?: string;
-  /** 各アイテムをレンダリングする関数 */
-  children: (item: T, index: number) => Render;
+  /** 各アイテムをレンダリングする関数（要素を返す必要がある） */
+  children: (item: T, index: number) => ElementRender;
 }
 
 /**

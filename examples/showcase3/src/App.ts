@@ -14,7 +14,7 @@ import {
   onUnmount,
   type Slot,
   type Component,
-} from "@ydant/core";
+} from "@ydant/base";
 import type { TimerMode, TimerState } from "./types";
 import { DURATIONS, MODE_LABELS, MODE_COLORS } from "./constants";
 import { formatTime } from "./utils";

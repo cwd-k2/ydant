@@ -16,11 +16,12 @@
  * ```
  */
 
-import type { Render, Element, Slot } from "@ydant/core";
-import { div } from "@ydant/core";
+import type { Child } from "@ydant/core";
+import type { Render, Slot } from "@ydant/base";
+import { div } from "@ydant/base";
 
 /** children の型（戻り値は不要） */
-type ChildGenerator = Generator<Element, unknown, Slot>;
+type ChildGenerator = Generator<Child, unknown, Slot>;
 
 /** Suspense コンポーネントの props */
 export interface SuspenseProps {

@@ -6,7 +6,7 @@
  * @example
  * ```typescript
  * import { createReactivePlugin } from "@ydant/reactive/plugin";
- * import { mount } from "@ydant/dom";
+ * import { mount } from "@ydant/core";
  *
  * mount(App, document.getElementById("app")!, {
  *   plugins: [createReactivePlugin()]
@@ -14,14 +14,15 @@
  * ```
  */
 
-import type { Child, Builder } from "@ydant/core";
-import type { DomPlugin, PluginAPI, PluginResult } from "@ydant/dom";
+import type { Child, Builder, Plugin, PluginAPI, PluginResult } from "@ydant/core";
+// base の import で PluginAPIExtensions の augmentation が適用される
+import "@ydant/base";
 import { runWithSubscriber } from "./tracking";
 
 /**
  * Reactive プラグインを作成する
  */
-export function createReactivePlugin(): DomPlugin {
+export function createReactivePlugin(): Plugin {
   return {
     name: "reactive",
     types: ["reactive"],

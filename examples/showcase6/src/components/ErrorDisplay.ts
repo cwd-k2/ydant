@@ -1,4 +1,4 @@
-import { div, h3, p, button, text, clss, on } from "@ydant/core";
+import { div, h3, p, button, text, clss, on } from "@ydant/base";
 
 interface ErrorDisplayProps {
   error: Error;

@@ -1,4 +1,4 @@
-import { type Component, div, h1, p, span, button, text, clss, on } from "@ydant/core";
+import { type Component, div, h1, p, span, button, text, clss, on } from "@ydant/base";
 import { useRoute, navigate } from "@ydant/router";
 import { findUser } from "../state/users";
 

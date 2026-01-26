@@ -11,7 +11,7 @@ import {
   attr,
   clss,
   on,
-} from "@ydant/core";
+} from "@ydant/base";
 import { signal, reactive } from "@ydant/reactive";
 import { createForm, required, email, minLength } from "../form";
 

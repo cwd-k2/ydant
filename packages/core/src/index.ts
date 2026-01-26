@@ -1,22 +1,22 @@
-// Types
+/**
+ * @ydant/core
+ *
+ * 純粋な DSL 処理系とプラグインシステム
+ */
+
+// =============================================================================
+// Types (DSL 非依存の基盤型のみ)
+// =============================================================================
+
 export type {
   Tagged,
-  Attribute,
-  Listener,
-  Text,
-  Lifecycle,
-  Style,
-  Key,
-  Decoration,
   Child,
   ChildNext,
   ChildReturn,
   Builder,
   Instructor,
   Instruction,
-  Element,
   Render,
-  Slot,
   Component,
   // Plugin extension points
   PluginChildExtensions,
@@ -24,61 +24,27 @@ export type {
   PluginReturnExtensions,
 } from "./types";
 
+// =============================================================================
+// Plugin System
+// =============================================================================
+
+export type { Plugin, PluginAPI, PluginAPIExtensions, PluginResult, MountOptions } from "./plugin";
+
+// =============================================================================
 // Utilities
+// =============================================================================
+
 export { isTagged, toChildren } from "./utils";
 
-// Native elements
-export {
-  div,
-  span,
-  p,
-  h1,
-  h2,
-  h3,
-  img,
-  button,
-  input,
-  ul,
-  li,
-  a,
-  section,
-  header,
-  footer,
-  nav,
-  main,
-  article,
-  aside,
-  form,
-  label,
-  textarea,
-  select,
-  option,
-  table,
-  thead,
-  tbody,
-  tr,
-  th,
-  td,
-  // SVG elements
-  svg,
-  circle,
-  ellipse,
-  line,
-  path,
-  polygon,
-  polyline,
-  rect,
-  g,
-  defs,
-  use,
-  clipPath,
-  mask,
-  linearGradient,
-  radialGradient,
-  stop,
-  svgText,
-  tspan,
-} from "./elements";
+// =============================================================================
+// Mount
+// =============================================================================
 
-// Primitives
-export { attr, clss, on, text, onMount, onUnmount, style, key } from "./primitives";
+export { mount } from "./mount";
+
+// =============================================================================
+// Render (internal, for plugin implementations)
+// =============================================================================
+
+export { render, processIterator, createRenderContext, createPluginAPIFactory } from "./render";
+export type { RenderContext } from "./render";

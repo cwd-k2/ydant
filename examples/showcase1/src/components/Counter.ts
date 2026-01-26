@@ -1,4 +1,4 @@
-import { text, div, h3, p, span, button, clss, on, type Slot } from "@ydant/core";
+import { text, div, h3, p, span, button, clss, on, type Slot } from "@ydant/base";
 
 const COUNTER_CLASSES = [
   "text-center",

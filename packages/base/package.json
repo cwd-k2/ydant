@@ -1,7 +1,7 @@
 {
-  "name": "@ydant/dom",
+  "name": "@ydant/base",
   "version": "0.0.0",
-  "description": "DOM renderer for Ydant",
+  "description": "Base DSL primitives and plugin for Ydant",
   "keywords": [],
   "license": "MIT",
   "author": "",
@@ -17,17 +17,8 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit"
   },
-  "devDependencies": {
-    "@ydant/reactive": "workspace:*"
-  },
   "peerDependencies": {
-    "@ydant/core": "workspace:*",
-    "@ydant/reactive": "workspace:*"
-  },
-  "peerDependenciesMeta": {
-    "@ydant/reactive": {
-      "optional": true
-    }
+    "@ydant/core": "workspace:*"
   },
   "packageManager": "pnpm@10.22.0"
 }

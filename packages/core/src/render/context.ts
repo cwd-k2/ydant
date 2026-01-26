@@ -1,19 +1,20 @@
 /**
- * RenderContext 管理
+ * @ydant/core - RenderContext 管理
  */
 
-import type { Builder, Instructor } from "@ydant/core";
-import { toChildren } from "@ydant/core";
-import type { DomPlugin, PluginAPI } from "./plugin";
-import type { RenderContext, KeyedNode } from "./types";
+import type { Builder, Instructor } from "../types";
+import { toChildren } from "../utils";
+import type { Plugin, PluginAPI } from "../plugin";
+import type { RenderContext } from "./types";
+import { executeMount } from "./lifecycle";
 
 /** RenderContext を作成 */
 export function createRenderContext(
   parent: Node,
   currentElement: globalThis.Element | null,
-  keyedNodes?: Map<string | number, KeyedNode>,
+  keyedNodes?: Map<string | number, unknown>,
   contextValues?: Map<symbol, unknown>,
-  plugins?: Map<string, DomPlugin>,
+  plugins?: Map<string, Plugin>,
   isCurrentElementReused?: boolean,
 ): RenderContext {
   return {
@@ -40,6 +41,9 @@ export function createPluginAPIFactory(
 ) {
   return function createPluginAPI(ctx: RenderContext): PluginAPI {
     return {
+      // ========================================================================
+      // 基本機能
+      // ========================================================================
       get parent() {
         return ctx.parent;
       },
@@ -93,6 +97,41 @@ export function createPluginAPIFactory(
         );
         return createPluginAPI(childCtx);
       },
-    };
+
+      // ========================================================================
+      // base プラグイン用の拡張機能
+      // これらは PluginAPIExtensions を通じて利用可能になる
+      // ========================================================================
+      get pendingKey() {
+        return ctx.pendingKey;
+      },
+      setPendingKey(key: string | number | null): void {
+        ctx.pendingKey = key;
+      },
+      get isCurrentElementReused() {
+        return ctx.isCurrentElementReused;
+      },
+      getKeyedNode(key: string | number) {
+        return ctx.keyedNodes.get(key);
+      },
+      setKeyedNode(key: string | number, node: unknown): void {
+        ctx.keyedNodes.set(key, node);
+      },
+      deleteKeyedNode(key: string | number): void {
+        ctx.keyedNodes.delete(key);
+      },
+      pushUnmountCallbacks(...callbacks: Array<() => void>): void {
+        ctx.unmountCallbacks.push(...callbacks);
+      },
+      executeMount(): void {
+        executeMount(ctx);
+      },
+      setCurrentElement(element: globalThis.Element | null): void {
+        ctx.currentElement = element;
+      },
+      setParent(parent: Node): void {
+        ctx.parent = parent;
+      },
+    } as PluginAPI;
   };
 }

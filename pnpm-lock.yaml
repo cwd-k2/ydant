@@ -47,15 +47,15 @@ importers:
       '@ydant/async':
         specifier: workspace:*
         version: link:../packages/async
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../packages/base
       '@ydant/context':
         specifier: workspace:*
         version: link:../packages/context
       '@ydant/core':
         specifier: workspace:*
         version: link:../packages/core
-      '@ydant/dom':
-        specifier: workspace:*
-        version: link:../packages/dom
       '@ydant/reactive':
         specifier: workspace:*
         version: link:../packages/reactive
@@ -68,42 +68,42 @@ importers:
 
   examples/showcase1:
     dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
       '@ydant/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@ydant/dom':
-        specifier: workspace:*
-        version: link:../../packages/dom
 
   examples/showcase2:
     dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
       '@ydant/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@ydant/dom':
-        specifier: workspace:*
-        version: link:../../packages/dom
 
   examples/showcase3:
     dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
       '@ydant/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@ydant/dom':
-        specifier: workspace:*
-        version: link:../../packages/dom
 
   examples/showcase4:
     dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
       '@ydant/context':
         specifier: workspace:*
         version: link:../../packages/context
       '@ydant/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@ydant/dom':
-        specifier: workspace:*
-        version: link:../../packages/dom
       '@ydant/reactive':
         specifier: workspace:*
         version: link:../../packages/reactive
@@ -113,81 +113,88 @@ importers:
 
   examples/showcase5:
     dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
       '@ydant/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@ydant/dom':
-        specifier: workspace:*
-        version: link:../../packages/dom
 
   examples/showcase6:
     dependencies:
       '@ydant/async':
         specifier: workspace:*
         version: link:../../packages/async
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
       '@ydant/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@ydant/dom':
-        specifier: workspace:*
-        version: link:../../packages/dom
 
   examples/showcase7:
     dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
       '@ydant/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@ydant/dom':
-        specifier: workspace:*
-        version: link:../../packages/dom
       '@ydant/transition':
         specifier: workspace:*
         version: link:../../packages/transition
 
   packages/async:
     devDependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../base
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/base:
+    dependencies:
       '@ydant/core':
         specifier: workspace:*
         version: link:../core
 
   packages/context:
-    devDependencies:
-      '@ydant/core':
-        specifier: workspace:*
-        version: link:../core
-      '@ydant/dom':
-        specifier: workspace:*
-        version: link:../dom
-
-  packages/core: {}
-
-  packages/dom:
     dependencies:
       '@ydant/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
-      '@ydant/reactive':
+      '@ydant/base':
         specifier: workspace:*
-        version: link:../reactive
+        version: link:../base
+
+  packages/core: {}
 
   packages/reactive:
-    devDependencies:
+    dependencies:
       '@ydant/core':
         specifier: workspace:*
         version: link:../core
-      '@ydant/dom':
+    devDependencies:
+      '@ydant/base':
         specifier: workspace:*
-        version: link:../dom
+        version: link:../base
 
   packages/router:
     devDependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../base
       '@ydant/core':
         specifier: workspace:*
         version: link:../core
 
   packages/transition:
     devDependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../base
       '@ydant/core':
         specifier: workspace:*
         version: link:../core

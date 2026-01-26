@@ -6,7 +6,7 @@
  * @example
  * ```typescript
  * import { createContextPlugin } from "@ydant/context/plugin";
- * import { mount } from "@ydant/dom";
+ * import { mount } from "@ydant/core";
  *
  * mount(App, document.getElementById("app")!, {
  *   plugins: [createContextPlugin()]
@@ -14,14 +14,15 @@
  * ```
  */
 
-import type { Child } from "@ydant/core";
-import type { DomPlugin, PluginAPI, PluginResult } from "@ydant/dom";
+import type { Child, Plugin, PluginAPI, PluginResult } from "@ydant/core";
+// base の import で PluginAPIExtensions の augmentation が適用される
+import "@ydant/base";
 import type { Context } from "./context";
 
 /**
  * Context プラグインを作成する
  */
-export function createContextPlugin(): DomPlugin {
+export function createContextPlugin(): Plugin {
   return {
     name: "context",
     types: ["context-provide", "context-inject"],

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { div, text } from "@ydant/core";
-import { mount } from "@ydant/dom";
+import { mount } from "@ydant/core";
+import { createBasePlugin, div, text } from "@ydant/base";
 import { ErrorBoundary } from "../error-boundary";
 
 describe("ErrorBoundary", () => {
@@ -22,6 +22,7 @@ describe("ErrorBoundary", () => {
           },
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Content");
@@ -38,6 +39,7 @@ describe("ErrorBoundary", () => {
           },
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Error: Something went wrong");
@@ -56,6 +58,7 @@ describe("ErrorBoundary", () => {
           },
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Caught: Error - Test error message");
@@ -83,6 +86,7 @@ describe("ErrorBoundary", () => {
           },
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Error: Failed");
@@ -111,6 +115,7 @@ describe("ErrorBoundary", () => {
             },
           }),
         container,
+        { plugins: [createBasePlugin()] },
       );
     } catch (e) {
       thrownValue = e;
@@ -139,6 +144,7 @@ describe("ErrorBoundary", () => {
           },
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Error #1: Failure 1");

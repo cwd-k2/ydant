@@ -12,7 +12,7 @@ import {
   clss,
   on,
   key,
-} from "@ydant/core";
+} from "@ydant/base";
 import { createTransition, type TransitionHandle } from "@ydant/transition";
 import type { Toast } from "./types";
 

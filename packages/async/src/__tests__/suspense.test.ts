@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { div, text } from "@ydant/core";
-import { mount } from "@ydant/dom";
+import { mount } from "@ydant/core";
+import { createBasePlugin, div, text } from "@ydant/base";
 import { Suspense } from "../suspense";
 
 describe("Suspense", () => {
@@ -22,6 +22,7 @@ describe("Suspense", () => {
           },
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Content");
@@ -40,6 +41,7 @@ describe("Suspense", () => {
           },
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Loading...");
@@ -65,6 +67,7 @@ describe("Suspense", () => {
           },
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Loading...");
@@ -91,6 +94,7 @@ describe("Suspense", () => {
             },
           }),
         container,
+        { plugins: [createBasePlugin()] },
       );
     }).toThrow(error);
   });

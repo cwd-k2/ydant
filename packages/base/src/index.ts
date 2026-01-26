@@ -1,0 +1,89 @@
+/**
+ * @ydant/base
+ *
+ * 要素ファクトリ・プリミティブ DSL とそれらを処理するベースプラグイン
+ */
+
+// PluginAPI 拡張（サイドエフェクト）
+import "./plugin-api";
+
+// Types
+export type {
+  Slot,
+  Render,
+  Component,
+  ElementRender,
+  Element,
+  Attribute,
+  Listener,
+  Text,
+  Lifecycle,
+  Key,
+  Decoration,
+} from "./types";
+export type { KeyedNode, BasePluginAPI, ElementPluginAPIExtensions } from "./plugin-api";
+
+// Primitives
+export { attr, clss, on, text, onMount, onUnmount, style, key } from "./primitives";
+
+// HTML Elements
+export {
+  div,
+  span,
+  p,
+  h1,
+  h2,
+  h3,
+  img,
+  button,
+  input,
+  ul,
+  li,
+  a,
+  section,
+  header,
+  footer,
+  nav,
+  main,
+  article,
+  aside,
+  form,
+  label,
+  textarea,
+  select,
+  option,
+  table,
+  thead,
+  tbody,
+  tr,
+  th,
+  td,
+} from "./elements/html";
+
+// SVG Elements
+export {
+  svg,
+  circle,
+  ellipse,
+  line,
+  path,
+  polygon,
+  polyline,
+  rect,
+  g,
+  defs,
+  use,
+  clipPath,
+  mask,
+  linearGradient,
+  radialGradient,
+  stop,
+  svgText,
+  tspan,
+} from "./elements/svg";
+
+// Factory helpers
+export { createHTMLElement, createSVGElement } from "./elements/factory";
+
+// Plugin
+export { createBasePlugin } from "./plugin";

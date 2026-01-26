@@ -1,15 +1,8 @@
 /**
- * DOM Renderer 内部型定義
+ * @ydant/core - レンダリング内部型定義
  */
 
-import type { DomPlugin } from "./plugin";
-
-/** Keyed 要素の情報 */
-export interface KeyedNode {
-  key: string | number;
-  node: globalThis.Element;
-  unmountCallbacks: Array<() => void>;
-}
+import type { Plugin } from "../plugin";
 
 /** レンダリングコンテキスト */
 export interface RenderContext {
@@ -25,10 +18,10 @@ export interface RenderContext {
   unmountCallbacks: Array<() => void>;
   /** 次の要素に関連付けるキー */
   pendingKey: string | number | null;
-  /** キー付き要素のマップ */
-  keyedNodes: Map<string | number, KeyedNode>;
+  /** キー付き要素のマップ（プラグインが管理） */
+  keyedNodes: Map<string | number, unknown>;
   /** Context の値を保持するマップ */
   contextValues: Map<symbol, unknown>;
   /** 登録されたプラグイン */
-  plugins: Map<string, DomPlugin>;
+  plugins: Map<string, Plugin>;
 }

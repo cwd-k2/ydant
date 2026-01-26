@@ -1,5 +1,5 @@
 /**
- * ライフサイクル管理
+ * @ydant/core - ライフサイクル管理
  */
 
 import type { RenderContext } from "./types";

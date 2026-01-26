@@ -1,4 +1,4 @@
-import { type Component, div, h1, p, button, text, clss, on } from "@ydant/core";
+import { type Component, div, h1, p, button, text, clss, on } from "@ydant/base";
 import { navigate } from "@ydant/router";
 
 /**

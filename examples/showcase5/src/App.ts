@@ -14,7 +14,7 @@ import {
   attr,
   on,
   key,
-} from "@ydant/core";
+} from "@ydant/base";
 import type { ListItem, SortOrder } from "./types";
 import { ListItemView } from "./components/ListItemView";
 

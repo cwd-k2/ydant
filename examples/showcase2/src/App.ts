@@ -11,7 +11,7 @@ import {
   attr,
   type Slot,
   type Component,
-} from "@ydant/core";
+} from "@ydant/base";
 import type { Todo, Filter } from "./types";
 import { loadTodos, saveTodos } from "./storage";
 import { TodoItem } from "./components/TodoItem";

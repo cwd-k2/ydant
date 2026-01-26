@@ -1,4 +1,4 @@
-import { type Component, div, h1, ul, li, span, button, text, clss, on } from "@ydant/core";
+import { type Component, div, h1, ul, li, span, button, text, clss, on } from "@ydant/base";
 import { navigate } from "@ydant/router";
 import { reactive } from "@ydant/reactive";
 import { users, addUser, removeUser } from "../state/users";

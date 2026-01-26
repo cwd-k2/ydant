@@ -1,4 +1,4 @@
-import { div, span, text, clss } from "@ydant/core";
+import { div, span, text, clss } from "@ydant/base";
 
 export function LoadingSpinner(message = "Loading...") {
   return div(() => [

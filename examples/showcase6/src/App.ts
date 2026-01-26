@@ -12,7 +12,7 @@ import {
   text,
   clss,
   on,
-} from "@ydant/core";
+} from "@ydant/base";
 import { createResource, Suspense, ErrorBoundary } from "@ydant/async";
 import type { Post, User } from "./types";
 import { fetchPosts, fetchUsers } from "./api";

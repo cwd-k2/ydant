@@ -15,7 +15,7 @@ SVG を使ったプログレスリング付きポモドーロタイマー。
 SVG 要素は専用のファクトリ関数を使用（namespace 自動設定）:
 
 ```typescript
-import { svg, circle, path } from "@ydant/core";
+import { svg, circle, path } from "@ydant/base";
 
 yield *
   svg(function* () {

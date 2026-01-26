@@ -18,8 +18,9 @@
  * ```
  */
 
-import type { Render, Slot, Builder, Element } from "@ydant/core";
-import { div, onMount } from "@ydant/core";
+import type { Builder } from "@ydant/core";
+import type { Render, Slot, Element } from "@ydant/base";
+import { div, onMount } from "@ydant/base";
 
 // @ydant/core の型を拡張
 declare module "@ydant/core" {
