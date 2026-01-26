@@ -41,10 +41,7 @@ export type Key = Tagged<"key", { value: string | number }>;
 // =============================================================================
 
 /** 子要素を生成する関数（前方宣言用） */
-export type ChildrenFn =
-  | (() => Children | ChildGen[])
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | (() => Generator<any, any, any>);
+export type ChildrenFn = () => Children | ChildGen[];
 
 /**
  * プラグインが Child 型を拡張するためのインターフェース

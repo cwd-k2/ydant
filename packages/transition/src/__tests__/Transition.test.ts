@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { div, text, clss, type Slot } from "@ydant/core";
+import { div, text, clss, type Slot, type ChildrenFn } from "@ydant/core";
 import { mount } from "@ydant/dom";
 import {
   Transition,
@@ -434,7 +434,10 @@ describe("createTransition", () => {
   });
 
   it("creates a transition handle with setShow function", () => {
-    let handle: { slot: Slot; setShow: (show: boolean) => Promise<void> } | null = null;
+    let handle: {
+      slot: Slot;
+      setShow: (show: boolean) => Promise<void>;
+    } | null = null;
 
     mount(
       () =>
@@ -448,7 +451,7 @@ describe("createTransition", () => {
             leaveTo: "fade-leave-to",
             children: () => div(() => [text("Transition Content")]),
           });
-        }),
+        } as ChildrenFn),
       container,
     );
     vi.advanceTimersToNextFrame();
@@ -459,10 +462,14 @@ describe("createTransition", () => {
   });
 
   it("shows content with enter animation via setShow(true)", async () => {
-    let handle: { slot: Slot; setShow: (show: boolean) => Promise<void> } | null = null;
+    let handle: {
+      slot: Slot;
+      setShow: (show: boolean) => Promise<void>;
+    } | null = null;
 
     mount(
       () =>
+        // @ts-ignore
         div(function* () {
           handle = yield* createTransition({
             enter: "fade-enter",
@@ -488,10 +495,14 @@ describe("createTransition", () => {
   });
 
   it("hides content with leave animation via setShow(false)", async () => {
-    let handle: { slot: Slot; setShow: (show: boolean) => Promise<void> } | null = null;
+    let handle: {
+      slot: Slot;
+      setShow: (show: boolean) => Promise<void>;
+    } | null = null;
 
     mount(
       () =>
+        // @ts-ignore
         div(function* () {
           handle = yield* createTransition({
             leave: "fade-leave",
@@ -518,10 +529,14 @@ describe("createTransition", () => {
   });
 
   it("ignores setShow calls with same value", async () => {
-    let handle: { slot: Slot; setShow: (show: boolean) => Promise<void> } | null = null;
+    let handle: {
+      slot: Slot;
+      setShow: (show: boolean) => Promise<void>;
+    } | null = null;
 
     mount(
       () =>
+        // @ts-ignore
         div(function* () {
           handle = yield* createTransition({
             children: () => div(() => [text("Content")]),
@@ -551,10 +566,14 @@ describe("createTransition", () => {
       transitionDuration: "1s",
     } as CSSStyleDeclaration);
 
-    let handle: { slot: Slot; setShow: (show: boolean) => Promise<void> } | null = null;
+    let handle: {
+      slot: Slot;
+      setShow: (show: boolean) => Promise<void>;
+    } | null = null;
 
     mount(
       () =>
+        // @ts-ignore
         div(function* () {
           handle = yield* createTransition({
             enter: "fade-enter",
