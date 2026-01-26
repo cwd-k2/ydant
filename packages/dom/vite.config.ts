@@ -13,6 +13,12 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ["@ydant/core", "@ydant/reactive"],
+      output: {
+        globals: {
+          "@ydant/core": "YdantCore",
+          "@ydant/reactive": "YdantReactive",
+        },
+      },
     },
   },
 });

@@ -13,6 +13,11 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ["@ydant/core"],
+      output: {
+        globals: {
+          "@ydant/core": "YdantCore",
+        },
+      },
     },
   },
 });
