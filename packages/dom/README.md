@@ -70,7 +70,7 @@ interface PluginAPI {
   onMount(callback: () => void | (() => void)): void;
   onUnmount(callback: () => void): void;
   appendChild(node: Node): void;
-  processChildren(childrenFn: ChildrenFn, options?: { parent?: Node }): void;
+  processChildren(builder: Builder, options?: { parent?: Node }): void;
   createChildAPI(parent: Node): PluginAPI;
 }
 ```

@@ -44,19 +44,22 @@ SVG elements: `svg`, `circle`, `ellipse`, `line`, `path`, `polygon`, `polyline`,
 
 ### Types
 
-| Type               | Description                                                            |
-| ------------------ | ---------------------------------------------------------------------- |
-| `Component`        | `() => ElementGenerator`                                               |
-| `Slot`             | `{ node: HTMLElement, refresh: (fn) => void }`                         |
-| `ElementGenerator` | Generator yielding Elements, returning Slot                            |
-| `Child`            | Element \| Decoration \| Text \| Lifecycle \| Style \| Key \| Reactive |
+| Type          | Description                                                                |
+| ------------- | -------------------------------------------------------------------------- |
+| `Component`   | `() => Render`                                                             |
+| `Render`      | `Generator<Element, Slot, Slot>` - Generator yielding Elements             |
+| `Slot`        | `{ node: HTMLElement, refresh: (fn) => void }`                             |
+| `Builder`     | `() => Instructor \| Instruction[]` - Element factory argument type        |
+| `Instructor`  | `Iterator<Child, ChildReturn, ChildNext>` - Rendering instruction iterator |
+| `Instruction` | `Generator<Child, ChildReturn, ChildNext>` - Rendering instruction         |
+| `Child`       | Element \| Decoration \| Text \| Lifecycle \| Style \| Key \| (plugins)    |
 
 ### Utilities
 
-| Function               | Description                          |
-| ---------------------- | ------------------------------------ |
-| `isTagged(value, tag)` | Type guard for tagged union types    |
-| `toChildren(result)`   | Normalize array/iterator to Children |
+| Function               | Description                            |
+| ---------------------- | -------------------------------------- |
+| `isTagged(value, tag)` | Type guard for tagged union types      |
+| `toChildren(result)`   | Normalize array/iterator to Instructor |
 
 ## Syntax
 

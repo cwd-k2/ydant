@@ -1,5 +1,5 @@
 import {
-  type ChildrenFn,
+  type Builder,
   type Component,
   type Slot,
   div,
@@ -69,7 +69,7 @@ function ToggleSection() {
 
   return div(function* () {
     yield* h2(() => [clss(["text-xl", "font-semibold", "mb-4"]), text("Fade Transition")]);
-    _sectionSlot = yield* div(renderSection as unknown as ChildrenFn);
+    _sectionSlot = yield* div(renderSection as Builder);
   });
 }
 
@@ -115,7 +115,7 @@ function SlideSection() {
 
   return div(function* () {
     yield* h2(() => [clss(["text-xl", "font-semibold", "mb-4"]), text("Slide Transition")]);
-    _sectionSlot = yield* div(renderSection as unknown as ChildrenFn);
+    _sectionSlot = yield* div(renderSection as Builder);
   });
 }
 

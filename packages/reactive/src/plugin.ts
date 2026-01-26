@@ -14,7 +14,7 @@
  * ```
  */
 
-import type { Child, ChildrenFn } from "@ydant/core";
+import type { Child, Builder } from "@ydant/core";
 import type { DomPlugin, PluginAPI, PluginResult } from "@ydant/dom";
 import { runWithSubscriber } from "./tracking";
 
@@ -27,7 +27,7 @@ export function createReactivePlugin(): DomPlugin {
     types: ["reactive"],
 
     process(child: Child, api: PluginAPI): PluginResult {
-      const childrenFn = (child as { childrenFn: ChildrenFn }).childrenFn;
+      const builder = (child as { builder: Builder }).builder;
 
       // コンテナ要素を作成
       const container = document.createElement("span");
@@ -50,7 +50,7 @@ export function createReactivePlugin(): DomPlugin {
 
         // Signal 依存関係を追跡しながら子要素を処理
         runWithSubscriber(update, () => {
-          api.processChildren(childrenFn, { parent: container });
+          api.processChildren(builder, { parent: container });
         });
       };
 

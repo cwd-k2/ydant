@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { div, text, clss, type Slot, type ChildrenFn } from "@ydant/core";
+import { div, text, clss, type Slot, type Builder } from "@ydant/core";
 import { mount } from "@ydant/dom";
 import {
   Transition,
@@ -451,7 +451,7 @@ describe("createTransition", () => {
             leaveTo: "fade-leave-to",
             children: () => div(() => [text("Transition Content")]),
           });
-        } as ChildrenFn),
+        } as Builder),
       container,
     );
     vi.advanceTimersToNextFrame();
@@ -469,7 +469,6 @@ describe("createTransition", () => {
 
     mount(
       () =>
-        // @ts-ignore
         div(function* () {
           handle = yield* createTransition({
             enter: "fade-enter",
@@ -477,7 +476,7 @@ describe("createTransition", () => {
             enterTo: "fade-enter-to",
             children: () => div(() => [clss(["transition-child"]), text("Content")]),
           });
-        }),
+        } as Builder),
       container,
     );
     vi.advanceTimersToNextFrame();
@@ -502,7 +501,6 @@ describe("createTransition", () => {
 
     mount(
       () =>
-        // @ts-ignore
         div(function* () {
           handle = yield* createTransition({
             leave: "fade-leave",
@@ -510,7 +508,7 @@ describe("createTransition", () => {
             leaveTo: "fade-leave-to",
             children: () => div(() => [clss(["transition-child"]), text("Content")]),
           });
-        }),
+        } as Builder),
       container,
     );
     vi.advanceTimersToNextFrame();
@@ -536,12 +534,11 @@ describe("createTransition", () => {
 
     mount(
       () =>
-        // @ts-ignore
         div(function* () {
           handle = yield* createTransition({
             children: () => div(() => [text("Content")]),
           });
-        }),
+        } as Builder),
       container,
     );
     vi.advanceTimersToNextFrame();
@@ -573,13 +570,12 @@ describe("createTransition", () => {
 
     mount(
       () =>
-        // @ts-ignore
         div(function* () {
           handle = yield* createTransition({
             enter: "fade-enter",
             children: () => div(() => [clss(["child"]), text("Content")]),
           });
-        }),
+        } as Builder),
       container,
     );
     vi.advanceTimersToNextFrame();

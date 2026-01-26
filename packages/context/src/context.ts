@@ -24,6 +24,8 @@
  * ```
  */
 
+import type { Tagged } from "@ydant/core";
+
 /** Context オブジェクト */
 export interface Context<T> {
   /** Context の一意な識別子 */
@@ -33,23 +35,27 @@ export interface Context<T> {
 }
 
 /** Context Provider 型（Tagged Union） */
-export interface ContextProvide {
-  type: "context-provide";
-  context: Context<unknown>;
-  value: unknown;
-}
+export type ContextProvide = Tagged<
+  "context-provide",
+  { context: Context<unknown>; value: unknown }
+>;
 
 /** Context Inject 型（Tagged Union） */
-export interface ContextInject {
-  type: "context-inject";
-  context: Context<unknown>;
-}
+export type ContextInject = Tagged<"context-inject", { context: Context<unknown> }>;
 
-// @ydant/core の Child 型を拡張
+// @ydant/core の型を拡張
 declare module "@ydant/core" {
   interface PluginChildExtensions {
     ContextProvide: ContextProvide;
     ContextInject: ContextInject;
+  }
+
+  interface PluginNextExtensions {
+    ContextValue: unknown;
+  }
+
+  interface PluginReturnExtensions {
+    ContextValue: unknown;
   }
 }
 

@@ -1,4 +1,4 @@
-import type { Tagged, ChildGen, Children } from "./types";
+import type { Tagged, Instruction, Instructor } from "./types";
 
 /** Tagged 型の判定関数 */
 export function isTagged<T extends string>(
@@ -8,14 +8,14 @@ export function isTagged<T extends string>(
   return value.type === tag;
 }
 
-/** ChildrenFn の結果を Children に正規化する */
-export function toChildren(result: Children | ChildGen[]): Children {
+/** Builder の結果を Instructor に正規化する */
+export function toChildren(result: Instructor | Instruction[]): Instructor {
   if (Array.isArray(result)) {
     return (function* () {
-      for (const gen of result) {
-        yield* gen;
+      for (const instruction of result) {
+        yield* instruction;
       }
-    })() as Children;
+    })() as Instructor;
   }
   return result;
 }

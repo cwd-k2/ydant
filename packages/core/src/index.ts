@@ -9,15 +9,19 @@ export type {
   Key,
   Decoration,
   Child,
-  ChildGen,
-  Children,
-  ChildrenFn,
+  ChildNext,
+  ChildReturn,
+  Builder,
+  Instructor,
+  Instruction,
   Element,
   Render,
   Slot,
   Component,
-  // Plugin extension point
+  // Plugin extension points
   PluginChildExtensions,
+  PluginNextExtensions,
+  PluginReturnExtensions,
 } from "./types";
 
 // Utilities

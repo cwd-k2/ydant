@@ -2,7 +2,7 @@
  * Router の型定義
  */
 
-import type { ChildGen, Component } from "@ydant/core";
+import type { Instruction, Component } from "@ydant/core";
 
 /** ルート定義 */
 export interface RouteDefinition {
@@ -39,7 +39,7 @@ export interface RouterLinkProps {
   /** リンク先のパス */
   href: string;
   /** リンクの子要素 */
-  children: () => ChildGen;
+  children: () => Instruction;
   /** アクティブ時に追加するクラス */
   activeClass?: string;
 }

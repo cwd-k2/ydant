@@ -9,16 +9,16 @@ describe("reactive", () => {
     expect(result.done).toBe(false);
     expect(result.value).toEqual({
       type: "reactive",
-      childrenFn: expect.any(Function),
+      builder: expect.any(Function),
     });
   });
 
-  it("stores the childrenFn", () => {
-    const childrenFn = () => [];
-    const gen = reactive(childrenFn);
+  it("stores the builder", () => {
+    const builder = () => [];
+    const gen = reactive(builder);
     const result = gen.next();
 
-    expect((result.value as unknown as { childrenFn: () => [] }).childrenFn).toBe(childrenFn);
+    expect((result.value as unknown as { builder: () => [] }).builder).toBe(builder);
   });
 
   it("completes after yielding", () => {
