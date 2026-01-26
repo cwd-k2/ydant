@@ -17,6 +17,27 @@ import {
 import type { Element, Attribute, Listener, Text, Lifecycle, Key } from "../types";
 
 /**
+ * マウントコールバックを実行
+ *
+ * DOM 更新完了後（requestAnimationFrame のタイミング）に実行し、
+ * クリーンアップ関数が返された場合は unmountCallbacks に追加する
+ */
+function executeMount(ctx: Record<string, unknown>): void {
+  const mountCallbacks = ctx.mountCallbacks as Array<() => void | (() => void)>;
+  const unmountCallbacks = ctx.unmountCallbacks as Array<() => void>;
+
+  requestAnimationFrame(() => {
+    for (const callback of mountCallbacks) {
+      const cleanup = callback();
+      if (typeof cleanup === "function") {
+        unmountCallbacks.push(cleanup);
+      }
+    }
+    ctx.mountCallbacks = [];
+  });
+}
+
+/**
  * ベースプラグインを作成
  *
  * element, text, attribute, listener, key, lifecycle を処理するプラグイン
@@ -29,6 +50,8 @@ export function createBasePlugin(): Plugin {
     initContext(ctx: Record<string, unknown>) {
       ctx.pendingKey = null;
       ctx.keyedNodes = new Map();
+      ctx.mountCallbacks = [];
+      ctx.unmountCallbacks = [];
     },
 
     extendAPI(api: Record<string, unknown>, ctx: Record<string, unknown>) {
@@ -51,6 +74,23 @@ export function createBasePlugin(): Plugin {
       };
       api.deleteKeyedNode = (key: string | number) => {
         keyedNodes.delete(key);
+      };
+
+      // lifecycle 関連
+      const mountCallbacks = ctx.mountCallbacks as Array<() => void | (() => void)>;
+      const unmountCallbacks = ctx.unmountCallbacks as Array<() => void>;
+
+      api.onMount = (callback: () => void | (() => void)) => {
+        mountCallbacks.push(callback);
+      };
+      api.onUnmount = (callback: () => void) => {
+        unmountCallbacks.push(callback);
+      };
+      api.pushUnmountCallbacks = (...callbacks: Array<() => void>) => {
+        unmountCallbacks.push(...callbacks);
+      };
+      api.executeMount = () => {
+        executeMount(ctx);
       };
     },
 

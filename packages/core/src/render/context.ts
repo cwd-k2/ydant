@@ -6,7 +6,6 @@ import type { Builder, Instructor } from "../types";
 import { toChildren } from "../utils";
 import type { Plugin, PluginAPI } from "../plugin";
 import type { RenderContext, RenderContextCore } from "./types";
-import { executeMount } from "./lifecycle";
 
 /** RenderContext のコア部分を作成 */
 export function createRenderContextCore(
@@ -19,8 +18,6 @@ export function createRenderContextCore(
     parent,
     currentElement,
     isCurrentElementReused: isCurrentElementReused ?? false,
-    mountCallbacks: [],
-    unmountCallbacks: [],
     plugins,
   };
 }
@@ -75,6 +72,10 @@ export function createPluginAPIFactory(
   processIterator: (iter: Instructor, ctx: RenderContext) => void,
 ) {
   return function createPluginAPI(ctx: RenderContext): PluginAPI {
+    // プラグイン固有プロパティへのアクセス用（lifecycle コールバック伝搬のため）
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const extCtx = ctx as any;
+
     const api: Record<string, unknown> = {
       // ========================================================================
       // コア機能（全プラグインで使用可能）
@@ -88,20 +89,8 @@ export function createPluginAPIFactory(
       get isCurrentElementReused() {
         return ctx.isCurrentElementReused;
       },
-      onMount(callback: () => void | (() => void)): void {
-        ctx.mountCallbacks.push(callback);
-      },
-      onUnmount(callback: () => void): void {
-        ctx.unmountCallbacks.push(callback);
-      },
       appendChild(node: Node): void {
         ctx.parent.appendChild(node);
-      },
-      pushUnmountCallbacks(...callbacks: Array<() => void>): void {
-        ctx.unmountCallbacks.push(...callbacks);
-      },
-      executeMount(): void {
-        executeMount(ctx);
       },
       setCurrentElement(element: globalThis.Element | null): void {
         ctx.currentElement = element;
@@ -125,9 +114,15 @@ export function createPluginAPIFactory(
         const children = toChildren(builder());
         processIterator(children, childCtx);
 
-        // 子コンテキストのコールバックを親に伝搬
-        ctx.mountCallbacks.push(...childCtx.mountCallbacks);
-        ctx.unmountCallbacks.push(...childCtx.unmountCallbacks);
+        // 子コンテキストのコールバックを親に伝搬（base プラグインが初期化している場合）
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const extChildCtx = childCtx as any;
+        if (extCtx.mountCallbacks && extChildCtx.mountCallbacks) {
+          extCtx.mountCallbacks.push(...extChildCtx.mountCallbacks);
+        }
+        if (extCtx.unmountCallbacks && extChildCtx.unmountCallbacks) {
+          extCtx.unmountCallbacks.push(...extChildCtx.unmountCallbacks);
+        }
       },
       createChildAPI(parent: Node): PluginAPI {
         const childCtx = createRenderContext(

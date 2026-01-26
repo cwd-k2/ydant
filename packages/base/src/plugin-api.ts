@@ -89,6 +89,10 @@ declare module "@ydant/core" {
     pendingKey: string | number | null;
     /** キー付き要素のマップ */
     keyedNodes: Map<string | number, KeyedNode>;
+    /** マウント時に実行するコールバック */
+    mountCallbacks: Array<() => void | (() => void)>;
+    /** アンマウント時に実行するコールバック */
+    unmountCallbacks: Array<() => void>;
   }
 
   // BasePluginAPI と ElementPluginAPIExtensions のすべてのメソッドを追加
