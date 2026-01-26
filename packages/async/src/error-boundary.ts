@@ -18,8 +18,8 @@
  * ```
  */
 
-import type { Child } from "@ydant/core";
-import type { Render, Slot } from "@ydant/base";
+import type { Child, Render } from "@ydant/core";
+import type { Slot } from "@ydant/base";
 import { div } from "@ydant/base";
 
 /** children の型（戻り値は不要） */

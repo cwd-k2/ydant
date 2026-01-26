@@ -2,7 +2,7 @@
  * Router コンポーネント
  */
 
-import type { Render } from "@ydant/base";
+import type { Render } from "@ydant/core";
 import { div, a, on, attr, onMount } from "@ydant/base";
 import type { RouteDefinition, RouterViewProps, RouterLinkProps } from "./types";
 import { currentRoute, routeListeners, updateRoute } from "./state";

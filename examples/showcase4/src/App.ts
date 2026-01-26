@@ -1,4 +1,5 @@
-import { type Component, div, clss, onMount } from "@ydant/base";
+import type { Component } from "@ydant/core";
+import { div, clss, onMount } from "@ydant/base";
 import { RouterView } from "@ydant/router";
 import { NavBar } from "./components/NavBar";
 import { applyThemeToDocument } from "./state/theme";

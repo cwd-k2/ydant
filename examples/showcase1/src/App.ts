@@ -1,4 +1,5 @@
-import { text, div, h1, h3, p, button, clss, on, type Slot, type Component } from "@ydant/base";
+import type { Component } from "@ydant/core";
+import { text, div, h1, h3, p, button, clss, on, type Slot } from "@ydant/base";
 import { CounterSection } from "./components/Counter";
 import { Dialog } from "./components/Dialog";
 

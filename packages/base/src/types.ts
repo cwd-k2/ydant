@@ -28,20 +28,6 @@ export interface Slot {
 // =============================================================================
 
 /**
- * Element を yield し、最終的に Slot を返すジェネレーター
- *
- * core の Render を再エクスポート（base の augmentation により Slot が含まれる）
- */
-export type Render = CoreRender;
-
-/**
- * ルートコンポーネント（Render を返す関数）
- *
- * core の Component を再エクスポート
- */
-export type Component = CoreComponent;
-
-/**
  * 要素ファクトリの戻り値型
  *
  * Element を yield し、必ず Slot を返すジェネレーター。

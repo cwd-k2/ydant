@@ -1,17 +1,5 @@
-import {
-  type Component,
-  div,
-  h1,
-  p,
-  span,
-  button,
-  input,
-  label,
-  text,
-  attr,
-  clss,
-  on,
-} from "@ydant/base";
+import type { Component } from "@ydant/core";
+import { div, h1, p, span, button, input, label, text, attr, clss, on } from "@ydant/base";
 import { signal, reactive } from "@ydant/reactive";
 import { createForm, required, email, minLength } from "../form";
 

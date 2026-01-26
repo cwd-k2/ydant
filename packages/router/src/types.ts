@@ -2,8 +2,7 @@
  * Router の型定義
  */
 
-import type { Instruction } from "@ydant/core";
-import type { Component } from "@ydant/base";
+import type { Component, Instruction } from "@ydant/core";
 
 /** ルート定義 */
 export interface RouteDefinition {

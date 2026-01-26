@@ -10,8 +10,6 @@ import "./plugin-api";
 // Types
 export type {
   Slot,
-  Render,
-  Component,
   ElementRender,
   Element,
   Attribute,

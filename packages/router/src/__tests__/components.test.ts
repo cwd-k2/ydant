@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { mount } from "@ydant/core";
-import type { Component } from "@ydant/base";
+import { mount, type Component } from "@ydant/core";
 import { createBasePlugin, div, p, text } from "@ydant/base";
 import { RouterLink, RouterView } from "../components";
 import { navigate } from "../navigation";

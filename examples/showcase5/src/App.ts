@@ -1,5 +1,5 @@
+import type { Component } from "@ydant/core";
 import {
-  type Component,
   type Slot,
   div,
   h1,

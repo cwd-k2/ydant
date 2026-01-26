@@ -1,17 +1,5 @@
-import {
-  text,
-  div,
-  h1,
-  p,
-  span,
-  button,
-  input,
-  clss,
-  on,
-  attr,
-  type Slot,
-  type Component,
-} from "@ydant/base";
+import type { Component } from "@ydant/core";
+import { text, div, h1, p, span, button, input, clss, on, attr, type Slot } from "@ydant/base";
 import type { Todo, Filter } from "./types";
 import { loadTodos, saveTodos } from "./storage";
 import { TodoItem } from "./components/TodoItem";

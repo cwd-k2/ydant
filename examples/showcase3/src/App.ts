@@ -1,3 +1,4 @@
+import type { Component } from "@ydant/core";
 import {
   text,
   div,
@@ -13,7 +14,6 @@ import {
   circle,
   onUnmount,
   type Slot,
-  type Component,
 } from "@ydant/base";
 import type { TimerMode, TimerState } from "./types";
 import { DURATIONS, MODE_LABELS, MODE_COLORS } from "./constants";

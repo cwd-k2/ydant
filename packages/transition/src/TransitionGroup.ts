@@ -20,7 +20,8 @@
  * ```
  */
 
-import type { Render, Slot, ElementRender } from "@ydant/base";
+import type { Render } from "@ydant/core";
+import type { Slot, ElementRender } from "@ydant/base";
 import { div, key as keyPrimitive, onMount } from "@ydant/base";
 
 export interface TransitionGroupProps<T> {

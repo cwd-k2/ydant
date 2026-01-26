@@ -1,18 +1,5 @@
-import {
-  type Component,
-  type Slot,
-  div,
-  h1,
-  h2,
-  h3,
-  p,
-  ul,
-  li,
-  button,
-  text,
-  clss,
-  on,
-} from "@ydant/base";
+import type { Component } from "@ydant/core";
+import { type Slot, div, h1, h2, h3, p, ul, li, button, text, clss, on } from "@ydant/base";
 import { createResource, Suspense, ErrorBoundary } from "@ydant/async";
 import type { Post, User } from "./types";
 import { fetchPosts, fetchUsers } from "./api";
