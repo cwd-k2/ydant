@@ -107,7 +107,6 @@ The rendering context holds state during rendering. Plugins extend it via `Rende
 interface RenderContextCore {
   parent: Node;
   currentElement: Element | null;
-  isCurrentElementReused: boolean;
   plugins: Map<string, Plugin>;
 }
 

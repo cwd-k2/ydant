@@ -85,6 +85,8 @@ export interface ElementPluginAPIExtensions {
 declare module "@ydant/core" {
   // RenderContext に base プラグイン用のプロパティを追加
   interface RenderContextExtensions {
+    /** 現在の要素が再利用されたかどうか（リスナー・ライフサイクルの重複登録を防ぐ） */
+    isCurrentElementReused: boolean;
     /** 次の要素に関連付けるキー */
     pendingKey: string | number | null;
     /** キー付き要素のマップ */
@@ -131,6 +133,11 @@ declare module "@ydant/core" {
 
     /** 現在の要素が再利用されたかどうか */
     readonly isCurrentElementReused: boolean;
+    /** 要素再利用フラグを設定 */
+    setCurrentElementReused(reused: boolean): void;
+
+    /** 親ノードに子ノードを追加 */
+    appendChild(node: Node): void;
 
     /** keyed node を取得 */
     getKeyedNode(key: string | number): KeyedNode | undefined;

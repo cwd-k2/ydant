@@ -12,12 +12,10 @@ export function createRenderContextCore(
   parent: Node,
   currentElement: globalThis.Element | null,
   plugins: Map<string, Plugin>,
-  isCurrentElementReused?: boolean,
 ): RenderContextCore {
   return {
     parent,
     currentElement,
-    isCurrentElementReused: isCurrentElementReused ?? false,
     plugins,
   };
 }
@@ -29,21 +27,14 @@ export function createRenderContextCore(
  * @param currentElement - 現在の要素
  * @param plugins - 登録されたプラグイン
  * @param parentCtx - 親コンテキスト（子コンテキスト作成時）
- * @param isCurrentElementReused - 要素が再利用されたかどうか
  */
 export function createRenderContext(
   parent: Node,
   currentElement: globalThis.Element | null,
   plugins: Map<string, Plugin>,
   parentCtx?: RenderContext,
-  isCurrentElementReused?: boolean,
 ): RenderContext {
-  const ctx = createRenderContextCore(
-    parent,
-    currentElement,
-    plugins,
-    isCurrentElementReused,
-  ) as RenderContext;
+  const ctx = createRenderContextCore(parent, currentElement, plugins) as RenderContext;
 
   // 各プラグインの initContext を呼び出し
   const calledPlugins = new Set<string>();
@@ -78,25 +69,13 @@ export function createPluginAPIFactory(
 
     const api: Record<string, unknown> = {
       // ========================================================================
-      // コア機能（全プラグインで使用可能）
+      // コア機能（プラグインが拡張する基盤）
       // ========================================================================
       get parent() {
         return ctx.parent;
       },
       get currentElement() {
         return ctx.currentElement;
-      },
-      get isCurrentElementReused() {
-        return ctx.isCurrentElementReused;
-      },
-      appendChild(node: Node): void {
-        ctx.parent.appendChild(node);
-      },
-      setCurrentElement(element: globalThis.Element | null): void {
-        ctx.currentElement = element;
-      },
-      setParent(parent: Node): void {
-        ctx.parent = parent;
       },
       processChildren(
         builder: Builder,

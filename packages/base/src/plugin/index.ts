@@ -48,6 +48,7 @@ export function createBasePlugin(): Plugin {
     types: ["element", "text", "attribute", "listener", "key", "lifecycle"],
 
     initContext(ctx: Record<string, unknown>) {
+      ctx.isCurrentElementReused = false;
       ctx.pendingKey = null;
       ctx.keyedNodes = new Map();
       ctx.mountCallbacks = [];
@@ -55,6 +56,26 @@ export function createBasePlugin(): Plugin {
     },
 
     extendAPI(api: Record<string, unknown>, ctx: Record<string, unknown>) {
+      // DOM 操作関連
+      Object.defineProperty(api, "isCurrentElementReused", {
+        get() {
+          return ctx.isCurrentElementReused;
+        },
+        enumerable: true,
+      });
+      api.appendChild = (node: Node) => {
+        (ctx.parent as Node).appendChild(node);
+      };
+      api.setCurrentElement = (element: Element | null) => {
+        ctx.currentElement = element;
+      };
+      api.setParent = (parent: Node) => {
+        ctx.parent = parent;
+      };
+      api.setCurrentElementReused = (reused: boolean) => {
+        ctx.isCurrentElementReused = reused;
+      };
+
       // pendingKey 関連
       Object.defineProperty(api, "pendingKey", {
         get() {

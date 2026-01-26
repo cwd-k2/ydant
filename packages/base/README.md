@@ -38,23 +38,21 @@ The base plugin extends `RenderContext` and `PluginAPI`:
 ```typescript
 // RenderContext extensions
 interface RenderContextExtensions {
+  isCurrentElementReused: boolean;
   pendingKey: string | number | null;
   keyedNodes: Map<string | number, KeyedNode>;
   mountCallbacks: Array<() => void | (() => void)>;
   unmountCallbacks: Array<() => void>;
 }
 
-// PluginAPI extensions
+// PluginAPI extensions (in addition to core's parent, currentElement, processChildren, createChildAPI)
 interface PluginAPIExtensions {
-  // Core
-  readonly parent: Node;
-  readonly currentElement: Element | null;
+  // DOM operations
   readonly isCurrentElementReused: boolean;
+  setCurrentElementReused(reused: boolean): void;
   appendChild(node: Node): void;
   setCurrentElement(element: Element | null): void;
   setParent(parent: Node): void;
-  processChildren(builder: Builder, options?: { parent?: Node }): void;
-  createChildAPI(parent: Node): PluginAPI;
 
   // Lifecycle
   onMount(callback: () => void | (() => void)): void;

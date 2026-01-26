@@ -36,8 +36,6 @@ export interface RenderContextCore {
   parent: Node;
   /** 現在処理中の要素 */
   currentElement: globalThis.Element | null;
-  /** 現在の要素が再利用されたかどうか（リスナー・ライフサイクルの重複登録を防ぐ） */
-  isCurrentElementReused: boolean;
   /** 登録されたプラグイン */
   plugins: Map<string, Plugin>;
 }
