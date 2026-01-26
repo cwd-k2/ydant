@@ -2,6 +2,20 @@
 
 Rendering engine and plugin system for Ydant.
 
+## Philosophy
+
+**@ydant/core is a pure engine that doesn't know "what" to render.**
+
+Core provides only:
+
+- Generator processing
+- Plugin dispatch
+- Context management
+
+It doesn't assume DOM existence. All concrete operations (DOM manipulation, lifecycle, keyed elements) are delegated to plugins. This separation keeps core's API surface minimal and stable, allowing plugins to extend functionality without modifying core.
+
+For user-facing APIs like element factories and primitives, see `@ydant/base`.
+
 ## Installation
 
 ```bash

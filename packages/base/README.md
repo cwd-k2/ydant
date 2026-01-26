@@ -2,6 +2,20 @@
 
 Element factories, primitives, and base plugin for Ydant.
 
+## Philosophy
+
+**@ydant/base is the user-facing API that knows "how" to render.**
+
+While `@ydant/core` is a pure engine, base provides everything users need:
+
+- Element factories (`div`, `span`, etc.)
+- Primitives (`text`, `attr`, `on`, `style`, etc.)
+- DOM operations (`appendChild`, `setCurrentElement`)
+- Lifecycle management (`onMount`, `onUnmount`)
+- Keyed element diffing
+
+This separation means core remains stable, while base can evolve. Other plugins stand on equal footing with base—they extend core the same way.
+
 ## Installation
 
 ```bash
