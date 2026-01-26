@@ -13,10 +13,7 @@ export type Tagged<T extends string, P = {}> = { type: T } & P;
 export type Attribute = Tagged<"attribute", { key: string; value: string }>;
 
 /** イベントリスナ */
-export type Listener = Tagged<
-  "listener",
-  { key: string; value: (e: Event) => void }
->;
+export type Listener = Tagged<"listener", { key: string; value: (e: Event) => void }>;
 
 /** テキストノード */
 export type Text = Tagged<"text", { content: string }>;
@@ -44,7 +41,10 @@ export type Key = Tagged<"key", { value: string | number }>;
 // =============================================================================
 
 /** 子要素を生成する関数（前方宣言用） */
-export type ChildrenFn = () => Children | ChildGen[];
+export type ChildrenFn =
+  | (() => Children | ChildGen[])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | (() => Generator<any, any, any>);
 
 /**
  * プラグインが Child 型を拡張するためのインターフェース
@@ -72,15 +72,13 @@ export type Decoration = Attribute | Listener;
 type CoreChild = Element | Decoration | Text | Lifecycle | Style | Key;
 
 /** 子要素として yield できるもの（プラグインによって拡張可能） */
-export type Child =
-  | CoreChild
-  | PluginChildExtensions[keyof PluginChildExtensions];
+export type Child = CoreChild | PluginChildExtensions[keyof PluginChildExtensions];
 
 /** Child を yield するジェネレーター */
 export type ChildGen = Generator<Child, unknown, unknown>;
 
 /** 子要素の Iterator */
-export type Children = Iterator<Child, void, Slot | void>;
+export type Children = Iterator<Child, unknown, Slot | void>;
 
 /** 要素のスロット（DOM 参照と更新関数を持つ） */
 export interface Slot {
@@ -105,4 +103,3 @@ export type Render = Generator<Element, Slot, Slot>;
 
 /** ルートコンポーネント（Render を返す関数） */
 export type Component = () => Render;
-

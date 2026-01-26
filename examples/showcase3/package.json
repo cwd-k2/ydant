@@ -1,14 +1,14 @@
 {
   "name": "showcase3",
   "version": "1.0.0",
-  "description": "Pomodoro Timer - Ydant showcase",
   "private": true,
+  "description": "Pomodoro Timer - Ydant showcase",
   "scripts": {
     "dev": "vite"
   },
-  "packageManager": "pnpm@10.22.0",
   "dependencies": {
     "@ydant/core": "workspace:*",
     "@ydant/dom": "workspace:*"
-  }
+  },
+  "packageManager": "pnpm@10.22.0"
 }

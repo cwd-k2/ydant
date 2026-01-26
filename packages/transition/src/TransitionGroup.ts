@@ -89,16 +89,13 @@ function waitForTransition(el: HTMLElement): Promise<void> {
 /**
  * 入場トランジションを実行
  */
-async function enterTransition<T>(
-  el: HTMLElement,
-  props: TransitionGroupProps<T>
-): Promise<void> {
+async function enterTransition<T>(el: HTMLElement, props: TransitionGroupProps<T>): Promise<void> {
   // 初期状態を設定
   addClasses(el, props.enter);
   addClasses(el, props.enterFrom);
 
   // 強制リフロー
-  el.offsetHeight;
+  void el.offsetHeight;
 
   // 次のフレームでトランジションを開始
   requestAnimationFrame(() => {
@@ -117,16 +114,13 @@ async function enterTransition<T>(
 /**
  * 退場トランジションを実行
  */
-async function leaveTransition<T>(
-  el: HTMLElement,
-  props: TransitionGroupProps<T>
-): Promise<void> {
+async function _leaveTransition<T>(el: HTMLElement, props: TransitionGroupProps<T>): Promise<void> {
   // 初期状態を設定
   addClasses(el, props.leave);
   addClasses(el, props.leaveFrom);
 
   // 強制リフロー
-  el.offsetHeight;
+  void el.offsetHeight;
 
   // 次のフレームでトランジションを開始
   requestAnimationFrame(() => {
@@ -148,9 +142,7 @@ async function leaveTransition<T>(
  * key プリミティブと Slot.refresh() を組み合わせて、
  * リスト要素の追加・削除時にトランジションを適用する。
  */
-export function* TransitionGroup<T>(
-  props: TransitionGroupProps<T>
-): Render {
+export function* TransitionGroup<T>(props: TransitionGroupProps<T>): Render {
   const { items, keyFn, children } = props;
 
   // 現在のキーセットを追跡
@@ -188,7 +180,7 @@ export function* TransitionGroup<T>(
  * 新しいアイテムリストを受け取り、トランジション付きで更新する。
  */
 export function createTransitionGroupRefresher<T>(
-  props: Omit<TransitionGroupProps<T>, "items">
+  props: Omit<TransitionGroupProps<T>, "items">,
 ): (slot: Slot, items: T[]) => void {
   const { keyFn, children } = props;
 

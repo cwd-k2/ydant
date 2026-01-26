@@ -85,10 +85,7 @@ export function createContext<T>(defaultValue?: T): Context<T> {
  * yield* provide(ThemeContext, "dark");
  * ```
  */
-export function* provide<T>(
-  context: Context<T>,
-  value: T
-): Generator<ContextProvide, void, void> {
+export function* provide<T>(context: Context<T>, value: T): Generator<ContextProvide, void, void> {
   yield {
     type: "context-provide",
     context: context as Context<unknown>,
@@ -110,9 +107,7 @@ export function* provide<T>(
  * const theme = yield* inject(ThemeContext);
  * ```
  */
-export function* inject<T>(
-  context: Context<T>
-): Generator<ContextInject, T, T> {
+export function* inject<T>(context: Context<T>): Generator<ContextInject, T, T> {
   const value = yield {
     type: "context-inject",
     context: context as Context<unknown>,

@@ -5,14 +5,14 @@
   "scripts": {
     "dev": "vite"
   },
-  "packageManager": "pnpm@10.22.0",
   "dependencies": {
+    "@ydant/async": "workspace:*",
+    "@ydant/context": "workspace:*",
     "@ydant/core": "workspace:*",
     "@ydant/dom": "workspace:*",
     "@ydant/reactive": "workspace:*",
-    "@ydant/context": "workspace:*",
     "@ydant/router": "workspace:*",
-    "@ydant/async": "workspace:*",
     "@ydant/transition": "workspace:*"
-  }
+  },
+  "packageManager": "pnpm@10.22.0"
 }

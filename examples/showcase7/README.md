@@ -42,10 +42,10 @@ return div(function* () {
 
 ### Transition vs createTransition
 
-| API | Enter | Leave | 用途 |
-|-----|-------|-------|------|
-| `Transition` | ✅ | ❌ | シンプルな show/hide |
-| `createTransition` | ✅ | ✅ | 完全なアニメーション制御 |
+| API                | Enter | Leave | 用途                     |
+| ------------------ | ----- | ----- | ------------------------ |
+| `Transition`       | ✅    | ❌    | シンプルな show/hide     |
+| `createTransition` | ✅    | ✅    | 完全なアニメーション制御 |
 
 ### CSS クラス設計
 

@@ -49,7 +49,7 @@ export function createResource<T>(
     initialValue?: T;
     /** 自動再フェッチ間隔（ミリ秒） */
     refetchInterval?: number;
-  }
+  },
 ): Resource<T> {
   let state: ResourceState<T>;
 
@@ -62,10 +62,10 @@ export function createResource<T>(
     state = { status: "pending", promise };
 
     promise
-      .then(data => {
+      .then((data) => {
         state = { status: "resolved", data };
       })
-      .catch(error => {
+      .catch((error) => {
         state = { status: "rejected", error };
       });
   }

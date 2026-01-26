@@ -3,13 +3,13 @@ import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 
 export default defineConfig({
-  plugins: [dts()],
+  plugins: [dts({ tsconfigPath: "./tsconfig.build.json" })],
   build: {
     outDir: "dist",
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),
       name: "YdantCore",
-      fileName: format => `index.${format}.js`,
+      fileName: (format) => `index.${format}.js`,
     },
   },
 });

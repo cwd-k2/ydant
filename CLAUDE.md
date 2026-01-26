@@ -7,14 +7,17 @@ JavaScript ジェネレーターを DSL として使用する DOM レンダリ�
 ## Architecture
 
 **基盤:**
+
 - `@ydant/core` - 型定義、要素ファクトリ、プリミティブ
 - `@ydant/dom` - レンダリングエンジン、プラグインシステム
 
 **拡張（プラグイン）:**
+
 - `@ydant/reactive` - Signal ベースのリアクティビティ
 - `@ydant/context` - Context API、永続化
 
 **追加 DSL:**
+
 - `@ydant/router` - SPA ルーティング
 - `@ydant/async` - Suspense、ErrorBoundary
 - `@ydant/transition` - CSS トランジション
@@ -30,6 +33,11 @@ pnpm run dev              # 統合 dev サーバー
 pnpm test                 # テスト（watch）
 pnpm test:run             # テスト（単発）
 pnpm test:coverage        # カバレッジ付きテスト
+pnpm lint                 # リント実行
+pnpm lint:fix             # リント + 自動修正
+pnpm format               # フォーマット適用
+pnpm format:check         # フォーマットチェック
+pnpm typecheck            # 型チェック
 ```
 
 ## Essential Patterns
@@ -38,37 +46,40 @@ pnpm test:coverage        # カバレッジ付きテスト
 
 ```typescript
 // Generator: Slot が必要な場合
-const { refresh, node } = yield* div(function* () {
-  yield* text("content");
-});
+const { refresh, node } =
+  yield *
+  div(function* () {
+    yield* text("content");
+  });
 
 // Array: 静的構造
-yield* div(() => [text("content")]);
+yield * div(() => [text("content")]);
 ```
 
 ### Slot の使い方
 
 ```typescript
-let slot: Slot;  // 先に宣言
+let slot: Slot; // 先に宣言
 
-yield* button(() => [
-  on("click", () => slot.refresh(() => [text("updated")])),  // 使用
-  text("click"),
-]);
+yield *
+  button(() => [
+    on("click", () => slot.refresh(() => [text("updated")])), // 使用
+    text("click"),
+  ]);
 
-slot = yield* div(() => [text("initial")]);  // 代入
+slot = yield * div(() => [text("initial")]); // 代入
 ```
 
 ---
 
 ## Documentation Structure
 
-| ファイル | 内容 |
-|----------|------|
+| ファイル                     | 内容                                       |
+| ---------------------------- | ------------------------------------------ |
 | `README.md` / `README.ja.md` | プロジェクト概要、API 一覧（**常に同期**） |
-| `packages/*/README.md` | 各パッケージの詳細 API |
-| `examples/*/README.md` | 各 showcase の実装パターン・ヒント |
-| `CLAUDE.md` | 開発ガイド（このファイル） |
+| `packages/*/README.md`       | 各パッケージの詳細 API                     |
+| `examples/*/README.md`       | 各 showcase の実装パターン・ヒント         |
+| `CLAUDE.md`                  | 開発ガイド（このファイル）                 |
 
 ### 原則
 
@@ -78,12 +89,12 @@ slot = yield* div(() => [text("initial")]);  // 代入
 
 ### 情報の配置
 
-| 情報 | 配置先 |
-|------|--------|
-| API 仕様、型定義 | `packages/*/README.md` |
-| 使用例、機能一覧 | `README.md` / `README.ja.md` |
-| 実装パターン、躓きポイント | `examples/*/README.md` |
-| アーキテクチャ、開発コマンド | `CLAUDE.md` |
+| 情報                         | 配置先                       |
+| ---------------------------- | ---------------------------- |
+| API 仕様、型定義             | `packages/*/README.md`       |
+| 使用例、機能一覧             | `README.md` / `README.ja.md` |
+| 実装パターン、躓きポイント   | `examples/*/README.md`       |
+| アーキテクチャ、開発コマンド | `CLAUDE.md`                  |
 
 ---
 

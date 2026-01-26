@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { persist, save, remove, createStorage } from '../persist';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { persist, save, remove, createStorage } from "../persist";
 
 // Create localStorage mock
 const createLocalStorageMock = () => {
@@ -27,153 +27,144 @@ let mockStorage: ReturnType<typeof createLocalStorageMock>;
 
 beforeEach(() => {
   mockStorage = createLocalStorageMock();
-  vi.stubGlobal('localStorage', mockStorage);
+  vi.stubGlobal("localStorage", mockStorage);
 });
 
-describe('persist', () => {
-  it('returns value from localStorage', () => {
-    mockStorage.setItem('test-key', JSON.stringify('stored value'));
+describe("persist", () => {
+  it("returns value from localStorage", () => {
+    mockStorage.setItem("test-key", JSON.stringify("stored value"));
 
-    const result = persist('test-key', 'default');
-    expect(result).toBe('stored value');
+    const result = persist("test-key", "default");
+    expect(result).toBe("stored value");
   });
 
-  it('returns default value when key does not exist', () => {
-    const result = persist('nonexistent', 'default');
-    expect(result).toBe('default');
+  it("returns default value when key does not exist", () => {
+    const result = persist("nonexistent", "default");
+    expect(result).toBe("default");
   });
 
-  it('returns default value on JSON parse error', () => {
-    mockStorage.setItem('invalid', 'not valid json');
+  it("returns default value on JSON parse error", () => {
+    mockStorage.setItem("invalid", "not valid json");
 
-    const result = persist('invalid', 'default');
-    expect(result).toBe('default');
+    const result = persist("invalid", "default");
+    expect(result).toBe("default");
   });
 
-  it('handles complex objects', () => {
-    const data = { users: [{ id: 1, name: 'Alice' }], count: 10 };
-    mockStorage.setItem('complex', JSON.stringify(data));
+  it("handles complex objects", () => {
+    const data = { users: [{ id: 1, name: "Alice" }], count: 10 };
+    mockStorage.setItem("complex", JSON.stringify(data));
 
-    const result = persist<typeof data>('complex', { users: [], count: 0 });
+    const result = persist<typeof data>("complex", { users: [], count: 0 });
     expect(result).toEqual(data);
   });
 });
 
-describe('save', () => {
-  it('saves value to localStorage', () => {
-    save('key', 'value');
+describe("save", () => {
+  it("saves value to localStorage", () => {
+    save("key", "value");
 
-    expect(mockStorage.setItem).toHaveBeenCalledWith('key', '"value"');
+    expect(mockStorage.setItem).toHaveBeenCalledWith("key", '"value"');
   });
 
-  it('serializes objects to JSON', () => {
-    save('obj', { name: 'test', value: 42 });
+  it("serializes objects to JSON", () => {
+    save("obj", { name: "test", value: 42 });
 
-    expect(mockStorage.setItem).toHaveBeenCalledWith(
-      'obj',
-      '{"name":"test","value":42}',
-    );
+    expect(mockStorage.setItem).toHaveBeenCalledWith("obj", '{"name":"test","value":42}');
   });
 
-  it('overwrites existing value', () => {
-    save('key', 'first');
-    save('key', 'second');
+  it("overwrites existing value", () => {
+    save("key", "first");
+    save("key", "second");
 
-    const stored = mockStorage.getItem('key');
-    expect(JSON.parse(stored!)).toBe('second');
+    const stored = mockStorage.getItem("key");
+    expect(JSON.parse(stored!)).toBe("second");
   });
 });
 
-describe('remove', () => {
-  it('removes key from localStorage', () => {
-    mockStorage.setItem('key', '"value"');
+describe("remove", () => {
+  it("removes key from localStorage", () => {
+    mockStorage.setItem("key", '"value"');
 
-    remove('key');
+    remove("key");
 
-    expect(mockStorage.removeItem).toHaveBeenCalledWith('key');
+    expect(mockStorage.removeItem).toHaveBeenCalledWith("key");
   });
 
-  it('does not throw for nonexistent key', () => {
-    expect(() => remove('nonexistent')).not.toThrow();
+  it("does not throw for nonexistent key", () => {
+    expect(() => remove("nonexistent")).not.toThrow();
   });
 });
 
-describe('persist without localStorage', () => {
-  it('returns default value when localStorage is not available', () => {
-    vi.stubGlobal('localStorage', undefined);
+describe("persist without localStorage", () => {
+  it("returns default value when localStorage is not available", () => {
+    vi.stubGlobal("localStorage", undefined);
 
-    const result = persist('key', 'default');
-    expect(result).toBe('default');
+    const result = persist("key", "default");
+    expect(result).toBe("default");
   });
 
-  it('save does nothing when localStorage is not available', () => {
-    vi.stubGlobal('localStorage', undefined);
+  it("save does nothing when localStorage is not available", () => {
+    vi.stubGlobal("localStorage", undefined);
 
     // Should not throw
-    expect(() => save('key', 'value')).not.toThrow();
+    expect(() => save("key", "value")).not.toThrow();
   });
 
-  it('remove does nothing when localStorage is not available', () => {
-    vi.stubGlobal('localStorage', undefined);
+  it("remove does nothing when localStorage is not available", () => {
+    vi.stubGlobal("localStorage", undefined);
 
     // Should not throw
-    expect(() => remove('key')).not.toThrow();
+    expect(() => remove("key")).not.toThrow();
   });
 });
 
-describe('createStorage', () => {
-  it('get() returns value from localStorage', () => {
-    mockStorage.setItem('storage-key', JSON.stringify('stored'));
+describe("createStorage", () => {
+  it("get() returns value from localStorage", () => {
+    mockStorage.setItem("storage-key", JSON.stringify("stored"));
 
-    const storage = createStorage('storage-key', 'default');
-    expect(storage.get()).toBe('stored');
+    const storage = createStorage("storage-key", "default");
+    expect(storage.get()).toBe("stored");
   });
 
-  it('get() returns default value when key does not exist', () => {
-    const storage = createStorage('missing', 'default');
-    expect(storage.get()).toBe('default');
+  it("get() returns default value when key does not exist", () => {
+    const storage = createStorage("missing", "default");
+    expect(storage.get()).toBe("default");
   });
 
-  it('set() saves value to localStorage', () => {
-    const storage = createStorage<string>('storage-key', 'default');
+  it("set() saves value to localStorage", () => {
+    const storage = createStorage<string>("storage-key", "default");
 
-    storage.set('new value');
+    storage.set("new value");
 
-    expect(mockStorage.setItem).toHaveBeenCalledWith(
-      'storage-key',
-      '"new value"',
-    );
+    expect(mockStorage.setItem).toHaveBeenCalledWith("storage-key", '"new value"');
   });
 
-  it('clear() removes key from localStorage', () => {
-    mockStorage.setItem('storage-key', JSON.stringify('value'));
+  it("clear() removes key from localStorage", () => {
+    mockStorage.setItem("storage-key", JSON.stringify("value"));
 
-    const storage = createStorage('storage-key', 'default');
+    const storage = createStorage("storage-key", "default");
     storage.clear();
 
-    expect(mockStorage.removeItem).toHaveBeenCalledWith('storage-key');
+    expect(mockStorage.removeItem).toHaveBeenCalledWith("storage-key");
   });
 
-  it('works with complex types', () => {
+  it("works with complex types", () => {
     interface Todo {
       id: number;
       text: string;
       done: boolean;
     }
 
-    const storage = createStorage<Todo[]>('todos', []);
+    const storage = createStorage<Todo[]>("todos", []);
 
     const todos: Todo[] = [
-      { id: 1, text: 'First', done: false },
-      { id: 2, text: 'Second', done: true },
+      { id: 1, text: "First", done: false },
+      { id: 2, text: "Second", done: true },
     ];
 
     storage.set(todos);
 
-    expect(mockStorage.setItem).toHaveBeenCalledWith(
-      'todos',
-      JSON.stringify(todos),
-    );
+    expect(mockStorage.setItem).toHaveBeenCalledWith("todos", JSON.stringify(todos));
 
     expect(storage.get()).toEqual(todos);
   });

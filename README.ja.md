@@ -46,15 +46,15 @@ mount(() => Counter(0), document.getElementById("app")!);
 
 ## パッケージ
 
-| パッケージ | 説明 | README |
-|------------|------|--------|
-| **@ydant/core** | 型定義、要素ファクトリ、プリミティブ | [詳細](./packages/core/README.md) |
-| **@ydant/dom** | レンダリングエンジン、プラグインシステム | [詳細](./packages/dom/README.md) |
-| **@ydant/reactive** | Signal ベースのリアクティビティ | [詳細](./packages/reactive/README.md) |
-| **@ydant/context** | Context API、localStorage 永続化 | [詳細](./packages/context/README.md) |
-| **@ydant/router** | SPA ルーティング | [詳細](./packages/router/README.md) |
-| **@ydant/async** | Suspense、ErrorBoundary | [詳細](./packages/async/README.md) |
-| **@ydant/transition** | CSS トランジション | [詳細](./packages/transition/README.md) |
+| パッケージ            | 説明                                     | README                                  |
+| --------------------- | ---------------------------------------- | --------------------------------------- |
+| **@ydant/core**       | 型定義、要素ファクトリ、プリミティブ     | [詳細](./packages/core/README.md)       |
+| **@ydant/dom**        | レンダリングエンジン、プラグインシステム | [詳細](./packages/dom/README.md)        |
+| **@ydant/reactive**   | Signal ベースのリアクティビティ          | [詳細](./packages/reactive/README.md)   |
+| **@ydant/context**    | Context API、localStorage 永続化         | [詳細](./packages/context/README.md)    |
+| **@ydant/router**     | SPA ルーティング                         | [詳細](./packages/router/README.md)     |
+| **@ydant/async**      | Suspense、ErrorBoundary                  | [詳細](./packages/async/README.md)      |
+| **@ydant/transition** | CSS トランジション                       | [詳細](./packages/transition/README.md) |
 
 ## クイックスタート
 
@@ -62,8 +62,7 @@ mount(() => Counter(0), document.getElementById("app")!);
 import { div, text, clss, type Component } from "@ydant/core";
 import { mount } from "@ydant/dom";
 
-const App: Component = () =>
-  div(() => [clss(["app"]), text("Hello, Ydant!")]);
+const App: Component = () => div(() => [clss(["app"]), text("Hello, Ydant!")]);
 
 mount(App, document.getElementById("root")!);
 ```
@@ -80,10 +79,7 @@ const count = signal(0);
 const App: Component = () =>
   div(function* () {
     yield* reactive(() => [text(`Count: ${count()}`)]);
-    yield* button(() => [
-      on("click", () => count.update(n => n + 1)),
-      text("+1"),
-    ]);
+    yield* button(() => [on("click", () => count.update((n) => n + 1)), text("+1")]);
   });
 
 mount(App, document.getElementById("root")!, {
@@ -93,15 +89,15 @@ mount(App, document.getElementById("root")!, {
 
 ## 実装例
 
-| サンプル | 説明 |
-|----------|------|
+| サンプル                           | 説明                                            |
+| ---------------------------------- | ----------------------------------------------- |
 | [showcase1](./examples/showcase1/) | カウンター、ダイアログ - 基本的な Slot の使い方 |
-| [showcase2](./examples/showcase2/) | ToDo アプリ - CRUD、localStorage |
-| [showcase3](./examples/showcase3/) | ポモドーロタイマー - SVG、ライフサイクル |
-| [showcase4](./examples/showcase4/) | SPA - Router、Context、プラグイン |
-| [showcase5](./examples/showcase5/) | ソート可能リスト - key() による効率的な更新 |
-| [showcase6](./examples/showcase6/) | 非同期 - Suspense、ErrorBoundary |
-| [showcase7](./examples/showcase7/) | トランジション - enter/leave アニメーション |
+| [showcase2](./examples/showcase2/) | ToDo アプリ - CRUD、localStorage                |
+| [showcase3](./examples/showcase3/) | ポモドーロタイマー - SVG、ライフサイクル        |
+| [showcase4](./examples/showcase4/) | SPA - Router、Context、プラグイン               |
+| [showcase5](./examples/showcase5/) | ソート可能リスト - key() による効率的な更新     |
+| [showcase6](./examples/showcase6/) | 非同期 - Suspense、ErrorBoundary                |
+| [showcase7](./examples/showcase7/) | トランジション - enter/leave アニメーション     |
 
 各サンプルには実装のヒントを含む README があります。全サンプルを実行:
 
@@ -134,6 +130,7 @@ pnpm test:coverage  # カバレッジ付きテスト
 おそらく本当に必要ないからです。これは UI 開発への代替アプローチの実験です。本番ソフトウェアを構築するなら、React、Vue、Svelte、SolidJS を使うべきでしょう。
 
 でも、もしあなたが以下のことに興味があるなら：
+
 - ジェネレーターを DSL として使う方法
 - 仮想 DOM なしの細粒度リアクティビティ
 - DOM に対する最小限の抽象化

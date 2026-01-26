@@ -3,7 +3,7 @@ import type { Tagged, ChildGen, Children } from "./types";
 /** Tagged 型の判定関数 */
 export function isTagged<T extends string>(
   value: { type: string },
-  tag: T
+  tag: T,
 ): value is Tagged<T, Record<string, unknown>> {
   return value.type === tag;
 }

@@ -18,10 +18,7 @@ import { executeMount } from "./lifecycle";
 export function processElement(
   element: Element,
   ctx: RenderContext,
-  processIterator: (
-    iter: Iterator<Child, void, Slot | void>,
-    ctx: RenderContext,
-  ) => void,
+  processIterator: (iter: Iterator<Child, void, Slot | void>, ctx: RenderContext) => void,
 ): { node: globalThis.Element; slot: Slot } {
   // pending key があるか確認
   const elementKey = ctx.pendingKey;
@@ -80,10 +77,7 @@ export function processElement(
   }
 
   if (element.children) {
-    processIterator(
-      element.children as Iterator<Child, void, Slot | void>,
-      childCtx,
-    );
+    processIterator(element.children as Iterator<Child, void, Slot | void>, childCtx);
   }
 
   // 初回マウントコールバックを実行
@@ -95,11 +89,7 @@ export function processElement(
 /**
  * Element の decorations を DOM ノードに適用
  */
-function applyDecorations(
-  element: Element,
-  node: globalThis.Element,
-  isReused: boolean,
-): void {
+function applyDecorations(element: Element, node: globalThis.Element, isReused: boolean): void {
   if (!element.decorations) return;
 
   for (const decoration of element.decorations) {
@@ -109,10 +99,7 @@ function applyDecorations(
       // リスナーは再利用時に重複追加しないよう注意が必要
       // 簡易実装: 毎回追加（本来は差分検出が必要）
       if (!isReused) {
-        node.addEventListener(
-          decoration.key as string,
-          decoration.value as (e: Event) => void,
-        );
+        node.addEventListener(decoration.key as string, decoration.value as (e: Event) => void);
       }
     }
   }
@@ -126,10 +113,7 @@ function applyDecorations(
 function createSlot(
   node: globalThis.Element,
   childCtx: RenderContext,
-  processIterator: (
-    iter: Iterator<Child, void, Slot | void>,
-    ctx: RenderContext,
-  ) => void,
+  processIterator: (iter: Iterator<Child, void, Slot | void>, ctx: RenderContext) => void,
 ): Slot {
   return {
     node: node as HTMLElement,

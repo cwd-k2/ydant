@@ -30,33 +30,33 @@ SVG elements: `svg`, `circle`, `ellipse`, `line`, `path`, `polygon`, `polyline`,
 
 ### Primitives
 
-| Function | Description |
-|----------|-------------|
-| `text(content)` | Create a text node |
-| `attr(key, value)` | Set an HTML attribute |
-| `clss(classes[])` | Set class attribute |
-| `on(event, handler)` | Add event listener |
-| `tap(callback)` | Direct access to DOM element |
-| `style(styles)` | Set inline styles |
-| `key(value)` | Set key for list diffing |
-| `onMount(callback)` | Lifecycle hook for mount |
-| `onUnmount(callback)` | Lifecycle hook for unmount |
+| Function              | Description                  |
+| --------------------- | ---------------------------- |
+| `text(content)`       | Create a text node           |
+| `attr(key, value)`    | Set an HTML attribute        |
+| `clss(classes[])`     | Set class attribute          |
+| `on(event, handler)`  | Add event listener           |
+| `tap(callback)`       | Direct access to DOM element |
+| `style(styles)`       | Set inline styles            |
+| `key(value)`          | Set key for list diffing     |
+| `onMount(callback)`   | Lifecycle hook for mount     |
+| `onUnmount(callback)` | Lifecycle hook for unmount   |
 
 ### Types
 
-| Type | Description |
-|------|-------------|
-| `Component` | `() => ElementGenerator` |
-| `Slot` | `{ node: HTMLElement, refresh: (fn) => void }` |
-| `ElementGenerator` | Generator yielding Elements, returning Slot |
-| `Child` | Element \| Decoration \| Text \| Lifecycle \| Style \| Key \| Reactive |
+| Type               | Description                                                            |
+| ------------------ | ---------------------------------------------------------------------- |
+| `Component`        | `() => ElementGenerator`                                               |
+| `Slot`             | `{ node: HTMLElement, refresh: (fn) => void }`                         |
+| `ElementGenerator` | Generator yielding Elements, returning Slot                            |
+| `Child`            | Element \| Decoration \| Text \| Lifecycle \| Style \| Key \| Reactive |
 
 ### Utilities
 
-| Function | Description |
-|----------|-------------|
-| `isTagged(value, tag)` | Type guard for tagged union types |
-| `toChildren(result)` | Normalize array/iterator to Children |
+| Function               | Description                          |
+| ---------------------- | ------------------------------------ |
+| `isTagged(value, tag)` | Type guard for tagged union types    |
+| `toChildren(result)`   | Normalize array/iterator to Children |
 
 ## Syntax
 
@@ -65,9 +65,11 @@ SVG elements: `svg`, `circle`, `ellipse`, `line`, `path`, `polygon`, `polyline`,
 Use when you need the `Slot` return value:
 
 ```typescript
-const { refresh, node } = yield* div(function* () {
-  yield* text("Content");
-});
+const { refresh, node } =
+  yield *
+  div(function* () {
+    yield* text("Content");
+  });
 ```
 
 ### Array Syntax
@@ -75,8 +77,5 @@ const { refresh, node } = yield* div(function* () {
 Use for static structures:
 
 ```typescript
-yield* div(() => [
-  clss(["container"]),
-  text("Static content"),
-]);
+yield * div(() => [clss(["container"]), text("Static content")]);
 ```

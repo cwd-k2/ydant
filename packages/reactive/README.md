@@ -19,23 +19,23 @@ import { signal, computed, effect } from "@ydant/reactive";
 const count = signal(0);
 
 // Read value
-console.log(count());  // 0
+console.log(count()); // 0
 
 // Update value
 count.set(5);
-count.update(n => n + 1);
+count.update((n) => n + 1);
 
 // Create computed value
 const doubled = computed(() => count() * 2);
-console.log(doubled());  // 12
+console.log(doubled()); // 12
 
 // Run effects
 const dispose = effect(() => {
   console.log(`Count: ${count()}`);
 });
 
-count.set(10);  // Logs: "Count: 10"
-dispose();      // Stop tracking
+count.set(10); // Logs: "Count: 10"
+dispose(); // Stop tracking
 ```
 
 ### With DOM (reactive primitive)
@@ -51,11 +51,8 @@ const Counter: Component = () =>
   div(function* () {
     // Auto-update on signal change
     yield* reactive(() => [text(`Count: ${count()}`)]);
-    
-    yield* button(() => [
-      on("click", () => count.update(n => n + 1)),
-      text("Increment"),
-    ]);
+
+    yield* button(() => [on("click", () => count.update((n) => n + 1)), text("Increment")]);
   });
 
 mount(Counter, document.getElementById("app")!, {
@@ -71,8 +68,8 @@ mount(Counter, document.getElementById("app")!, {
 function signal<T>(initialValue: T): Signal<T>;
 
 interface Signal<T> {
-  (): T;                        // Read
-  set(value: T): void;          // Write
+  (): T; // Read
+  set(value: T): void; // Write
   update(fn: (v: T) => T): void; // Update with function
 }
 ```
@@ -83,7 +80,7 @@ interface Signal<T> {
 function computed<T>(fn: () => T): Computed<T>;
 
 interface Computed<T> {
-  (): T;  // Read (automatically tracks dependencies)
+  (): T; // Read (automatically tracks dependencies)
 }
 ```
 

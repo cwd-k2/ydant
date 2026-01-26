@@ -1,94 +1,115 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ydant Examples</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 min-h-screen">
-  <div class="container mx-auto px-4 py-8">
-    <header class="text-center mb-12">
-      <h1 class="text-4xl font-bold text-gray-800 mb-2">Ydant Examples</h1>
-      <p class="text-gray-600">Generator-based DOM rendering DSL</p>
-    </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ydant Examples</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <header class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">Ydant Examples</h1>
+        <p class="text-gray-600">Generator-based DOM rendering DSL</p>
+      </header>
 
-    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <!-- Showcase 1 -->
-      <a href="./showcase1/" class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 1</h2>
-        <p class="text-gray-600 text-sm mb-4">Counter, Dialog Component</p>
-        <div class="flex flex-wrap gap-2">
-          <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">Slot</span>
-          <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">Events</span>
-        </div>
-      </a>
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <!-- Showcase 1 -->
+        <a
+          href="./showcase1/"
+          class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
+        >
+          <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 1</h2>
+          <p class="text-gray-600 text-sm mb-4">Counter, Dialog Component</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">Slot</span>
+            <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">Events</span>
+          </div>
+        </a>
 
-      <!-- Showcase 2 -->
-      <a href="./showcase2/" class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 2</h2>
-        <p class="text-gray-600 text-sm mb-4">ToDo App (CRUD, localStorage)</p>
-        <div class="flex flex-wrap gap-2">
-          <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">CRUD</span>
-          <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Persistence</span>
-        </div>
-      </a>
+        <!-- Showcase 2 -->
+        <a
+          href="./showcase2/"
+          class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
+        >
+          <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 2</h2>
+          <p class="text-gray-600 text-sm mb-4">ToDo App (CRUD, localStorage)</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">CRUD</span>
+            <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Persistence</span>
+          </div>
+        </a>
 
-      <!-- Showcase 3 -->
-      <a href="./showcase3/" class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 3</h2>
-        <p class="text-gray-600 text-sm mb-4">Pomodoro Timer with SVG</p>
-        <div class="flex flex-wrap gap-2">
-          <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">SVG</span>
-          <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">Timer</span>
-        </div>
-      </a>
+        <!-- Showcase 3 -->
+        <a
+          href="./showcase3/"
+          class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
+        >
+          <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 3</h2>
+          <p class="text-gray-600 text-sm mb-4">Pomodoro Timer with SVG</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">SVG</span>
+            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">Timer</span>
+          </div>
+        </a>
 
-      <!-- Showcase 4 -->
-      <a href="./showcase4/" class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 4</h2>
-        <p class="text-gray-600 text-sm mb-4">SPA with Plugin Architecture</p>
-        <div class="flex flex-wrap gap-2">
-          <span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">Router</span>
-          <span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">Context</span>
-          <span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">Reactive</span>
-        </div>
-      </a>
+        <!-- Showcase 4 -->
+        <a
+          href="./showcase4/"
+          class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
+        >
+          <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 4</h2>
+          <p class="text-gray-600 text-sm mb-4">SPA with Plugin Architecture</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">Router</span>
+            <span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">Context</span>
+            <span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">Reactive</span>
+          </div>
+        </a>
 
-      <!-- Showcase 5 -->
-      <a href="./showcase5/" class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 5</h2>
-        <p class="text-gray-600 text-sm mb-4">Sortable List with key()</p>
-        <div class="flex flex-wrap gap-2">
-          <span class="px-2 py-1 bg-teal-100 text-teal-700 text-xs rounded">key()</span>
-          <span class="px-2 py-1 bg-teal-100 text-teal-700 text-xs rounded">List Diff</span>
-        </div>
-      </a>
+        <!-- Showcase 5 -->
+        <a
+          href="./showcase5/"
+          class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
+        >
+          <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 5</h2>
+          <p class="text-gray-600 text-sm mb-4">Sortable List with key()</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-2 py-1 bg-teal-100 text-teal-700 text-xs rounded">key()</span>
+            <span class="px-2 py-1 bg-teal-100 text-teal-700 text-xs rounded">List Diff</span>
+          </div>
+        </a>
 
-      <!-- Showcase 6 -->
-      <a href="./showcase6/" class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 6</h2>
-        <p class="text-gray-600 text-sm mb-4">Async (Suspense, ErrorBoundary)</p>
-        <div class="flex flex-wrap gap-2">
-          <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded">Suspense</span>
-          <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded">ErrorBoundary</span>
-        </div>
-      </a>
+        <!-- Showcase 6 -->
+        <a
+          href="./showcase6/"
+          class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
+        >
+          <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 6</h2>
+          <p class="text-gray-600 text-sm mb-4">Async (Suspense, ErrorBoundary)</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded">Suspense</span>
+            <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded">ErrorBoundary</span>
+          </div>
+        </a>
 
-      <!-- Showcase 7 -->
-      <a href="./showcase7/" class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 7</h2>
-        <p class="text-gray-600 text-sm mb-4">CSS Transitions</p>
-        <div class="flex flex-wrap gap-2">
-          <span class="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded">Transition</span>
-          <span class="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded">Animation</span>
-        </div>
-      </a>
+        <!-- Showcase 7 -->
+        <a
+          href="./showcase7/"
+          class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
+        >
+          <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase 7</h2>
+          <p class="text-gray-600 text-sm mb-4">CSS Transitions</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded">Transition</span>
+            <span class="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded">Animation</span>
+          </div>
+        </a>
+      </div>
+
+      <footer class="text-center mt-12 text-gray-500 text-sm">
+        <p>Ydant - You Don't Actually Need This</p>
+      </footer>
     </div>
-
-    <footer class="text-center mt-12 text-gray-500 text-sm">
-      <p>Ydant - You Don't Actually Need This</p>
-    </footer>
-  </div>
-</body>
+  </body>
 </html>

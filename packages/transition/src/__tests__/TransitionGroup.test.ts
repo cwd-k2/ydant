@@ -1,32 +1,32 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { div, text } from '@ydant/core';
-import { mount } from '@ydant/dom';
-import { TransitionGroup, createTransitionGroupRefresher } from '../TransitionGroup';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { type Slot, div, text } from "@ydant/core";
+import { mount } from "@ydant/dom";
+import { TransitionGroup, createTransitionGroupRefresher } from "../TransitionGroup";
 
 interface Item {
   id: number;
   name: string;
 }
 
-describe('TransitionGroup', () => {
+describe("TransitionGroup", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    container = document.createElement('div');
+    container = document.createElement("div");
     document.body.appendChild(container);
     vi.useFakeTimers();
 
     // Mock getComputedStyle for transition duration
-    vi.spyOn(window, 'getComputedStyle').mockReturnValue({
-      transitionDuration: '0s',
+    vi.spyOn(window, "getComputedStyle").mockReturnValue({
+      transitionDuration: "0s",
     } as CSSStyleDeclaration);
   });
 
-  it('renders list items', () => {
+  it("renders list items", () => {
     const items: Item[] = [
-      { id: 1, name: 'Item 1' },
-      { id: 2, name: 'Item 2' },
-      { id: 3, name: 'Item 3' },
+      { id: 1, name: "Item 1" },
+      { id: 2, name: "Item 2" },
+      { id: 3, name: "Item 3" },
     ];
 
     mount(
@@ -38,15 +38,15 @@ describe('TransitionGroup', () => {
             children: (item) => div(() => [text(item.name)]),
           });
         }),
-      container
+      container,
     );
 
-    expect(container.textContent).toContain('Item 1');
-    expect(container.textContent).toContain('Item 2');
-    expect(container.textContent).toContain('Item 3');
+    expect(container.textContent).toContain("Item 1");
+    expect(container.textContent).toContain("Item 2");
+    expect(container.textContent).toContain("Item 3");
   });
 
-  it('renders empty list', () => {
+  it("renders empty list", () => {
     mount(
       () =>
         div(function* () {
@@ -56,16 +56,16 @@ describe('TransitionGroup', () => {
             children: (item) => div(() => [text(item.name)]),
           });
         }),
-      container
+      container,
     );
 
     // The container has a wrapper div from TransitionGroup, but no item divs
     // Check that no item text content exists
-    expect(container.textContent).toBe('');
+    expect(container.textContent).toBe("");
   });
 
-  it('applies enter classes on mount', () => {
-    const items: Item[] = [{ id: 1, name: 'Item 1' }];
+  it("applies enter classes on mount", () => {
+    const items: Item[] = [{ id: 1, name: "Item 1" }];
 
     mount(
       () =>
@@ -73,24 +73,24 @@ describe('TransitionGroup', () => {
           yield* TransitionGroup({
             items,
             keyFn: (item) => item.id,
-            enter: 'transition-opacity',
-            enterFrom: 'opacity-0',
-            enterTo: 'opacity-100',
+            enter: "transition-opacity",
+            enterFrom: "opacity-0",
+            enterTo: "opacity-100",
             children: (item) => div(() => [text(item.name)]),
           });
         }),
-      container
+      container,
     );
 
     vi.advanceTimersToNextFrame();
 
-    expect(container.textContent).toContain('Item 1');
+    expect(container.textContent).toContain("Item 1");
   });
 
-  it('passes index to children function', () => {
+  it("passes index to children function", () => {
     const items: Item[] = [
-      { id: 1, name: 'First' },
-      { id: 2, name: 'Second' },
+      { id: 1, name: "First" },
+      { id: 2, name: "Second" },
     ];
 
     const capturedIndices: number[] = [];
@@ -107,18 +107,18 @@ describe('TransitionGroup', () => {
             },
           });
         }),
-      container
+      container,
     );
 
     expect(capturedIndices).toEqual([0, 1]);
-    expect(container.textContent).toContain('First at 0');
-    expect(container.textContent).toContain('Second at 1');
+    expect(container.textContent).toContain("First at 0");
+    expect(container.textContent).toContain("Second at 1");
   });
 
-  it('uses keyFn to generate unique keys', () => {
+  it("uses keyFn to generate unique keys", () => {
     const items: Item[] = [
-      { id: 100, name: 'A' },
-      { id: 200, name: 'B' },
+      { id: 100, name: "A" },
+      { id: 200, name: "B" },
     ];
 
     const capturedKeys: (string | number)[] = [];
@@ -137,7 +137,7 @@ describe('TransitionGroup', () => {
             children: (item) => div(() => [text(item.name)]),
           });
         }),
-      container
+      container,
     );
 
     expect(capturedKeys).toContain(100);
@@ -145,38 +145,38 @@ describe('TransitionGroup', () => {
   });
 });
 
-describe('createTransitionGroupRefresher', () => {
+describe("createTransitionGroupRefresher", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    container = document.createElement('div');
+    container = document.createElement("div");
     document.body.appendChild(container);
     vi.useFakeTimers();
 
     // Mock getComputedStyle for transition duration
-    vi.spyOn(window, 'getComputedStyle').mockReturnValue({
-      transitionDuration: '0s',
+    vi.spyOn(window, "getComputedStyle").mockReturnValue({
+      transitionDuration: "0s",
     } as CSSStyleDeclaration);
   });
 
-  it('creates a refresher function', () => {
+  it("creates a refresher function", () => {
     const refresher = createTransitionGroupRefresher<Item>({
       keyFn: (item) => item.id,
       children: (item) => div(() => [text(item.name)]),
     });
 
-    expect(typeof refresher).toBe('function');
+    expect(typeof refresher).toBe("function");
   });
 
-  it('updates list items via refresher', () => {
-    let items: Item[] = [{ id: 1, name: 'Initial' }];
+  it("updates list items via refresher", () => {
+    let items: Item[] = [{ id: 1, name: "Initial" }];
 
     const refresher = createTransitionGroupRefresher<Item>({
       keyFn: (item) => item.id,
       children: (item) => div(() => [text(item.name)]),
     });
 
-    let containerSlot: ReturnType<typeof mount>;
+    let containerSlot!: Slot;
 
     mount(
       () =>
@@ -187,22 +187,22 @@ describe('createTransitionGroupRefresher', () => {
             }
           });
         }),
-      container
+      container,
     );
 
-    expect(container.textContent).toContain('Initial');
+    expect(container.textContent).toContain("Initial");
 
     // Update items
     items = [
-      { id: 1, name: 'Updated' },
-      { id: 2, name: 'New Item' },
+      { id: 1, name: "Updated" },
+      { id: 2, name: "New Item" },
     ];
 
     refresher(containerSlot!, items);
 
     vi.advanceTimersToNextFrame();
 
-    expect(container.textContent).toContain('Updated');
-    expect(container.textContent).toContain('New Item');
+    expect(container.textContent).toContain("Updated");
+    expect(container.textContent).toContain("New Item");
   });
 });

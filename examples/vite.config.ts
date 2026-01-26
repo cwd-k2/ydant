@@ -13,10 +13,7 @@ export default defineConfig({
       "@ydant/context": path.resolve(root, "packages/context/src/index.ts"),
       "@ydant/router": path.resolve(root, "packages/router/src/index.ts"),
       "@ydant/async": path.resolve(root, "packages/async/src/index.ts"),
-      "@ydant/transition": path.resolve(
-        root,
-        "packages/transition/src/index.ts"
-      ),
+      "@ydant/transition": path.resolve(root, "packages/transition/src/index.ts"),
     },
   },
   optimizeDeps: {

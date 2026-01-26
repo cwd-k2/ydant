@@ -1,26 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { div, p } from '@ydant/core';
-import { text, onMount, onUnmount } from '@ydant/core';
-import { mount } from '../index';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { div, p } from "@ydant/core";
+import { text, onMount, onUnmount } from "@ydant/core";
+import { mount } from "../index";
 
-describe('lifecycle', () => {
+describe("lifecycle", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    container = document.createElement('div');
+    container = document.createElement("div");
     document.body.appendChild(container);
     vi.useFakeTimers();
   });
 
-  describe('onMount', () => {
-    it('executes mount callback after DOM is ready', async () => {
+  describe("onMount", () => {
+    it("executes mount callback after DOM is ready", async () => {
       const mountCallback = vi.fn();
 
       mount(
         () =>
           div(function* () {
             yield* onMount(mountCallback);
-            yield* text('Content');
+            yield* text("Content");
           }),
         container,
       );
@@ -34,7 +34,7 @@ describe('lifecycle', () => {
       expect(mountCallback).toHaveBeenCalledTimes(1);
     });
 
-    it('stores cleanup function from mount callback', async () => {
+    it("stores cleanup function from mount callback", async () => {
       const cleanup = vi.fn();
       let slot: { refresh: (fn: () => any) => void } | null = null;
 
@@ -43,7 +43,7 @@ describe('lifecycle', () => {
           div(function* () {
             slot = yield* p(function* () {
               yield* onMount(() => cleanup);
-              yield* text('Content');
+              yield* text("Content");
             });
           }),
         container,
@@ -53,14 +53,14 @@ describe('lifecycle', () => {
       expect(cleanup).not.toHaveBeenCalled();
 
       // Refresh triggers unmount of old content
-      slot!.refresh(() => [text('New content')]);
+      slot!.refresh(() => [text("New content")]);
 
       expect(cleanup).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('onUnmount', () => {
-    it('executes unmount callback on refresh', () => {
+  describe("onUnmount", () => {
+    it("executes unmount callback on refresh", () => {
       const unmountCallback = vi.fn();
       let slot: { refresh: (fn: () => any) => void } | null = null;
 
@@ -69,7 +69,7 @@ describe('lifecycle', () => {
           div(function* () {
             slot = yield* p(function* () {
               yield* onUnmount(unmountCallback);
-              yield* text('Content');
+              yield* text("Content");
             });
           }),
         container,
@@ -77,12 +77,12 @@ describe('lifecycle', () => {
 
       expect(unmountCallback).not.toHaveBeenCalled();
 
-      slot!.refresh(() => [text('New content')]);
+      slot!.refresh(() => [text("New content")]);
 
       expect(unmountCallback).toHaveBeenCalledTimes(1);
     });
 
-    it('executes multiple unmount callbacks', () => {
+    it("executes multiple unmount callbacks", () => {
       const unmount1 = vi.fn();
       const unmount2 = vi.fn();
       let slot: { refresh: (fn: () => any) => void } | null = null;
@@ -93,21 +93,21 @@ describe('lifecycle', () => {
             slot = yield* p(function* () {
               yield* onUnmount(unmount1);
               yield* onUnmount(unmount2);
-              yield* text('Content');
+              yield* text("Content");
             });
           }),
         container,
       );
 
-      slot!.refresh(() => [text('New')]);
+      slot!.refresh(() => [text("New")]);
 
       expect(unmount1).toHaveBeenCalledTimes(1);
       expect(unmount2).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('mount callback with cleanup', () => {
-    it('cleanup is called before re-mount on refresh', () => {
+  describe("mount callback with cleanup", () => {
+    it("cleanup is called before re-mount on refresh", () => {
       const events: string[] = [];
       let slot: { refresh: (fn: () => any) => void } | null = null;
 
@@ -116,31 +116,31 @@ describe('lifecycle', () => {
           div(function* () {
             slot = yield* p(function* () {
               yield* onMount(() => {
-                events.push('mount');
-                return () => events.push('cleanup');
+                events.push("mount");
+                return () => events.push("cleanup");
               });
-              yield* text('Content');
+              yield* text("Content");
             });
           }),
         container,
       );
 
       vi.advanceTimersToNextFrame();
-      expect(events).toEqual(['mount']);
+      expect(events).toEqual(["mount"]);
 
       slot!.refresh(function* () {
         yield* onMount(() => {
-          events.push('remount');
-          return () => events.push('recleanup');
+          events.push("remount");
+          return () => events.push("recleanup");
         });
-        yield* text('New');
+        yield* text("New");
       });
 
       // cleanup runs before refresh content is processed
-      expect(events).toEqual(['mount', 'cleanup']);
+      expect(events).toEqual(["mount", "cleanup"]);
 
       vi.advanceTimersToNextFrame();
-      expect(events).toEqual(['mount', 'cleanup', 'remount']);
+      expect(events).toEqual(["mount", "cleanup", "remount"]);
     });
   });
 });

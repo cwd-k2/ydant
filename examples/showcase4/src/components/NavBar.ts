@@ -42,9 +42,7 @@ export function NavBar() {
       yield* clss(["ml-auto", "px-3", "py-1", "bg-gray-200", "dark:bg-gray-700", "rounded"]);
       yield* on("click", toggleTheme);
 
-      yield* reactive(() => [
-        text(currentTheme() === "light" ? "🌙 Dark" : "☀️ Light"),
-      ]);
+      yield* reactive(() => [text(currentTheme() === "light" ? "🌙 Dark" : "☀️ Light")]);
     });
   });
 }

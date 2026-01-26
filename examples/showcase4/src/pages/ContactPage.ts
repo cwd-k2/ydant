@@ -1,4 +1,17 @@
-import { type Component, div, h1, p, span, button, input, label, text, attr, clss, on } from "@ydant/core";
+import {
+  type Component,
+  div,
+  h1,
+  p,
+  span,
+  button,
+  input,
+  label,
+  text,
+  attr,
+  clss,
+  on,
+} from "@ydant/core";
 import { signal, reactive } from "@ydant/reactive";
 import { createForm, required, email, minLength } from "../form";
 
@@ -95,9 +108,7 @@ export const ContactPage: Component = () => {
           "disabled:opacity-50",
         ]);
         yield* on("click", () => form.submit());
-        yield* reactive(() => [
-          text(formState().isSubmitting ? "Sending..." : "Send Message"),
-        ]);
+        yield* reactive(() => [text(formState().isSubmitting ? "Sending..." : "Send Message")]);
       });
     });
   });

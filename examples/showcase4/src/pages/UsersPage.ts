@@ -51,26 +51,12 @@ export const UsersPage: Component = () =>
             yield* div(() => [
               clss(["flex", "gap-2"]),
               button(function* () {
-                yield* clss([
-                  "px-2",
-                  "py-1",
-                  "bg-blue-500",
-                  "text-white",
-                  "text-sm",
-                  "rounded",
-                ]);
+                yield* clss(["px-2", "py-1", "bg-blue-500", "text-white", "text-sm", "rounded"]);
                 yield* on("click", () => navigate(`/users/${user.id}`));
                 yield* text("View");
               }),
               button(function* () {
-                yield* clss([
-                  "px-2",
-                  "py-1",
-                  "bg-red-500",
-                  "text-white",
-                  "text-sm",
-                  "rounded",
-                ]);
+                yield* clss(["px-2", "py-1", "bg-red-500", "text-white", "text-sm", "rounded"]);
                 yield* on("click", () => removeUser(user.id));
                 yield* text("Delete");
               }),

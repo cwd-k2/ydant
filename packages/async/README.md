@@ -17,9 +17,7 @@ import { div, text, type Component } from "@ydant/core";
 import { Suspense, createResource } from "@ydant/async";
 
 // Create async resource
-const userResource = createResource(() => 
-  fetch("/api/user").then(r => r.json())
-);
+const userResource = createResource(() => fetch("/api/user").then((r) => r.json()));
 
 // Component using resource
 const UserProfile: Component = () =>
@@ -93,12 +91,10 @@ Catches errors in child components and shows fallback.
 ### createResource
 
 ```typescript
-function createResource<T>(
-  fetcher: () => Promise<T>
-): Resource<T>;
+function createResource<T>(fetcher: () => Promise<T>): Resource<T>;
 
 interface Resource<T> {
-  (): T;  // Throws promise if pending, error if failed
+  (): T; // Throws promise if pending, error if failed
   refetch(): void;
   state: "pending" | "ready" | "error";
 }

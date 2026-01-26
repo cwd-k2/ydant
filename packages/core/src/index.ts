@@ -77,13 +77,4 @@ export {
 } from "./elements";
 
 // Primitives
-export {
-  attr,
-  clss,
-  on,
-  text,
-  onMount,
-  onUnmount,
-  style,
-  key,
-} from "./primitives";
+export { attr, clss, on, text, onMount, onUnmount, style, key } from "./primitives";

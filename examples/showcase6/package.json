@@ -1,15 +1,15 @@
 {
   "name": "showcase6",
   "version": "1.0.0",
-  "description": "Demo: Async data fetching with Suspense and ErrorBoundary",
   "private": true,
+  "description": "Demo: Async data fetching with Suspense and ErrorBoundary",
   "scripts": {
     "dev": "vite"
   },
-  "packageManager": "pnpm@10.22.0",
   "dependencies": {
+    "@ydant/async": "workspace:*",
     "@ydant/core": "workspace:*",
-    "@ydant/dom": "workspace:*",
-    "@ydant/async": "workspace:*"
-  }
+    "@ydant/dom": "workspace:*"
+  },
+  "packageManager": "pnpm@10.22.0"
 }

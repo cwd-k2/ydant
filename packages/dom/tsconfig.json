@@ -3,7 +3,10 @@
   "include": ["src"],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist"
+    "baseUrl": ".",
+    "paths": {
+      "@ydant/core": ["../core/src"],
+      "@ydant/reactive": ["../reactive/src"]
+    }
   }
 }

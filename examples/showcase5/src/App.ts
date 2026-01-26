@@ -44,9 +44,7 @@ export const App: Component = () => {
         break;
       case "priority":
         const priorityOrder = { high: 0, medium: 1, low: 2 };
-        items.sort(
-          (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority],
-        );
+        items.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
         break;
       case "text":
         items.sort((a, b) => a.text.localeCompare(b.text));
@@ -72,14 +70,7 @@ export const App: Component = () => {
 
     if (items.length === 0) {
       yield* div(() => [
-        clss([
-          "p-8",
-          "text-center",
-          "text-gray-400",
-          "border",
-          "rounded-lg",
-          "border-dashed",
-        ]),
+        clss(["p-8", "text-center", "text-gray-400", "border", "rounded-lg", "border-dashed"]),
         text("No items. Add one above!"),
       ]);
     } else {
@@ -165,28 +156,16 @@ export const App: Component = () => {
       yield* select(function* () {
         yield* clss(["px-3", "py-2", "border", "rounded"]);
         yield* on("change", (e) => {
-          newItemPriority = (e.target as HTMLSelectElement)
-            .value as ListItem["priority"];
+          newItemPriority = (e.target as HTMLSelectElement).value as ListItem["priority"];
         });
 
         yield* option(() => [attr("value", "high"), text("High")]);
-        yield* option(() => [
-          attr("value", "medium"),
-          attr("selected", ""),
-          text("Medium"),
-        ]);
+        yield* option(() => [attr("value", "medium"), attr("selected", ""), text("Medium")]);
         yield* option(() => [attr("value", "low"), text("Low")]);
       });
 
       yield* button(function* () {
-        yield* clss([
-          "px-4",
-          "py-2",
-          "bg-blue-500",
-          "text-white",
-          "rounded",
-          "hover:bg-blue-600",
-        ]);
+        yield* clss(["px-4", "py-2", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600"]);
         yield* on("click", () => {
           if (newItemText.trim()) {
             items.push({
@@ -206,10 +185,7 @@ export const App: Component = () => {
     // Sort controls
     yield* div(function* () {
       yield* clss(["flex", "gap-2", "items-center"]);
-      yield* h2(() => [
-        clss(["text-sm", "font-medium", "text-gray-700"]),
-        text("Sort by:"),
-      ]);
+      yield* h2(() => [clss(["text-sm", "font-medium", "text-gray-700"]), text("Sort by:")]);
 
       const sortButtons: { order: SortOrder; label: string }[] = [
         { order: "id", label: "ID" },
@@ -219,14 +195,7 @@ export const App: Component = () => {
 
       for (const btn of sortButtons) {
         yield* button(function* () {
-          yield* clss([
-            "px-3",
-            "py-1",
-            "text-sm",
-            "rounded",
-            "bg-gray-200",
-            "hover:bg-gray-300",
-          ]);
+          yield* clss(["px-3", "py-1", "text-sm", "rounded", "bg-gray-200", "hover:bg-gray-300"]);
           yield* on("click", () => sortItemsBy(btn.order));
           yield* text(btn.label);
         });

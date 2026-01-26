@@ -13,20 +13,14 @@ export const UserDetailPage: Component = () =>
     const user = findUser(userId);
 
     if (user) {
-      yield* h1(() => [
-        clss(["text-2xl", "font-bold", "mb-4"]),
-        text(`User: ${user.name}`),
-      ]);
+      yield* h1(() => [clss(["text-2xl", "font-bold", "mb-4"]), text(`User: ${user.name}`)]);
       yield* div(function* () {
         yield* clss(["space-y-2"]);
         yield* p(() => [
           span(() => [clss(["font-semibold"]), text("ID: ")]),
           text(String(user.id)),
         ]);
-        yield* p(() => [
-          span(() => [clss(["font-semibold"]), text("Email: ")]),
-          text(user.email),
-        ]);
+        yield* p(() => [span(() => [clss(["font-semibold"]), text("Email: ")]), text(user.email)]);
       });
     } else {
       yield* h1(() => [
