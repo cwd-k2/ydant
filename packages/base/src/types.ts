@@ -2,14 +2,7 @@
  * @ydant/base - DSL 型定義
  */
 
-import type {
-  Tagged,
-  Instructor,
-  Builder,
-  ChildNext,
-  Render as CoreRender,
-  Component as CoreComponent,
-} from "@ydant/core";
+import type { Tagged, Instructor, Builder, ChildNext } from "@ydant/core";
 
 // =============================================================================
 // Slot Types
