@@ -33,6 +33,44 @@ mount(Greeting, document.getElementById("app")!, {
 | -------------------- | ------------------------------------------ |
 | `createBasePlugin()` | Create plugin to process base DSL elements |
 
+The base plugin extends `RenderContext` and `PluginAPI`:
+
+```typescript
+// RenderContext extensions
+interface RenderContextExtensions {
+  pendingKey: string | number | null;
+  keyedNodes: Map<string | number, KeyedNode>;
+  mountCallbacks: Array<() => void | (() => void)>;
+  unmountCallbacks: Array<() => void>;
+}
+
+// PluginAPI extensions
+interface PluginAPIExtensions {
+  // Core
+  readonly parent: Node;
+  readonly currentElement: Element | null;
+  readonly isCurrentElementReused: boolean;
+  appendChild(node: Node): void;
+  setCurrentElement(element: Element | null): void;
+  setParent(parent: Node): void;
+  processChildren(builder: Builder, options?: { parent?: Node }): void;
+  createChildAPI(parent: Node): PluginAPI;
+
+  // Lifecycle
+  onMount(callback: () => void | (() => void)): void;
+  onUnmount(callback: () => void): void;
+  pushUnmountCallbacks(...callbacks: Array<() => void>): void;
+  executeMount(): void;
+
+  // Keyed elements
+  readonly pendingKey: string | number | null;
+  setPendingKey(key: string | number | null): void;
+  getKeyedNode(key: string | number): KeyedNode | undefined;
+  setKeyedNode(key: string | number, node: KeyedNode): void;
+  deleteKeyedNode(key: string | number): void;
+}
+```
+
 ### Element Factories
 
 HTML elements: `div`, `span`, `p`, `button`, `input`, `h1`-`h3`, `ul`, `li`, `a`, `form`, `table`, `thead`, `tbody`, `tr`, `th`, `td`, `label`, `textarea`, `select`, `option`, `nav`, `header`, `footer`, `section`, `article`, `aside`, `main`, `img`

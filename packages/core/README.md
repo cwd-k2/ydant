@@ -39,12 +39,16 @@ interface MountOptions {
 interface Plugin {
   name: string;
   types: string[];
+  /** Initialize plugin-specific properties in RenderContext */
+  initContext?(ctx: Record<string, unknown>, parentCtx?: Record<string, unknown>): void;
+  /** Extend PluginAPI with plugin-specific methods */
+  extendAPI?(api: Record<string, unknown>, ctx: Record<string, unknown>): void;
+  /** Process a child element */
   process(child: Child, api: PluginAPI): PluginResult;
 }
 
 interface PluginResult {
   value?: unknown; // Value to pass back via next()
-  stop?: boolean; // Stop processing this child
 }
 ```
 
@@ -68,19 +72,46 @@ Plugins can extend these interfaces via module augmentation:
 
 ```typescript
 declare module "@ydant/core" {
-  interface PluginChildExtensions {
-    MyType: Tagged<"mytype", { value: string }>;
+  // Extend RenderContext with custom properties
+  interface RenderContextExtensions {
+    myProperty: MyType;
   }
-  interface PluginNextExtensions {
-    MyResult: MyResultType;
-  }
-  interface PluginReturnExtensions {
-    MyResult: MyResultType;
-  }
+
+  // Extend PluginAPI with custom methods
   interface PluginAPIExtensions {
     myMethod(): void;
   }
+
+  // Extend Child types (yieldable values)
+  interface PluginChildExtensions {
+    MyType: Tagged<"mytype", { value: string }>;
+  }
+
+  // Extend values passed via next()
+  interface PluginNextExtensions {
+    MyResult: MyResultType;
+  }
+
+  // Extend return values
+  interface PluginReturnExtensions {
+    MyResult: MyResultType;
+  }
 }
+```
+
+### RenderContext
+
+The rendering context holds state during rendering. Plugins extend it via `RenderContextExtensions`:
+
+```typescript
+interface RenderContextCore {
+  parent: Node;
+  currentElement: Element | null;
+  isCurrentElementReused: boolean;
+  plugins: Map<string, Plugin>;
+}
+
+type RenderContext = RenderContextCore & RenderContextExtensions;
 ```
 
 ### Utilities
@@ -95,13 +126,41 @@ declare module "@ydant/core" {
 ```typescript
 import type { Plugin, PluginAPI, PluginResult, Child } from "@ydant/core";
 
+// 1. Declare type extensions
+declare module "@ydant/core" {
+  interface RenderContextExtensions {
+    myData: Map<string, unknown>;
+  }
+  interface PluginAPIExtensions {
+    getMyData(key: string): unknown;
+    setMyData(key: string, value: unknown): void;
+  }
+}
+
+// 2. Create the plugin
 export function createMyPlugin(): Plugin {
   return {
     name: "my-plugin",
     types: ["mytype"],
+
+    // Initialize context properties
+    initContext(ctx, parentCtx) {
+      ctx.myData = parentCtx?.myData
+        ? new Map(parentCtx.myData as Map<string, unknown>)
+        : new Map();
+    },
+
+    // Extend PluginAPI with methods
+    extendAPI(api, ctx) {
+      const myData = ctx.myData as Map<string, unknown>;
+      api.getMyData = (key: string) => myData.get(key);
+      api.setMyData = (key: string, value: unknown) => myData.set(key, value);
+    },
+
+    // Process child elements
     process(child: Child, api: PluginAPI): PluginResult {
       if ((child as { type: string }).type === "mytype") {
-        // Process the child
+        // Process the child using api.getMyData(), api.setMyData()
         return { value: result };
       }
       return {};

@@ -13,10 +13,9 @@ pnpm add @ydant/context
 ### Context API
 
 ```typescript
-import { createContext, provide, inject } from "@ydant/context";
-import { div, text, type Component } from "@ydant/core";
-import { mount } from "@ydant/dom";
-import { createContextPlugin } from "@ydant/context";
+import { mount, type Component } from "@ydant/core";
+import { createBasePlugin, div, text } from "@ydant/base";
+import { createContext, provide, inject, createContextPlugin } from "@ydant/context";
 
 // Create context with optional default value
 const ThemeContext = createContext<"light" | "dark">("light");
@@ -35,11 +34,13 @@ const ChildComponent: Component = () =>
     yield* text(`Theme: ${theme}`); // "dark"
   });
 
-// Mount with context plugin
+// Mount with base and context plugins
 mount(App, document.getElementById("app")!, {
-  plugins: [createContextPlugin()],
+  plugins: [createBasePlugin(), createContextPlugin()],
 });
 ```
+
+> **Note:** `@ydant/base` is required for DOM rendering.
 
 ### Persistence (localStorage)
 
@@ -107,13 +108,28 @@ Creates a localStorage-backed storage with JSON serialization.
 ### createContextPlugin
 
 ```typescript
-function createContextPlugin(): DomPlugin;
+function createContextPlugin(): Plugin;
 ```
 
-Creates a DOM plugin that handles `provide` and `inject`. Must be passed to `mount()`.
+Creates a plugin that handles `provide` and `inject`. Must be passed to `mount()`.
+
+The context plugin extends `RenderContext` and `PluginAPI`:
+
+```typescript
+// RenderContext extensions
+interface RenderContextExtensions {
+  contextValues: Map<symbol, unknown>;
+}
+
+// PluginAPI extensions
+interface PluginAPIExtensions {
+  getContext<T>(id: symbol): T | undefined;
+  setContext<T>(id: symbol, value: T): void;
+}
+```
 
 ## Module Structure
 
 - `context.ts` - Context creation and provide/inject
 - `persist.ts` - localStorage helpers
-- `plugin.ts` - DOM plugin
+- `plugin.ts` - Plugin implementation
