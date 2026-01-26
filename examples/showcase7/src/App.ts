@@ -1,18 +1,5 @@
-import {
-  type Builder,
-  type Component,
-  type Slot,
-  div,
-  h1,
-  h2,
-  p,
-  span,
-  button,
-  text,
-  clss,
-  on,
-  key,
-} from "@ydant/base";
+import type { Component, Builder } from "@ydant/core";
+import { type Slot, div, h1, h2, p, span, button, text, clss, on, key } from "@ydant/base";
 import { createTransition, type TransitionHandle } from "@ydant/transition";
 import type { Toast } from "./types";
 
