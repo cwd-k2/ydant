@@ -119,7 +119,7 @@ describe("text", () => {
 });
 
 describe("style", () => {
-  it("yields a Style with CSS properties", () => {
+  it("yields an Attribute with style key and CSS string", () => {
     const gen = style({
       padding: "16px",
       display: "flex",
@@ -129,12 +129,9 @@ describe("style", () => {
 
     expect(result.done).toBe(false);
     expect(result.value).toEqual({
-      type: "style",
-      properties: {
-        padding: "16px",
-        display: "flex",
-        gap: "8px",
-      },
+      type: "attribute",
+      key: "style",
+      value: "padding: 16px; display: flex; gap: 8px",
     });
   });
 
@@ -146,11 +143,9 @@ describe("style", () => {
     const result = gen.next();
 
     expect(result.value).toEqual({
-      type: "style",
-      properties: {
-        "--primary-color": "#3b82f6",
-        backgroundColor: "var(--primary-color)",
-      },
+      type: "attribute",
+      key: "style",
+      value: "--primary-color: #3b82f6; background-color: var(--primary-color)",
     });
   });
 
@@ -159,8 +154,23 @@ describe("style", () => {
     const result = gen.next();
 
     expect(result.value).toEqual({
-      type: "style",
-      properties: {},
+      type: "attribute",
+      key: "style",
+      value: "",
+    });
+  });
+
+  it("converts camelCase to kebab-case", () => {
+    const gen = style({
+      fontSize: "16px",
+      marginTop: "8px",
+    });
+    const result = gen.next();
+
+    expect(result.value).toEqual({
+      type: "attribute",
+      key: "style",
+      value: "font-size: 16px; margin-top: 8px",
     });
   });
 });

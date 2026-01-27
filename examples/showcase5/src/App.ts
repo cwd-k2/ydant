@@ -1,5 +1,5 @@
+import type { Component } from "@ydant/core";
 import {
-  type Component,
   type Slot,
   div,
   h1,
@@ -14,7 +14,7 @@ import {
   attr,
   on,
   key,
-} from "@ydant/core";
+} from "@ydant/base";
 import type { ListItem, SortOrder } from "./types";
 import { ListItemView } from "./components/ListItemView";
 

@@ -7,9 +7,9 @@
     "dev": "vite"
   },
   "dependencies": {
+    "@ydant/base": "workspace:*",
     "@ydant/context": "workspace:*",
     "@ydant/core": "workspace:*",
-    "@ydant/dom": "workspace:*",
     "@ydant/reactive": "workspace:*",
     "@ydant/router": "workspace:*"
   },

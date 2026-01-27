@@ -30,6 +30,8 @@ import {
   th,
   td,
   img,
+} from "../elements/html";
+import {
   svg,
   circle,
   ellipse,
@@ -48,7 +50,7 @@ import {
   stop,
   svgText,
   tspan,
-} from "../elements";
+} from "../elements/svg";
 import { text, attr } from "../primitives";
 import type { Element } from "../types";
 

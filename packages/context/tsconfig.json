@@ -6,7 +6,7 @@
     "baseUrl": ".",
     "paths": {
       "@ydant/core": ["../core/src"],
-      "@ydant/dom": ["../dom/src"]
+      "@ydant/base": ["../base/src"]
     }
   }
 }

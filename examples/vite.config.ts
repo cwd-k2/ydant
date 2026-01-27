@@ -8,7 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@ydant/core": path.resolve(root, "packages/core/src/index.ts"),
-      "@ydant/dom": path.resolve(root, "packages/dom/src/index.ts"),
+      "@ydant/base": path.resolve(root, "packages/base/src/index.ts"),
       "@ydant/reactive": path.resolve(root, "packages/reactive/src/index.ts"),
       "@ydant/context": path.resolve(root, "packages/context/src/index.ts"),
       "@ydant/router": path.resolve(root, "packages/router/src/index.ts"),
@@ -19,7 +19,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: [
       "@ydant/core",
-      "@ydant/dom",
+      "@ydant/base",
       "@ydant/reactive",
       "@ydant/context",
       "@ydant/router",

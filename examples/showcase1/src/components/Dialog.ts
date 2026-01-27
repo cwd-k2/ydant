@@ -1,4 +1,4 @@
-import { text, div, h3, p, button, clss, on } from "@ydant/core";
+import { text, div, h3, p, button, clss, on } from "@ydant/base";
 
 export interface DialogProps {
   title: string;

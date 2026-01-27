@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { type Slot, div, text } from "@ydant/core";
-import { mount } from "@ydant/dom";
+import { mount } from "@ydant/core";
+import type { Slot } from "@ydant/base";
+import { createBasePlugin, div, text } from "@ydant/base";
 import { TransitionGroup, createTransitionGroupRefresher } from "../TransitionGroup";
 
 interface Item {
@@ -39,6 +40,7 @@ describe("TransitionGroup", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Item 1");
@@ -57,6 +59,7 @@ describe("TransitionGroup", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     // The container has a wrapper div from TransitionGroup, but no item divs
@@ -80,6 +83,7 @@ describe("TransitionGroup", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -108,6 +112,7 @@ describe("TransitionGroup", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(capturedIndices).toEqual([0, 1]);
@@ -138,6 +143,7 @@ describe("TransitionGroup", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(capturedKeys).toContain(100);
@@ -188,6 +194,7 @@ describe("createTransitionGroupRefresher", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Initial");

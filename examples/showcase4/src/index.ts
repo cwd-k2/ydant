@@ -9,11 +9,12 @@
  * - createContextPlugin() で provide/inject を有効化
  */
 
-import { mount } from "@ydant/dom";
+import { mount } from "@ydant/core";
+import { createBasePlugin } from "@ydant/base";
 import { createReactivePlugin } from "@ydant/reactive";
 import { createContextPlugin } from "@ydant/context";
 import { App } from "./App";
 
 mount(App, document.getElementById("app")!, {
-  plugins: [createReactivePlugin(), createContextPlugin()],
+  plugins: [createBasePlugin(), createReactivePlugin(), createContextPlugin()],
 });

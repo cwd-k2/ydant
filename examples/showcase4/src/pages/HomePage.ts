@@ -1,4 +1,5 @@
-import { type Component, div, h1, h2, p, ul, li, text, clss } from "@ydant/core";
+import type { Component } from "@ydant/core";
+import { div, h1, h2, p, ul, li, text, clss } from "@ydant/base";
 
 /**
  * ホームページ

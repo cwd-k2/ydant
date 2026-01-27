@@ -1,4 +1,4 @@
-import { button, clss, on, text } from "@ydant/core";
+import { button, clss, on, text } from "@ydant/base";
 import type { TimerMode } from "../types";
 import { MODE_LABELS, MODE_COLORS } from "../constants";
 

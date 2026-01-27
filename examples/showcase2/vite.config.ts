@@ -7,11 +7,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@ydant/core": path.resolve(root, "packages/core/src/index.ts"),
-      "@ydant/dom": path.resolve(root, "packages/dom/src/index.ts"),
+      "@ydant/base": path.resolve(root, "packages/base/src/index.ts"),
     },
   },
   optimizeDeps: {
-    exclude: ["@ydant/core", "@ydant/dom"],
+    exclude: ["@ydant/core", "@ydant/base"],
   },
   server: {
     fs: {

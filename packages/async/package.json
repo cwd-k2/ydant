@@ -18,9 +18,11 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@ydant/base": "workspace:*",
     "@ydant/core": "workspace:*"
   },
   "peerDependencies": {
+    "@ydant/base": "workspace:*",
     "@ydant/core": "workspace:*"
   },
   "packageManager": "pnpm@10.22.0"

@@ -7,8 +7,8 @@
     "dev": "vite"
   },
   "dependencies": {
+    "@ydant/base": "workspace:*",
     "@ydant/core": "workspace:*",
-    "@ydant/dom": "workspace:*",
     "@ydant/transition": "workspace:*"
   },
   "packageManager": "pnpm@10.22.0"

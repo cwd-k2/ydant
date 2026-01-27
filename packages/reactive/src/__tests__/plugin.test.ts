@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { div, text } from "@ydant/core";
-import { mount } from "@ydant/dom";
+import { mount } from "@ydant/core";
+import { createBasePlugin, div, text } from "@ydant/base";
 import { signal } from "../signal";
 import { reactive } from "../reactive";
 import { createReactivePlugin } from "../plugin";
@@ -30,7 +30,7 @@ describe("createReactivePlugin", () => {
           yield* reactive(() => [text(`Count: ${count()}`)]);
         }),
       container,
-      { plugins: [createReactivePlugin()] },
+      { plugins: [createBasePlugin(), createReactivePlugin()] },
     );
 
     expect(container.textContent).toContain("Count: 0");
@@ -45,7 +45,7 @@ describe("createReactivePlugin", () => {
           yield* reactive(() => [text(`Count: ${count()}`)]);
         }),
       container,
-      { plugins: [createReactivePlugin()] },
+      { plugins: [createBasePlugin(), createReactivePlugin()] },
     );
 
     expect(container.textContent).toContain("Count: 0");
@@ -63,7 +63,7 @@ describe("createReactivePlugin", () => {
           yield* reactive(() => [text("Content")]);
         }),
       container,
-      { plugins: [createReactivePlugin()] },
+      { plugins: [createBasePlugin(), createReactivePlugin()] },
     );
 
     const reactiveSpan = container.querySelector("[data-reactive]");
@@ -80,7 +80,7 @@ describe("createReactivePlugin", () => {
           yield* reactive(() => items().map((n) => text(`Item ${n} `)));
         }),
       container,
-      { plugins: [createReactivePlugin()] },
+      { plugins: [createBasePlugin(), createReactivePlugin()] },
     );
 
     expect(container.textContent).toContain("Item 1");
@@ -106,7 +106,7 @@ describe("createReactivePlugin", () => {
           yield* reactive(() => [text(`B: ${count2()}`)]);
         }),
       container,
-      { plugins: [createReactivePlugin()] },
+      { plugins: [createBasePlugin(), createReactivePlugin()] },
     );
 
     expect(container.textContent).toContain("A: 0");

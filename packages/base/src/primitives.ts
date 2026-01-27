@@ -1,4 +1,8 @@
-import type { Attribute, Listener, Text, Lifecycle, Style, Key } from "./types";
+/**
+ * @ydant/base - プリミティブ
+ */
+
+import type { Attribute, Listener, Text, Lifecycle, Key } from "./types";
 
 /** プリミティブを yield するジェネレーター関数を作成するファクトリ */
 function createPrimitive<T, Args extends unknown[]>(factory: (...args: Args) => T) {
@@ -71,7 +75,7 @@ export function* onUnmount(callback: () => void): Generator<Lifecycle, void, voi
 }
 
 /**
- * インラインスタイルを設定する（型安全）
+ * インラインスタイルを設定する
  *
  * @param properties - CSS プロパティのオブジェクト
  *
@@ -86,8 +90,15 @@ export function* onUnmount(callback: () => void): Generator<Lifecycle, void, voi
  */
 export function* style(
   properties: Partial<CSSStyleDeclaration> & Record<`--${string}`, string>,
-): Generator<Style, void, void> {
-  yield { type: "style", properties: properties as Record<string, string> };
+): Generator<Attribute, void, void> {
+  const styleValue = Object.entries(properties as Record<string, string>)
+    .map(([k, v]) => {
+      // camelCase を kebab-case に変換（CSS 変数は除く）
+      const prop = k.startsWith("--") ? k : k.replace(/([A-Z])/g, "-$1").toLowerCase();
+      return `${prop}: ${v}`;
+    })
+    .join("; ");
+  yield { type: "attribute", key: "style", value: styleValue };
 }
 
 /**

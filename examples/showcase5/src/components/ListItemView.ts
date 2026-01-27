@@ -1,4 +1,4 @@
-import { div, span, button, text, clss, on } from "@ydant/core";
+import { div, span, button, text, clss, on } from "@ydant/base";
 import type { ListItem } from "../types";
 
 const PRIORITY_COLORS: Record<ListItem["priority"], string[]> = {

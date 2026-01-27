@@ -1,4 +1,4 @@
-import { div, input, span, button, clss, on, attr, text } from "@ydant/core";
+import { div, input, span, button, clss, on, attr, text } from "@ydant/base";
 import type { Todo } from "../types";
 
 export interface TodoItemProps {

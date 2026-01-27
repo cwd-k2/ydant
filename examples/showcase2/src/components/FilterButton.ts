@@ -1,4 +1,4 @@
-import { button, clss, on, text } from "@ydant/core";
+import { button, clss, on, text } from "@ydant/base";
 
 export interface FilterButtonProps {
   label: string;

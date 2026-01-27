@@ -1,4 +1,4 @@
-import { nav, span, button, text, clss, on } from "@ydant/core";
+import { nav, span, button, text, clss, on } from "@ydant/base";
 import { RouterLink } from "@ydant/router";
 import { reactive } from "@ydant/reactive";
 import { currentTheme, toggleTheme } from "../state/theme";
