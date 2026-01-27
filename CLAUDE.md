@@ -61,36 +61,6 @@ pnpm format:check         # フォーマットチェック
 pnpm typecheck            # 型チェック
 ```
 
-## Essential Patterns
-
-### Generator vs Array Syntax
-
-```typescript
-// Generator: Slot が必要な場合
-const { refresh, node } =
-  yield *
-  div(function* () {
-    yield* text("content");
-  });
-
-// Array: 静的構造
-yield * div(() => [text("content")]);
-```
-
-### Slot の使い方
-
-```typescript
-let slot: Slot; // 先に宣言
-
-yield *
-  button(() => [
-    on("click", () => slot.refresh(() => [text("updated")])), // 使用
-    text("click"),
-  ]);
-
-slot = yield * div(() => [text("initial")]); // 代入
-```
-
 ---
 
 ## Documentation Structure
