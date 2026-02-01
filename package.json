@@ -17,6 +17,7 @@
     "format:check": "oxfmt --check",
     "typecheck": "pnpm -r --if-present run typecheck",
     "typecheck:examples": "pnpm --filter 'showcase*' run typecheck",
+    "typecheck:packages": "pnpm --filter '@ydant/*' run typecheck",
     "prepare": "husky"
   },
   "devDependencies": {
