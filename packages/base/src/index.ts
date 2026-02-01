@@ -16,7 +16,6 @@ export type {
   Key,
   Decoration,
 } from "./types";
-export type { KeyedNode, BasePluginAPI, ElementPluginAPIExtensions } from "./plugin-api";
 
 // Primitives
 export { attr, clss, on, text, onMount, onUnmount, style, key } from "./primitives";
