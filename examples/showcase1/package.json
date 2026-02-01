@@ -4,7 +4,8 @@
   "private": true,
   "description": "",
   "scripts": {
-    "dev": "vite"
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@ydant/base": "workspace:*",

@@ -4,7 +4,8 @@
   "private": true,
   "description": "Demo: Sortable List with key() for efficient updates",
   "scripts": {
-    "dev": "vite"
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@ydant/base": "workspace:*",
