@@ -22,13 +22,6 @@ import type { Builder, Render } from "@ydant/core";
 import type { Slot, Element } from "@ydant/base";
 import { div, onMount } from "@ydant/base";
 
-// @ydant/core の型を拡張
-declare module "@ydant/core" {
-  interface PluginReturnExtensions {
-    TransitionHandle: TransitionHandle;
-  }
-}
-
 export interface TransitionProps {
   /** 要素を表示するかどうか */
   show: boolean;

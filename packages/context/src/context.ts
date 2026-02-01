@@ -43,22 +43,6 @@ export type ContextProvide = Tagged<
 /** Context Inject 型（Tagged Union） */
 export type ContextInject = Tagged<"context-inject", { context: Context<unknown> }>;
 
-// @ydant/core の型を拡張
-declare module "@ydant/core" {
-  interface PluginChildExtensions {
-    ContextProvide: ContextProvide;
-    ContextInject: ContextInject;
-  }
-
-  interface PluginNextExtensions {
-    ContextValue: unknown;
-  }
-
-  interface PluginReturnExtensions {
-    ContextValue: unknown;
-  }
-}
-
 /**
  * Context を作成する
  *

@@ -19,21 +19,6 @@ import type { Child, Plugin, PluginAPI, PluginResult } from "@ydant/core";
 import "@ydant/base";
 import type { Context } from "./context";
 
-// RenderContext と PluginAPI に context プラグイン用の拡張を追加
-declare module "@ydant/core" {
-  interface RenderContextExtensions {
-    /** Context の値を保持するマップ */
-    contextValues: Map<symbol, unknown>;
-  }
-
-  interface PluginAPIExtensions {
-    /** Context から値を取得 */
-    getContext<T>(id: symbol): T | undefined;
-    /** Context に値を設定 */
-    setContext<T>(id: symbol, value: T): void;
-  }
-}
-
 /**
  * Context プラグインを作成する
  */
