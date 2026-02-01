@@ -2,9 +2,6 @@
  * @ydant/base - プリミティブ処理
  */
 
-// PluginAPI 拡張を確実に適用
-import "../plugin-api";
-
 import type { PluginAPI, PluginResult } from "@ydant/core";
 import type { Attribute, Listener, Text, Lifecycle, Key } from "../types";
 

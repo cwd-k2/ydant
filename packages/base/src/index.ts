@@ -4,8 +4,8 @@
  * 要素ファクトリ・プリミティブ DSL とそれらを処理するベースプラグイン
  */
 
-// PluginAPI 拡張（サイドエフェクト）
-import "./plugin-api";
+// Module augmentation（サイドエフェクト）
+import "./global.d";
 
 // Types
 export type {

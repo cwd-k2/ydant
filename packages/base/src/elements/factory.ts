@@ -2,9 +2,6 @@
  * @ydant/base - 要素ファクトリ
  */
 
-// PluginChildExtensions の型拡張を適用
-import "../plugin-api";
-
 import type { Builder } from "@ydant/core";
 import { toChildren } from "@ydant/core";
 import type { Element, ElementRender, Slot } from "../types";
@@ -40,6 +37,11 @@ export function createSVGElement(tag: string) {
   return function* (builder: Builder): ElementRender {
     const children = toChildren(builder());
     // Element の yield は必ず Slot を返す（プラグインシステムの契約）
-    return (yield { type: "element", tag, children, ns: SVG_NS } as Element) as Slot;
+    return (yield {
+      type: "element",
+      tag,
+      children,
+      ns: SVG_NS,
+    } as Element) as Slot;
   };
 }

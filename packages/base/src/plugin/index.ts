@@ -2,9 +2,6 @@
  * @ydant/base - ベースプラグイン
  */
 
-// PluginAPI 拡張を確実に適用
-import "../plugin-api";
-
 import type { Child, Plugin, PluginAPI, PluginResult } from "@ydant/core";
 import { processElement } from "./element";
 import {

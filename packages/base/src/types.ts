@@ -57,6 +57,17 @@ export type Lifecycle = Tagged<
 export type Key = Tagged<"key", { value: string | number }>;
 
 // =============================================================================
+// Plugin Types
+// =============================================================================
+
+/** Keyed 要素の情報 */
+export interface KeyedNode {
+  key: string | number;
+  node: globalThis.Element;
+  unmountCallbacks: Array<() => void>;
+}
+
+// =============================================================================
 // Element Types
 // =============================================================================
 
