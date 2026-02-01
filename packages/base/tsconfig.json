@@ -1,11 +1,5 @@
 {
   "extends": "../../tsconfig.json",
   "include": ["src"],
-  "exclude": ["node_modules", "dist"],
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@ydant/core": ["../core/src"]
-    }
-  }
+  "exclude": ["node_modules", "dist"]
 }
