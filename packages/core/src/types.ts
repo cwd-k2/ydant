@@ -77,11 +77,11 @@ export type ChildReturn = void | PluginReturnExtensions[keyof PluginReturnExtens
 /** レンダリング命令の Iterator（内部処理用） */
 export type Instructor = Iterator<Child, ChildReturn, ChildNext>;
 
-/** 要素ファクトリ（div, span 等）の引数型 */
-export type Builder = () => Instructor | Instruction[];
-
 /** レンダリング命令（text, attr, on 等）の戻り値型 */
 export type Instruction = Generator<Child, ChildReturn, ChildNext>;
+
+/** 要素ファクトリ（div, span 等）の引数型 */
+export type Builder = () => Instructor | Instruction[];
 
 // =============================================================================
 // Render & Component Types (基底型)
