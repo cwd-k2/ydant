@@ -23,9 +23,6 @@
  * ```
  */
 
-// Module augmentation（サイドエフェクト）
-import "./global.d";
-
 // Types
 export type { Subscriber } from "./types";
 

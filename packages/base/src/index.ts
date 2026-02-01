@@ -4,9 +4,6 @@
  * 要素ファクトリ・プリミティブ DSL とそれらを処理するベースプラグイン
  */
 
-// Module augmentation（サイドエフェクト）
-import "./global.d";
-
 // Types
 export type {
   Slot,
