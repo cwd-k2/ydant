@@ -3,6 +3,7 @@ import { div, h1, ul, li, span, button, text, clss, on } from "@ydant/base";
 import { navigate } from "@ydant/router";
 import { reactive } from "@ydant/reactive";
 import { users, addUser, removeUser } from "../state/users";
+import { basePath } from "../App";
 
 /**
  * ユーザー一覧ページ
@@ -53,7 +54,7 @@ export const UsersPage: Component = () =>
               clss(["flex", "gap-2"]),
               button(function* () {
                 yield* clss(["px-2", "py-1", "bg-blue-500", "text-white", "text-sm", "rounded"]);
-                yield* on("click", () => navigate(`/users/${user.id}`));
+                yield* on("click", () => navigate(`${basePath}/users/${user.id}`));
                 yield* text("View");
               }),
               button(function* () {

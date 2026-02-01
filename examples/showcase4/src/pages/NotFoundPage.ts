@@ -1,6 +1,7 @@
 import type { Component } from "@ydant/core";
 import { div, h1, p, button, text, clss, on } from "@ydant/base";
 import { navigate } from "@ydant/router";
+import { basePath } from "../App";
 
 /**
  * 404 ページ
@@ -12,7 +13,7 @@ export const NotFoundPage: Component = () =>
     yield* p(() => [clss(["text-gray-600", "dark:text-gray-300"]), text("Page not found")]);
     yield* button(function* () {
       yield* clss(["mt-4", "px-4", "py-2", "bg-blue-500", "text-white", "rounded"]);
-      yield* on("click", () => navigate("/"));
+      yield* on("click", () => navigate(`${basePath}/`));
       yield* text("Go Home");
     });
   });

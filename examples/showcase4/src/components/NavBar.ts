@@ -2,6 +2,7 @@ import { nav, span, button, text, clss, on } from "@ydant/base";
 import { RouterLink } from "@ydant/router";
 import { reactive } from "@ydant/reactive";
 import { currentTheme, toggleTheme } from "../state/theme";
+import { basePath } from "../App";
 
 /**
  * ナビゲーションバーコンポーネント
@@ -11,7 +12,7 @@ export function NavBar() {
     yield* clss(["flex", "gap-4", "p-4", "bg-gray-100", "dark:bg-gray-800", "border-b"]);
 
     yield* RouterLink({
-      href: "/",
+      href: `${basePath}/`,
       children: () =>
         span(function* () {
           yield* clss(["hover:underline", "cursor-pointer"]);
@@ -20,7 +21,7 @@ export function NavBar() {
     });
 
     yield* RouterLink({
-      href: "/users",
+      href: `${basePath}/users`,
       children: () =>
         span(function* () {
           yield* clss(["hover:underline", "cursor-pointer"]);
@@ -29,7 +30,7 @@ export function NavBar() {
     });
 
     yield* RouterLink({
-      href: "/contact",
+      href: `${basePath}/contact`,
       children: () =>
         span(function* () {
           yield* clss(["hover:underline", "cursor-pointer"]);

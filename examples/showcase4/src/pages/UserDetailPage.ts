@@ -2,6 +2,7 @@ import type { Component } from "@ydant/core";
 import { div, h1, p, span, button, text, clss, on } from "@ydant/base";
 import { useRoute, navigate } from "@ydant/router";
 import { findUser } from "../state/users";
+import { basePath } from "../App";
 
 /**
  * ユーザー詳細ページ
@@ -32,7 +33,7 @@ export const UserDetailPage: Component = () =>
 
     yield* button(function* () {
       yield* clss(["mt-4", "px-4", "py-2", "bg-gray-500", "text-white", "rounded"]);
-      yield* on("click", () => navigate("/users"));
+      yield* on("click", () => navigate(`${basePath}/users`));
       yield* text("← Back to Users");
     });
   });
