@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import path from "node:path";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
@@ -7,15 +6,11 @@ export default defineConfig({
   plugins: [
     dts({
       tsconfigPath: "./tsconfig.build.json",
-      afterBuild: () => {
-        // Copy global.d.ts to dist
-        const globalSrc = path.resolve(__dirname, "src/global.d.ts");
-        const globalDest = path.resolve(__dirname, "dist/global.d.ts");
-        fs.copyFileSync(globalSrc, globalDest);
-        // Add reference to index.d.ts
-        const indexPath = path.resolve(__dirname, "dist/index.d.ts");
-        const content = fs.readFileSync(indexPath, "utf8");
-        fs.writeFileSync(indexPath, `/// <reference path="./global.d.ts" />\n${content}`);
+      copyDtsFiles: true,
+      beforeWriteFile: (filePath, content) => {
+        if (filePath.endsWith("index.d.ts")) {
+          return { content: `/// <reference path="./global.d.ts" />\n${content}` };
+        }
       },
     }),
   ],
