@@ -23,6 +23,9 @@
  * ```
  */
 
+// Import base types to ensure module augmentation is loaded
+import "@ydant/base";
+
 // Types
 export type { Subscriber } from "./types";
 
