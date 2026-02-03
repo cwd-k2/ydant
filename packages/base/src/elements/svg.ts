@@ -2,6 +2,8 @@
  * @ydant/base - SVG 要素
  */
 
+import type { Builder } from "@ydant/core";
+import type { ElementRender } from "../types";
 import { createSVGElement } from "./factory";
 
 export const svg = createSVGElement("svg");

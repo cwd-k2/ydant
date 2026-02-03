@@ -14,7 +14,7 @@ const SVG_NS = "http://www.w3.org/2000/svg";
  * @returns ElementRender を返すジェネレーター関数
  *          yield* で使用すると Slot を返す
  */
-export function createHTMLElement(tag: string) {
+export function createHTMLElement(tag: string): (builder: Builder) => ElementRender {
   // 注: ジェネレーターの ChildNext は void | Slot | ... だが、
   // Element を yield したときは必ず Slot が返される。
   // この型の精密化はジェネレーターの型システムの制約上困難なため、
@@ -32,7 +32,7 @@ export function createHTMLElement(tag: string) {
  * @returns ElementRender を返すジェネレーター関数
  *          yield* で使用すると Slot を返す
  */
-export function createSVGElement(tag: string) {
+export function createSVGElement(tag: string): (builder: Builder) => ElementRender {
   // 注: 同上
   return function* (builder: Builder): ElementRender {
     const children = toChildren(builder());

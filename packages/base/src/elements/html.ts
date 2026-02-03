@@ -2,6 +2,8 @@
  * @ydant/base - HTML 要素
  */
 
+import type { Builder } from "@ydant/core";
+import type { ElementRender } from "../types";
 import { createHTMLElement } from "./factory";
 
 export const div = createHTMLElement("div");
