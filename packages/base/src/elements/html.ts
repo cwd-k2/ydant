@@ -2,7 +2,10 @@
  * @ydant/base - HTML 要素
  */
 
+// .d.ts 出力で import() ではなく通常の import 文を生成するために必要
+// oxlint-disable-next-line no-unused-vars
 import type { Builder } from "@ydant/core";
+// oxlint-disable-next-line no-unused-vars
 import type { ElementRender } from "../types";
 import { createHTMLElement } from "./factory";
 
