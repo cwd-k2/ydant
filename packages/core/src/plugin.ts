@@ -2,7 +2,8 @@
  * @ydant/core - プラグインシステム
  */
 
-import type { Child } from "./types";
+import type { Child, ChildNext } from "./types";
+import type { RenderContext, RenderContextCore, RenderContextExtensions } from "./render/types";
 
 // =============================================================================
 // Plugin API Extension Types
@@ -38,7 +39,7 @@ export type PluginAPI = PluginAPIExtensions;
  */
 export interface PluginResult {
   /** ジェネレータに返す値 */
-  value?: unknown;
+  value?: ChildNext | undefined;
 }
 
 /**
@@ -49,6 +50,8 @@ export interface Plugin {
   readonly name: string;
   /** このプラグインが処理する type タグの配列 */
   readonly types: readonly string[];
+  /** 依存するプラグインの name 配列 */
+  readonly dependencies?: readonly string[];
   /**
    * RenderContext を初期化する
    *
@@ -56,10 +59,13 @@ export interface Plugin {
    * プラグインは RenderContextExtensions で定義した独自プロパティを
    * ここで初期化する。
    *
-   * @param ctx - 初期化対象のコンテキスト（型は RenderContextCore & Partial<RenderContextExtensions>）
+   * @param ctx - 初期化対象のコンテキスト（構築途中のため Partial）
    * @param parentCtx - 親コンテキスト（ルートの場合は undefined）
    */
-  initContext?(ctx: Record<string, unknown>, parentCtx?: Record<string, unknown>): void;
+  initContext?(
+    ctx: RenderContextCore & Partial<RenderContextExtensions>,
+    parentCtx?: RenderContext,
+  ): void;
   /**
    * PluginAPI を拡張する
    *
@@ -67,9 +73,19 @@ export interface Plugin {
    * PluginAPIExtensions で定義した独自のメソッドをここで実装する。
    *
    * @param api - 拡張対象の PluginAPI オブジェクト
-   * @param ctx - 現在の RenderContext
+   * @param ctx - 現在の RenderContext（initContext 後なので構築済み）
    */
-  extendAPI?(api: Record<string, unknown>, ctx: Record<string, unknown>): void;
+  extendAPI?(api: Partial<PluginAPIExtensions>, ctx: RenderContext): void;
+  /**
+   * 子コンテキストの状態を親コンテキストにマージする
+   *
+   * processChildren 内で子イテレータ処理後に呼び出される。
+   * プラグインは子コンテキストから親コンテキストへの状態伝搬をここで実装する。
+   *
+   * @param parentCtx - 親コンテキスト
+   * @param childCtx - 子コンテキスト
+   */
+  mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
   /** Child を処理する */
   process(child: Child, api: PluginAPI): PluginResult;
 }

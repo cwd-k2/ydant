@@ -10,14 +10,14 @@ Ydant は、JavaScript のジェネレーターをドメイン固有言語とし
 
 ```typescript
 import { mount } from "@ydant/core";
-import { div, button, text, clss, on, type Slot } from "@ydant/base";
+import { div, button, text, classes, on, type Slot } from "@ydant/base";
 
 function Counter(initial: number) {
   let count = initial;
   let countSlot: Slot;
 
   return div(function* () {
-    yield* clss(["counter"]);
+    yield* classes("counter");
 
     countSlot = yield* div(() => [text(`Count: ${count}`)]);
 
@@ -51,7 +51,7 @@ mount(() => Counter(0), document.getElementById("app")!);
 | **@ydant/core**       | レンダリングエンジン、プラグインシステム | [詳細](./packages/core/README.md)       |
 | **@ydant/base**       | 要素ファクトリ、プリミティブ、Slot       | [詳細](./packages/base/README.md)       |
 | **@ydant/reactive**   | Signal ベースのリアクティビティ          | [詳細](./packages/reactive/README.md)   |
-| **@ydant/context**    | Context API、localStorage 永続化         | [詳細](./packages/context/README.md)    |
+| **@ydant/context**    | Context API                              | [詳細](./packages/context/README.md)    |
 | **@ydant/router**     | SPA ルーティング                         | [詳細](./packages/router/README.md)     |
 | **@ydant/async**      | Suspense、ErrorBoundary                  | [詳細](./packages/async/README.md)      |
 | **@ydant/transition** | CSS トランジション                       | [詳細](./packages/transition/README.md) |
@@ -60,9 +60,9 @@ mount(() => Counter(0), document.getElementById("app")!);
 
 ```typescript
 import { mount } from "@ydant/core";
-import { createBasePlugin, div, text, clss, type Component } from "@ydant/base";
+import { createBasePlugin, div, text, classes, type Component } from "@ydant/base";
 
-const App: Component = () => div(() => [clss(["app"]), text("Hello, Ydant!")]);
+const App: Component = () => div(() => [classes("app"), text("Hello, Ydant!")]);
 
 mount(App, document.getElementById("root")!, {
   plugins: [createBasePlugin()],

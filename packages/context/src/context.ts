@@ -17,7 +17,7 @@
  * function ThemedButton() {
  *   return button(function* () {
  *     const theme = yield* inject(ThemeContext);
- *     yield* clss([theme === "dark" ? "bg-gray-800" : "bg-white"]);
+ *     yield* classes(theme === "dark" ? "bg-gray-800" : "bg-white");
  *     yield* text("Click me");
  *   });
  * }

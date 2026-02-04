@@ -11,6 +11,7 @@
 export type {
   Tagged,
   Child,
+  ChildOfType,
   ChildNext,
   ChildReturn,
   Builder,
@@ -18,6 +19,7 @@ export type {
   Instruction,
   Render,
   Component,
+  ComponentWith,
   // Plugin extension points
   PluginChildExtensions,
   PluginNextExtensions,

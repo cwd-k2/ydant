@@ -1,10 +1,10 @@
-import { div, span, text, clss } from "@ydant/base";
+import { div, span, text, classes } from "@ydant/base";
 
 export function LoadingSpinner(message = "Loading...") {
   return div(() => [
-    clss(["flex", "flex-col", "items-center", "justify-center", "p-8"]),
+    classes("flex", "flex-col", "items-center", "justify-center", "p-8"),
     div(() => [
-      clss([
+      classes(
         "spinner",
         "w-8",
         "h-8",
@@ -13,8 +13,8 @@ export function LoadingSpinner(message = "Loading...") {
         "border-t-transparent",
         "rounded-full",
         "mb-4",
-      ]),
+      ),
     ]),
-    span(() => [clss(["text-gray-500"]), text(message)]),
+    span(() => [classes("text-gray-500"), text(message)]),
   ]);
 }

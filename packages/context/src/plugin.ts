@@ -14,10 +14,19 @@
  * ```
  */
 
-import type { Child, Plugin, PluginAPI, PluginResult } from "@ydant/core";
+import type {
+  Child,
+  Plugin,
+  PluginAPI,
+  PluginAPIExtensions,
+  PluginResult,
+  RenderContext,
+  RenderContextCore,
+  RenderContextExtensions,
+} from "@ydant/core";
+import { isTagged } from "@ydant/core";
 // base の import で PluginAPIExtensions の augmentation が適用される
 import "@ydant/base";
-import type { Context } from "./context";
 
 /**
  * Context プラグインを作成する
@@ -26,15 +35,19 @@ export function createContextPlugin(): Plugin {
   return {
     name: "context",
     types: ["context-provide", "context-inject"],
+    dependencies: ["base"],
 
-    initContext(ctx: Record<string, unknown>, parentCtx?: Record<string, unknown>) {
+    initContext(
+      ctx: RenderContextCore & Partial<RenderContextExtensions>,
+      parentCtx?: RenderContext,
+    ) {
       // 親コンテキストがあれば値を継承、なければ新規作成
-      const parentValues = parentCtx?.contextValues as Map<symbol, unknown> | undefined;
+      const parentValues = parentCtx?.contextValues;
       ctx.contextValues = parentValues ? new Map(parentValues) : new Map();
     },
 
-    extendAPI(api: Record<string, unknown>, ctx: Record<string, unknown>) {
-      const contextValues = ctx.contextValues as Map<symbol, unknown>;
+    extendAPI(api: Partial<PluginAPIExtensions>, ctx: RenderContext) {
+      const contextValues = ctx.contextValues;
       api.getContext = <T>(id: symbol): T | undefined => {
         return contextValues.get(id) as T | undefined;
       };
@@ -44,18 +57,14 @@ export function createContextPlugin(): Plugin {
     },
 
     process(child: Child, api: PluginAPI): PluginResult {
-      if (child.type === "context-provide") {
+      if (isTagged(child, "context-provide")) {
         // Context に値を設定
-        const { context, value } = child as {
-          context: Context<unknown>;
-          value: unknown;
-        };
-        api.setContext(context.id, value);
+        api.setContext(child.context.id, child.value);
         return {};
-      } else if (child.type === "context-inject") {
+      }
+      if (isTagged(child, "context-inject")) {
         // Context から値を取得
-        const { context } = child as { context: Context<unknown> };
-        const value = api.getContext(context.id) ?? context.defaultValue;
+        const value = api.getContext(child.context.id) ?? child.context.defaultValue;
         return { value };
       }
 

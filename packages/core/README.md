@@ -53,10 +53,14 @@ interface MountOptions {
 interface Plugin {
   name: string;
   types: string[];
+  /** Plugin names that must be registered before this plugin */
+  dependencies?: string[];
   /** Initialize plugin-specific properties in RenderContext */
   initContext?(ctx: Record<string, unknown>, parentCtx?: Record<string, unknown>): void;
   /** Extend PluginAPI with plugin-specific methods */
   extendAPI?(api: Record<string, unknown>, ctx: Record<string, unknown>): void;
+  /** Merge parent context into child context (called when creating child contexts) */
+  mergeChildContext?(childCtx: Record<string, unknown>, parentCtx: Record<string, unknown>): void;
   /** Process a child element */
   process(child: Child, api: PluginAPI): PluginResult;
 }
@@ -68,17 +72,18 @@ interface PluginResult {
 
 ### Types
 
-| Type          | Description                                                           |
-| ------------- | --------------------------------------------------------------------- |
-| `Tagged<T,P>` | Helper type for tagged unions: `{ type: T } & P`                      |
-| `Child`       | Union of all yieldable types (extended by plugins)                    |
-| `ChildNext`   | Union of values passed via `next()` (extended by plugins)             |
-| `ChildReturn` | Union of return values (extended by plugins)                          |
-| `Render`      | `Generator<Child, ChildReturn, ChildNext>` - Base rendering generator |
-| `Component`   | `() => Render` - Root component type                                  |
-| `Builder`     | `() => Instructor \| Instruction[]` - Element factory argument        |
-| `Instructor`  | `Iterator<Child, ChildReturn, ChildNext>` - Internal iterator         |
-| `Instruction` | `Generator<Child, ChildReturn, ChildNext>` - Primitive return type    |
+| Type               | Description                                                           |
+| ------------------ | --------------------------------------------------------------------- |
+| `Tagged<T,P>`      | Helper type for tagged unions: `{ type: T } & P`                      |
+| `Child`            | Union of all yieldable types (extended by plugins)                    |
+| `ChildNext`        | Union of values passed via `next()` (extended by plugins)             |
+| `ChildReturn`      | Union of return values (extended by plugins)                          |
+| `Render`           | `Generator<Child, ChildReturn, ChildNext>` - Base rendering generator |
+| `Component`        | `() => Render` - Root component type                                  |
+| `ComponentWith<P>` | `(props: P) => Render` - Component type with props                    |
+| `Builder`          | `() => Instructor \| Instruction[]` - Element factory argument        |
+| `Instructor`       | `Iterator<Child, ChildReturn, ChildNext>` - Internal iterator         |
+| `Instruction`      | `Generator<Child, ChildReturn, ChildNext>` - Primitive return type    |
 
 ### Plugin Extension Interfaces
 
@@ -155,12 +160,18 @@ export function createMyPlugin(): Plugin {
   return {
     name: "my-plugin",
     types: ["mytype"],
+    dependencies: ["base"], // Ensure base plugin is registered first
 
     // Initialize context properties
     initContext(ctx, parentCtx) {
       ctx.myData = parentCtx?.myData
         ? new Map(parentCtx.myData as Map<string, unknown>)
         : new Map();
+    },
+
+    // Merge parent context into child context
+    mergeChildContext(childCtx, parentCtx) {
+      childCtx.myData = new Map(parentCtx.myData as Map<string, unknown>);
     },
 
     // Extend PluginAPI with methods

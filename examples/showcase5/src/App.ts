@@ -10,7 +10,7 @@ import {
   select,
   option,
   text,
-  clss,
+  classes,
   attr,
   on,
   key,
@@ -66,11 +66,11 @@ export const App: Component = () => {
   };
 
   const renderList = function* () {
-    yield* clss(["space-y-2"]);
+    yield* classes("space-y-2");
 
     if (items.length === 0) {
       yield* div(() => [
-        clss(["p-8", "text-center", "text-gray-400", "border", "rounded-lg", "border-dashed"]),
+        classes("p-8", "text-center", "text-gray-400", "border", "rounded-lg", "border-dashed"),
         text("No items. Add one above!"),
       ]);
     } else {
@@ -98,33 +98,33 @@ export const App: Component = () => {
   };
 
   const renderStats = function* () {
-    yield* clss(["flex", "gap-4", "text-sm", "text-gray-500"]);
+    yield* classes("flex", "gap-4", "text-sm", "text-gray-500");
 
     const high = items.filter((i) => i.priority === "high").length;
     const medium = items.filter((i) => i.priority === "medium").length;
     const low = items.filter((i) => i.priority === "low").length;
 
     yield* div(() => [
-      clss(["flex", "gap-2"]),
-      div(() => [clss(["text-red-600"]), text(`High: ${high}`)]),
-      div(() => [clss(["text-yellow-600"]), text(`Medium: ${medium}`)]),
-      div(() => [clss(["text-green-600"]), text(`Low: ${low}`)]),
+      classes("flex", "gap-2"),
+      div(() => [classes("text-red-600"), text(`High: ${high}`)]),
+      div(() => [classes("text-yellow-600"), text(`Medium: ${medium}`)]),
+      div(() => [classes("text-green-600"), text(`Low: ${low}`)]),
     ]);
 
-    yield* div(() => [clss(["ml-auto"]), text(`Total: ${items.length}`)]);
+    yield* div(() => [classes("ml-auto"), text(`Total: ${items.length}`)]);
   };
 
   return div(function* () {
-    yield* clss(["space-y-6"]);
+    yield* classes("space-y-6");
 
     // Header
     yield* h1(() => [
-      clss(["text-2xl", "font-bold", "text-center", "text-purple-800"]),
+      classes("text-2xl", "font-bold", "text-center", "text-purple-800"),
       text("Sortable List with key()"),
     ]);
 
     yield* p(() => [
-      clss(["text-center", "text-gray-500", "text-sm"]),
+      classes("text-center", "text-gray-500", "text-sm"),
       text(
         "Demonstrates key() for efficient DOM updates. " +
           "Move items around and watch DOM IDs stay stable.",
@@ -133,12 +133,12 @@ export const App: Component = () => {
 
     // Add item form
     yield* div(function* () {
-      yield* clss(["flex", "gap-2", "p-4", "bg-gray-50", "rounded-lg"]);
+      yield* classes("flex", "gap-2", "p-4", "bg-gray-50", "rounded-lg");
 
       yield* input(function* () {
         yield* attr("type", "text");
         yield* attr("placeholder", "New item text...");
-        yield* clss([
+        yield* classes(
           "flex-1",
           "px-3",
           "py-2",
@@ -147,14 +147,14 @@ export const App: Component = () => {
           "focus:outline-none",
           "focus:ring-2",
           "focus:ring-blue-500",
-        ]);
+        );
         yield* on("input", (e) => {
           newItemText = (e.target as HTMLInputElement).value;
         });
       });
 
       yield* select(function* () {
-        yield* clss(["px-3", "py-2", "border", "rounded"]);
+        yield* classes("px-3", "py-2", "border", "rounded");
         yield* on("change", (e) => {
           newItemPriority = (e.target as HTMLSelectElement).value as ListItem["priority"];
         });
@@ -165,7 +165,7 @@ export const App: Component = () => {
       });
 
       yield* button(function* () {
-        yield* clss(["px-4", "py-2", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600"]);
+        yield* classes("px-4", "py-2", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600");
         yield* on("click", () => {
           if (newItemText.trim()) {
             items.push({
@@ -184,8 +184,8 @@ export const App: Component = () => {
 
     // Sort controls
     yield* div(function* () {
-      yield* clss(["flex", "gap-2", "items-center"]);
-      yield* h2(() => [clss(["text-sm", "font-medium", "text-gray-700"]), text("Sort by:")]);
+      yield* classes("flex", "gap-2", "items-center");
+      yield* h2(() => [classes("text-sm", "font-medium", "text-gray-700"), text("Sort by:")]);
 
       const sortButtons: { order: SortOrder; label: string }[] = [
         { order: "id", label: "ID" },
@@ -195,7 +195,7 @@ export const App: Component = () => {
 
       for (const btn of sortButtons) {
         yield* button(function* () {
-          yield* clss(["px-3", "py-1", "text-sm", "rounded", "bg-gray-200", "hover:bg-gray-300"]);
+          yield* classes("px-3", "py-1", "text-sm", "rounded", "bg-gray-200", "hover:bg-gray-300");
           yield* on("click", () => sortItemsBy(btn.order));
           yield* text(btn.label);
         });
@@ -210,8 +210,8 @@ export const App: Component = () => {
 
     // Info
     yield* div(() => [
-      clss(["mt-4", "p-4", "bg-blue-50", "rounded-lg", "text-sm"]),
-      h2(() => [clss(["font-semibold", "mb-2"]), text("How key() works:")]),
+      classes("mt-4", "p-4", "bg-blue-50", "rounded-lg", "text-sm"),
+      h2(() => [classes("font-semibold", "mb-2"), text("How key() works:")]),
       p(() => [
         text(
           "The key() primitive tells the renderer to reuse existing DOM nodes " +

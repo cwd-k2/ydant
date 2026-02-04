@@ -18,7 +18,7 @@ export type {
 } from "./types";
 
 // Primitives
-export { attr, clss, on, text, onMount, onUnmount, style, key } from "./primitives";
+export { attr, classes, on, text, onMount, onUnmount, style, key } from "./primitives";
 
 // HTML Elements
 export {
@@ -75,6 +75,10 @@ export {
   svgText,
   tspan,
 } from "./elements/svg";
+
+// SlotRef
+export { createSlotRef } from "./slot-ref";
+export type { SlotRef } from "./slot-ref";
 
 // Factory helpers
 export { createHTMLElement, createSVGElement } from "./elements/factory";

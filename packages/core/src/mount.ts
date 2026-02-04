@@ -32,11 +32,26 @@ type Component = () => Render;
 export function mount(app: Component, parent: HTMLElement, options?: MountOptions): void {
   // プラグインを Map に変換（type -> plugin）
   const plugins = new Map<string, Plugin>();
+  const pluginNames = new Set<string>();
 
   if (options?.plugins) {
     for (const plugin of options.plugins) {
+      pluginNames.add(plugin.name);
       for (const type of plugin.types) {
         plugins.set(type, plugin);
+      }
+    }
+
+    // 依存関係の検証
+    for (const plugin of options.plugins) {
+      if (plugin.dependencies) {
+        for (const dep of plugin.dependencies) {
+          if (!pluginNames.has(dep)) {
+            console.warn(
+              `[ydant] Plugin "${plugin.name}" depends on "${dep}", but "${dep}" is not registered.`,
+            );
+          }
+        }
       }
     }
   }

@@ -64,6 +64,9 @@ export interface PluginReturnExtensions {}
 /** 子要素として yield できるもの（プラグインによって拡張可能） */
 export type Child = PluginChildExtensions[keyof PluginChildExtensions];
 
+/** Child から特定の type を抽出するヘルパー型 */
+export type ChildOfType<T extends string> = Extract<Child, { type: T }>;
+
 /** next() に渡される値の型（プラグインによって拡張可能） */
 export type ChildNext = void | PluginNextExtensions[keyof PluginNextExtensions];
 
@@ -101,3 +104,17 @@ export type Render = Generator<Child, ChildReturn, ChildNext>;
  * base パッケージで Slot が追加されると、より具体的な型になる
  */
 export type Component = () => Render;
+
+/**
+ * Props を受け取るコンポーネント
+ *
+ * @example
+ * ```typescript
+ * interface CounterProps { initial: number }
+ * const Counter: ComponentWith<CounterProps> = (props) =>
+ *   div(function* () {
+ *     yield* text(`Count: ${props.initial}`);
+ *   });
+ * ```
+ */
+export type ComponentWith<P> = (props: P) => Render;

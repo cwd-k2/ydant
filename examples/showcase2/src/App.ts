@@ -1,5 +1,5 @@
 import type { Component } from "@ydant/core";
-import { text, div, h1, p, span, button, input, clss, on, attr, type Slot } from "@ydant/base";
+import { text, div, h1, p, span, button, input, classes, on, attr, type Slot } from "@ydant/base";
 import type { Todo, Filter } from "./types";
 import { loadTodos, saveTodos } from "./storage";
 import { TodoItem } from "./components/TodoItem";
@@ -34,7 +34,7 @@ export const App: Component = () => {
 
   // Render functions for refreshing
   const renderFilterButtons = function* () {
-    yield* clss(["flex", "gap-2", "mb-4", "justify-center"]);
+    yield* classes("flex", "gap-2", "mb-4", "justify-center");
 
     const filters: { key: Filter; label: string }[] = [
       { key: "all", label: "All" },
@@ -56,13 +56,13 @@ export const App: Component = () => {
   };
 
   const renderTodoList = function* () {
-    yield* clss(["border", "border-gray-200", "rounded-lg", "overflow-hidden", "mb-4"]);
+    yield* classes("border", "border-gray-200", "rounded-lg", "overflow-hidden", "mb-4");
 
     const filteredTodos = getFilteredTodos();
 
     if (filteredTodos.length === 0) {
       yield* div(() => [
-        clss(["p-8", "text-center", "text-gray-400"]),
+        classes("p-8", "text-center", "text-gray-400"),
         text(
           filter === "all"
             ? "No todos yet. Add one above!"
@@ -93,7 +93,7 @@ export const App: Component = () => {
   };
 
   const renderStats = function* () {
-    yield* clss(["flex", "justify-between", "items-center", "text-sm", "text-gray-500"]);
+    yield* classes("flex", "justify-between", "items-center", "text-sm", "text-gray-500");
 
     const activeCount = getActiveCount();
     const completedCount = todos.length - activeCount;
@@ -102,7 +102,7 @@ export const App: Component = () => {
 
     if (completedCount > 0) {
       yield* button(function* () {
-        yield* clss(["text-red-500", "hover:text-red-700", "hover:underline"]);
+        yield* classes("text-red-500", "hover:text-red-700", "hover:underline");
         yield* on("click", () => {
           todos = todos.filter((t) => !t.completed);
           saveTodos(todos);
@@ -115,11 +115,11 @@ export const App: Component = () => {
   };
 
   return div(function* () {
-    yield* clss(["container", "mx-auto"]);
+    yield* classes("container", "mx-auto");
 
     // Title
     yield* h1(() => [
-      clss(["text-2xl", "font-bold", "text-center", "text-purple-800", "mb-6"]),
+      classes("text-2xl", "font-bold", "text-center", "text-purple-800", "mb-6"),
       text("ToDo App"),
     ]);
 
@@ -128,13 +128,13 @@ export const App: Component = () => {
     let inputSlot: Slot;
 
     yield* div(function* () {
-      yield* clss(["flex", "gap-2", "mb-6"]);
+      yield* classes("flex", "gap-2", "mb-6");
 
       // Text input
       inputSlot = yield* input(function* () {
         yield* attr("type", "text");
         yield* attr("placeholder", "What needs to be done?");
-        yield* clss([
+        yield* classes(
           "flex-1",
           "px-4",
           "py-2",
@@ -145,7 +145,7 @@ export const App: Component = () => {
           "focus:ring-2",
           "focus:ring-blue-500",
           "focus:border-transparent",
-        ]);
+        );
         yield* on("input", (e) => {
           inputValue = (e.target as HTMLInputElement).value;
         });
@@ -167,7 +167,7 @@ export const App: Component = () => {
 
       // Add button
       yield* button(function* () {
-        yield* clss([
+        yield* classes(
           "btn-add",
           "px-6",
           "py-2",
@@ -176,7 +176,7 @@ export const App: Component = () => {
           "rounded-lg",
           "hover:bg-blue-600",
           "font-semibold",
-        ]);
+        );
         yield* on("click", () => {
           if (inputValue.trim()) {
             todos.push({
@@ -206,7 +206,7 @@ export const App: Component = () => {
 
     // Footer info
     yield* p(() => [
-      clss(["text-center", "text-xs", "text-gray-400", "mt-6"]),
+      classes("text-center", "text-xs", "text-gray-400", "mt-6"),
       text("Double-click to edit a todo (not implemented). Data is saved to localStorage."),
     ]);
   });

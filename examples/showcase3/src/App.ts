@@ -7,7 +7,7 @@ import {
   p,
   span,
   button,
-  clss,
+  classes,
   on,
   attr,
   svg,
@@ -40,7 +40,7 @@ export const App: Component = () => {
 
   // Render functions
   const renderModeButtons = function* () {
-    yield* clss(["flex", "gap-2", "mb-8"]);
+    yield* classes("flex", "gap-2", "mb-8");
 
     const modes: TimerMode[] = ["work", "break", "long-break"];
     for (const mode of modes) {
@@ -64,7 +64,7 @@ export const App: Component = () => {
     const strokeDashoffset = RING_CIRCUMFERENCE - (progress / 100) * RING_CIRCUMFERENCE;
     const ringColor = MODE_COLORS[state.mode].ring;
 
-    yield* clss(["transform", "-rotate-90"]);
+    yield* classes("transform", "-rotate-90");
     yield* attr("width", String(RING_RADIUS * 2));
     yield* attr("height", String(RING_RADIUS * 2));
 
@@ -80,7 +80,7 @@ export const App: Component = () => {
 
     // プログレスの円
     yield* circle(() => [
-      clss(["progress-ring"]),
+      classes("progress-ring"),
       attr("stroke", ringColor),
       attr("fill", "transparent"),
       attr("stroke-width", String(RING_STROKE)),
@@ -94,20 +94,20 @@ export const App: Component = () => {
   };
 
   const renderTimer = function* () {
-    yield* clss(["relative", "mb-8"]);
+    yield* classes("relative", "mb-8");
 
     yield* div(function* () {
-      yield* clss(["flex", "items-center", "justify-center"]);
+      yield* classes("flex", "items-center", "justify-center");
 
       // SVG progress ring
       yield* div(function* () {
-        yield* clss(["absolute", "inset-0", "flex", "items-center", "justify-center"]);
+        yield* classes("absolute", "inset-0", "flex", "items-center", "justify-center");
         _progressRingSlot = yield* svg(renderProgressRing);
       });
 
       // Timer text overlay
       yield* div(function* () {
-        yield* clss([
+        yield* classes(
           "relative",
           "z-10",
           "w-60",
@@ -116,19 +116,19 @@ export const App: Component = () => {
           "flex-col",
           "items-center",
           "justify-center",
-        ]);
+        );
 
         yield* span(function* () {
-          yield* clss([
+          yield* classes(
             "timer-display",
             MODE_COLORS[state.mode].text,
             ...(state.isRunning ? ["timer-running"] : []),
-          ]);
+          );
           yield* text(formatTime(state.timeLeft));
         });
 
         yield* span(() => [
-          clss(["text-gray-500", "text-lg", "mt-2"]),
+          classes("text-gray-500", "text-lg", "mt-2"),
           text(MODE_LABELS[state.mode]),
         ]);
       });
@@ -136,12 +136,12 @@ export const App: Component = () => {
   };
 
   const renderControls = function* () {
-    yield* clss(["flex", "gap-4", "mb-8"]);
+    yield* classes("flex", "gap-4", "mb-8");
 
     if (!state.isRunning) {
       // Start button
       yield* button(function* () {
-        yield* clss([
+        yield* classes(
           "btn-control",
           "px-8",
           "py-3",
@@ -151,14 +151,14 @@ export const App: Component = () => {
           "font-semibold",
           "text-lg",
           "shadow-lg",
-        ]);
+        );
         yield* on("click", startTimer);
         yield* text("Start");
       });
     } else {
       // Pause button
       yield* button(function* () {
-        yield* clss([
+        yield* classes(
           "btn-control",
           "px-8",
           "py-3",
@@ -168,7 +168,7 @@ export const App: Component = () => {
           "font-semibold",
           "text-lg",
           "shadow-lg",
-        ]);
+        );
         yield* on("click", stopTimer);
         yield* text("Pause");
       });
@@ -176,7 +176,7 @@ export const App: Component = () => {
 
     // Reset button
     yield* button(function* () {
-      yield* clss([
+      yield* classes(
         "btn-control",
         "px-8",
         "py-3",
@@ -186,34 +186,34 @@ export const App: Component = () => {
         "font-semibold",
         "text-lg",
         "hover:bg-gray-300",
-      ]);
+      );
       yield* on("click", resetTimer);
       yield* text("Reset");
     });
   };
 
   const renderSessions = function* () {
-    yield* clss(["flex", "flex-col", "items-center", "p-4", "bg-gray-50", "rounded-xl", "w-full"]);
+    yield* classes("flex", "flex-col", "items-center", "p-4", "bg-gray-50", "rounded-xl", "w-full");
 
     yield* h2(() => [
-      clss(["text-sm", "font-medium", "text-gray-500", "mb-2"]),
+      classes("text-sm", "font-medium", "text-gray-500", "mb-2"),
       text("Sessions Completed"),
     ]);
 
     yield* div(function* () {
-      yield* clss(["flex", "gap-2"]);
+      yield* classes("flex", "gap-2");
 
       // Show pomodoro icons for completed sessions (max 8)
       const displayCount = Math.min(state.sessionsCompleted, 8);
       for (let i = 0; i < displayCount; i++) {
-        yield* span(() => [clss(["text-2xl"]), text("🍅")]);
+        yield* span(() => [classes("text-2xl"), text("🍅")]);
       }
 
       if (state.sessionsCompleted === 0) {
-        yield* span(() => [clss(["text-gray-400"]), text("No sessions yet")]);
+        yield* span(() => [classes("text-gray-400"), text("No sessions yet")]);
       } else if (state.sessionsCompleted > 8) {
         yield* span(() => [
-          clss(["text-gray-600", "font-medium"]),
+          classes("text-gray-600", "font-medium"),
           text(`+${state.sessionsCompleted - 8} more`),
         ]);
       }
@@ -288,7 +288,7 @@ export const App: Component = () => {
   };
 
   return div(function* () {
-    yield* clss(["flex", "flex-col", "items-center"]);
+    yield* classes("flex", "flex-col", "items-center");
 
     // ライフサイクルフック: アンマウント時にタイマーをクリア
     yield* onUnmount(() => {
@@ -300,12 +300,12 @@ export const App: Component = () => {
 
     // Title
     yield* h1(() => [
-      clss(["text-3xl", "font-bold", "text-gray-800", "mb-2"]),
+      classes("text-3xl", "font-bold", "text-gray-800", "mb-2"),
       text("Pomodoro Timer"),
     ]);
 
     yield* p(() => [
-      clss(["text-gray-500", "mb-8", "text-center"]),
+      classes("text-gray-500", "mb-8", "text-center"),
       text("Stay focused and productive!"),
     ]);
 
@@ -323,7 +323,7 @@ export const App: Component = () => {
 
     // Tips
     yield* div(() => [
-      clss(["mt-6", "text-center", "text-xs", "text-gray-400"]),
+      classes("mt-6", "text-center", "text-xs", "text-gray-400"),
       p(() => [text("25 min work → 5 min break → repeat")]),
       p(() => [text("Every 4 sessions, take a 15 min long break")]),
     ]);

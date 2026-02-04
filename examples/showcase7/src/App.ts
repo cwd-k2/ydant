@@ -1,5 +1,5 @@
 import type { Component, Builder } from "@ydant/core";
-import { type Slot, div, h1, h2, p, span, button, text, clss, on, key } from "@ydant/base";
+import { type Slot, div, h1, h2, p, span, button, text, classes, on, key } from "@ydant/base";
 import { createTransition, type TransitionHandle } from "@ydant/transition";
 import type { Toast } from "./types";
 
@@ -15,10 +15,10 @@ function ToggleSection() {
   let fadeTransition: TransitionHandle;
 
   const renderSection = function* () {
-    yield* clss(["p-4", "bg-gray-50", "rounded-lg"]);
+    yield* classes("p-4", "bg-gray-50", "rounded-lg");
 
     yield* button(function* () {
-      yield* clss([
+      yield* classes(
         "px-4",
         "py-2",
         "bg-blue-500",
@@ -26,7 +26,7 @@ function ToggleSection() {
         "rounded",
         "hover:bg-blue-600",
         "mb-4",
-      ]);
+      );
       yield* on("click", async () => {
         // Toggle visibility with animation
         const isVisible = fadeTransition.slot.node.firstElementChild !== null;
@@ -44,10 +44,10 @@ function ToggleSection() {
       leaveTo: "fade-leave-to",
       children: () =>
         div(() => [
-          clss(["p-4", "bg-blue-100", "rounded-lg"]),
+          classes("p-4", "bg-blue-100", "rounded-lg"),
           p(() => [text("This content fades in and out!")]),
           p(() => [
-            clss(["text-sm", "text-blue-600", "mt-2"]),
+            classes("text-sm", "text-blue-600", "mt-2"),
             text("The createTransition API handles enter AND leave animations."),
           ]),
         ]),
@@ -55,7 +55,7 @@ function ToggleSection() {
   };
 
   return div(function* () {
-    yield* h2(() => [clss(["text-xl", "font-semibold", "mb-4"]), text("Fade Transition")]);
+    yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Fade Transition")]);
     _sectionSlot = yield* div(renderSection as Builder);
   });
 }
@@ -66,10 +66,10 @@ function SlideSection() {
   let slideTransition: TransitionHandle;
 
   const renderSection = function* () {
-    yield* clss(["p-4", "bg-gray-50", "rounded-lg"]);
+    yield* classes("p-4", "bg-gray-50", "rounded-lg");
 
     yield* button(function* () {
-      yield* clss([
+      yield* classes(
         "px-4",
         "py-2",
         "bg-green-500",
@@ -77,7 +77,7 @@ function SlideSection() {
         "rounded",
         "hover:bg-green-600",
         "mb-4",
-      ]);
+      );
       yield* on("click", async () => {
         const isVisible = slideTransition.slot.node.firstElementChild !== null;
         await slideTransition.setShow(!isVisible);
@@ -94,14 +94,14 @@ function SlideSection() {
       leaveTo: "slide-leave-to",
       children: () =>
         div(() => [
-          clss(["p-4", "bg-green-100", "rounded-lg"]),
+          classes("p-4", "bg-green-100", "rounded-lg"),
           p(() => [text("This panel slides in and out!")]),
         ]),
     });
   };
 
   return div(function* () {
-    yield* h2(() => [clss(["text-xl", "font-semibold", "mb-4"]), text("Slide Transition")]);
+    yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Slide Transition")]);
     _sectionSlot = yield* div(renderSection as Builder);
   });
 }
@@ -141,11 +141,11 @@ function ToastSection() {
   };
 
   const renderToastList = function* () {
-    yield* clss(["space-y-2", "min-h-[120px]"]);
+    yield* classes("space-y-2", "min-h-[120px]");
 
     if (toasts.length === 0) {
       yield* div(() => [
-        clss(["p-4", "text-center", "text-gray-400", "border", "border-dashed", "rounded-lg"]),
+        classes("p-4", "text-center", "text-gray-400", "border", "border-dashed", "rounded-lg"),
         text("No toasts. Click a button above to add one."),
       ]);
     } else {
@@ -154,7 +154,7 @@ function ToastSection() {
         yield* key(toast.id);
 
         yield* div(function* () {
-          yield* clss([
+          yield* classes(
             "flex",
             "items-center",
             "justify-between",
@@ -164,10 +164,10 @@ function ToastSection() {
             "scale-enter",
             "scale-enter-to",
             ...TOAST_COLORS[toast.type],
-          ]);
+          );
           yield* span(() => [text(toast.message)]);
           yield* button(function* () {
-            yield* clss(["ml-2", "hover:opacity-75"]);
+            yield* classes("ml-2", "hover:opacity-75");
             yield* on("click", () => removeToast(toast.id));
             yield* text("×");
           });
@@ -177,32 +177,32 @@ function ToastSection() {
   };
 
   return div(function* () {
-    yield* h2(() => [clss(["text-xl", "font-semibold", "mb-4"]), text("Toast Notifications")]);
+    yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Toast Notifications")]);
 
     yield* div(function* () {
-      yield* clss(["flex", "gap-2", "mb-4"]);
+      yield* classes("flex", "gap-2", "mb-4");
 
       yield* button(function* () {
-        yield* clss([
+        yield* classes(
           "px-4",
           "py-2",
           "bg-green-500",
           "text-white",
           "rounded",
           "hover:bg-green-600",
-        ]);
+        );
         yield* on("click", () => addToast("success"));
         yield* text("Success Toast");
       });
 
       yield* button(function* () {
-        yield* clss(["px-4", "py-2", "bg-red-500", "text-white", "rounded", "hover:bg-red-600"]);
+        yield* classes("px-4", "py-2", "bg-red-500", "text-white", "rounded", "hover:bg-red-600");
         yield* on("click", () => addToast("error"));
         yield* text("Error Toast");
       });
 
       yield* button(function* () {
-        yield* clss(["px-4", "py-2", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600"]);
+        yield* classes("px-4", "py-2", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600");
         yield* on("click", () => addToast("info"));
         yield* text("Info Toast");
       });
@@ -214,16 +214,16 @@ function ToastSection() {
 
 export const App: Component = () =>
   div(function* () {
-    yield* clss(["space-y-8"]);
+    yield* classes("space-y-8");
 
     // Header
     yield* h1(() => [
-      clss(["text-2xl", "font-bold", "text-center", "text-purple-800", "mb-2"]),
+      classes("text-2xl", "font-bold", "text-center", "text-purple-800", "mb-2"),
       text("CSS Transitions"),
     ]);
 
     yield* p(() => [
-      clss(["text-center", "text-gray-500", "text-sm", "mb-6"]),
+      classes("text-center", "text-gray-500", "text-sm", "mb-6"),
       text("Demonstrates createTransition for animated UI elements with enter AND leave support."),
     ]);
 
@@ -231,21 +231,21 @@ export const App: Component = () =>
     yield* ToggleSection();
 
     // Divider
-    yield* div(() => [clss(["border-t", "border-gray-200", "my-6"])]);
+    yield* div(() => [classes("border-t", "border-gray-200", "my-6")]);
 
     // Slide section
     yield* SlideSection();
 
     // Divider
-    yield* div(() => [clss(["border-t", "border-gray-200", "my-6"])]);
+    yield* div(() => [classes("border-t", "border-gray-200", "my-6")]);
 
     // Toast section
     yield* ToastSection();
 
     // Info
     yield* div(() => [
-      clss(["mt-6", "p-4", "bg-blue-50", "rounded-lg", "text-sm"]),
-      h2(() => [clss(["font-semibold", "mb-2"]), text("How createTransition Works:")]),
+      classes("mt-6", "p-4", "bg-blue-50", "rounded-lg", "text-sm"),
+      h2(() => [classes("font-semibold", "mb-2"), text("How createTransition Works:")]),
       p(() => [
         text(
           "The createTransition API returns a handle with setShow(boolean) for programmatic control. " +

@@ -21,22 +21,25 @@ export const attr = createPrimitive(
 );
 
 /** class 属性のショートハンド */
-export const clss = createPrimitive(
-  (classes: string[]): Attribute => ({
-    type: "attribute",
-    key: "class",
-    value: classes.join(" "),
-  }),
-);
+export function classes(...classNames: (string | string[])[]): Generator<Attribute, void, void> {
+  return (function* () {
+    const value = classNames.flat().join(" ");
+    yield { type: "attribute" as const, key: "class", value };
+  })();
+}
 
-/** イベントリスナを yield */
-export const on = createPrimitive(
-  (key: string, handler: (e: Event) => void): Listener => ({
-    type: "listener",
-    key,
-    value: handler,
-  }),
-);
+/** イベントリスナを yield（HTMLElementEventMap のイベント型を推論） */
+export function on<K extends keyof HTMLElementEventMap>(
+  key: K,
+  handler: (e: HTMLElementEventMap[K]) => void,
+): Generator<Listener, void, void>;
+/** イベントリスナを yield（カスタムイベント用フォールバック） */
+export function on(key: string, handler: (e: Event) => void): Generator<Listener, void, void>;
+export function on(key: string, handler: (e: Event) => void): Generator<Listener, void, void> {
+  return (function* () {
+    yield { type: "listener" as const, key, value: handler };
+  })();
+}
 
 /** テキストノードを yield */
 export const text = createPrimitive((content: string): Text => ({ type: "text", content }));

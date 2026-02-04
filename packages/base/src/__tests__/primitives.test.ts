@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { attr, clss, on, text, style, key, onMount, onUnmount } from "../primitives";
+import { attr, classes, on, text, style, key, onMount, onUnmount } from "../primitives";
 import type { Lifecycle } from "../types";
 
 describe("attr", () => {
@@ -18,9 +18,9 @@ describe("attr", () => {
   });
 });
 
-describe("clss", () => {
+describe("classes", () => {
   it("yields an Attribute with class key and joined class names", () => {
-    const gen = clss(["container", "flex", "items-center"]);
+    const gen = classes("container", "flex", "items-center");
     const result = gen.next();
 
     expect(result.done).toBe(false);
@@ -31,8 +31,30 @@ describe("clss", () => {
     });
   });
 
-  it("handles empty array", () => {
-    const gen = clss([]);
+  it("handles array argument", () => {
+    const gen = classes(["container", "flex", "items-center"]);
+    const result = gen.next();
+
+    expect(result.value).toEqual({
+      type: "attribute",
+      key: "class",
+      value: "container flex items-center",
+    });
+  });
+
+  it("handles mixed arguments", () => {
+    const gen = classes("a", ["b", "c"]);
+    const result = gen.next();
+
+    expect(result.value).toEqual({
+      type: "attribute",
+      key: "class",
+      value: "a b c",
+    });
+  });
+
+  it("handles no arguments", () => {
+    const gen = classes();
     const result = gen.next();
 
     expect(result.value).toEqual({
@@ -43,7 +65,7 @@ describe("clss", () => {
   });
 
   it("handles single class", () => {
-    const gen = clss(["single"]);
+    const gen = classes("single");
     const result = gen.next();
 
     expect(result.value).toEqual({

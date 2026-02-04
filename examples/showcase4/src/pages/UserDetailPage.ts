@@ -1,5 +1,5 @@
 import type { Component } from "@ydant/core";
-import { div, h1, p, span, button, text, clss, on } from "@ydant/base";
+import { div, h1, p, span, button, text, classes, on } from "@ydant/base";
 import { useRoute, navigate } from "@ydant/router";
 import { findUser } from "../state/users";
 import { basePath } from "../App";
@@ -9,30 +9,30 @@ import { basePath } from "../App";
  */
 export const UserDetailPage: Component = () =>
   div(function* () {
-    yield* clss(["p-6"]);
+    yield* classes("p-6");
     const route = useRoute();
     const userId = parseInt(route.params.id, 10);
     const user = findUser(userId);
 
     if (user) {
-      yield* h1(() => [clss(["text-2xl", "font-bold", "mb-4"]), text(`User: ${user.name}`)]);
+      yield* h1(() => [classes("text-2xl", "font-bold", "mb-4"), text(`User: ${user.name}`)]);
       yield* div(function* () {
-        yield* clss(["space-y-2"]);
+        yield* classes("space-y-2");
         yield* p(() => [
-          span(() => [clss(["font-semibold"]), text("ID: ")]),
+          span(() => [classes("font-semibold"), text("ID: ")]),
           text(String(user.id)),
         ]);
-        yield* p(() => [span(() => [clss(["font-semibold"]), text("Email: ")]), text(user.email)]);
+        yield* p(() => [span(() => [classes("font-semibold"), text("Email: ")]), text(user.email)]);
       });
     } else {
       yield* h1(() => [
-        clss(["text-2xl", "font-bold", "mb-4", "text-red-500"]),
+        classes("text-2xl", "font-bold", "mb-4", "text-red-500"),
         text("User Not Found"),
       ]);
     }
 
     yield* button(function* () {
-      yield* clss(["mt-4", "px-4", "py-2", "bg-gray-500", "text-white", "rounded"]);
+      yield* classes("mt-4", "px-4", "py-2", "bg-gray-500", "text-white", "rounded");
       yield* on("click", () => navigate(`${basePath}/users`));
       yield* text("← Back to Users");
     });

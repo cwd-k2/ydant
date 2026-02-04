@@ -4,7 +4,7 @@
 
 import type { Builder, Instructor } from "../types";
 import { toChildren } from "../utils";
-import type { Plugin, PluginAPI } from "../plugin";
+import type { Plugin, PluginAPI, PluginAPIExtensions } from "../plugin";
 import type { RenderContext, RenderContextCore } from "./types";
 
 /** RenderContext のコア部分を作成 */
@@ -41,10 +41,7 @@ export function createRenderContext(
   for (const plugin of plugins.values()) {
     if (calledPlugins.has(plugin.name)) continue;
     calledPlugins.add(plugin.name);
-    plugin.initContext?.(
-      ctx as unknown as Record<string, unknown>,
-      parentCtx as unknown as Record<string, unknown>,
-    );
+    plugin.initContext?.(ctx, parentCtx);
   }
 
   return ctx;
@@ -63,9 +60,10 @@ export function createPluginAPIFactory(
   processIterator: (iter: Instructor, ctx: RenderContext) => void,
 ) {
   return function createPluginAPI(ctx: RenderContext): PluginAPI {
-    // プラグイン固有プロパティへのアクセス用（lifecycle コールバック伝搬のため）
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const extCtx = ctx as any;
+    // キャッシュがあればそのまま返す
+    if (ctx._cachedAPI) {
+      return ctx._cachedAPI;
+    }
 
     const api: Record<string, unknown> = {
       // ========================================================================
@@ -93,14 +91,12 @@ export function createPluginAPIFactory(
         const children = toChildren(builder());
         processIterator(children, childCtx);
 
-        // 子コンテキストのコールバックを親に伝搬（base プラグインが初期化している場合）
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const extChildCtx = childCtx as any;
-        if (extCtx.mountCallbacks && extChildCtx.mountCallbacks) {
-          extCtx.mountCallbacks.push(...extChildCtx.mountCallbacks);
-        }
-        if (extCtx.unmountCallbacks && extChildCtx.unmountCallbacks) {
-          extCtx.unmountCallbacks.push(...extChildCtx.unmountCallbacks);
+        // 各プラグインの mergeChildContext を呼び出し
+        const mergedPlugins = new Set<string>();
+        for (const plugin of ctx.plugins.values()) {
+          if (mergedPlugins.has(plugin.name)) continue;
+          mergedPlugins.add(plugin.name);
+          plugin.mergeChildContext?.(ctx, childCtx);
         }
       },
       createChildAPI(parent: Node): PluginAPI {
@@ -119,9 +115,11 @@ export function createPluginAPIFactory(
     for (const plugin of ctx.plugins.values()) {
       if (calledPlugins.has(plugin.name)) continue;
       calledPlugins.add(plugin.name);
-      plugin.extendAPI?.(api, ctx as unknown as Record<string, unknown>);
+      plugin.extendAPI?.(api as Partial<PluginAPIExtensions>, ctx);
     }
 
-    return api as unknown as PluginAPI;
+    const pluginAPI = api as unknown as PluginAPI;
+    ctx._cachedAPI = pluginAPI;
+    return pluginAPI;
   };
 }

@@ -1,5 +1,5 @@
 import type { Component } from "@ydant/core";
-import { type Slot, div, h1, h2, h3, p, ul, li, button, text, clss, on } from "@ydant/base";
+import { type Slot, div, h1, h2, h3, p, ul, li, button, text, classes, on } from "@ydant/base";
 import { createResource, Suspense, ErrorBoundary } from "@ydant/async";
 import type { Post, User } from "./types";
 import { fetchPosts, fetchUsers } from "./api";
@@ -13,20 +13,20 @@ const usersResource = createResource<User[]>(fetchUsers);
 // Section: Posts with Suspense
 function PostsSection() {
   return div(function* () {
-    yield* h2(() => [clss(["text-xl", "font-semibold", "mb-4"]), text("Latest Posts")]);
+    yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Latest Posts")]);
 
     yield* Suspense({
       fallback: () => LoadingSpinner("Loading posts..."),
       children: function* () {
         const posts = postsResource();
         yield* ul(function* () {
-          yield* clss(["space-y-3"]);
+          yield* classes("space-y-3");
           for (const post of posts) {
             yield* li(() => [
-              clss(["p-4", "bg-gray-50", "rounded-lg"]),
-              h3(() => [clss(["font-medium", "text-gray-800"]), text(post.title)]),
+              classes("p-4", "bg-gray-50", "rounded-lg"),
+              h3(() => [classes("font-medium", "text-gray-800"), text(post.title)]),
               p(() => [
-                clss(["text-sm", "text-gray-600", "mt-1"]),
+                classes("text-sm", "text-gray-600", "mt-1"),
                 text(post.body.slice(0, 100) + "..."),
               ]),
             ]);
@@ -40,20 +40,23 @@ function PostsSection() {
 // Section: Users with Suspense
 function UsersSection() {
   return div(function* () {
-    yield* h2(() => [clss(["text-xl", "font-semibold", "mb-4"]), text("Users")]);
+    yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Users")]);
 
     yield* Suspense({
       fallback: () => LoadingSpinner("Loading users..."),
       children: function* () {
         const users = usersResource();
         yield* div(function* () {
-          yield* clss(["grid", "gap-4", "md:grid-cols-3"]);
+          yield* classes("grid", "gap-4", "md:grid-cols-3");
           for (const user of users) {
             yield* div(() => [
-              clss(["p-4", "bg-blue-50", "rounded-lg"]),
-              h3(() => [clss(["font-medium", "text-blue-800"]), text(user.name)]),
-              p(() => [clss(["text-sm", "text-blue-600"]), text(user.email)]),
-              p(() => [clss(["text-xs", "text-blue-500", "mt-1"]), text(`@ ${user.company.name}`)]),
+              classes("p-4", "bg-blue-50", "rounded-lg"),
+              h3(() => [classes("font-medium", "text-blue-800"), text(user.name)]),
+              p(() => [classes("text-sm", "text-blue-600"), text(user.email)]),
+              p(() => [
+                classes("text-xs", "text-blue-500", "mt-1"),
+                text(`@ ${user.company.name}`),
+              ]),
             ]);
           }
         });
@@ -68,14 +71,14 @@ function ErrorDemoSection() {
   let showError = false;
 
   const renderContent = function* () {
-    yield* clss(["p-4", "bg-gray-50", "rounded-lg"]);
+    yield* classes("p-4", "bg-gray-50", "rounded-lg");
 
     if (!showError) {
       yield* div(() => [
-        clss(["text-center"]),
-        p(() => [clss(["text-gray-600", "mb-4"]), text("Click the button to simulate an error.")]),
+        classes("text-center"),
+        p(() => [classes("text-gray-600", "mb-4"), text("Click the button to simulate an error.")]),
         button(function* () {
-          yield* clss(["px-4", "py-2", "bg-red-500", "text-white", "rounded", "hover:bg-red-600"]);
+          yield* classes("px-4", "py-2", "bg-red-500", "text-white", "rounded", "hover:bg-red-600");
           yield* on("click", () => {
             showError = true;
             errorSlot.refresh(renderContent);
@@ -102,7 +105,7 @@ function ErrorDemoSection() {
   };
 
   return div(function* () {
-    yield* h2(() => [clss(["text-xl", "font-semibold", "mb-4"]), text("ErrorBoundary Demo")]);
+    yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("ErrorBoundary Demo")]);
     errorSlot = yield* div(renderContent);
   });
 }
@@ -130,7 +133,7 @@ function ManualLoadingSection() {
   };
 
   const renderContent = function* () {
-    yield* clss(["p-4", "bg-gray-50", "rounded-lg"]);
+    yield* classes("p-4", "bg-gray-50", "rounded-lg");
 
     if (isLoading) {
       yield* LoadingSpinner("Fetching data...");
@@ -138,24 +141,24 @@ function ManualLoadingSection() {
       yield* ErrorDisplay({ error, onRetry: loadData });
     } else if (data) {
       yield* ul(function* () {
-        yield* clss(["space-y-2"]);
+        yield* classes("space-y-2");
         for (const post of data!) {
-          yield* li(() => [clss(["p-2", "bg-white", "rounded", "border"]), text(post.title)]);
+          yield* li(() => [classes("p-2", "bg-white", "rounded", "border"), text(post.title)]);
         }
       });
     } else {
       yield* div(() => [
-        clss(["text-center"]),
-        p(() => [clss(["text-gray-500", "mb-4"]), text("No data loaded yet.")]),
+        classes("text-center"),
+        p(() => [classes("text-gray-500", "mb-4"), text("No data loaded yet.")]),
         button(function* () {
-          yield* clss([
+          yield* classes(
             "px-4",
             "py-2",
             "bg-green-500",
             "text-white",
             "rounded",
             "hover:bg-green-600",
-          ]);
+          );
           yield* on("click", loadData);
           yield* text("Load Data");
         }),
@@ -164,9 +167,9 @@ function ManualLoadingSection() {
   };
 
   return div(function* () {
-    yield* h2(() => [clss(["text-xl", "font-semibold", "mb-4"]), text("Manual Loading Pattern")]);
+    yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Manual Loading Pattern")]);
     yield* p(() => [
-      clss(["text-sm", "text-gray-500", "mb-4"]),
+      classes("text-sm", "text-gray-500", "mb-4"),
       text("Alternative to Suspense: explicitly manage loading/error/data states."),
     ]);
     dataSlot = yield* div(renderContent);
@@ -175,16 +178,16 @@ function ManualLoadingSection() {
 
 export const App: Component = () =>
   div(function* () {
-    yield* clss(["space-y-8"]);
+    yield* classes("space-y-8");
 
     // Header
     yield* h1(() => [
-      clss(["text-2xl", "font-bold", "text-center", "text-purple-800", "mb-2"]),
+      classes("text-2xl", "font-bold", "text-center", "text-purple-800", "mb-2"),
       text("Async Data Fetching"),
     ]);
 
     yield* p(() => [
-      clss(["text-center", "text-gray-500", "text-sm", "mb-6"]),
+      classes("text-center", "text-gray-500", "text-sm", "mb-6"),
       text("Demonstrates Suspense, ErrorBoundary, and Resource patterns."),
     ]);
 
@@ -192,29 +195,29 @@ export const App: Component = () =>
     yield* PostsSection();
 
     // Divider
-    yield* div(() => [clss(["border-t", "border-gray-200", "my-6"])]);
+    yield* div(() => [classes("border-t", "border-gray-200", "my-6")]);
 
     // Users section
     yield* UsersSection();
 
     // Divider
-    yield* div(() => [clss(["border-t", "border-gray-200", "my-6"])]);
+    yield* div(() => [classes("border-t", "border-gray-200", "my-6")]);
 
     // Error demo section
     yield* ErrorDemoSection();
 
     // Divider
-    yield* div(() => [clss(["border-t", "border-gray-200", "my-6"])]);
+    yield* div(() => [classes("border-t", "border-gray-200", "my-6")]);
 
     // Manual loading section
     yield* ManualLoadingSection();
 
     // Info
     yield* div(() => [
-      clss(["mt-6", "p-4", "bg-blue-50", "rounded-lg", "text-sm"]),
-      h2(() => [clss(["font-semibold", "mb-2"]), text("How Async Works:")]),
+      classes("mt-6", "p-4", "bg-blue-50", "rounded-lg", "text-sm"),
+      h2(() => [classes("font-semibold", "mb-2"), text("How Async Works:")]),
       ul(() => [
-        clss(["list-disc", "list-inside", "space-y-1"]),
+        classes("list-disc", "list-inside", "space-y-1"),
         li(() => [
           text("createResource() creates a reactive data fetcher that integrates with Suspense"),
         ]),

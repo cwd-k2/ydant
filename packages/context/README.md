@@ -1,6 +1,6 @@
 # @ydant/context
 
-Context API and persistence helpers for Ydant.
+Context API for Ydant.
 
 ## Installation
 
@@ -42,29 +42,6 @@ mount(App, document.getElementById("app")!, {
 
 > **Note:** `@ydant/base` is required for DOM rendering.
 
-### Persistence (localStorage)
-
-```typescript
-import { createStorage, persist, save, remove } from "@ydant/context";
-
-// Create persistent storage
-const themeStorage = createStorage<"light" | "dark">("theme", "light");
-
-// Read
-const theme = themeStorage.get();
-
-// Write
-themeStorage.set("dark");
-
-// Remove
-themeStorage.remove();
-
-// Alternative: direct functions
-persist("key", value); // Save
-save("key", value); // Alias for persist
-remove("key"); // Remove
-```
-
 ## API
 
 ### createContext
@@ -90,20 +67,6 @@ function inject<T>(context: Context<T>): ContextInject;
 ```
 
 Retrieves the value from the nearest ancestor provider. Use with `yield*`. Returns the default value if no provider is found.
-
-### createStorage
-
-```typescript
-function createStorage<T>(key: string, defaultValue: T): Storage<T>;
-
-interface Storage<T> {
-  get(): T;
-  set(value: T): void;
-  remove(): void;
-}
-```
-
-Creates a localStorage-backed storage with JSON serialization.
 
 ### createContextPlugin
 
@@ -131,5 +94,4 @@ interface PluginAPIExtensions {
 ## Module Structure
 
 - `context.ts` - Context creation and provide/inject
-- `persist.ts` - localStorage helpers
 - `plugin.ts` - Plugin implementation

@@ -26,11 +26,11 @@ pnpm add @ydant/base
 
 ```typescript
 import { mount } from "@ydant/core";
-import { createBasePlugin, div, p, text, clss, type Component } from "@ydant/base";
+import { createBasePlugin, div, p, text, classes, type Component } from "@ydant/base";
 
 const Greeting: Component = () =>
   div(function* () {
-    yield* clss(["greeting"]);
+    yield* classes("greeting");
     yield* p(() => [text("Hello World!")]);
   });
 
@@ -95,27 +95,76 @@ SVG elements: `svg`, `circle`, `ellipse`, `line`, `path`, `polygon`, `polyline`,
 | --------------------- | -------------------------- |
 | `text(content)`       | Create a text node         |
 | `attr(key, value)`    | Set an HTML attribute      |
-| `clss(classes[])`     | Set class attribute        |
+| `classes(...names)`   | Set class attribute        |
 | `on(event, handler)`  | Add event listener         |
 | `style(styles)`       | Set inline styles          |
 | `key(value)`          | Set key for list diffing   |
 | `onMount(callback)`   | Lifecycle hook for mount   |
 | `onUnmount(callback)` | Lifecycle hook for unmount |
 
+#### `on()` Type Overloads
+
+`on()` provides type-safe overloads for known DOM event types:
+
+```typescript
+// Type-safe: handler receives MouseEvent
+yield *
+  on("click", (e) => {
+    /* e: MouseEvent */
+  });
+
+// Type-safe: handler receives KeyboardEvent
+yield *
+  on("keydown", (e) => {
+    /* e: KeyboardEvent */
+  });
+
+// Generic fallback for custom events
+yield *
+  on("my-event", (e) => {
+    /* e: Event */
+  });
+```
+
 ### Types
 
-| Type            | Description                                                      |
-| --------------- | ---------------------------------------------------------------- |
-| `Slot`          | `{ node: HTMLElement, refresh: (fn) => void }`                   |
-| `Render`        | `Generator<Child, ChildReturn, ChildNext>` - Rendering generator |
-| `Component`     | `() => Render` - Root component type                             |
-| `ElementRender` | `Generator<Element, Slot, ChildNext>` - Element factory return   |
-| `Element`       | Tagged type for HTML/SVG elements                                |
-| `Attribute`     | Tagged type for attributes                                       |
-| `Listener`      | Tagged type for event listeners                                  |
-| `Text`          | Tagged type for text nodes                                       |
-| `Lifecycle`     | Tagged type for lifecycle hooks                                  |
-| `Key`           | Tagged type for list keys                                        |
+| Type            | Description                                                         |
+| --------------- | ------------------------------------------------------------------- |
+| `Slot`          | `{ node: HTMLElement, refresh: (fn) => void }`                      |
+| `SlotRef`       | Mutable reference holder for a `Slot`, created by `createSlotRef()` |
+| `Render`        | `Generator<Child, ChildReturn, ChildNext>` - Rendering generator    |
+| `Component`     | `() => Render` - Root component type                                |
+| `ElementRender` | `Generator<Element, Slot, ChildNext>` - Element factory return      |
+| `Element`       | Tagged type for HTML/SVG elements                                   |
+| `Attribute`     | Tagged type for attributes                                          |
+| `Listener`      | Tagged type for event listeners                                     |
+| `Text`          | Tagged type for text nodes                                          |
+| `Lifecycle`     | Tagged type for lifecycle hooks                                     |
+| `Key`           | Tagged type for list keys                                           |
+
+### createSlotRef
+
+```typescript
+function createSlotRef(): SlotRef;
+
+interface SlotRef {
+  current: Slot | null;
+}
+```
+
+Creates a mutable reference to a `Slot`. Useful for capturing a Slot reference within array syntax where `yield*` is not available:
+
+```typescript
+const ref = createSlotRef();
+
+yield *
+  div(function* () {
+    ref.current = yield* div(() => [text("Content")]);
+  });
+
+// Later: update via ref
+ref.current?.refresh(() => [text("Updated!")]);
+```
 
 ## Syntax
 
@@ -139,5 +188,5 @@ slot.refresh(() => [text("Updated!")]);
 Use for static structures:
 
 ```typescript
-yield * div(() => [clss(["container"]), text("Static content")]);
+yield * div(() => [classes("container"), text("Static content")]);
 ```

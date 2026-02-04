@@ -38,6 +38,8 @@ export interface RenderContextCore {
   currentElement: globalThis.Element | null;
   /** 登録されたプラグイン */
   plugins: Map<string, Plugin>;
+  /** キャッシュされた PluginAPI（内部用） */
+  _cachedAPI?: import("../plugin").PluginAPI;
 }
 
 /** レンダリングコンテキスト */

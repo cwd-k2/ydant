@@ -2,7 +2,17 @@
  * @ydant/base - ベースプラグイン
  */
 
-import type { Child, Plugin, PluginAPI, PluginResult } from "@ydant/core";
+import type {
+  Child,
+  Plugin,
+  PluginAPI,
+  PluginAPIExtensions,
+  PluginResult,
+  RenderContext,
+  RenderContextCore,
+  RenderContextExtensions,
+} from "@ydant/core";
+import { isTagged } from "@ydant/core";
 import { processElement } from "./element";
 import {
   processAttribute,
@@ -11,7 +21,7 @@ import {
   processLifecycle,
   processKey,
 } from "./primitives";
-import type { Element, Attribute, Listener, Text, Lifecycle, Key } from "../types";
+import type { KeyedNode } from "../types";
 
 /**
  * マウントコールバックを実行
@@ -19,9 +29,9 @@ import type { Element, Attribute, Listener, Text, Lifecycle, Key } from "../type
  * DOM 更新完了後（requestAnimationFrame のタイミング）に実行し、
  * クリーンアップ関数が返された場合は unmountCallbacks に追加する
  */
-function executeMount(ctx: Record<string, unknown>): void {
-  const mountCallbacks = ctx.mountCallbacks as Array<() => void | (() => void)>;
-  const unmountCallbacks = ctx.unmountCallbacks as Array<() => void>;
+function executeMount(ctx: RenderContext): void {
+  const mountCallbacks = ctx.mountCallbacks;
+  const unmountCallbacks = ctx.unmountCallbacks;
 
   requestAnimationFrame(() => {
     for (const callback of mountCallbacks) {
@@ -44,7 +54,7 @@ export function createBasePlugin(): Plugin {
     name: "base",
     types: ["element", "text", "attribute", "listener", "key", "lifecycle"],
 
-    initContext(ctx: Record<string, unknown>) {
+    initContext(ctx: RenderContextCore & Partial<RenderContextExtensions>) {
       ctx.isCurrentElementReused = false;
       ctx.pendingKey = null;
       ctx.keyedNodes = new Map();
@@ -52,7 +62,20 @@ export function createBasePlugin(): Plugin {
       ctx.unmountCallbacks = [];
     },
 
-    extendAPI(api: Record<string, unknown>, ctx: Record<string, unknown>) {
+    mergeChildContext(parentCtx: RenderContext, childCtx: RenderContext) {
+      const parentMount = parentCtx.mountCallbacks;
+      const childMount = childCtx.mountCallbacks;
+      const parentUnmount = parentCtx.unmountCallbacks;
+      const childUnmount = childCtx.unmountCallbacks;
+      if (parentMount && childMount) {
+        parentMount.push(...childMount);
+      }
+      if (parentUnmount && childUnmount) {
+        parentUnmount.push(...childUnmount);
+      }
+    },
+
+    extendAPI(api: Partial<PluginAPIExtensions>, ctx: RenderContext) {
       // DOM 操作関連
       Object.defineProperty(api, "isCurrentElementReused", {
         get() {
@@ -63,7 +86,7 @@ export function createBasePlugin(): Plugin {
       api.appendChild = (node: Node) => {
         (ctx.parent as Node).appendChild(node);
       };
-      api.setCurrentElement = (element: Element | null) => {
+      api.setCurrentElement = (element: globalThis.Element | null) => {
         ctx.currentElement = element;
       };
       api.setParent = (parent: Node) => {
@@ -85,9 +108,9 @@ export function createBasePlugin(): Plugin {
       };
 
       // keyedNodes 関連
-      const keyedNodes = ctx.keyedNodes as Map<string | number, unknown>;
+      const keyedNodes = ctx.keyedNodes;
       api.getKeyedNode = (key: string | number) => keyedNodes.get(key);
-      api.setKeyedNode = (key: string | number, node: unknown) => {
+      api.setKeyedNode = (key: string | number, node: KeyedNode) => {
         keyedNodes.set(key, node);
       };
       api.deleteKeyedNode = (key: string | number) => {
@@ -95,8 +118,8 @@ export function createBasePlugin(): Plugin {
       };
 
       // lifecycle 関連
-      const mountCallbacks = ctx.mountCallbacks as Array<() => void | (() => void)>;
-      const unmountCallbacks = ctx.unmountCallbacks as Array<() => void>;
+      const mountCallbacks = ctx.mountCallbacks;
+      const unmountCallbacks = ctx.unmountCallbacks;
 
       api.onMount = (callback: () => void | (() => void)) => {
         mountCallbacks.push(callback);
@@ -113,24 +136,25 @@ export function createBasePlugin(): Plugin {
     },
 
     process(child: Child, api: PluginAPI): PluginResult {
-      const typed = child as { type: string };
-
-      switch (typed.type) {
-        case "element":
-          return processElement(child as Element, api);
-        case "text":
-          return processText(child as Text, api);
-        case "attribute":
-          return processAttribute(child as Attribute, api);
-        case "listener":
-          return processListener(child as Listener, api);
-        case "key":
-          return processKey(child as Key, api);
-        case "lifecycle":
-          return processLifecycle(child as Lifecycle, api);
-        default:
-          return {};
+      if (isTagged(child, "element")) {
+        return processElement(child, api);
       }
+      if (isTagged(child, "text")) {
+        return processText(child, api);
+      }
+      if (isTagged(child, "attribute")) {
+        return processAttribute(child, api);
+      }
+      if (isTagged(child, "listener")) {
+        return processListener(child, api);
+      }
+      if (isTagged(child, "key")) {
+        return processKey(child, api);
+      }
+      if (isTagged(child, "lifecycle")) {
+        return processLifecycle(child, api);
+      }
+      return {};
     },
   };
 }

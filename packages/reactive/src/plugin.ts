@@ -14,7 +14,8 @@
  * ```
  */
 
-import type { Child, Builder, Plugin, PluginAPI, PluginResult } from "@ydant/core";
+import type { Child, Plugin, PluginAPI, PluginResult } from "@ydant/core";
+import { isTagged } from "@ydant/core";
 // base の import で PluginAPIExtensions の augmentation が適用される
 import "@ydant/base";
 import { runWithSubscriber } from "./tracking";
@@ -26,9 +27,11 @@ export function createReactivePlugin(): Plugin {
   return {
     name: "reactive",
     types: ["reactive"],
+    dependencies: ["base"],
 
     process(child: Child, api: PluginAPI): PluginResult {
-      const builder = (child as { builder: Builder }).builder;
+      if (!isTagged(child, "reactive")) return {};
+      const builder = child.builder;
 
       // コンテナ要素を作成
       const container = document.createElement("span");

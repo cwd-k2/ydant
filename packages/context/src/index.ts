@@ -10,7 +10,5 @@ import "@ydant/base";
 export { createContext, provide, inject } from "./context";
 export type { Context, ContextProvide, ContextInject } from "./context";
 
-export { persist, save, remove, createStorage } from "./persist";
-
 // Plugin
 export { createContextPlugin } from "./plugin";
