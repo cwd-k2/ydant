@@ -99,22 +99,20 @@ export type Builder = () => Instructor | Instruction[];
 export type Render = Generator<Child, ChildReturn, ChildNext>;
 
 /**
- * ルートコンポーネント（Render を返す関数）
+ * コンポーネント型
  *
- * base パッケージで Slot が追加されると、より具体的な型になる
- */
-export type Component = () => Render;
-
-/**
- * Props を受け取るコンポーネント
+ * - `Component` — 引数なし `() => Render`
+ * - `Component<Props>` — Props を受け取る `(props: Props) => Render`
  *
  * @example
  * ```typescript
+ * const App: Component = () => div(function* () { ... });
+ *
  * interface CounterProps { initial: number }
- * const Counter: ComponentWith<CounterProps> = (props) =>
+ * const Counter: Component<CounterProps> = (props) =>
  *   div(function* () {
  *     yield* text(`Count: ${props.initial}`);
  *   });
  * ```
  */
-export type ComponentWith<P> = (props: P) => Render;
+export type Component<P = void> = [P] extends [void] ? () => Render : (props: P) => Render;

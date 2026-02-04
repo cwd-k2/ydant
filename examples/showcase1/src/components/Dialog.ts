@@ -1,3 +1,4 @@
+import type { Component } from "@ydant/core";
 import { text, div, h3, p, button, classes, on } from "@ydant/base";
 
 export interface DialogProps {
@@ -10,7 +11,7 @@ export interface DialogProps {
  * ダイアログコンポーネント
  * 配列形式を使用した静的な構造の例
  */
-export function Dialog(props: DialogProps) {
+export const Dialog: Component<DialogProps> = (props) => {
   const { title, content, onClose } = props;
 
   return div(() => [
@@ -65,4 +66,4 @@ export function Dialog(props: DialogProps) {
       ]),
     ]),
   ]);
-}
+};

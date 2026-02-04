@@ -13,7 +13,7 @@ import {
   svg,
   circle,
   onUnmount,
-  type Slot,
+  createSlotRef,
 } from "@ydant/base";
 import type { TimerMode, TimerState } from "./types";
 import { DURATIONS, MODE_LABELS, MODE_COLORS } from "./constants";
@@ -31,12 +31,12 @@ export const App: Component = () => {
 
   let timerInterval: ReturnType<typeof setInterval> | null = null;
 
-  // Slot references (set later)
-  let modeSlot: Slot;
-  let timerSlot: Slot;
-  let _progressRingSlot: Slot;
-  let controlsSlot: Slot;
-  let sessionsSlot: Slot;
+  // SlotRef references
+  const modeRef = createSlotRef();
+  const timerRef = createSlotRef();
+  const progressRingRef = createSlotRef();
+  const controlsRef = createSlotRef();
+  const sessionsRef = createSlotRef();
 
   // Render functions
   const renderModeButtons = function* () {
@@ -102,7 +102,7 @@ export const App: Component = () => {
       // SVG progress ring
       yield* div(function* () {
         yield* classes("absolute", "inset-0", "flex", "items-center", "justify-center");
-        _progressRingSlot = yield* svg(renderProgressRing);
+        progressRingRef.bind(yield* svg(renderProgressRing));
       });
 
       // Timer text overlay
@@ -225,8 +225,8 @@ export const App: Component = () => {
     if (timerInterval) return;
 
     state.isRunning = true;
-    timerSlot.refresh(renderTimer);
-    controlsSlot.refresh(renderControls);
+    timerRef.refresh(renderTimer);
+    controlsRef.refresh(renderControls);
 
     timerInterval = setInterval(() => {
       state.timeLeft--;
@@ -257,10 +257,10 @@ export const App: Component = () => {
           // Ignore audio errors
         }
 
-        sessionsSlot.refresh(renderSessions);
+        sessionsRef.refresh(renderSessions);
       }
 
-      timerSlot.refresh(renderTimer);
+      timerRef.refresh(renderTimer);
     }, 1000);
   };
 
@@ -270,21 +270,21 @@ export const App: Component = () => {
       timerInterval = null;
     }
     state.isRunning = false;
-    controlsSlot.refresh(renderControls);
+    controlsRef.refresh(renderControls);
   };
 
   const resetTimer = () => {
     stopTimer();
     state.timeLeft = DURATIONS[state.mode];
-    timerSlot.refresh(renderTimer);
+    timerRef.refresh(renderTimer);
   };
 
   const switchMode = (mode: TimerMode) => {
     stopTimer();
     state.mode = mode;
     state.timeLeft = DURATIONS[mode];
-    modeSlot.refresh(renderModeButtons);
-    timerSlot.refresh(renderTimer);
+    modeRef.refresh(renderModeButtons);
+    timerRef.refresh(renderTimer);
   };
 
   return div(function* () {
@@ -310,16 +310,16 @@ export const App: Component = () => {
     ]);
 
     // Mode selector
-    modeSlot = yield* div(renderModeButtons);
+    modeRef.bind(yield* div(renderModeButtons));
 
     // Timer display with progress ring
-    timerSlot = yield* div(renderTimer);
+    timerRef.bind(yield* div(renderTimer));
 
     // Control buttons
-    controlsSlot = yield* div(renderControls);
+    controlsRef.bind(yield* div(renderControls));
 
     // Sessions completed
-    sessionsSlot = yield* div(renderSessions);
+    sessionsRef.bind(yield* div(renderSessions));
 
     // Tips
     yield* div(() => [

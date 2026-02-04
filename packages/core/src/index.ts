@@ -19,7 +19,6 @@ export type {
   Instruction,
   Render,
   Component,
-  ComponentWith,
   // Plugin extension points
   PluginChildExtensions,
   PluginNextExtensions,

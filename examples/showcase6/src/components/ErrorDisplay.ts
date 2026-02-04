@@ -1,3 +1,4 @@
+import type { Component } from "@ydant/core";
 import { div, h3, p, button, text, classes, on } from "@ydant/base";
 
 interface ErrorDisplayProps {
@@ -5,7 +6,7 @@ interface ErrorDisplayProps {
   onRetry?: () => void;
 }
 
-export function ErrorDisplay(props: ErrorDisplayProps) {
+export const ErrorDisplay: Component<ErrorDisplayProps> = (props) => {
   const { error, onRetry } = props;
 
   return div(function* () {
@@ -21,4 +22,4 @@ export function ErrorDisplay(props: ErrorDisplayProps) {
       });
     }
   });
-}
+};

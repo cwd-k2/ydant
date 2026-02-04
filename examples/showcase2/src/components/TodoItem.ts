@@ -1,3 +1,4 @@
+import type { Component } from "@ydant/core";
 import { div, input, span, button, classes, on, attr, text } from "@ydant/base";
 import type { Todo } from "../types";
 
@@ -7,7 +8,7 @@ export interface TodoItemProps {
   onDelete: () => void;
 }
 
-export function TodoItem(props: TodoItemProps) {
+export const TodoItem: Component<TodoItemProps> = (props) => {
   const { todo, onToggle, onDelete } = props;
 
   return div(() => [
@@ -42,4 +43,4 @@ export function TodoItem(props: TodoItemProps) {
       text("×"),
     ]),
   ]);
-}
+};

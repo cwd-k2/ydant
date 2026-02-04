@@ -1,3 +1,4 @@
+import type { Component } from "@ydant/core";
 import { div, span, button, text, classes, on } from "@ydant/base";
 import type { ListItem } from "../types";
 
@@ -22,7 +23,7 @@ interface ListItemViewProps {
   isLast: boolean;
 }
 
-export function ListItemView(props: ListItemViewProps) {
+export const ListItemView: Component<ListItemViewProps> = (props) => {
   const { item, onMoveUp, onMoveDown, onDelete, isFirst, isLast } = props;
 
   return div(function* () {
@@ -100,4 +101,4 @@ export function ListItemView(props: ListItemViewProps) {
       }),
     ]);
   });
-}
+};

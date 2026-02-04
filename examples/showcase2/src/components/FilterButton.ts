@@ -1,3 +1,4 @@
+import type { Component } from "@ydant/core";
 import { button, classes, on, text } from "@ydant/base";
 
 export interface FilterButtonProps {
@@ -6,7 +7,7 @@ export interface FilterButtonProps {
   onClick: () => void;
 }
 
-export function FilterButton(props: FilterButtonProps) {
+export const FilterButton: Component<FilterButtonProps> = (props) => {
   const { label, isActive, onClick } = props;
 
   return button(() => [
@@ -23,4 +24,4 @@ export function FilterButton(props: FilterButtonProps) {
     on("click", onClick),
     text(label),
   ]);
-}
+};

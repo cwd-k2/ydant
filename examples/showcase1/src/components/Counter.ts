@@ -1,4 +1,4 @@
-import { text, div, h3, p, span, button, classes, on, type Slot } from "@ydant/base";
+import { text, div, h3, p, span, button, classes, on, createSlotRef } from "@ydant/base";
 
 const COUNTER_CLASSES = [
   "text-center",
@@ -24,11 +24,14 @@ export function* CounterSection() {
 
   let counter = 0;
 
-  // カウンター表示 - Slot を取得して再レンダリングに使用
-  const counterSlot: Slot = yield* p(function* () {
-    yield* classes(COUNTER_CLASSES);
-    yield* text(`Count: ${counter}`);
-  });
+  // カウンター表示 - SlotRef を使用して再レンダリング
+  const counterRef = createSlotRef();
+  counterRef.bind(
+    yield* p(function* () {
+      yield* classes(COUNTER_CLASSES);
+      yield* text(`Count: ${counter}`);
+    }),
+  );
 
   // ボタン群
   yield* div(function* () {
@@ -48,7 +51,7 @@ export function* CounterSection() {
       );
       yield* on("click", () => {
         counter++;
-        counterSlot.refresh(() => [classes(COUNTER_CLASSES), text(`Count: ${counter}`)]);
+        counterRef.refresh(() => [classes(COUNTER_CLASSES), text(`Count: ${counter}`)]);
       });
       yield* text("Increment");
     });
@@ -66,7 +69,7 @@ export function* CounterSection() {
       );
       yield* on("click", () => {
         counter = 0;
-        counterSlot.refresh(() => [
+        counterRef.refresh(() => [
           classes(COUNTER_CLASSES),
           span(() => [classes("text-red-500"), text("RESET: ")]),
           text(`${counter}`),

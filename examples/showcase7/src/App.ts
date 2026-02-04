@@ -1,5 +1,5 @@
 import type { Component, Builder } from "@ydant/core";
-import { type Slot, div, h1, h2, p, span, button, text, classes, on, key } from "@ydant/base";
+import { createSlotRef, div, h1, h2, p, span, button, text, classes, on, key } from "@ydant/base";
 import { createTransition, type TransitionHandle } from "@ydant/transition";
 import type { Toast } from "./types";
 
@@ -11,7 +11,7 @@ const TOAST_COLORS: Record<Toast["type"], string[]> = {
 
 // Section: Simple toggle with createTransition (supports leave animation)
 function ToggleSection() {
-  let _sectionSlot: Slot;
+  const sectionRef = createSlotRef();
   let fadeTransition: TransitionHandle;
 
   const renderSection = function* () {
@@ -56,13 +56,13 @@ function ToggleSection() {
 
   return div(function* () {
     yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Fade Transition")]);
-    _sectionSlot = yield* div(renderSection as Builder);
+    sectionRef.bind(yield* div(renderSection as Builder));
   });
 }
 
 // Section: Slide transition with createTransition
 function SlideSection() {
-  let _sectionSlot: Slot;
+  const sectionRef = createSlotRef();
   let slideTransition: TransitionHandle;
 
   const renderSection = function* () {
@@ -102,7 +102,7 @@ function SlideSection() {
 
   return div(function* () {
     yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Slide Transition")]);
-    _sectionSlot = yield* div(renderSection as Builder);
+    sectionRef.bind(yield* div(renderSection as Builder));
   });
 }
 
@@ -110,7 +110,7 @@ function SlideSection() {
 function ToastSection() {
   let toasts: Toast[] = [];
   let nextId = 1;
-  let toastListSlot: Slot;
+  const toastListRef = createSlotRef();
 
   const addToast = (type: Toast["type"]) => {
     const messages: Record<Toast["type"], string> = {
@@ -125,19 +125,19 @@ function ToastSection() {
       type,
     });
 
-    toastListSlot.refresh(renderToastList);
+    toastListRef.refresh(renderToastList);
 
     // Auto-remove after 3 seconds
     const toastId = nextId - 1;
     setTimeout(() => {
       toasts = toasts.filter((t) => t.id !== toastId);
-      toastListSlot.refresh(renderToastList);
+      toastListRef.refresh(renderToastList);
     }, 3000);
   };
 
   const removeToast = (id: number) => {
     toasts = toasts.filter((t) => t.id !== id);
-    toastListSlot.refresh(renderToastList);
+    toastListRef.refresh(renderToastList);
   };
 
   const renderToastList = function* () {
@@ -208,7 +208,7 @@ function ToastSection() {
       });
     });
 
-    toastListSlot = yield* div(renderToastList);
+    toastListRef.bind(yield* div(renderToastList));
   });
 }
 

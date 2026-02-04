@@ -112,7 +112,7 @@ interface FormFieldProps {
   getError: () => string | null | undefined;
 }
 
-function FormField(props: FormFieldProps) {
+const FormField: Component<FormFieldProps> = (props) => {
   const { labelText, type, getValue, setValue, onBlur, getError } = props;
 
   return div(function* () {
@@ -131,4 +131,4 @@ function FormField(props: FormFieldProps) {
       return error ? [span(() => [classes("text-red-500", "text-sm"), text(error)])] : [];
     });
   });
-}
+};

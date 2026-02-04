@@ -1,6 +1,6 @@
 import type { Component } from "@ydant/core";
 import {
-  type Slot,
+  createSlotRef,
   div,
   h1,
   h2,
@@ -33,8 +33,8 @@ export const App: Component = () => {
   let newItemText = "";
   let newItemPriority: ListItem["priority"] = "medium";
 
-  let listSlot: Slot;
-  let statsSlot: Slot;
+  const listRef = createSlotRef();
+  const statsRef = createSlotRef();
 
   // Sort items in place (one-time action)
   const sortItemsBy = (order: SortOrder) => {
@@ -50,7 +50,7 @@ export const App: Component = () => {
         items.sort((a, b) => a.text.localeCompare(b.text));
         break;
     }
-    listSlot.refresh(renderList);
+    listRef.refresh(renderList);
   };
 
   // Move item in array
@@ -61,8 +61,8 @@ export const App: Component = () => {
     // Swap items
     [items[index], items[newIndex]] = [items[newIndex], items[index]];
 
-    listSlot.refresh(renderList);
-    statsSlot.refresh(renderStats);
+    listRef.refresh(renderList);
+    statsRef.refresh(renderStats);
   };
 
   const renderList = function* () {
@@ -89,8 +89,8 @@ export const App: Component = () => {
           onMoveDown: () => moveItem(i, 1),
           onDelete: () => {
             items = items.filter((t) => t.id !== item.id);
-            listSlot.refresh(renderList);
-            statsSlot.refresh(renderStats);
+            listRef.refresh(renderList);
+            statsRef.refresh(renderStats);
           },
         });
       }
@@ -174,8 +174,8 @@ export const App: Component = () => {
               priority: newItemPriority,
             });
             newItemText = "";
-            listSlot.refresh(renderList);
-            statsSlot.refresh(renderStats);
+            listRef.refresh(renderList);
+            statsRef.refresh(renderStats);
           }
         });
         yield* text("Add");
@@ -203,10 +203,10 @@ export const App: Component = () => {
     });
 
     // List
-    listSlot = yield* div(renderList);
+    listRef.bind(yield* div(renderList));
 
     // Stats
-    statsSlot = yield* div(renderStats);
+    statsRef.bind(yield* div(renderStats));
 
     // Info
     yield* div(() => [
