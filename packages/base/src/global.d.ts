@@ -42,7 +42,7 @@ declare module "@ydant/core" {
     /** アンマウント時のコールバックを登録 */
     onUnmount(callback: () => void): void;
     /** unmount コールバックを追加 */
-    pushUnmountCallbacks(...callbacks: Array<() => void>): void;
+    addUnmountCallbacks(...callbacks: Array<() => void>): void;
     /** mount コールバックを実行 */
     executeMount(): void;
 

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount, type Component } from "@ydant/core";
 import { createBasePlugin, div, p, text } from "@ydant/base";
-import { RouterLink, RouterView } from "../components";
+import { RouterLink } from "../RouterLink";
+import { RouterView } from "../RouterView";
 import { navigate } from "../navigation";
 import { updateRoute, currentRoute } from "../state";
 

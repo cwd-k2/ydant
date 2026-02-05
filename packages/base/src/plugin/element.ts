@@ -25,7 +25,7 @@ export function processElement(element: Element, api: PluginAPI): PluginResult {
     isReused = true;
 
     // 古いアンマウントコールバックを新しいコンテキストに移行
-    api.pushUnmountCallbacks(...existing.unmountCallbacks);
+    api.addUnmountCallbacks(...existing.unmountCallbacks);
     api.deleteKeyedNode(elementKey);
   } else {
     node = element.ns

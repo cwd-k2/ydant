@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "@ydant/core";
 import { createBasePlugin, div, text } from "@ydant/base";
-import { Suspense } from "../suspense";
+import { Suspense } from "../Suspense";
 
 describe("Suspense", () => {
   let container: HTMLElement;

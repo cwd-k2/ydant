@@ -16,7 +16,7 @@
 
 import type { Child, Plugin, PluginAPI, PluginResult } from "@ydant/core";
 import { isTagged } from "@ydant/core";
-// base の import で PluginAPIExtensions の augmentation が適用される
+// Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
 import { runWithSubscriber } from "./tracking";
 

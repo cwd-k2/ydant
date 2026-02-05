@@ -23,29 +23,21 @@
  * ```
  */
 
-// Import base types to ensure module augmentation is loaded
+// Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
 
-// Types
-export type { Subscriber } from "./types";
-
-// Signal
-export { signal } from "./signal";
+// ─── Types ───
+export type { Subscriber, Readable } from "./types";
 export type { Signal } from "./signal";
-
-// Computed
-export { computed } from "./computed";
 export type { Computed } from "./computed";
-
-// Effect
-export { effect } from "./effect";
-
-// Batch
-export { batch, scheduleEffect } from "./batch";
-
-// Reactive primitive
-export { reactive } from "./reactive";
 export type { Reactive } from "./reactive";
 
-// Plugin
+// ─── Runtime ───
+export { signal } from "./signal";
+export { computed } from "./computed";
+export { effect } from "./effect";
+export { batch, scheduleEffect } from "./batch";
+export { reactive } from "./reactive";
+
+// ─── Plugin ───
 export { createReactivePlugin } from "./plugin";

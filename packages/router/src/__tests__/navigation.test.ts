@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { navigate, goBack, goForward, useRoute } from "../navigation";
+import { navigate, goBack, goForward, getRoute } from "../navigation";
 import { currentRoute, updateRoute } from "../state";
 
 describe("navigate", () => {
@@ -49,11 +49,11 @@ describe("goForward", () => {
   });
 });
 
-describe("useRoute", () => {
+describe("getRoute", () => {
   it("returns current route info", () => {
     updateRoute("/test-path?foo=bar#section");
 
-    const route = useRoute();
+    const route = getRoute();
 
     expect(route.path).toBe("/test-path");
     expect(route.query).toEqual({ foo: "bar" });

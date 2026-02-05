@@ -4,11 +4,14 @@
  * Context API と永続化ヘルパー
  */
 
-// Import base types to ensure module augmentation is loaded
+// Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
 
-export { createContext, provide, inject } from "./context";
+// ─── Types ───
 export type { Context, ContextProvide, ContextInject } from "./context";
 
-// Plugin
+// ─── Runtime ───
+export { createContext, provide, inject } from "./context";
+
+// ─── Plugin ───
 export { createContextPlugin } from "./plugin";

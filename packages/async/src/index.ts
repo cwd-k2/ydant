@@ -4,14 +4,15 @@
  * 非同期コンポーネント（Suspense, ErrorBoundary, Resource）
  */
 
-// Import base types to ensure module augmentation is loaded
+// Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
 
-export { createResource } from "./resource";
+// ─── Types ───
 export type { Resource } from "./resource";
+export type { SuspenseProps } from "./Suspense";
+export type { ErrorBoundaryProps } from "./ErrorBoundary";
 
-export { Suspense } from "./suspense";
-export type { SuspenseProps } from "./suspense";
-
-export { ErrorBoundary } from "./error-boundary";
-export type { ErrorBoundaryProps } from "./error-boundary";
+// ─── Runtime ───
+export { createResource } from "./resource";
+export { Suspense } from "./Suspense";
+export { ErrorBoundary } from "./ErrorBoundary";

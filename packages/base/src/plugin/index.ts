@@ -127,7 +127,7 @@ export function createBasePlugin(): Plugin {
       api.onUnmount = (callback: () => void) => {
         unmountCallbacks.push(callback);
       };
-      api.pushUnmountCallbacks = (...callbacks: Array<() => void>) => {
+      api.addUnmountCallbacks = (...callbacks: Array<() => void>) => {
         unmountCallbacks.push(...callbacks);
       };
       api.executeMount = () => {

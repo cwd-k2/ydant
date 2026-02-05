@@ -11,16 +11,11 @@
  * ```
  */
 
-import type { Subscriber } from "./types";
+import type { Subscriber, Readable } from "./types";
 import { getCurrentSubscriber, runWithSubscriber } from "./tracking";
 
 /** Computed インターフェース（読み取り専用） */
-export interface Computed<T> {
-  /** 値を読み取る */
-  (): T;
-  /** 現在の値を取得（購読なし） */
-  peek(): T;
-}
+export interface Computed<T> extends Readable<T> {}
 
 /**
  * Computed を作成する

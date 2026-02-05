@@ -71,7 +71,7 @@ interface PluginAPIExtensions {
   // Lifecycle
   onMount(callback: () => void | (() => void)): void;
   onUnmount(callback: () => void): void;
-  pushUnmountCallbacks(...callbacks: Array<() => void>): void;
+  addUnmountCallbacks(...callbacks: Array<() => void>): void;
   executeMount(): void;
 
   // Keyed elements

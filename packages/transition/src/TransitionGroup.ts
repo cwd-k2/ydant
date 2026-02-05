@@ -23,6 +23,7 @@
 import type { Render } from "@ydant/core";
 import type { Slot, ElementRender } from "@ydant/base";
 import { div, key as keyPrimitive, onMount } from "@ydant/base";
+import { addClasses, removeClasses, waitForTransition } from "./utils";
 
 export interface TransitionGroupProps<T> {
   /** トランジション対象のアイテム配列 */
@@ -43,48 +44,6 @@ export interface TransitionGroupProps<T> {
   leaveTo?: string;
   /** 各アイテムをレンダリングする関数（要素を返す必要がある） */
   children: (item: T, index: number) => ElementRender;
-}
-
-/**
- * CSS クラスを追加
- */
-function addClasses(el: HTMLElement, classes: string | undefined): void {
-  if (classes) {
-    el.classList.add(...classes.split(" ").filter(Boolean));
-  }
-}
-
-/**
- * CSS クラスを削除
- */
-function removeClasses(el: HTMLElement, classes: string | undefined): void {
-  if (classes) {
-    el.classList.remove(...classes.split(" ").filter(Boolean));
-  }
-}
-
-/**
- * トランジション終了を待つ
- */
-function waitForTransition(el: HTMLElement): Promise<void> {
-  return new Promise((resolve) => {
-    const computed = getComputedStyle(el);
-    const duration = parseFloat(computed.transitionDuration) * 1000;
-
-    if (duration === 0) {
-      resolve();
-      return;
-    }
-
-    const handler = () => {
-      el.removeEventListener("transitionend", handler);
-      resolve();
-    };
-    el.addEventListener("transitionend", handler);
-
-    // タイムアウト（念のため）
-    setTimeout(resolve, duration + 50);
-  });
 }
 
 /**

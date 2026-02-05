@@ -21,6 +21,7 @@
 import type { Builder, ChildContent, Render } from "@ydant/core";
 import type { Slot, Element } from "@ydant/base";
 import { div, onMount } from "@ydant/base";
+import { addClasses, removeClasses, waitForTransition } from "./utils";
 
 export interface TransitionProps {
   /** 要素を表示するかどうか */
@@ -39,48 +40,6 @@ export interface TransitionProps {
   leaveTo?: string;
   /** トランジション対象の子要素 */
   children: () => ChildContent;
-}
-
-/**
- * CSS クラスを追加
- */
-function addClasses(el: HTMLElement, classes: string | undefined): void {
-  if (classes) {
-    el.classList.add(...classes.split(" ").filter(Boolean));
-  }
-}
-
-/**
- * CSS クラスを削除
- */
-function removeClasses(el: HTMLElement, classes: string | undefined): void {
-  if (classes) {
-    el.classList.remove(...classes.split(" ").filter(Boolean));
-  }
-}
-
-/**
- * トランジション終了を待つ
- */
-function waitForTransition(el: HTMLElement): Promise<void> {
-  return new Promise((resolve) => {
-    const computed = getComputedStyle(el);
-    const duration = parseFloat(computed.transitionDuration) * 1000;
-
-    if (duration === 0) {
-      resolve();
-      return;
-    }
-
-    const handler = () => {
-      el.removeEventListener("transitionend", handler);
-      resolve();
-    };
-    el.addEventListener("transitionend", handler);
-
-    // タイムアウト（念のため）
-    setTimeout(resolve, duration + 50);
-  });
 }
 
 /**
@@ -221,7 +180,7 @@ export interface TransitionHandle {
 }
 
 /** createTransition の戻り値型。yield* で使用し、TransitionHandle を返す。 */
-export type TransitionRender = Generator<Element, TransitionHandle, Slot>;
+export type TransitionInstruction = Generator<Element, TransitionHandle, Slot>;
 
 /**
  * 状態管理付き Transition を作成
@@ -245,7 +204,7 @@ export type TransitionRender = Generator<Element, TransitionHandle, Slot>;
  * await transition.setShow(false);
  * ```
  */
-export function* createTransition(props: Omit<TransitionProps, "show">): TransitionRender {
+export function* createTransition(props: Omit<TransitionProps, "show">): TransitionInstruction {
   const { children } = props;
 
   let isShowing = false;

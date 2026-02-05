@@ -12,19 +12,15 @@
  * ```
  */
 
-import type { Subscriber } from "./types";
+import type { Subscriber, Readable } from "./types";
 import { getCurrentSubscriber } from "./tracking";
 
 /** Signal インターフェース */
-export interface Signal<T> {
-  /** 値を読み取る */
-  (): T;
+export interface Signal<T> extends Readable<T> {
   /** 値を設定する */
   set(value: T): void;
   /** 関数で値を更新する */
   update(fn: (prev: T) => T): void;
-  /** 現在の値を取得（購読なし） */
-  peek(): T;
 }
 
 /**

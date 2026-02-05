@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "@ydant/core";
 import { createBasePlugin, div, text } from "@ydant/base";
-import { ErrorBoundary } from "../error-boundary";
+import { ErrorBoundary } from "../ErrorBoundary";
 
 describe("ErrorBoundary", () => {
   let container: HTMLElement;

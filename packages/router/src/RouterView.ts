@@ -1,13 +1,28 @@
 /**
- * Router コンポーネント
+ * RouterView コンポーネント
+ *
+ * 現在のパスに基づいて適切なコンポーネントを表示する。
+ * ルート定義と現在の URL を照合し、マッチしたコンポーネントをレンダリングする。
+ *
+ * @example
+ * ```typescript
+ * yield* RouterView({
+ *   routes: [
+ *     { path: "/", component: Home },
+ *     { path: "/about", component: About },
+ *     { path: "/users/:id", component: UserDetail },
+ *     { path: "*", component: NotFound },
+ *   ],
+ *   base: "/app",  // オプション: ベースパス
+ * });
+ * ```
  */
 
 import type { Render } from "@ydant/core";
-import { div, a, on, attr, onMount } from "@ydant/base";
-import type { RouteDefinition, RouterViewProps, RouterLinkProps } from "./types";
+import { div, onMount } from "@ydant/base";
+import type { RouteDefinition, RouterViewProps } from "./types";
 import { currentRoute, routeListeners, updateRoute } from "./state";
 import { matchPath } from "./matching";
-import { navigate } from "./navigation";
 
 /**
  * マッチするルートをレンダリング（配列を返す）
@@ -45,34 +60,15 @@ function renderMatchedRouteArray(routes: RouteDefinition[], base: string): Rende
 }
 
 /**
- * RouterLink コンポーネント
- *
- * クリック時に navigate() を呼び出す <a> 要素を生成する。
- */
-export function RouterLink(props: RouterLinkProps): Render {
-  const { href, children, activeClass } = props;
-
-  return a(function* () {
-    yield* attr("href", href);
-
-    // アクティブクラスの適用
-    if (activeClass && currentRoute.path === href) {
-      yield* attr("class", activeClass);
-    }
-
-    yield* on("click", (e: Event) => {
-      e.preventDefault();
-      navigate(href);
-    });
-
-    yield* children();
-  });
-}
-
-/**
  * RouterView コンポーネント
  *
  * 現在のパスに基づいて適切なコンポーネントを表示する。
+ * History API の popstate イベントを監視し、URL 変更時に再レンダリングする。
+ *
+ * @param props - RouterView のプロパティ
+ * @param props.routes - ルート定義の配列
+ * @param props.base - ベースパス（オプション、デフォルト: ""）
+ * @returns コンテナ要素の Render
  */
 export function RouterView(props: RouterViewProps): Render {
   const { routes, base = "" } = props;

@@ -28,6 +28,8 @@ type ResourceState<T> =
 export interface Resource<T> {
   /** データを読み取る（ペンディング中は suspend） */
   (): T;
+  /** 現在の値を取得（購読なし、ペンディング/エラー中は throw） */
+  peek(): T;
   /** ローディング中かどうか */
   readonly loading: boolean;
   /** エラーがあれば Error、なければ null */
@@ -89,6 +91,17 @@ export function createResource<T>(
   Object.defineProperty(resource, "error", {
     get: () => (state.status === "rejected" ? state.error : null),
   });
+
+  resource.peek = () => {
+    switch (state.status) {
+      case "pending":
+        throw new Error("Resource is still loading");
+      case "rejected":
+        throw state.error;
+      case "resolved":
+        return state.data;
+    }
+  };
 
   resource.refetch = async () => {
     const promise = fetcher();
