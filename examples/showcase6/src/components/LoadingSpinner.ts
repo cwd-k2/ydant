@@ -1,6 +1,7 @@
+import type { Render } from "@ydant/core";
 import { div, span, text, classes } from "@ydant/base";
 
-export function LoadingSpinner(message = "Loading...") {
+export function LoadingSpinner(message = "Loading..."): Render {
   return div(() => [
     classes("flex", "flex-col", "items-center", "justify-center", "p-8"),
     div(() => [

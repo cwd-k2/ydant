@@ -5,6 +5,9 @@
 /** Tagged Union を作成するヘルパー型 */
 export type Tagged<T extends string, P = {}> = { type: T } & P;
 
+/** ライフサイクルや副作用のクリーンアップ関数 */
+export type CleanupFn = () => void;
+
 // =============================================================================
 // Plugin Extension Types
 // -----------------------------------------------------------------------------
@@ -85,6 +88,12 @@ export type Instruction = Generator<Child, ChildReturn, ChildNext>;
 
 /** 要素ファクトリ（div, span 等）の引数型 */
 export type Builder = () => Instructor | Instruction[];
+
+/** 副作用のみを実行する DSL プリミティブの戻り値型 */
+export type Primitive<T extends Child> = Generator<T, void, void>;
+
+/** コンポーネントの children として渡すビルダー関数の戻り値型 */
+export type ChildContent = Generator<Child, unknown, ChildNext>;
 
 // =============================================================================
 // Render & Component Types (基底型)

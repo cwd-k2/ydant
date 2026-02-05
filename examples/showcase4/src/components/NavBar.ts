@@ -1,3 +1,4 @@
+import type { Render } from "@ydant/core";
 import { nav, span, button, text, classes, on } from "@ydant/base";
 import { RouterLink } from "@ydant/router";
 import { reactive } from "@ydant/reactive";
@@ -7,7 +8,7 @@ import { basePath } from "../App";
 /**
  * ナビゲーションバーコンポーネント
  */
-export function NavBar() {
+export function NavBar(): Render {
   return nav(function* () {
     yield* classes("flex", "gap-4", "p-4", "bg-gray-100", "dark:bg-gray-800", "border-b");
 

@@ -24,7 +24,7 @@
  * ```
  */
 
-import type { Tagged, Builder } from "@ydant/core";
+import type { Tagged, Builder, Primitive } from "@ydant/core";
 
 /** リアクティブブロック - Signal の変更を追跡して自動更新 */
 export type Reactive = Tagged<"reactive", { builder: Builder }>;
@@ -44,6 +44,6 @@ export type Reactive = Tagged<"reactive", { builder: Builder }>;
  * ]);
  * ```
  */
-export function* reactive(builder: Builder): Generator<Reactive, void, void> {
+export function* reactive(builder: Builder): Primitive<Reactive> {
   yield { type: "reactive", builder };
 }

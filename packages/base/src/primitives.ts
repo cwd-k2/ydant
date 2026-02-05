@@ -2,11 +2,15 @@
  * @ydant/base - プリミティブ
  */
 
+import type { CleanupFn, Primitive } from "@ydant/core";
 import type { Attribute, Listener, Text, Lifecycle, Key } from "./types";
 
 /** プリミティブを yield するジェネレーター関数を作成するファクトリ */
-function createPrimitive<T, Args extends unknown[]>(factory: (...args: Args) => T) {
-  return function* (...args: Args): Generator<T, void, void> {
+function createPrimitive<
+  T extends Attribute | Listener | Text | Lifecycle | Key,
+  Args extends unknown[],
+>(factory: (...args: Args) => T) {
+  return function* (...args: Args): Primitive<T> {
     yield factory(...args);
   };
 }
@@ -21,7 +25,7 @@ export const attr = createPrimitive(
 );
 
 /** class 属性のショートハンド */
-export function classes(...classNames: (string | string[])[]): Generator<Attribute, void, void> {
+export function classes(...classNames: (string | string[])[]): Primitive<Attribute> {
   return (function* () {
     const value = classNames.flat().join(" ");
     yield { type: "attribute" as const, key: "class", value };
@@ -32,10 +36,10 @@ export function classes(...classNames: (string | string[])[]): Generator<Attribu
 export function on<K extends keyof HTMLElementEventMap>(
   key: K,
   handler: (e: HTMLElementEventMap[K]) => void,
-): Generator<Listener, void, void>;
+): Primitive<Listener>;
 /** イベントリスナを yield（カスタムイベント用フォールバック） */
-export function on(key: string, handler: (e: Event) => void): Generator<Listener, void, void>;
-export function on(key: string, handler: (e: Event) => void): Generator<Listener, void, void> {
+export function on(key: string, handler: (e: Event) => void): Primitive<Listener>;
+export function on(key: string, handler: (e: Event) => void): Primitive<Listener> {
   return (function* () {
     yield { type: "listener" as const, key, value: handler };
   })();
@@ -57,7 +61,7 @@ export const text = createPrimitive((content: string): Text => ({ type: "text", 
  * });
  * ```
  */
-export function* onMount(callback: () => void | (() => void)): Generator<Lifecycle, void, void> {
+export function* onMount(callback: () => void | CleanupFn): Primitive<Lifecycle> {
   yield { type: "lifecycle", event: "mount", callback };
 }
 
@@ -73,7 +77,7 @@ export function* onMount(callback: () => void | (() => void)): Generator<Lifecyc
  * });
  * ```
  */
-export function* onUnmount(callback: () => void): Generator<Lifecycle, void, void> {
+export function* onUnmount(callback: () => void): Primitive<Lifecycle> {
   yield { type: "lifecycle", event: "unmount", callback };
 }
 
@@ -93,7 +97,7 @@ export function* onUnmount(callback: () => void): Generator<Lifecycle, void, voi
  */
 export function* style(
   properties: Partial<CSSStyleDeclaration> & Record<`--${string}`, string>,
-): Generator<Attribute, void, void> {
+): Primitive<Attribute> {
   const styleValue = Object.entries(properties as Record<string, string>)
     .map(([k, v]) => {
       // camelCase を kebab-case に変換（CSS 変数は除く）
@@ -119,6 +123,6 @@ export function* style(
  * }
  * ```
  */
-export function* key(value: string | number): Generator<Key, void, void> {
+export function* key(value: string | number): Primitive<Key> {
   yield { type: "key", value };
 }

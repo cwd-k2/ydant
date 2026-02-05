@@ -18,19 +18,15 @@
  * ```
  */
 
-import type { Child, Render } from "@ydant/core";
-import type { Slot } from "@ydant/base";
+import type { ChildContent, Render } from "@ydant/core";
 import { div } from "@ydant/base";
-
-/** children の型（戻り値は不要） */
-type ChildGenerator = Generator<Child, unknown, Slot>;
 
 /** ErrorBoundary コンポーネントの props */
 export interface ErrorBoundaryProps {
   /** エラー発生時に表示するコンポーネント */
   fallback: (error: Error, reset: () => void) => Render;
   /** 子コンポーネント */
-  children: () => ChildGenerator;
+  children: () => ChildContent;
 }
 
 /**

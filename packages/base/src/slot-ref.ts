@@ -17,7 +17,7 @@ export interface SlotRef {
   /** Slot をバインドする */
   bind(slot: Slot): void;
   /** バインドされた Slot の子要素を再レンダリングする */
-  refresh(builder: Builder): void;
+  refresh(children: Builder): void;
   /** バインドされた Slot の DOM 要素（未バインドなら null） */
   readonly node: HTMLElement | null;
 }
@@ -52,9 +52,9 @@ export function createSlotRef(): SlotRef {
     bind(slot: Slot) {
       _current = slot;
     },
-    refresh(builder: Builder) {
+    refresh(children: Builder) {
       if (_current) {
-        _current.refresh(builder);
+        _current.refresh(children);
       }
     },
     get node() {

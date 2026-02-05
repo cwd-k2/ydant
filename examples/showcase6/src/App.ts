@@ -1,4 +1,4 @@
-import type { Component } from "@ydant/core";
+import type { Component, Render } from "@ydant/core";
 import { createSlotRef, div, h1, h2, h3, p, ul, li, button, text, classes, on } from "@ydant/base";
 import { createResource, Suspense, ErrorBoundary } from "@ydant/async";
 import type { Post, User } from "./types";
@@ -11,7 +11,7 @@ const postsResource = createResource<Post[]>(fetchPosts);
 const usersResource = createResource<User[]>(fetchUsers);
 
 // Section: Posts with Suspense
-function PostsSection() {
+function PostsSection(): Render {
   return div(function* () {
     yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Latest Posts")]);
 
@@ -38,7 +38,7 @@ function PostsSection() {
 }
 
 // Section: Users with Suspense
-function UsersSection() {
+function UsersSection(): Render {
   return div(function* () {
     yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Users")]);
 
@@ -66,7 +66,7 @@ function UsersSection() {
 }
 
 // Section: Error handling demo
-function ErrorDemoSection() {
+function ErrorDemoSection(): Render {
   const errorRef = createSlotRef();
   let showError = false;
 
@@ -111,7 +111,7 @@ function ErrorDemoSection() {
 }
 
 // Section: Manual loading state (alternative pattern)
-function ManualLoadingSection() {
+function ManualLoadingSection(): Render {
   const dataRef = createSlotRef();
   let isLoading = false;
   let error: Error | null = null;

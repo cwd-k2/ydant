@@ -1,4 +1,4 @@
-import type { Component, Builder } from "@ydant/core";
+import type { Component, Builder, Render } from "@ydant/core";
 import { createSlotRef, div, h1, h2, p, span, button, text, classes, on, key } from "@ydant/base";
 import { createTransition, type TransitionHandle } from "@ydant/transition";
 import type { Toast } from "./types";
@@ -10,7 +10,7 @@ const TOAST_COLORS: Record<Toast["type"], string[]> = {
 };
 
 // Section: Simple toggle with createTransition (supports leave animation)
-function ToggleSection() {
+function ToggleSection(): Render {
   const sectionRef = createSlotRef();
   let fadeTransition: TransitionHandle;
 
@@ -61,7 +61,7 @@ function ToggleSection() {
 }
 
 // Section: Slide transition with createTransition
-function SlideSection() {
+function SlideSection(): Render {
   const sectionRef = createSlotRef();
   let slideTransition: TransitionHandle;
 
@@ -107,7 +107,7 @@ function SlideSection() {
 }
 
 // Section: Toast notifications with scale animation
-function ToastSection() {
+function ToastSection(): Render {
   let toasts: Toast[] = [];
   let nextId = 1;
   const toastListRef = createSlotRef();

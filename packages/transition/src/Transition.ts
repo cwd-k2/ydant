@@ -18,7 +18,7 @@
  * ```
  */
 
-import type { Builder, Render } from "@ydant/core";
+import type { Builder, ChildContent, Render } from "@ydant/core";
 import type { Slot, Element } from "@ydant/base";
 import { div, onMount } from "@ydant/base";
 
@@ -38,7 +38,7 @@ export interface TransitionProps {
   /** 退場終了時のクラス */
   leaveTo?: string;
   /** トランジション対象の子要素 */
-  children: () => Render;
+  children: () => ChildContent;
 }
 
 /**
@@ -220,6 +220,9 @@ export interface TransitionHandle {
   setShow: (show: boolean) => Promise<void>;
 }
 
+/** createTransition の戻り値型。yield* で使用し、TransitionHandle を返す。 */
+export type TransitionRender = Generator<Element, TransitionHandle, Slot>;
+
 /**
  * 状態管理付き Transition を作成
  *
@@ -242,9 +245,7 @@ export interface TransitionHandle {
  * await transition.setShow(false);
  * ```
  */
-export function* createTransition(
-  props: Omit<TransitionProps, "show">,
-): Generator<Element, TransitionHandle, Slot> {
+export function* createTransition(props: Omit<TransitionProps, "show">): TransitionRender {
   const { children } = props;
 
   let isShowing = false;

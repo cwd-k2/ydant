@@ -18,6 +18,7 @@
  * ```
  */
 
+import type { CleanupFn } from "@ydant/core";
 import { runWithSubscriber } from "./tracking";
 
 /**
@@ -47,8 +48,8 @@ import { runWithSubscriber } from "./tracking";
  * });
  * ```
  */
-export function effect(fn: () => void | (() => void)): () => void {
-  let cleanup: (() => void) | void;
+export function effect(fn: () => void | CleanupFn): CleanupFn {
+  let cleanup: CleanupFn | void;
   let isDisposed = false;
 
   const execute = () => {

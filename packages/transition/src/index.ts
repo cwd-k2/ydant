@@ -8,7 +8,7 @@
 import "@ydant/base";
 
 export { Transition, createTransition, enterTransition, leaveTransition } from "./Transition";
-export type { TransitionProps, TransitionHandle } from "./Transition";
+export type { TransitionProps, TransitionHandle, TransitionRender } from "./Transition";
 
 export { TransitionGroup, createTransitionGroupRefresher } from "./TransitionGroup";
 export type { TransitionGroupProps } from "./TransitionGroup";

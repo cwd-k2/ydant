@@ -9,6 +9,7 @@
 // =============================================================================
 
 export type {
+  CleanupFn,
   Tagged,
   Child,
   ChildOfType,
@@ -17,6 +18,8 @@ export type {
   Builder,
   Instructor,
   Instruction,
+  Primitive,
+  ChildContent,
   Render,
   Component,
   // Plugin extension points

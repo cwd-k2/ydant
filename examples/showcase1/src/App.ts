@@ -1,4 +1,4 @@
-import type { Component } from "@ydant/core";
+import type { Component, Render } from "@ydant/core";
 import { text, div, h1, h3, p, button, classes, on, createSlotRef } from "@ydant/base";
 import { CounterSection } from "./components/Counter";
 import { Dialog } from "./components/Dialog";
@@ -91,7 +91,7 @@ function* DialogSection() {
 /**
  * 区切り線
  */
-function Divider() {
+function Divider(): Render {
   return div(() => [classes("border-t", "border-gray-200", "my-6")]);
 }
 

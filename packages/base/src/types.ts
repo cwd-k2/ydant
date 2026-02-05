@@ -2,7 +2,7 @@
  * @ydant/base - DSL 型定義
  */
 
-import type { Tagged, Instructor, Builder, ChildNext } from "@ydant/core";
+import type { Tagged, CleanupFn, Instructor, Builder, ChildNext } from "@ydant/core";
 
 // =============================================================================
 // Slot Types
@@ -44,14 +44,26 @@ export type Listener = Tagged<"listener", { key: string; value: (e: Event) => vo
 /** テキストノード */
 export type Text = Tagged<"text", { content: string }>;
 
-/** ライフサイクルイベント */
-export type Lifecycle = Tagged<
+/** マウント時のライフサイクルイベント */
+export type MountLifecycle = Tagged<
   "lifecycle",
   {
-    event: "mount" | "unmount";
-    callback: () => void | (() => void);
+    event: "mount";
+    callback: () => void | CleanupFn;
   }
 >;
+
+/** アンマウント時のライフサイクルイベント */
+export type UnmountLifecycle = Tagged<
+  "lifecycle",
+  {
+    event: "unmount";
+    callback: () => void;
+  }
+>;
+
+/** ライフサイクルイベント */
+export type Lifecycle = MountLifecycle | UnmountLifecycle;
 
 /** リスト要素のキー（差分更新用のマーカー） */
 export type Key = Tagged<"key", { value: string | number }>;
