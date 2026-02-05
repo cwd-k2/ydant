@@ -7,6 +7,22 @@ import { toChildren } from "../utils";
 import type { Plugin, PluginAPI, PluginAPIExtensions } from "../plugin";
 import type { RenderContext, RenderContextCore } from "./types";
 
+/**
+ * 登録されたプラグインをユニークに反復処理する
+ * （同じプラグインが複数の type で登録されている場合、1回だけ呼び出す）
+ */
+function forEachUniquePlugin(
+  plugins: Map<string, Plugin>,
+  callback: (plugin: Plugin) => void,
+): void {
+  const visited = new Set<string>();
+  for (const plugin of plugins.values()) {
+    if (visited.has(plugin.name)) continue;
+    visited.add(plugin.name);
+    callback(plugin);
+  }
+}
+
 /** RenderContext のコア部分を作成 */
 export function createRenderContextCore(
   parent: Node,
@@ -37,12 +53,9 @@ export function createRenderContext(
   const ctx = createRenderContextCore(parent, currentElement, plugins) as RenderContext;
 
   // 各プラグインの initContext を呼び出し
-  const calledPlugins = new Set<string>();
-  for (const plugin of plugins.values()) {
-    if (calledPlugins.has(plugin.name)) continue;
-    calledPlugins.add(plugin.name);
+  forEachUniquePlugin(plugins, (plugin) => {
     plugin.initContext?.(ctx, parentCtx);
-  }
+  });
 
   return ctx;
 }
@@ -92,12 +105,9 @@ export function createPluginAPIFactory(
         processIterator(children, childCtx);
 
         // 各プラグインの mergeChildContext を呼び出し
-        const mergedPlugins = new Set<string>();
-        for (const plugin of ctx.plugins.values()) {
-          if (mergedPlugins.has(plugin.name)) continue;
-          mergedPlugins.add(plugin.name);
+        forEachUniquePlugin(ctx.plugins, (plugin) => {
           plugin.mergeChildContext?.(ctx, childCtx);
-        }
+        });
       },
       createChildAPI(parent: Node): PluginAPI {
         const childCtx = createRenderContext(
@@ -111,12 +121,9 @@ export function createPluginAPIFactory(
     };
 
     // 各プラグインの extendAPI を呼び出して API を拡張
-    const calledPlugins = new Set<string>();
-    for (const plugin of ctx.plugins.values()) {
-      if (calledPlugins.has(plugin.name)) continue;
-      calledPlugins.add(plugin.name);
+    forEachUniquePlugin(ctx.plugins, (plugin) => {
       plugin.extendAPI?.(api as Partial<PluginAPIExtensions>, ctx);
-    }
+    });
 
     const pluginAPI = api as unknown as PluginAPI;
     ctx._cachedAPI = pluginAPI;

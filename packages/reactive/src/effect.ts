@@ -57,7 +57,11 @@ export function effect(fn: () => void | CleanupFn): CleanupFn {
 
     // 前回のクリーンアップを実行
     if (cleanup) {
-      cleanup();
+      try {
+        cleanup();
+      } catch (error) {
+        console.error("[ydant] Effect cleanup threw an error:", error);
+      }
       cleanup = undefined;
     }
 
@@ -73,7 +77,11 @@ export function effect(fn: () => void | CleanupFn): CleanupFn {
     if (!isDisposed) {
       isDisposed = true;
       if (cleanup) {
-        cleanup();
+        try {
+          cleanup();
+        } catch (error) {
+          console.error("[ydant] Effect cleanup threw an error:", error);
+        }
         cleanup = undefined;
       }
     }

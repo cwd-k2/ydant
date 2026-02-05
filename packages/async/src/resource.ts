@@ -36,6 +36,8 @@ export interface Resource<T> {
   readonly error: Error | null;
   /** 再フェッチ */
   refetch(): Promise<void>;
+  /** リソースを破棄（自動再フェッチを停止） */
+  dispose(): void;
 }
 
 /**
@@ -116,11 +118,19 @@ export function createResource<T>(
   };
 
   // 自動再フェッチの設定
+  let intervalId: ReturnType<typeof setInterval> | null = null;
   if (options?.refetchInterval) {
-    setInterval(() => {
+    intervalId = setInterval(() => {
       resource.refetch();
     }, options.refetchInterval);
   }
+
+  resource.dispose = () => {
+    if (intervalId !== null) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  };
 
   return resource;
 }

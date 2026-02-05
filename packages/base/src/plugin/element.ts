@@ -76,15 +76,21 @@ export function processElement(element: Element, api: PluginAPI): PluginResult {
 
 /**
  * Element の decorations を DOM ノードに適用
+ *
+ * 注意: 属性は再利用時も毎回適用されるが、リスナーは初回のみ追加される。
+ * これは key による要素再利用において、同一コンポーネントが同一リスナーを
+ * 持つことを前提とした設計。リスナーの動的な変更が必要な場合は
+ * key を変更して新しい要素として再作成する必要がある。
  */
 function applyDecorations(element: Element, node: globalThis.Element, isReused: boolean): void {
   if (!element.decorations) return;
 
   for (const decoration of element.decorations) {
     if (isTagged(decoration, "attribute")) {
+      // 属性は毎回適用（新しい値で上書き）
       node.setAttribute(decoration.key as string, decoration.value as string);
     } else if (isTagged(decoration, "listener")) {
-      // リスナーは再利用時に重複追加しないよう注意が必要
+      // リスナーは再利用時に重複追加を防ぐためスキップ
       if (!isReused) {
         node.addEventListener(decoration.key as string, decoration.value as (e: Event) => void);
       }

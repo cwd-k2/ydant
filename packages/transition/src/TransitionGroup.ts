@@ -71,30 +71,8 @@ async function enterTransition<T>(el: HTMLElement, props: TransitionGroupProps<T
   removeClasses(el, props.enterTo);
 }
 
-/**
- * 退場トランジションを実行
- */
-async function _leaveTransition<T>(el: HTMLElement, props: TransitionGroupProps<T>): Promise<void> {
-  // 初期状態を設定
-  addClasses(el, props.leave);
-  addClasses(el, props.leaveFrom);
-
-  // 強制リフロー
-  void el.offsetHeight;
-
-  // 次のフレームでトランジションを開始
-  requestAnimationFrame(() => {
-    removeClasses(el, props.leaveFrom);
-    addClasses(el, props.leaveTo);
-  });
-
-  // トランジション終了を待つ
-  await waitForTransition(el);
-
-  // クリーンアップ
-  removeClasses(el, props.leave);
-  removeClasses(el, props.leaveTo);
-}
+// NOTE: Leave トランジションは現在未実装。
+// 実装には要素削除前のフック機構が必要。
 
 /**
  * TransitionGroup コンポーネント

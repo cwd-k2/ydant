@@ -58,12 +58,20 @@ export function* Suspense(props: SuspenseProps): Render {
     if (isSuspended && pendingPromise) {
       yield* fallback();
 
-      // Promise が解決したら再レンダリング
-      pendingPromise.then(() => {
-        containerSlot.refresh(function* () {
-          yield* children();
+      // Promise が解決したら再レンダリング（エラー時も再試行して ErrorBoundary に任せる）
+      pendingPromise
+        .then(() => {
+          containerSlot.refresh(function* () {
+            yield* children();
+          });
+        })
+        .catch(() => {
+          // エラー時も再レンダリングを試行
+          // Resource がエラー状態なら children() 内で throw される
+          containerSlot.refresh(function* () {
+            yield* children();
+          });
         });
-      });
     }
   });
 

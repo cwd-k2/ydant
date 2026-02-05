@@ -111,9 +111,12 @@ const transitionStates = new WeakMap<
 /**
  * Transition コンポーネント
  *
- * show の変化に応じて enter/leave アニメーションを実行する。
- * - show: false → true: enter アニメーション
- * - show: true → false: leave アニメーション後に要素を削除
+ * show の変化に応じて enter アニメーションを実行する。
+ *
+ * 注意: 現在の実装では enter アニメーションのみサポート。
+ * leave アニメーションが必要な場合は `createTransition` を使用すること。
+ *
+ * @see createTransition - leave アニメーションをサポートする代替 API
  */
 export function Transition(props: TransitionProps): Render {
   const { show, children } = props;
