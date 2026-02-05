@@ -1,6 +1,6 @@
 import type { Component } from "@ydant/core";
 import { div, h1, p, span, button, text, classes, on } from "@ydant/base";
-import { useRoute, navigate } from "@ydant/router";
+import { getRoute, navigate } from "@ydant/router";
 import { findUser } from "../state/users";
 import { basePath } from "../App";
 
@@ -10,7 +10,7 @@ import { basePath } from "../App";
 export const UserDetailPage: Component = () =>
   div(function* () {
     yield* classes("p-6");
-    const route = useRoute();
+    const route = getRoute();
     const userId = parseInt(route.params.id, 10);
     const user = findUser(userId);
 
