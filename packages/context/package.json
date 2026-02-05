@@ -20,9 +20,6 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit"
   },
-  "devDependencies": {
-    "@ydant/base": "workspace:*"
-  },
   "peerDependencies": {
     "@ydant/base": "workspace:*",
     "@ydant/core": "workspace:*"

@@ -145,7 +145,7 @@ importers:
         version: link:../../packages/transition
 
   packages/async:
-    devDependencies:
+    dependencies:
       '@ydant/base':
         specifier: workspace:*
         version: link:../base
@@ -161,28 +161,26 @@ importers:
 
   packages/context:
     dependencies:
-      '@ydant/core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
       '@ydant/base':
         specifier: workspace:*
         version: link:../base
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/core: {}
 
   packages/reactive:
     dependencies:
-      '@ydant/core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
       '@ydant/base':
         specifier: workspace:*
         version: link:../base
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/router:
-    devDependencies:
+    dependencies:
       '@ydant/base':
         specifier: workspace:*
         version: link:../base
@@ -191,7 +189,7 @@ importers:
         version: link:../core
 
   packages/transition:
-    devDependencies:
+    dependencies:
       '@ydant/base':
         specifier: workspace:*
         version: link:../base
