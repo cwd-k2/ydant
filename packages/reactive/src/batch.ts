@@ -1,6 +1,9 @@
 /**
  * バッチ更新: 複数の Signal 更新を一度にまとめて通知する
  *
+ * NOTE: batchDepth と pendingEffects はモジュールレベルのグローバル状態。
+ * テスト間での分離には __resetForTesting__() を使用。
+ *
  * @example
  * ```typescript
  * const firstName = signal("John");
@@ -21,6 +24,15 @@
 
 let batchDepth = 0;
 let pendingEffects = new Set<() => void>();
+
+/**
+ * テスト用: 状態をリセット
+ * @internal
+ */
+export function __resetForTesting__(): void {
+  batchDepth = 0;
+  pendingEffects = new Set();
+}
 
 /**
  * バッチ更新を実行する

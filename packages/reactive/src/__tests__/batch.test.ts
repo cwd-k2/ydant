@@ -1,9 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { signal } from "../signal";
 import { effect } from "../effect";
-import { batch, scheduleEffect } from "../batch";
+import { batch, scheduleEffect, __resetForTesting__ } from "../batch";
 
 describe("batch", () => {
+  beforeEach(() => {
+    __resetForTesting__();
+  });
+
   // Note: The current signal implementation does not integrate with batch.
   // Signal.set() directly notifies subscribers without checking scheduleEffect.
   // These tests verify the current behavior where batch only works for
@@ -98,6 +102,10 @@ describe("batch", () => {
 });
 
 describe("scheduleEffect", () => {
+  beforeEach(() => {
+    __resetForTesting__();
+  });
+
   it("returns false when not in batch", () => {
     const effectFn = vi.fn();
     const result = scheduleEffect(effectFn);

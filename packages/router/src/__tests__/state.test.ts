@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { currentRoute, routeListeners, updateRoute } from "../state";
+import { currentRoute, routeListeners, updateRoute, __resetForTesting__ } from "../state";
 
 describe("updateRoute", () => {
   beforeEach(() => {
-    routeListeners.clear();
+    __resetForTesting__();
   });
 
   it("updates currentRoute with new path", () => {
@@ -51,7 +51,7 @@ describe("updateRoute", () => {
 
 describe("routeListeners", () => {
   beforeEach(() => {
-    routeListeners.clear();
+    __resetForTesting__();
   });
 
   it("can add and remove listeners", () => {

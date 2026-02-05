@@ -1,7 +1,11 @@
-import { describe, it, expect, vi } from "vitest";
-import { getCurrentSubscriber, runWithSubscriber } from "../tracking";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { getCurrentSubscriber, runWithSubscriber, __resetForTesting__ } from "../tracking";
 
 describe("getCurrentSubscriber", () => {
+  beforeEach(() => {
+    __resetForTesting__();
+  });
+
   it("returns null when no subscriber is active", () => {
     expect(getCurrentSubscriber()).toBeNull();
   });
@@ -24,6 +28,10 @@ describe("getCurrentSubscriber", () => {
 });
 
 describe("runWithSubscriber", () => {
+  beforeEach(() => {
+    __resetForTesting__();
+  });
+
   it("sets subscriber during function execution", () => {
     const subscriber = vi.fn();
     let capturedSubscriber: unknown = null;

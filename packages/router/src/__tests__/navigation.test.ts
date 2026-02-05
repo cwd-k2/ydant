@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { navigate, goBack, goForward, getRoute } from "../navigation";
-import { currentRoute, updateRoute } from "../state";
+import { currentRoute, updateRoute, __resetForTesting__ } from "../state";
 
 describe("navigate", () => {
   beforeEach(() => {
+    __resetForTesting__();
     vi.restoreAllMocks();
     vi.spyOn(window.history, "pushState").mockImplementation(() => {});
     vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
@@ -50,6 +51,10 @@ describe("goForward", () => {
 });
 
 describe("getRoute", () => {
+  beforeEach(() => {
+    __resetForTesting__();
+  });
+
   it("returns current route info", () => {
     updateRoute("/test-path?foo=bar#section");
 
