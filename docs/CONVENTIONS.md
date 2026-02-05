@@ -381,3 +381,81 @@ export { createReactivePlugin } from "./plugin";
 - 外部入力（ユーザー入力、API レスポンス）のみバリデーション
 - 内部関数間では型を信頼し、過剰なチェックを避ける
 - プラグインの `process` は未知の型を静かにスキップ（`return {}`）
+
+---
+
+## 開発時の型解決（customConditions）
+
+### 背景
+
+monorepo でパッケージを変更したとき、ビルドせずに `pnpm typecheck` で変更を反映させたい。
+TypeScript 5.0+ の `customConditions` と `moduleResolution: "bundler"` を使用してこれを実現する。
+
+### 設定
+
+**tsconfig.json（ルート）:**
+
+```json
+{
+  "compilerOptions": {
+    "customConditions": ["@ydant/dev"],
+    "moduleResolution": "bundler"
+  }
+}
+```
+
+**package.json（各パッケージ）:**
+
+```json
+{
+  "exports": {
+    ".": {
+      "@ydant/dev": {
+        "types": "./src/index.ts",
+        "default": "./src/index.ts"
+      },
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.js"
+    }
+  }
+}
+```
+
+### 重要: exports のネスト構造
+
+TypeScript は `types` 条件を特別扱いし、他の条件より優先的にマッチする。
+そのため、カスタム条件は**ネスト構造**にして、その中に `types` を定義する必要がある。
+
+```json
+// ❌ NG: types がカスタム条件より先にマッチしてしまう
+{
+  "types": "./dist/index.d.ts",
+  "@ydant/dev": "./src/index.ts"
+}
+
+// ✅ OK: カスタム条件がマッチしたら、その中の types を使う
+{
+  "@ydant/dev": {
+    "types": "./src/index.ts",
+    "default": "./src/index.ts"
+  },
+  "types": "./dist/index.d.ts"
+}
+```
+
+### module augmentation の考慮
+
+`global.d.ts` で `declare module` を使用するパッケージでは、
+`src/index.ts` の先頭に triple-slash reference を追加する:
+
+```ts
+/// <reference path="./global.d.ts" />
+/**
+ * @ydant/package-name
+ * ...
+ */
+```
+
+ビルド時は vite が `dist/index.d.ts` に同様の reference を追加するため、
+開発時・本番時どちらでも module augmentation が正しく読み込まれる。

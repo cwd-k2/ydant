@@ -1,3 +1,4 @@
+/// <reference path="./global.d.ts" />
 /**
  * @ydant/reactive - Reactivity system for Ydant
  *
