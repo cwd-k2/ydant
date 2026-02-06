@@ -139,6 +139,12 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 3. **paths から customConditions へ**
    - 型解決を pnpm workspace と整合させる
 
+4. **Render vs ElementRender の型ギャップ**
+   - `Component<P>` は `Render`（広い型）を返す宣言だが、実際には `div(...)` 等を返すため `ElementRender`（狭い型）が実行時の型
+   - `keyed()` のように「最初の yield が Element である」ことを前提とするユーティリティでは、`Render` を受け入れて内部で `as ElementRender` にキャストする対処が必要
+   - `ElementRender extends Render` なので引数の位置では `Render` を受ければ両方渡せる
+   - 将来的に `Component<P>` の戻り値を `ElementRender` に精密化するか、`ElementComponent<P>` のような型を導入する余地がある
+
 ### 設計関連
 
 1. **core は最小限に**
@@ -150,6 +156,12 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
    - `get*`: 状態取得
    - PascalCase: 内部構造を持つコンポーネント
    - lowercase: プリミティブ、ファクトリ
+
+3. **暗黙的状態より明示的データを優先する**
+   - 例: `pendingKey`（コンテキスト上の暗黙的な状態）→ `Element.key`（オブジェクトの明示的なフィールド）
+   - 暗黙的状態は「先読み」「処理順序への依存」「状態のリセット忘れ」などの問題を招く
+   - データが所属すべきオブジェクトに直接持たせることで、処理順序への依存がなくなり実装がシンプルになる
+   - 判断基準: ある状態が「次に処理されるもの」への橋渡しだけに使われている場合、その情報は渡される先のオブジェクト自身が持つべき
 
 ---
 

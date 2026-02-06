@@ -282,6 +282,50 @@ export function* style(properties: Partial<CSSStyleDeclaration>): Primitive<Attr
 }
 ```
 
+### ジェネレーターインターセプトパターン（keyed）
+
+要素ファクトリやコンポーネントが yield する値を加工したい場合、
+ジェネレーターの最初の yield をインターセプトするラッパー関数を作る:
+
+```ts
+// keyed() は factory の生成する Element に key を付与する
+export function keyed<Args extends unknown[]>(
+  key: string | number,
+  factory: (...args: Args) => Render,
+): (...args: Args) => ElementRender {
+  return (...args: Args) => {
+    return (function* (): ElementRender {
+      const inner = factory(...args) as ElementRender;
+      const first = inner.next();
+      if (first.done) return first.value;
+      const element = first.value;
+      const slot = (yield { ...element, key }) as Slot;
+      inner.next(slot);
+      return slot;
+    })() as ElementRender;
+  };
+}
+```
+
+ポイント:
+
+- **`<Args extends unknown[]>`** で引数をジェネリック化し、要素ファクトリ `(builder: Builder) => ...` もコンポーネント `(props: P) => ...` も同一 API で扱える
+- factory が `Render` を返す宣言でも `ElementRender` を返す宣言でも受け付ける（`ElementRender extends Render`）
+- ジェネレーターの `next()` でインターセプトし、yield される値を加工してから親に再 yield する
+
+使用例:
+
+```ts
+// 要素ファクトリと組み合わせ
+yield * keyed(item.id, li)(() => [text(item.name)]);
+
+// コンポーネントと組み合わせ
+yield * keyed(item.id, ListItemView)({ item, onDelete });
+
+// 関数と組み合わせ（TransitionGroup 内の children など）
+yield * keyed(itemKey, children)(item, i);
+```
+
 ---
 
 ## コンポーネント実装（PascalCase）
