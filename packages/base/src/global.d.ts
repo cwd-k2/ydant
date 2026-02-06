@@ -5,15 +5,13 @@
  */
 
 import type { Builder, PluginAPI } from "@ydant/core";
-import type { Element, Attribute, Listener, Text, Lifecycle, Key, Slot, KeyedNode } from "./types";
+import type { Element, Attribute, Listener, Text, Lifecycle, Slot, KeyedNode } from "./types";
 
 declare module "@ydant/core" {
   // RenderContext に base プラグイン用のプロパティを追加
   interface RenderContextExtensions {
     /** 現在の要素が再利用されたかどうか（リスナー・ライフサイクルの重複登録を防ぐ） */
     isCurrentElementReused: boolean;
-    /** 次の要素に関連付けるキー */
-    pendingKey: string | number | null;
     /** キー付き要素のマップ */
     keyedNodes: Map<string | number, KeyedNode>;
     /** マウント時に実行するコールバック */
@@ -61,10 +59,6 @@ declare module "@ydant/core" {
     createChildAPI(parent: Node): PluginAPI;
 
     // === keyed 要素 ===
-    /** 次の要素に関連付けるキー */
-    readonly pendingKey: string | number | null;
-    /** pending key を設定 */
-    setPendingKey(key: string | number | null): void;
     /** 現在の要素が再利用されたかどうか */
     readonly isCurrentElementReused: boolean;
     /** 要素再利用フラグを設定 */
@@ -84,7 +78,6 @@ declare module "@ydant/core" {
     Listener: Listener;
     Text: Text;
     Lifecycle: Lifecycle;
-    Key: Key;
   }
 
   // Slot を ChildNext に追加（Element の yield* で受け取る値）

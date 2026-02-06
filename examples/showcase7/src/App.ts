@@ -1,5 +1,5 @@
 import type { Component, Builder, Render } from "@ydant/core";
-import { createSlotRef, div, h1, h2, p, span, button, text, classes, on, key } from "@ydant/base";
+import { createSlotRef, div, h1, h2, p, span, button, text, classes, on, keyed } from "@ydant/base";
 import { createTransition, type TransitionHandle } from "@ydant/transition";
 import type { Toast } from "./types";
 
@@ -150,10 +150,11 @@ function ToastSection(): Render {
       ]);
     } else {
       for (const toast of toasts) {
-        // Using key for efficient updates
-        yield* key(toast.id);
-
-        yield* div(function* () {
+        // Using keyed for efficient updates
+        yield* keyed(
+          toast.id,
+          div,
+        )(function* () {
           yield* classes(
             "flex",
             "items-center",

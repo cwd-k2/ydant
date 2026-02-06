@@ -3,7 +3,7 @@
  */
 
 import type { PluginAPI, PluginResult } from "@ydant/core";
-import type { Attribute, Listener, Text, Lifecycle, Key } from "../types";
+import type { Attribute, Listener, Text, Lifecycle } from "../types";
 
 /** Attribute を処理 */
 export function processAttribute(attr: Attribute, api: PluginAPI): PluginResult {
@@ -47,11 +47,5 @@ export function processLifecycle(lifecycle: Lifecycle, api: PluginAPI): PluginRe
   } else if (lifecycle.event === "unmount") {
     api.onUnmount(lifecycle.callback as () => void);
   }
-  return {};
-}
-
-/** Key を処理 */
-export function processKey(key: Key, api: PluginAPI): PluginResult {
-  api.setPendingKey(key.value);
   return {};
 }

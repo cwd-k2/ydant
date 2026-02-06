@@ -2,14 +2,13 @@
  * @ydant/base - プリミティブ
  */
 
-import type { CleanupFn, Primitive } from "@ydant/core";
-import type { Attribute, Listener, Text, Lifecycle, Key } from "./types";
+import type { Builder, CleanupFn, Primitive } from "@ydant/core";
+import type { Attribute, Listener, Text, Lifecycle, ElementRender, Slot } from "./types";
 
 /** プリミティブを yield するジェネレーター関数を作成するファクトリ */
-function createPrimitive<
-  T extends Attribute | Listener | Text | Lifecycle | Key,
-  Args extends unknown[],
->(factory: (...args: Args) => T) {
+function createPrimitive<T extends Attribute | Listener | Text | Lifecycle, Args extends unknown[]>(
+  factory: (...args: Args) => T,
+) {
   return function* (...args: Args): Primitive<T> {
     yield factory(...args);
   };
@@ -109,20 +108,32 @@ export function* style(
 }
 
 /**
- * リスト要素の一意な識別子を設定する（差分更新用マーカー）
+ * 要素ファクトリをラップし、生成される Element に key を付与する
  *
- * @param value - 一意な識別子（string または number）
+ * @param key - 一意な識別子（string または number）
+ * @param factory - 要素ファクトリ（div, li 等）
+ * @returns key 付き要素ファクトリ
  *
  * @example
  * ```typescript
  * for (const item of items) {
- *   yield* li(() => [
- *     key(item.id),
- *     text(item.name),
- *   ]);
+ *   yield* keyed(item.id, li)(() => [text(item.name)]);
  * }
  * ```
  */
-export function* key(value: string | number): Primitive<Key> {
-  yield { type: "key", value };
+export function keyed(
+  key: string | number,
+  factory: (builder: Builder) => ElementRender,
+): (builder: Builder) => ElementRender {
+  return (builder: Builder) => {
+    return (function* (): ElementRender {
+      const inner = factory(builder);
+      const first = inner.next();
+      if (first.done) return first.value;
+      const element = first.value;
+      const slot = (yield { ...element, key }) as Slot;
+      inner.next(slot);
+      return slot;
+    })() as ElementRender;
+  };
 }

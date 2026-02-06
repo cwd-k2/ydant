@@ -2,7 +2,7 @@
  * TransitionGroup コンポーネント
  *
  * リスト要素の追加/削除時に CSS トランジションを適用する。
- * key を使って要素を追跡し、追加・削除・移動を検出する。
+ * keyed() を使って要素を追跡し、追加・削除・移動を検出する。
  *
  * @example
  * ```typescript
@@ -21,7 +21,7 @@
  */
 
 import type { Slot, ElementRender } from "@ydant/base";
-import { div, key as keyPrimitive, onMount } from "@ydant/base";
+import { div, keyed, onMount } from "@ydant/base";
 import { addClasses, removeClasses, waitForTransition } from "./utils";
 
 export interface TransitionGroupProps<T> {
@@ -106,7 +106,7 @@ async function leaveTransition<T>(
 /**
  * TransitionGroup コンポーネント
  *
- * key プリミティブと Slot.refresh() を組み合わせて、
+ * keyed() と Slot.refresh() を組み合わせて、
  * リスト要素の追加・削除時にトランジションを適用する。
  */
 export function* TransitionGroup<T>(props: TransitionGroupProps<T>): ElementRender {
@@ -124,11 +124,13 @@ export function* TransitionGroup<T>(props: TransitionGroupProps<T>): ElementRend
       const item = items[i];
       const itemKey = keyFn(item);
 
-      // key プリミティブを yield
-      yield* keyPrimitive(itemKey);
-
-      // 子要素をレンダリング
-      const itemSlot = yield* children(item, i);
+      // keyed() で要素をラップし、キーを付与
+      const itemSlot = yield* keyed(
+        itemKey,
+        div,
+      )(function* () {
+        yield* children(item, i);
+      });
 
       // 入場トランジションを適用
       yield* onMount(() => {
@@ -194,11 +196,13 @@ export function createTransitionGroupRefresher<T>(
         const itemKey = keyFn(item);
         const isNew = !prevKeys.has(itemKey);
 
-        // key プリミティブを yield
-        yield* keyPrimitive(itemKey);
-
-        // 子要素をレンダリング
-        const itemSlot = yield* children(item, i);
+        // keyed() で要素をラップし、キーを付与
+        const itemSlot = yield* keyed(
+          itemKey,
+          div,
+        )(function* () {
+          yield* children(item, i);
+        });
 
         // 要素を記録
         state.elementsByKey.set(itemKey, itemSlot.node);

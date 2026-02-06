@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@ydant/core";
 import { createBasePlugin } from "../plugin";
 import { div, span, button } from "../elements/html";
-import { attr, on, text, key, onMount, onUnmount } from "../primitives";
+import { attr, on, text, keyed, onMount, onUnmount } from "../primitives";
 import type { Slot } from "../types";
 
 describe("createBasePlugin", () => {
@@ -24,14 +24,7 @@ describe("createBasePlugin", () => {
       const plugin = createBasePlugin();
 
       expect(plugin.name).toBe("base");
-      expect(plugin.types).toEqual([
-        "element",
-        "text",
-        "attribute",
-        "listener",
-        "key",
-        "lifecycle",
-      ]);
+      expect(plugin.types).toEqual(["element", "text", "attribute", "listener", "lifecycle"]);
     });
   });
 
@@ -298,14 +291,14 @@ describe("createBasePlugin", () => {
     });
   });
 
-  describe("processKey", () => {
-    it("sets pendingKey via key primitive", () => {
+  describe("keyed", () => {
+    it("creates keyed element with string key", () => {
       let slot: Slot | undefined;
 
       mount(
         () =>
           div(function* () {
-            slot = yield* div(() => [key("my-key"), text("Content")]);
+            slot = yield* keyed("my-key", div)(() => [text("Content")]);
           }),
         container,
         { plugins: [createBasePlugin()] },
@@ -321,7 +314,7 @@ describe("createBasePlugin", () => {
       mount(
         () =>
           div(function* () {
-            slot = yield* div(() => [key(42), text("Numeric key")]);
+            slot = yield* keyed(42, div)(() => [text("Numeric key")]);
           }),
         container,
         { plugins: [createBasePlugin()] },
@@ -337,7 +330,7 @@ describe("createBasePlugin", () => {
       mount(
         () =>
           div(function* () {
-            slot = yield* div(() => [key(0), text("Zero key")]);
+            slot = yield* keyed(0, div)(() => [text("Zero key")]);
           }),
         container,
         { plugins: [createBasePlugin()] },
@@ -496,7 +489,7 @@ describe("createBasePlugin", () => {
         () =>
           div(function* () {
             slot = yield* div(function* () {
-              yield* button(() => [key("btn"), on("click", handler), text("Click")]);
+              yield* keyed("btn", button)(() => [on("click", handler), text("Click")]);
             });
           }),
         container,
@@ -505,7 +498,7 @@ describe("createBasePlugin", () => {
 
       // Refresh to trigger element reuse
       slot?.refresh(function* () {
-        yield* button(() => [key("btn"), on("click", handler), text("Click Again")]);
+        yield* keyed("btn", button)(() => [on("click", handler), text("Click Again")]);
       });
 
       const btn = container.querySelector("button");

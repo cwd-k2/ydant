@@ -11,9 +11,7 @@ import type { Element, Slot } from "../types";
  * Element を DOM ノードに変換し、Slot を返す
  */
 export function processElement(element: Element, api: PluginAPI): PluginResult {
-  // pending key があるか確認
-  const elementKey = api.pendingKey;
-  api.setPendingKey(null);
+  const elementKey = element.key ?? null;
 
   // key があり、既存のノードが存在する場合は再利用
   let node: globalThis.Element;

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { attr, classes, on, text, style, key, onMount, onUnmount } from "../primitives";
+import { attr, classes, on, text, style, onMount, onUnmount } from "../primitives";
 import type { Lifecycle } from "../types";
 
 describe("attr", () => {
@@ -193,39 +193,6 @@ describe("style", () => {
       type: "attribute",
       key: "style",
       value: "font-size: 16px; margin-top: 8px",
-    });
-  });
-});
-
-describe("key", () => {
-  it("yields a Key with string value", () => {
-    const gen = key("item-123");
-    const result = gen.next();
-
-    expect(result.done).toBe(false);
-    expect(result.value).toEqual({
-      type: "key",
-      value: "item-123",
-    });
-  });
-
-  it("yields a Key with number value", () => {
-    const gen = key(42);
-    const result = gen.next();
-
-    expect(result.value).toEqual({
-      type: "key",
-      value: 42,
-    });
-  });
-
-  it("handles zero as key", () => {
-    const gen = key(0);
-    const result = gen.next();
-
-    expect(result.value).toEqual({
-      type: "key",
-      value: 0,
     });
   });
 });

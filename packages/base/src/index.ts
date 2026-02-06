@@ -14,12 +14,11 @@ export type {
   Listener,
   Text,
   Lifecycle,
-  Key,
   Decoration,
 } from "./types";
 
 // Primitives
-export { attr, classes, on, text, onMount, onUnmount, style, key } from "./primitives";
+export { attr, classes, on, text, onMount, onUnmount, style, keyed } from "./primitives";
 
 // HTML Elements
 export {

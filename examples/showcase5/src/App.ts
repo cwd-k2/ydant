@@ -13,7 +13,7 @@ import {
   classes,
   attr,
   on,
-  key,
+  keyed,
 } from "@ydant/base";
 import type { ListItem, SortOrder } from "./types";
 import { ListItemView } from "./components/ListItemView";
@@ -77,22 +77,25 @@ export const App: Component = () => {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
 
-        // key() を使用して DOM ノードを再利用
+        // keyed() を使用して DOM ノードを再利用
         // 並び替え時に同じ key を持つ要素は DOM が再利用される
-        yield* key(item.id);
-
-        yield* ListItemView({
-          item,
-          isFirst: i === 0,
-          isLast: i === items.length - 1,
-          onMoveUp: () => moveItem(i, -1),
-          onMoveDown: () => moveItem(i, 1),
-          onDelete: () => {
-            items = items.filter((t) => t.id !== item.id);
-            listRef.refresh(renderList);
-            statsRef.refresh(renderStats);
-          },
-        });
+        yield* keyed(
+          item.id,
+          div,
+        )(() => [
+          ListItemView({
+            item,
+            isFirst: i === 0,
+            isLast: i === items.length - 1,
+            onMoveUp: () => moveItem(i, -1),
+            onMoveDown: () => moveItem(i, 1),
+            onDelete: () => {
+              items = items.filter((t) => t.id !== item.id);
+              listRef.refresh(renderList);
+              statsRef.refresh(renderStats);
+            },
+          }),
+        ]);
       }
     }
   };
@@ -120,13 +123,13 @@ export const App: Component = () => {
     // Header
     yield* h1(() => [
       classes("text-2xl", "font-bold", "text-center", "text-purple-800"),
-      text("Sortable List with key()"),
+      text("Sortable List with keyed()"),
     ]);
 
     yield* p(() => [
       classes("text-center", "text-gray-500", "text-sm"),
       text(
-        "Demonstrates key() for efficient DOM updates. " +
+        "Demonstrates keyed() for efficient DOM updates. " +
           "Move items around and watch DOM IDs stay stable.",
       ),
     ]);
@@ -211,12 +214,12 @@ export const App: Component = () => {
     // Info
     yield* div(() => [
       classes("mt-4", "p-4", "bg-blue-50", "rounded-lg", "text-sm"),
-      h2(() => [classes("font-semibold", "mb-2"), text("How key() works:")]),
+      h2(() => [classes("font-semibold", "mb-2"), text("How keyed() works:")]),
       p(() => [
         text(
-          "The key() primitive tells the renderer to reuse existing DOM nodes " +
-            "when refreshing a list. Without key(), all items would be recreated. " +
-            "With key(), only the order changes - watch the DOM inspector!",
+          "The keyed() wrapper tells the renderer to reuse existing DOM nodes " +
+            "when refreshing a list. Without keyed(), all items would be recreated. " +
+            "With keyed(), only the order changes - watch the DOM inspector!",
         ),
       ]),
     ]);

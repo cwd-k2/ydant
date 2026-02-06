@@ -65,9 +65,6 @@ export type UnmountLifecycle = Tagged<
 /** ライフサイクルイベント */
 export type Lifecycle = MountLifecycle | UnmountLifecycle;
 
-/** リスト要素のキー（差分更新用のマーカー） */
-export type Key = Tagged<"key", { value: string | number }>;
-
 // =============================================================================
 // Plugin Types
 // =============================================================================
@@ -93,6 +90,7 @@ export type Element = Tagged<
     tag: string;
     children: Instructor;
     decorations?: Decoration[];
+    key?: string | number;
     ns?: string;
   }
 >;

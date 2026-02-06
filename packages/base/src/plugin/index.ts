@@ -14,13 +14,7 @@ import type {
 } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 import { processElement } from "./element";
-import {
-  processAttribute,
-  processListener,
-  processText,
-  processLifecycle,
-  processKey,
-} from "./primitives";
+import { processAttribute, processListener, processText, processLifecycle } from "./primitives";
 import type { KeyedNode } from "../types";
 
 /**
@@ -52,11 +46,10 @@ function executeMount(ctx: RenderContext): void {
 export function createBasePlugin(): Plugin {
   return {
     name: "base",
-    types: ["element", "text", "attribute", "listener", "key", "lifecycle"],
+    types: ["element", "text", "attribute", "listener", "lifecycle"],
 
     initContext(ctx: RenderContextCore & Partial<RenderContextExtensions>) {
       ctx.isCurrentElementReused = false;
-      ctx.pendingKey = null;
       ctx.keyedNodes = new Map();
       ctx.mountCallbacks = [];
       ctx.unmountCallbacks = [];
@@ -94,17 +87,6 @@ export function createBasePlugin(): Plugin {
       };
       api.setCurrentElementReused = (reused: boolean) => {
         ctx.isCurrentElementReused = reused;
-      };
-
-      // pendingKey 関連
-      Object.defineProperty(api, "pendingKey", {
-        get() {
-          return ctx.pendingKey;
-        },
-        enumerable: true,
-      });
-      api.setPendingKey = (key: string | number | null) => {
-        ctx.pendingKey = key;
       };
 
       // keyedNodes 関連
@@ -148,9 +130,6 @@ export function createBasePlugin(): Plugin {
       }
       if (isTagged(child, "listener")) {
         return processListener(child, api);
-      }
-      if (isTagged(child, "key")) {
-        return processKey(child, api);
       }
       if (isTagged(child, "lifecycle")) {
         return processLifecycle(child, api);
