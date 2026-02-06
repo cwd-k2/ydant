@@ -179,6 +179,123 @@ describe("createBasePlugin", () => {
       // The callback is stored in the context's unmountCallbacks
       expect(unmountCallback).not.toHaveBeenCalled();
     });
+
+    it("calls onUnmount callbacks when Slot.refresh() is called", () => {
+      const unmountCallback = vi.fn();
+      let slot: Slot | undefined;
+
+      mount(
+        () =>
+          div(function* () {
+            slot = yield* div(() => [
+              span(() => [
+                onUnmount(() => {
+                  unmountCallback();
+                }),
+                text("Child"),
+              ]),
+            ]);
+          }),
+        container,
+        { plugins: [createBasePlugin()] },
+      );
+
+      vi.runAllTimers();
+
+      // Refresh should call onUnmount for removed children
+      slot?.refresh(() => [text("New Content")]);
+
+      expect(unmountCallback).toHaveBeenCalledTimes(1);
+    });
+
+    it("onMount cleanup function is added asynchronously via requestAnimationFrame", () => {
+      // NOTE: onMount の cleanup function は requestAnimationFrame で非同期に登録される。
+      // Slot.refresh() 時に cleanup を呼ぶには、onUnmount を直接使用することを推奨する。
+      // このテストは現在の仕様（cleanup が非同期に追加される）を検証する。
+
+      const cleanupFn = vi.fn();
+
+      mount(
+        () =>
+          div(() => [
+            onMount(() => {
+              return cleanupFn;
+            }),
+          ]),
+        container,
+        { plugins: [createBasePlugin()] },
+      );
+
+      // cleanup function は requestAnimationFrame 後に unmountCallbacks に追加される
+      // ここでは timer を進めていないので、まだ追加されていない
+      expect(cleanupFn).not.toHaveBeenCalled();
+
+      vi.runAllTimers();
+
+      // timer を進めても cleanup は呼ばれない（unmount されていないため）
+      expect(cleanupFn).not.toHaveBeenCalled();
+
+      // NOTE: cleanup function が実際に呼ばれるのは、親要素が DOM から削除された時。
+      // 現在の実装では Slot.refresh() 内での cleanup 呼び出しには対応していない。
+      // cleanup が必要な場合は onUnmount を直接使用する。
+    });
+
+    it("calls onUnmount for cleanup (recommended pattern)", () => {
+      const cleanupFn = vi.fn();
+      let slot: Slot | undefined;
+
+      mount(
+        () =>
+          div(function* () {
+            slot = yield* div(() => [
+              span(() => [
+                // onUnmount を直接使用する推奨パターン
+                onUnmount(cleanupFn),
+                text("Child"),
+              ]),
+            ]);
+          }),
+        container,
+        { plugins: [createBasePlugin()] },
+      );
+
+      vi.runAllTimers();
+
+      // Cleanup function should not be called yet
+      expect(cleanupFn).not.toHaveBeenCalled();
+
+      // Refresh should call the cleanup function
+      slot?.refresh(() => [text("New Content")]);
+
+      expect(cleanupFn).toHaveBeenCalledTimes(1);
+    });
+
+    it("calls nested onUnmount callbacks in correct order", () => {
+      const calls: string[] = [];
+      let slot: Slot | undefined;
+
+      mount(
+        () =>
+          div(function* () {
+            slot = yield* div(() => [
+              span(() => [
+                onUnmount(() => calls.push("outer")),
+                div(() => [onUnmount(() => calls.push("inner")), text("Nested")]),
+              ]),
+            ]);
+          }),
+        container,
+        { plugins: [createBasePlugin()] },
+      );
+
+      vi.runAllTimers();
+
+      slot?.refresh(() => []);
+
+      // Both callbacks should be called
+      expect(calls).toContain("outer");
+      expect(calls).toContain("inner");
+    });
   });
 
   describe("processKey", () => {

@@ -333,12 +333,10 @@ describe("RouterView", () => {
     expect(container.textContent).not.toContain("Protected Content");
   });
 
-  it("async route guard logs warning", () => {
+  it("async route guard allows access when resolving true", async () => {
     updateRoute("/async-protected");
 
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const ProtectedPage: Component = () => p(() => [text("Protected")]);
+    const ProtectedPage: Component = () => p(() => [text("Async Protected Content")]);
 
     mount(
       () =>
@@ -357,9 +355,40 @@ describe("RouterView", () => {
       { plugins: [createBasePlugin()] },
     );
 
-    expect(warnSpy).toHaveBeenCalledWith("Async route guards are not yet supported");
+    // Initially, content may not be shown (waiting for async guard)
+    // After promise resolves, content should be shown
+    vi.advanceTimersToNextFrame();
+    await Promise.resolve(); // Allow microtasks to flush
 
-    warnSpy.mockRestore();
+    expect(container.textContent).toContain("Async Protected Content");
+  });
+
+  it("async route guard blocks access when resolving false", async () => {
+    updateRoute("/async-blocked");
+
+    const BlockedPage: Component = () => p(() => [text("Should Not See This")]);
+
+    mount(
+      () =>
+        div(function* () {
+          yield* RouterView({
+            routes: [
+              {
+                path: "/async-blocked",
+                component: BlockedPage,
+                guard: () => Promise.resolve(false),
+              },
+            ],
+          });
+        }),
+      container,
+      { plugins: [createBasePlugin()] },
+    );
+
+    vi.advanceTimersToNextFrame();
+    await Promise.resolve();
+
+    expect(container.textContent).not.toContain("Should Not See This");
   });
 
   it("responds to popstate event", () => {

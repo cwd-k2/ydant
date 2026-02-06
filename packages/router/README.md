@@ -69,6 +69,32 @@ interface RouteDefinition {
 
 Renders the component matching the current path.
 
+#### Route Guards
+
+Route guards control access to routes. They can be synchronous or asynchronous:
+
+```typescript
+// Synchronous guard
+{
+  path: "/admin",
+  component: AdminPage,
+  guard: () => isAuthenticated(),
+}
+
+// Async guard (e.g., checking server-side permissions)
+{
+  path: "/settings",
+  component: SettingsPage,
+  guard: async () => {
+    const response = await fetch("/api/permissions");
+    const { canAccess } = await response.json();
+    return canAccess;
+  },
+}
+```
+
+When a guard returns or resolves to `false`, the route is blocked and an empty view is rendered.
+
 ### RouterLink
 
 ```typescript

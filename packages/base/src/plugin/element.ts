@@ -68,6 +68,15 @@ export function processElement(element: Element, api: PluginAPI): PluginResult {
     });
   }
 
+  // 子コンテキストの unmount コールバックを収集
+  // これにより Slot.refresh() 時に子の unmount コールバックが呼ばれる
+  const childUnmountCallbacks = childApi.getUnmountCallbacks();
+  unmountCallbacksRef.push(...childUnmountCallbacks);
+
+  // 親コンテキストにも unmount コールバックを伝搬
+  // これにより、親の Slot.refresh() 時にもこの要素の unmount コールバックが呼ばれる
+  api.addUnmountCallbacks(...unmountCallbacksRef);
+
   // 初回マウントコールバックを実行
   childApi.executeMount();
 
@@ -109,8 +118,14 @@ function createSlot(
   return {
     node: node as HTMLElement,
     refresh(builder: Builder) {
-      // unmountCallbacksRef をクリア
-      for (const callback of unmountCallbacksRef) {
+      // 最新の unmount コールバックを取得（executeMount で追加された cleanup function を含む）
+      const currentUnmountCallbacks = childApi.getUnmountCallbacks();
+
+      // unmountCallbacksRef と childApi のコールバックを両方実行
+      // unmountCallbacksRef には初期化時のコールバックが含まれる
+      // currentUnmountCallbacks には cleanup function が含まれる
+      const allCallbacks = new Set([...unmountCallbacksRef, ...currentUnmountCallbacks]);
+      for (const callback of allCallbacks) {
         callback();
       }
       unmountCallbacksRef.length = 0;
@@ -122,6 +137,10 @@ function createSlot(
 
       // 新しい子要素を処理
       childApi.processChildren(builder, { parent: node });
+
+      // 新しい unmount コールバックを収集
+      const newUnmountCallbacks = childApi.getUnmountCallbacks();
+      unmountCallbacksRef.push(...newUnmountCallbacks);
 
       // マウントコールバックを実行
       childApi.executeMount();

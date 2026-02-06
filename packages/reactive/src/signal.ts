@@ -14,6 +14,7 @@
 
 import type { Subscriber, Readable } from "./types";
 import { getCurrentSubscriber } from "./tracking";
+import { scheduleEffect } from "./batch";
 
 /** Signal インターフェース */
 export interface Signal<T> extends Readable<T> {
@@ -60,9 +61,14 @@ export function signal<T>(initialValue: T): Signal<T> {
   read.set = (newValue: T) => {
     if (!Object.is(value, newValue)) {
       value = newValue;
-      // 全ての購読者に通知
+      // 全ての購読者に通知（batch 中は遅延）
       for (const sub of subscribers) {
-        sub();
+        // batch 中であれば遅延実行キューに追加
+        const scheduled = scheduleEffect(sub);
+        if (!scheduled) {
+          // batch 外なら即座に実行
+          sub();
+        }
       }
     }
   };

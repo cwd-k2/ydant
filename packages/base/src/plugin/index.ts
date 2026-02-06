@@ -133,6 +133,7 @@ export function createBasePlugin(): Plugin {
       api.executeMount = () => {
         executeMount(ctx);
       };
+      api.getUnmountCallbacks = () => unmountCallbacks;
     },
 
     process(child: Child, api: PluginAPI): PluginResult {

@@ -106,7 +106,25 @@ Creates a reactive block that auto-updates DOM when signals change. Use with `yi
 function batch(fn: () => void): void;
 ```
 
-Batches multiple signal updates to trigger effects only once.
+Batches multiple signal updates to trigger effects only once:
+
+```typescript
+const firstName = signal("John");
+const lastName = signal("Doe");
+
+effect(() => {
+  console.log(`${firstName()} ${lastName()}`);
+});
+// Logs: "John Doe"
+
+batch(() => {
+  firstName.set("Jane");
+  lastName.set("Smith");
+});
+// Logs only once: "Jane Smith"
+```
+
+Without `batch`, each `set()` call would trigger the effect immediately. With `batch`, updates are collected and the effect runs only once at the end with the final values.
 
 ### createReactivePlugin
 

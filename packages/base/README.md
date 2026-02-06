@@ -166,6 +166,28 @@ yield *
 ref.current?.refresh(() => [text("Updated!")]);
 ```
 
+### Key and Element Reuse
+
+When using `key()` for list items, the same key will reuse the existing DOM element:
+
+```typescript
+yield *
+  ul(function* () {
+    for (const item of items) {
+      yield* key(item.id);
+      yield* li(() => [text(item.name)]);
+    }
+  });
+```
+
+**Constraints when reusing keyed elements:**
+
+- **Listeners are not re-registered**: Event handlers remain from the original element. If you need to change handlers, use a different key.
+- **Lifecycle callbacks are not re-registered**: `onMount`/`onUnmount` from the original registration are kept.
+- **Attributes are updated**: Attribute values are refreshed on each render.
+
+This design assumes that components with the same key have the same structure. If you need different behavior, change the key to force a new element.
+
 ## Syntax
 
 ### Generator Syntax

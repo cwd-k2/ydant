@@ -25,38 +25,74 @@ import { currentRoute, routeListeners, updateRoute } from "./state";
 import { matchPath } from "./matching";
 
 /**
- * マッチするルートをレンダリング（配列を返す）
+ * マッチするルートを検索し、ガードの結果とコンポーネントを返す
  */
-function renderMatchedRouteArray(routes: RouteDefinition[], base: string): Render[] {
+function findMatchedRoute(
+  routes: RouteDefinition[],
+  base: string,
+): { route: RouteDefinition; params: Record<string, string> } | null {
   const path = currentRoute.path.startsWith(base)
     ? currentRoute.path.slice(base.length) || "/"
     : currentRoute.path;
 
   for (const route of routes) {
     const { match, params } = matchPath(path, route.path);
-
     if (match) {
-      // パラメータを更新
-      currentRoute.params = params;
-
-      // ルートガードを実行
-      if (route.guard) {
-        const allowed = route.guard();
-        if (allowed instanceof Promise) {
-          // 非同期ガードはサポート外（将来の拡張）
-          console.warn("Async route guards are not yet supported");
-        } else if (!allowed) {
-          return [];
-        }
-      }
-
-      // コンポーネントを返す
-      return [route.component()];
+      return { route, params };
     }
   }
 
-  // マッチするルートがない場合は空配列
-  return [];
+  return null;
+}
+
+/**
+ * 同期的にルートをレンダリング（guard が同期の場合）
+ */
+function renderMatchedRouteSync(routes: RouteDefinition[], base: string): Render[] {
+  const matched = findMatchedRoute(routes, base);
+  if (!matched) return [];
+
+  const { route, params } = matched;
+  currentRoute.params = params;
+
+  // guard がない場合はコンポーネントを返す
+  if (!route.guard) {
+    return [route.component()];
+  }
+
+  const allowed = route.guard();
+  if (allowed instanceof Promise) {
+    // async guard の場合は空を返す（後で refresh される）
+    return [];
+  }
+
+  return allowed ? [route.component()] : [];
+}
+
+/**
+ * 非同期ガードを処理し、必要に応じて refresh を呼ぶ
+ */
+async function handleAsyncGuard(
+  routes: RouteDefinition[],
+  base: string,
+  refresh: (builder: () => Render[]) => void,
+): Promise<void> {
+  const matched = findMatchedRoute(routes, base);
+  if (!matched) return;
+
+  const { route, params } = matched;
+
+  if (route.guard) {
+    const allowed = route.guard();
+    if (allowed instanceof Promise) {
+      const result = await allowed;
+      if (result) {
+        currentRoute.params = params;
+        refresh(() => [route.component()]);
+      }
+      // false の場合は refresh しない（空のまま）
+    }
+  }
 }
 
 /**
@@ -75,20 +111,25 @@ export function RouterView(props: RouterViewProps): Render {
 
   return div(function* () {
     // コンテナの子要素として内部コンテナを作成
-    const innerSlot = yield* div(() => renderMatchedRouteArray(routes, base));
+    const innerSlot = yield* div(() => renderMatchedRouteSync(routes, base));
+
+    // 初回の async guard を処理
+    handleAsyncGuard(routes, base, (builder) => innerSlot.refresh(builder));
 
     // popstate イベントのリスナーを登録
     yield* onMount(() => {
       const handlePopState = () => {
         updateRoute(window.location.pathname);
-        innerSlot.refresh(() => renderMatchedRouteArray(routes, base));
+        innerSlot.refresh(() => renderMatchedRouteSync(routes, base));
+        handleAsyncGuard(routes, base, (builder) => innerSlot.refresh(builder));
       };
 
       window.addEventListener("popstate", handlePopState);
 
       // ルート変更リスナーを登録
       const routeChangeListener = () => {
-        innerSlot.refresh(() => renderMatchedRouteArray(routes, base));
+        innerSlot.refresh(() => renderMatchedRouteSync(routes, base));
+        handleAsyncGuard(routes, base, (builder) => innerSlot.refresh(builder));
       };
       routeListeners.add(routeChangeListener);
 

@@ -45,6 +45,8 @@ declare module "@ydant/core" {
     addUnmountCallbacks(...callbacks: Array<() => void>): void;
     /** mount コールバックを実行 */
     executeMount(): void;
+    /** 現在のコンテキストの unmount コールバックを取得 */
+    getUnmountCallbacks(): Array<() => void>;
 
     // === 子要素処理 ===
     /** 子要素を処理する */

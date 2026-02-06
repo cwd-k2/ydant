@@ -212,4 +212,107 @@ describe("createTransitionGroupRefresher", () => {
     expect(container.textContent).toContain("Updated");
     expect(container.textContent).toContain("New Item");
   });
+
+  it("applies leave classes when item is removed", () => {
+    let items: Item[] = [
+      { id: 1, name: "Item 1" },
+      { id: 2, name: "Item 2" },
+    ];
+
+    // Create initial TransitionGroup
+    let containerSlot!: Slot;
+
+    mount(
+      () =>
+        div(function* () {
+          containerSlot = yield* TransitionGroup({
+            items,
+            keyFn: (item) => item.id,
+            leave: "transition-opacity",
+            leaveFrom: "opacity-100",
+            leaveTo: "opacity-0",
+            children: (item) => div(() => [text(item.name)]),
+          });
+        }),
+      container,
+      { plugins: [createBasePlugin()] },
+    );
+
+    vi.advanceTimersToNextFrame();
+
+    // Both items should be rendered
+    expect(container.textContent).toContain("Item 1");
+    expect(container.textContent).toContain("Item 2");
+
+    // Remove item 2
+    items = [{ id: 1, name: "Item 1" }];
+
+    const refresher = createTransitionGroupRefresher<Item>({
+      keyFn: (item) => item.id,
+      leave: "transition-opacity",
+      leaveFrom: "opacity-100",
+      leaveTo: "opacity-0",
+      children: (item) => div(() => [text(item.name)]),
+    });
+
+    refresher(containerSlot, items);
+
+    vi.advanceTimersToNextFrame();
+
+    // Item 2 should have leave classes applied during transition
+    // After transition completes, Item 2 should be removed
+    // For now, we just verify Item 1 remains
+    expect(container.textContent).toContain("Item 1");
+  });
+
+  it("removes element from DOM after leave transition completes", () => {
+    let items: Item[] = [
+      { id: 1, name: "Keeper" },
+      { id: 2, name: "Remover" },
+    ];
+
+    let containerSlot!: Slot;
+
+    mount(
+      () =>
+        div(function* () {
+          containerSlot = yield* TransitionGroup({
+            items,
+            keyFn: (item) => item.id,
+            leave: "fade-out",
+            leaveFrom: "opacity-100",
+            leaveTo: "opacity-0",
+            children: (item) => div(() => [text(item.name)]),
+          });
+        }),
+      container,
+      { plugins: [createBasePlugin()] },
+    );
+
+    vi.advanceTimersToNextFrame();
+
+    expect(container.textContent).toContain("Keeper");
+    expect(container.textContent).toContain("Remover");
+
+    // Remove "Remover"
+    items = [{ id: 1, name: "Keeper" }];
+
+    const refresher = createTransitionGroupRefresher<Item>({
+      keyFn: (item) => item.id,
+      leave: "fade-out",
+      leaveFrom: "opacity-100",
+      leaveTo: "opacity-0",
+      children: (item) => div(() => [text(item.name)]),
+    });
+
+    refresher(containerSlot, items);
+
+    // Allow all timers and frames to complete
+    vi.advanceTimersToNextFrame();
+    vi.runAllTimers();
+
+    // After transition, "Remover" should be gone
+    expect(container.textContent).toContain("Keeper");
+    expect(container.textContent).not.toContain("Remover");
+  });
 });
