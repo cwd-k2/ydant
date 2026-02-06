@@ -168,14 +168,7 @@ pnpm typecheck            # 型チェック
 
 ### ドキュメント配置
 
-| 情報               | 配置先                                      |
-| ------------------ | ------------------------------------------- |
-| API 仕様           | `packages/*/README.md`                      |
-| 使用例・機能一覧   | `README.md` / `README.ja.md`                |
-| 実装パターン       | `examples/*/README.md`                      |
-| 命名規則・パターン | `docs/CONVENTIONS.md`                       |
-| 開発ガイド         | `CLAUDE.md`                                 |
-| プロジェクト知見   | `docs/PROJECT_KNOWLEDGE.md`（このファイル） |
+ドキュメントの配置ルール・テンプレートは **[docs/DOCUMENTATION.md](DOCUMENTATION.md)** を参照。
 
 ---
 
@@ -183,4 +176,6 @@ pnpm typecheck            # 型チェック
 
 - [CLAUDE.md](../CLAUDE.md) - 開発ガイド
 - [CONVENTIONS.md](./CONVENTIONS.md) - 命名規則・コーディングパターン
+- [TESTING.md](./TESTING.md) - テスト方針
+- [DOCUMENTATION.md](./DOCUMENTATION.md) - ドキュメント方針
 - [README.ja.md](../README.ja.md) - プロジェクト概要

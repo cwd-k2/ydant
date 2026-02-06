@@ -67,26 +67,16 @@ pnpm typecheck            # 型チェック
 
 | ファイル                     | 内容                                         |
 | ---------------------------- | -------------------------------------------- |
-| `README.md` / `README.ja.md` | プロジェクト概要、API 一覧（**常に同期**）   |
-| `packages/*/README.md`       | 各パッケージの詳細 API                       |
-| `examples/*/README.md`       | 各 showcase の実装パターン・ヒント           |
+| `README.md` / `README.ja.md` | プロジェクト概要、機能一覧（**常に同期**）   |
+| `packages/*/README.md`       | 各パッケージの API 仕様                      |
+| `examples/*/README.md`       | 各 showcase の実装パターン・躓きポイント     |
 | `docs/CONVENTIONS.md`        | 命名規則、型の使い分け、コーディングパターン |
-| `CLAUDE.md`                  | 開発ガイド（このファイル）                   |
+| `docs/TESTING.md`            | テスト方針、TDD の適用、テストの書き方       |
+| `docs/DOCUMENTATION.md`      | ドキュメント方針、テンプレート、更新ルール   |
+| `docs/PROJECT_KNOWLEDGE.md`  | 設計哲学、開発履歴、学んだ教訓               |
+| `CLAUDE.md`                  | 開発ガイドの入口（このファイル）             |
 
-### 原則
-
-1. **README 同期**: 日英 README は内容を一致させる
-2. **CLAUDE.md は簡潔に**: 詳細は適切な場所（パッケージ/showcase README）に委ねる
-3. **情報の重複を避ける**: 同じ情報を複数箇所に書かない
-
-### 情報の配置
-
-| 情報                         | 配置先                       |
-| ---------------------------- | ---------------------------- |
-| API 仕様、型定義             | `packages/*/README.md`       |
-| 使用例、機能一覧             | `README.md` / `README.ja.md` |
-| 実装パターン、躓きポイント   | `examples/*/README.md`       |
-| アーキテクチャ、開発コマンド | `CLAUDE.md`                  |
+ドキュメントの配置ルール、テンプレート、更新タイミングは **[docs/DOCUMENTATION.md](docs/DOCUMENTATION.md)** を参照。
 
 ---
 

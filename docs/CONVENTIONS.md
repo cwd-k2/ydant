@@ -308,39 +308,12 @@ export function Transition(props: TransitionProps): Render {
 
 ## テスト規約
 
-### ファイル配置
+テストの方針・書き方・避けるべきパターンは **[docs/TESTING.md](TESTING.md)** を参照。
+
+ファイル配置のみここに記載:
 
 - `__tests__/<module>.test.ts` に配置
 - モジュール名と対応させる（`signal.ts` → `signal.test.ts`）
-
-### 構造
-
-```ts
-import { describe, it, expect, vi } from "vitest";
-import { signal } from "../signal";
-
-describe("signal", () => {
-  it("returns initial value", () => {
-    const count = signal(0);
-    expect(count()).toBe(0);
-  });
-
-  describe("set", () => {
-    it("updates value with set()", () => {
-      // ...
-    });
-
-    it("notifies subscribers on change", () => {
-      // ...
-    });
-  });
-});
-```
-
-### 命名規則
-
-- `describe`: 対象の名前（関数名、メソッド名）
-- `it`: 期待する振る舞いを説明（"returns ...", "updates ...", "does not ..."）
 
 ---
 
