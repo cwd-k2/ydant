@@ -28,12 +28,16 @@ type ResourceState<T> =
 export interface Resource<T> {
   /** データを読み取る（ペンディング中は suspend） */
   (): T;
+  /** 現在の値を取得（購読なし、ペンディング/エラー中は throw） */
+  peek(): T;
   /** ローディング中かどうか */
   readonly loading: boolean;
   /** エラーがあれば Error、なければ null */
   readonly error: Error | null;
   /** 再フェッチ */
   refetch(): Promise<void>;
+  /** リソースを破棄（自動再フェッチを停止） */
+  dispose(): void;
 }
 
 /**
@@ -90,6 +94,17 @@ export function createResource<T>(
     get: () => (state.status === "rejected" ? state.error : null),
   });
 
+  resource.peek = () => {
+    switch (state.status) {
+      case "pending":
+        throw new Error("Resource is still loading");
+      case "rejected":
+        throw state.error;
+      case "resolved":
+        return state.data;
+    }
+  };
+
   resource.refetch = async () => {
     const promise = fetcher();
     state = { status: "pending", promise };
@@ -103,11 +118,19 @@ export function createResource<T>(
   };
 
   // 自動再フェッチの設定
+  let intervalId: ReturnType<typeof setInterval> | null = null;
   if (options?.refetchInterval) {
-    setInterval(() => {
+    intervalId = setInterval(() => {
       resource.refetch();
     }, options.refetchInterval);
   }
+
+  resource.dispose = () => {
+    if (intervalId !== null) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  };
 
   return resource;
 }

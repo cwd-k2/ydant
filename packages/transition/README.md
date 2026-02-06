@@ -53,7 +53,7 @@ const App: Component = () => {
 For full enter/leave animation support with programmatic control:
 
 ```typescript
-import { div, button, text, on, clss, type Component } from "@ydant/core";
+import { div, button, text, on, classes, type Component } from "@ydant/core";
 import { createTransition, type TransitionHandle } from "@ydant/transition";
 
 const App: Component = () => {

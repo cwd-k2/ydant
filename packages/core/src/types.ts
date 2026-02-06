@@ -5,33 +5,8 @@
 /** Tagged Union を作成するヘルパー型 */
 export type Tagged<T extends string, P = {}> = { type: T } & P;
 
-// =============================================================================
-// Core Primitive Types
-// =============================================================================
-
-/** HTML 属性 */
-export type Attribute = Tagged<"attribute", { key: string; value: string }>;
-
-/** イベントリスナ */
-export type Listener = Tagged<"listener", { key: string; value: (e: Event) => void }>;
-
-/** テキストノード */
-export type Text = Tagged<"text", { content: string }>;
-
-/** ライフサイクルイベント */
-export type Lifecycle = Tagged<
-  "lifecycle",
-  {
-    event: "mount" | "unmount";
-    callback: () => void | (() => void);
-  }
->;
-
-/** インラインスタイル */
-export type Style = Tagged<"style", { properties: Record<string, string> }>;
-
-/** リスト要素のキー（差分更新用のマーカー） */
-export type Key = Tagged<"key", { value: string | number }>;
+/** ライフサイクルや副作用のクリーンアップ関数 */
+export type CleanupFn = () => void;
 
 // =============================================================================
 // Plugin Extension Types
@@ -45,10 +20,10 @@ export type Key = Tagged<"key", { value: string | number }>;
  *
  * @example
  * ```typescript
- * // @ydant/reactive で Reactive 型を追加
+ * // @ydant/base で Element 型を追加
  * declare module "@ydant/core" {
  *   interface PluginChildExtensions {
- *     Reactive: Tagged<"reactive", { builder: Builder }>;
+ *     Element: Tagged<"element", { tag: string; children: Instructor }>;
  *   }
  * }
  * ```
@@ -60,10 +35,10 @@ export interface PluginChildExtensions {}
  *
  * @example
  * ```typescript
- * // @ydant/context で inject が返す値を追加
+ * // @ydant/base で Slot を追加
  * declare module "@ydant/core" {
  *   interface PluginNextExtensions {
- *     ContextValue: unknown;
+ *     Slot: Slot;
  *   }
  * }
  * ```
@@ -75,10 +50,10 @@ export interface PluginNextExtensions {}
  *
  * @example
  * ```typescript
- * // @ydant/transition で TransitionHandle を追加
+ * // @ydant/base で Slot を追加
  * declare module "@ydant/core" {
  *   interface PluginReturnExtensions {
- *     TransitionHandle: TransitionHandle;
+ *     Slot: Slot;
  *   }
  * }
  * ```
@@ -86,71 +61,67 @@ export interface PluginNextExtensions {}
 export interface PluginReturnExtensions {}
 
 // =============================================================================
-// Core Types (プラグイン拡張前)
-// =============================================================================
-
-type CoreChild = Element | Decoration | Text | Lifecycle | Style | Key;
-type CoreNext = Slot | void;
-type CoreReturn = Slot | void;
-
-// =============================================================================
-// Extended Types (プラグイン拡張後)
+// Core Types (基盤型のみ)
 // =============================================================================
 
 /** 子要素として yield できるもの（プラグインによって拡張可能） */
-export type Child = CoreChild | PluginChildExtensions[keyof PluginChildExtensions];
+export type Child = PluginChildExtensions[keyof PluginChildExtensions];
+
+/** Child から特定の type を抽出するヘルパー型 */
+export type ChildOfType<T extends string> = Extract<Child, { type: T }>;
 
 /** next() に渡される値の型（プラグインによって拡張可能） */
-export type ChildNext = CoreNext | PluginNextExtensions[keyof PluginNextExtensions];
+export type ChildNext = void | PluginNextExtensions[keyof PluginNextExtensions];
 
 /** return で返される値の型（プラグインによって拡張可能） */
-export type ChildReturn = CoreReturn | PluginReturnExtensions[keyof PluginReturnExtensions];
-
-// =============================================================================
-// Element Types
-// =============================================================================
-
-/** HTML 要素の装飾 (Attribute, Listener) */
-export type Decoration = Attribute | Listener;
-
-/** レンダリング命令の Iterator（内部処理用） */
-export type Instructor = Iterator<Child, ChildReturn, ChildNext>;
-
-/** 要素ファクトリ（div, span 等）の引数型 */
-export type Builder = () => Instructor | Instruction[];
-
-/** 要素のスロット（DOM 参照と更新関数を持つ） */
-export interface Slot {
-  /** マウントされた DOM 要素 */
-  readonly node: HTMLElement;
-  /** 子要素を再レンダリングする */
-  refresh(children: Builder): void;
-}
-
-/** HTML 要素 */
-export type Element = Tagged<
-  "element",
-  {
-    tag: string;
-    children: Instructor;
-    decorations?: Decoration[];
-    ns?: string;
-  }
->;
-
-/** Element を yield し、最終的に Slot を返すジェネレーター */
-export type Render = Generator<Element, Slot, Slot>;
+export type ChildReturn = void | PluginReturnExtensions[keyof PluginReturnExtensions];
 
 // =============================================================================
 // Generator Types
 // =============================================================================
 
+/** レンダリング命令の Iterator（内部処理用） */
+export type Instructor = Iterator<Child, ChildReturn, ChildNext>;
+
 /** レンダリング命令（text, attr, on 等）の戻り値型 */
 export type Instruction = Generator<Child, ChildReturn, ChildNext>;
 
+/** 要素ファクトリ（div, span 等）の引数型 */
+export type Builder = () => Instructor | Instruction[];
+
+/** 副作用のみを実行する DSL プリミティブの戻り値型 */
+export type Primitive<T extends Child> = Generator<T, void, void>;
+
+/** コンポーネントの children として渡すビルダー関数の戻り値型 */
+export type ChildContent = Generator<Child, unknown, ChildNext>;
+
 // =============================================================================
-// Component Types
+// Render & Component Types (基底型)
 // =============================================================================
 
-/** ルートコンポーネント（Render を返す関数） */
-export type Component = () => Render;
+/**
+ * Element を yield し、最終的に ChildReturn を返すジェネレーター
+ *
+ * base パッケージでは Slot が PluginReturnExtensions に追加されるため、
+ * より具体的な型 (Generator<Child, Slot, Slot>) として使用される
+ */
+export type Render = Generator<Child, ChildReturn, ChildNext>;
+
+/**
+ * コンポーネント型
+ *
+ * - `Component` — 引数なし `() => Render`
+ * - `Component<Props>` — Props を受け取る `(props: Props) => Render`
+ *
+ * @example
+ * ```typescript
+ * const App: Component = () => div(function* () { ... });
+ *
+ * interface CounterProps { initial: number }
+ * const Counter: Component<CounterProps> = (props) =>
+ *   div(function* () {
+ *     yield* text(`Count: ${props.initial}`);
+ *   });
+ * ```
+ */
+export type Component<P = void> = [P] extends [void] ? () => Render : (props: P) => Render;

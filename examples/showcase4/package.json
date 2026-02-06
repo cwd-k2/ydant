@@ -4,12 +4,13 @@
   "private": true,
   "description": "Demo: SPA with Router, Context, Reactive + Plugin Architecture",
   "scripts": {
-    "dev": "vite"
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ydant/base": "workspace:*",
     "@ydant/context": "workspace:*",
     "@ydant/core": "workspace:*",
-    "@ydant/dom": "workspace:*",
     "@ydant/reactive": "workspace:*",
     "@ydant/router": "workspace:*"
   },

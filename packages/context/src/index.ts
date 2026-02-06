@@ -1,13 +1,18 @@
+/// <reference path="./global.d.ts" />
 /**
  * @ydant/context
  *
  * Context API と永続化ヘルパー
  */
 
-export { createContext, provide, inject } from "./context";
+// Ensure module augmentation from @ydant/base is loaded
+import "@ydant/base";
+
+// ─── Types ───
 export type { Context, ContextProvide, ContextInject } from "./context";
 
-export { persist, save, remove, createStorage } from "./persist";
+// ─── Runtime ───
+export { createContext, provide, inject } from "./context";
 
-// Plugin
+// ─── Plugin ───
 export { createContextPlugin } from "./plugin";

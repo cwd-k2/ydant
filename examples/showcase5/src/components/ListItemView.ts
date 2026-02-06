@@ -1,4 +1,5 @@
-import { div, span, button, text, clss, on } from "@ydant/core";
+import type { Component } from "@ydant/core";
+import { div, span, button, text, classes, on } from "@ydant/base";
 import type { ListItem } from "../types";
 
 const PRIORITY_COLORS: Record<ListItem["priority"], string[]> = {
@@ -22,11 +23,11 @@ interface ListItemViewProps {
   isLast: boolean;
 }
 
-export function ListItemView(props: ListItemViewProps) {
+export const ListItemView: Component<ListItemViewProps> = (props) => {
   const { item, onMoveUp, onMoveDown, onDelete, isFirst, isLast } = props;
 
   return div(function* () {
-    yield* clss([
+    yield* classes(
       "list-item",
       "flex",
       "items-center",
@@ -36,25 +37,25 @@ export function ListItemView(props: ListItemViewProps) {
       "rounded-lg",
       "mb-2",
       ...PRIORITY_COLORS[item.priority],
-    ]);
+    );
 
     // Priority badge
     yield* span(() => [
-      clss(["text-xs", "font-medium", "px-2", "py-1", "rounded"]),
+      classes("text-xs", "font-medium", "px-2", "py-1", "rounded"),
       text(PRIORITY_LABELS[item.priority]),
     ]);
 
     // Item text
-    yield* span(() => [clss(["flex-1", "font-medium"]), text(item.text)]);
+    yield* span(() => [classes("flex-1", "font-medium"), text(item.text)]);
 
     // Item ID (for debugging key behavior)
-    yield* span(() => [clss(["text-xs", "text-gray-500"]), text(`#${item.id}`)]);
+    yield* span(() => [classes("text-xs", "text-gray-500"), text(`#${item.id}`)]);
 
     // Move buttons
     yield* div(() => [
-      clss(["flex", "gap-1"]),
+      classes("flex", "gap-1"),
       button(function* () {
-        yield* clss([
+        yield* classes(
           "px-2",
           "py-1",
           "text-sm",
@@ -62,15 +63,15 @@ export function ListItemView(props: ListItemViewProps) {
           "rounded",
           "hover:bg-gray-300",
           "disabled:opacity-50",
-        ]);
+        );
         yield* on("click", onMoveUp);
         if (isFirst) {
-          yield* clss(["opacity-50", "cursor-not-allowed"]);
+          yield* classes("opacity-50", "cursor-not-allowed");
         }
         yield* text("↑");
       }),
       button(function* () {
-        yield* clss([
+        yield* classes(
           "px-2",
           "py-1",
           "text-sm",
@@ -78,15 +79,15 @@ export function ListItemView(props: ListItemViewProps) {
           "rounded",
           "hover:bg-gray-300",
           "disabled:opacity-50",
-        ]);
+        );
         yield* on("click", onMoveDown);
         if (isLast) {
-          yield* clss(["opacity-50", "cursor-not-allowed"]);
+          yield* classes("opacity-50", "cursor-not-allowed");
         }
         yield* text("↓");
       }),
       button(function* () {
-        yield* clss([
+        yield* classes(
           "px-2",
           "py-1",
           "text-sm",
@@ -94,10 +95,10 @@ export function ListItemView(props: ListItemViewProps) {
           "text-red-700",
           "rounded",
           "hover:bg-red-300",
-        ]);
+        );
         yield* on("click", onDelete);
         yield* text("×");
       }),
     ]);
   });
-}
+};

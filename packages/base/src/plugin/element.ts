@@ -1,0 +1,147 @@
+/**
+ * @ydant/base - Element 処理
+ */
+
+import type { Builder, Instructor } from "@ydant/core";
+import { isTagged } from "@ydant/core";
+import type { PluginAPI, PluginResult } from "@ydant/core";
+import type { Element, Slot } from "../types";
+
+/**
+ * Element を DOM ノードに変換し、Slot を返す
+ */
+export function processElement(element: Element, api: PluginAPI): PluginResult {
+  const elementKey = element.key ?? null;
+
+  // key があり、既存のノードが存在する場合は再利用
+  let node: globalThis.Element;
+  let isReused = false;
+
+  if (elementKey !== null && api.getKeyedNode(elementKey)) {
+    const existing = api.getKeyedNode(elementKey)!;
+    node = existing.node;
+    isReused = true;
+
+    // 古いアンマウントコールバックを新しいコンテキストに移行
+    api.addUnmountCallbacks(...existing.unmountCallbacks);
+    api.deleteKeyedNode(elementKey);
+  } else {
+    node = element.ns
+      ? document.createElementNS(element.ns, element.tag)
+      : document.createElement(element.tag);
+  }
+
+  // 親に追加（再利用時は移動になる）
+  api.appendChild(node);
+
+  // decorations (Attribute, Listener) を適用
+  applyDecorations(element, node, isReused);
+
+  // 子コンテキストの API を作成
+  const childApi = api.createChildAPI(node);
+
+  // key があれば keyedNodes に登録
+  // 注意: unmountCallbacks は子コンテキストで管理されるため、後で取得する必要がある
+  // ここでは一旦空の配列で登録し、後で更新する
+  const unmountCallbacksRef: Array<() => void> = [];
+  if (elementKey !== null) {
+    api.setKeyedNode(elementKey, {
+      key: elementKey,
+      node,
+      unmountCallbacks: unmountCallbacksRef,
+    });
+  }
+
+  // Slot オブジェクトを作成
+  const slot = createSlot(node, childApi, unmountCallbacksRef);
+
+  // 子要素を処理（再利用時は子要素もクリアして再構築）
+  if (isReused) {
+    node.innerHTML = "";
+  }
+
+  if (element.children) {
+    childApi.processChildren(() => element.children as Instructor, {
+      parent: node,
+    });
+  }
+
+  // 子コンテキストの unmount コールバックを収集
+  // これにより Slot.refresh() 時に子の unmount コールバックが呼ばれる
+  const childUnmountCallbacks = childApi.getUnmountCallbacks();
+  unmountCallbacksRef.push(...childUnmountCallbacks);
+
+  // 親コンテキストにも unmount コールバックを伝搬
+  // これにより、親の Slot.refresh() 時にもこの要素の unmount コールバックが呼ばれる
+  api.addUnmountCallbacks(...unmountCallbacksRef);
+
+  // 初回マウントコールバックを実行
+  childApi.executeMount();
+
+  return { value: slot };
+}
+
+/**
+ * Element の decorations を DOM ノードに適用
+ *
+ * 注意: 属性は再利用時も毎回適用されるが、リスナーは初回のみ追加される。
+ * これは key による要素再利用において、同一コンポーネントが同一リスナーを
+ * 持つことを前提とした設計。リスナーの動的な変更が必要な場合は
+ * key を変更して新しい要素として再作成する必要がある。
+ */
+function applyDecorations(element: Element, node: globalThis.Element, isReused: boolean): void {
+  if (!element.decorations) return;
+
+  for (const decoration of element.decorations) {
+    if (isTagged(decoration, "attribute")) {
+      // 属性は毎回適用（新しい値で上書き）
+      node.setAttribute(decoration.key as string, decoration.value as string);
+    } else if (isTagged(decoration, "listener")) {
+      // リスナーは再利用時に重複追加を防ぐためスキップ
+      if (!isReused) {
+        node.addEventListener(decoration.key as string, decoration.value as (e: Event) => void);
+      }
+    }
+  }
+}
+
+/**
+ * Slot オブジェクトを作成
+ */
+function createSlot(
+  node: globalThis.Element,
+  childApi: PluginAPI,
+  unmountCallbacksRef: Array<() => void>,
+): Slot {
+  return {
+    node: node as HTMLElement,
+    refresh(builder: Builder) {
+      // 最新の unmount コールバックを取得（executeMount で追加された cleanup function を含む）
+      const currentUnmountCallbacks = childApi.getUnmountCallbacks();
+
+      // unmountCallbacksRef と childApi のコールバックを両方実行
+      // unmountCallbacksRef には初期化時のコールバックが含まれる
+      // currentUnmountCallbacks には cleanup function が含まれる
+      const allCallbacks = new Set([...unmountCallbacksRef, ...currentUnmountCallbacks]);
+      for (const callback of allCallbacks) {
+        callback();
+      }
+      unmountCallbacksRef.length = 0;
+
+      // すべての子要素を削除
+      while (node.firstChild) {
+        node.removeChild(node.firstChild);
+      }
+
+      // 新しい子要素を処理
+      childApi.processChildren(builder, { parent: node });
+
+      // 新しい unmount コールバックを収集
+      const newUnmountCallbacks = childApi.getUnmountCallbacks();
+      unmountCallbacksRef.push(...newUnmountCallbacks);
+
+      // マウントコールバックを実行
+      childApi.executeMount();
+    },
+  };
+}

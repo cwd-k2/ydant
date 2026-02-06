@@ -12,19 +12,16 @@
  * ```
  */
 
-import type { Subscriber } from "./types";
+import type { Subscriber, Readable } from "./types";
 import { getCurrentSubscriber } from "./tracking";
+import { scheduleEffect } from "./batch";
 
 /** Signal インターフェース */
-export interface Signal<T> {
-  /** 値を読み取る */
-  (): T;
+export interface Signal<T> extends Readable<T> {
   /** 値を設定する */
   set(value: T): void;
   /** 関数で値を更新する */
   update(fn: (prev: T) => T): void;
-  /** 現在の値を取得（購読なし） */
-  peek(): T;
 }
 
 /**
@@ -64,9 +61,14 @@ export function signal<T>(initialValue: T): Signal<T> {
   read.set = (newValue: T) => {
     if (!Object.is(value, newValue)) {
       value = newValue;
-      // 全ての購読者に通知
+      // 全ての購読者に通知（batch 中は遅延）
       for (const sub of subscribers) {
-        sub();
+        // batch 中であれば遅延実行キューに追加
+        const scheduled = scheduleEffect(sub);
+        if (!scheduled) {
+          // batch 外なら即座に実行
+          sub();
+        }
       }
     }
   };

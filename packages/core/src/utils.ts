@@ -1,10 +1,12 @@
-import type { Tagged, Instruction, Instructor } from "./types";
+import type { Tagged, Child, ChildOfType, Instruction, Instructor } from "./types";
 
-/** Tagged 型の判定関数 */
+/** Tagged 型の判定関数（Child に対する型ガード付きオーバーロード） */
+export function isTagged<T extends Child["type"]>(value: Child, tag: T): value is ChildOfType<T>;
 export function isTagged<T extends string>(
   value: { type: string },
   tag: T,
-): value is Tagged<T, Record<string, unknown>> {
+): value is Tagged<T, Record<string, unknown>>;
+export function isTagged(value: { type: string }, tag: string): boolean {
   return value.type === tag;
 }
 

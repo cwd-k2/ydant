@@ -18,15 +18,10 @@
  * ```
  */
 
-import type { Render, Slot, Builder, Element } from "@ydant/core";
-import { div, onMount } from "@ydant/core";
-
-// @ydant/core の型を拡張
-declare module "@ydant/core" {
-  interface PluginReturnExtensions {
-    TransitionHandle: TransitionHandle;
-  }
-}
+import type { Builder, ChildContent, Render } from "@ydant/core";
+import type { Slot, Element } from "@ydant/base";
+import { div, onMount } from "@ydant/base";
+import { addClasses, removeClasses, waitForTransition } from "./utils";
 
 export interface TransitionProps {
   /** 要素を表示するかどうか */
@@ -44,49 +39,7 @@ export interface TransitionProps {
   /** 退場終了時のクラス */
   leaveTo?: string;
   /** トランジション対象の子要素 */
-  children: () => Render;
-}
-
-/**
- * CSS クラスを追加
- */
-function addClasses(el: HTMLElement, classes: string | undefined): void {
-  if (classes) {
-    el.classList.add(...classes.split(" ").filter(Boolean));
-  }
-}
-
-/**
- * CSS クラスを削除
- */
-function removeClasses(el: HTMLElement, classes: string | undefined): void {
-  if (classes) {
-    el.classList.remove(...classes.split(" ").filter(Boolean));
-  }
-}
-
-/**
- * トランジション終了を待つ
- */
-function waitForTransition(el: HTMLElement): Promise<void> {
-  return new Promise((resolve) => {
-    const computed = getComputedStyle(el);
-    const duration = parseFloat(computed.transitionDuration) * 1000;
-
-    if (duration === 0) {
-      resolve();
-      return;
-    }
-
-    const handler = () => {
-      el.removeEventListener("transitionend", handler);
-      resolve();
-    };
-    el.addEventListener("transitionend", handler);
-
-    // タイムアウト（念のため）
-    setTimeout(resolve, duration + 50);
-  });
+  children: () => ChildContent;
 }
 
 /**
@@ -158,9 +111,12 @@ const transitionStates = new WeakMap<
 /**
  * Transition コンポーネント
  *
- * show の変化に応じて enter/leave アニメーションを実行する。
- * - show: false → true: enter アニメーション
- * - show: true → false: leave アニメーション後に要素を削除
+ * show の変化に応じて enter アニメーションを実行する。
+ *
+ * 注意: 現在の実装では enter アニメーションのみサポート。
+ * leave アニメーションが必要な場合は `createTransition` を使用すること。
+ *
+ * @see createTransition - leave アニメーションをサポートする代替 API
  */
 export function Transition(props: TransitionProps): Render {
   const { show, children } = props;
@@ -226,6 +182,9 @@ export interface TransitionHandle {
   setShow: (show: boolean) => Promise<void>;
 }
 
+/** createTransition の戻り値型。yield* で使用し、TransitionHandle を返す。 */
+export type TransitionInstruction = Generator<Element, TransitionHandle, Slot>;
+
 /**
  * 状態管理付き Transition を作成
  *
@@ -248,9 +207,7 @@ export interface TransitionHandle {
  * await transition.setShow(false);
  * ```
  */
-export function* createTransition(
-  props: Omit<TransitionProps, "show">,
-): Generator<Element, TransitionHandle, Slot> {
+export function* createTransition(props: Omit<TransitionProps, "show">): TransitionInstruction {
   const { children } = props;
 
   let isShowing = false;

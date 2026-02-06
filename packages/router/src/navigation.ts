@@ -7,8 +7,10 @@ import { currentRoute, updateRoute } from "./state";
 
 /**
  * 現在のルート情報を取得
+ *
+ * @returns 現在のルート情報（パス、パラメータ、クエリ）
  */
-export function useRoute(): RouteInfo {
+export function getRoute(): RouteInfo {
   return currentRoute;
 }
 

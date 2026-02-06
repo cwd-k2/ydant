@@ -163,4 +163,90 @@ describe("createResource", () => {
     await Promise.resolve();
     expect(fetcher).toHaveBeenCalledTimes(3);
   });
+
+  describe("peek()", () => {
+    it("throws error when resource is still loading", () => {
+      const fetcher = vi.fn(() => new Promise<string>(() => {}));
+      const resource = createResource(fetcher);
+
+      expect(() => resource.peek()).toThrow("Resource is still loading");
+    });
+
+    it("throws error when resource is in rejected state", async () => {
+      let rejectPromise: (error: Error) => void;
+      const fetcher = vi.fn(
+        () =>
+          new Promise<string>((_, reject) => {
+            rejectPromise = reject;
+          }),
+      );
+
+      const resource = createResource(fetcher);
+
+      const error = new Error("Fetch failed");
+      rejectPromise!(error);
+      await vi.runAllTimersAsync();
+
+      expect(() => resource.peek()).toThrow(error);
+    });
+
+    it("returns data when resource is resolved", async () => {
+      const fetcher = vi.fn(() => Promise.resolve("data"));
+      const resource = createResource(fetcher);
+
+      await vi.runAllTimersAsync();
+
+      expect(resource.peek()).toBe("data");
+    });
+  });
+
+  describe("dispose()", () => {
+    it("stops refetchInterval when called", async () => {
+      let callCount = 0;
+      const fetcher = vi.fn(() => {
+        callCount++;
+        return Promise.resolve(`data-${callCount}`);
+      });
+
+      const resource = createResource(fetcher, { refetchInterval: 1000 });
+
+      // Wait for initial fetch
+      await Promise.resolve();
+      expect(fetcher).toHaveBeenCalledTimes(1);
+
+      // Dispose the resource
+      resource.dispose();
+
+      // Advance time - should not trigger more fetches
+      vi.advanceTimersByTime(1000);
+      await Promise.resolve();
+      expect(fetcher).toHaveBeenCalledTimes(1);
+
+      vi.advanceTimersByTime(1000);
+      await Promise.resolve();
+      expect(fetcher).toHaveBeenCalledTimes(1);
+    });
+
+    it("can be called multiple times safely", async () => {
+      const fetcher = vi.fn(() => Promise.resolve("data"));
+      const resource = createResource(fetcher, { refetchInterval: 1000 });
+
+      await Promise.resolve();
+
+      // Calling dispose multiple times should not throw
+      expect(() => {
+        resource.dispose();
+        resource.dispose();
+        resource.dispose();
+      }).not.toThrow();
+    });
+
+    it("does nothing when no refetchInterval was set", () => {
+      const fetcher = vi.fn(() => Promise.resolve("data"));
+      const resource = createResource(fetcher);
+
+      // dispose should not throw even without refetchInterval
+      expect(() => resource.dispose()).not.toThrow();
+    });
+  });
 });

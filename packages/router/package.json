@@ -8,7 +8,10 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "@ydant/dev": "./src/index.ts",
+      "@ydant/dev": {
+        "types": "./src/index.ts",
+        "default": "./src/index.ts"
+      },
       "import": "./dist/index.es.js",
       "require": "./dist/index.umd.js"
     }
@@ -17,10 +20,8 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit"
   },
-  "devDependencies": {
-    "@ydant/core": "workspace:*"
-  },
   "peerDependencies": {
+    "@ydant/base": "workspace:*",
     "@ydant/core": "workspace:*"
   },
   "packageManager": "pnpm@10.22.0"

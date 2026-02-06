@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { RouterView, RouterLink, useRoute, navigate } from "@ydant/router";
+ * import { RouterView, RouterLink, getRoute, navigate } from "@ydant/router";
  *
  * const App: Component = () =>
  *   div(function* () {
@@ -27,11 +27,13 @@
  * ```
  */
 
-// Types
+// Ensure module augmentation from @ydant/base is loaded
+import "@ydant/base";
+
+// ─── Types ───
 export type { RouteDefinition, RouteInfo, RouterViewProps, RouterLinkProps } from "./types";
 
-// Navigation API
-export { useRoute, navigate, goBack, goForward } from "./navigation";
-
-// Components
-export { RouterView, RouterLink } from "./components";
+// ─── Runtime ───
+export { getRoute, navigate, goBack, goForward } from "./navigation";
+export { RouterView } from "./RouterView";
+export { RouterLink } from "./RouterLink";

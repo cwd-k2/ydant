@@ -1,3 +1,4 @@
+import type { Component } from "@ydant/core";
 import {
   text,
   div,
@@ -6,12 +7,11 @@ import {
   span,
   button,
   input,
-  clss,
+  classes,
   on,
   attr,
-  type Slot,
-  type Component,
-} from "@ydant/core";
+  createSlotRef,
+} from "@ydant/base";
 import type { Todo, Filter } from "./types";
 import { loadTodos, saveTodos } from "./storage";
 import { TodoItem } from "./components/TodoItem";
@@ -23,10 +23,10 @@ export const App: Component = () => {
   let filter: Filter = "all";
   let nextId = todos.length > 0 ? Math.max(...todos.map((t) => t.id)) + 1 : 1;
 
-  // Slot references (set later)
-  let filterSlot: Slot;
-  let todoListSlot: Slot;
-  let statsSlot: Slot;
+  // SlotRef references
+  const filterRef = createSlotRef();
+  const todoListRef = createSlotRef();
+  const statsRef = createSlotRef();
 
   // Helper functions
   const getFilteredTodos = (): Todo[] => {
@@ -46,7 +46,7 @@ export const App: Component = () => {
 
   // Render functions for refreshing
   const renderFilterButtons = function* () {
-    yield* clss(["flex", "gap-2", "mb-4", "justify-center"]);
+    yield* classes("flex", "gap-2", "mb-4", "justify-center");
 
     const filters: { key: Filter; label: string }[] = [
       { key: "all", label: "All" },
@@ -60,21 +60,21 @@ export const App: Component = () => {
         isActive: filter === f.key,
         onClick: () => {
           filter = f.key;
-          filterSlot.refresh(renderFilterButtons);
-          todoListSlot.refresh(renderTodoList);
+          filterRef.refresh(renderFilterButtons);
+          todoListRef.refresh(renderTodoList);
         },
       });
     }
   };
 
   const renderTodoList = function* () {
-    yield* clss(["border", "border-gray-200", "rounded-lg", "overflow-hidden", "mb-4"]);
+    yield* classes("border", "border-gray-200", "rounded-lg", "overflow-hidden", "mb-4");
 
     const filteredTodos = getFilteredTodos();
 
     if (filteredTodos.length === 0) {
       yield* div(() => [
-        clss(["p-8", "text-center", "text-gray-400"]),
+        classes("p-8", "text-center", "text-gray-400"),
         text(
           filter === "all"
             ? "No todos yet. Add one above!"
@@ -90,14 +90,14 @@ export const App: Component = () => {
           onToggle: () => {
             todo.completed = !todo.completed;
             saveTodos(todos);
-            todoListSlot.refresh(renderTodoList);
-            statsSlot.refresh(renderStats);
+            todoListRef.refresh(renderTodoList);
+            statsRef.refresh(renderStats);
           },
           onDelete: () => {
             todos = todos.filter((t) => t.id !== todo.id);
             saveTodos(todos);
-            todoListSlot.refresh(renderTodoList);
-            statsSlot.refresh(renderStats);
+            todoListRef.refresh(renderTodoList);
+            statsRef.refresh(renderStats);
           },
         });
       }
@@ -105,7 +105,7 @@ export const App: Component = () => {
   };
 
   const renderStats = function* () {
-    yield* clss(["flex", "justify-between", "items-center", "text-sm", "text-gray-500"]);
+    yield* classes("flex", "justify-between", "items-center", "text-sm", "text-gray-500");
 
     const activeCount = getActiveCount();
     const completedCount = todos.length - activeCount;
@@ -114,12 +114,12 @@ export const App: Component = () => {
 
     if (completedCount > 0) {
       yield* button(function* () {
-        yield* clss(["text-red-500", "hover:text-red-700", "hover:underline"]);
+        yield* classes("text-red-500", "hover:text-red-700", "hover:underline");
         yield* on("click", () => {
           todos = todos.filter((t) => !t.completed);
           saveTodos(todos);
-          todoListSlot.refresh(renderTodoList);
-          statsSlot.refresh(renderStats);
+          todoListRef.refresh(renderTodoList);
+          statsRef.refresh(renderStats);
         });
         yield* text("Clear completed");
       });
@@ -127,59 +127,61 @@ export const App: Component = () => {
   };
 
   return div(function* () {
-    yield* clss(["container", "mx-auto"]);
+    yield* classes("container", "mx-auto");
 
     // Title
     yield* h1(() => [
-      clss(["text-2xl", "font-bold", "text-center", "text-purple-800", "mb-6"]),
+      classes("text-2xl", "font-bold", "text-center", "text-purple-800", "mb-6"),
       text("ToDo App"),
     ]);
 
     // Input section
     let inputValue = "";
-    let inputSlot: Slot;
+    const inputRef = createSlotRef();
 
     yield* div(function* () {
-      yield* clss(["flex", "gap-2", "mb-6"]);
+      yield* classes("flex", "gap-2", "mb-6");
 
       // Text input
-      inputSlot = yield* input(function* () {
-        yield* attr("type", "text");
-        yield* attr("placeholder", "What needs to be done?");
-        yield* clss([
-          "flex-1",
-          "px-4",
-          "py-2",
-          "border",
-          "border-gray-300",
-          "rounded-lg",
-          "focus:outline-none",
-          "focus:ring-2",
-          "focus:ring-blue-500",
-          "focus:border-transparent",
-        ]);
-        yield* on("input", (e) => {
-          inputValue = (e.target as HTMLInputElement).value;
-        });
-        yield* on("keypress", (e) => {
-          if ((e as KeyboardEvent).key === "Enter" && inputValue.trim()) {
-            todos.push({
-              id: nextId++,
-              text: inputValue.trim(),
-              completed: false,
-            });
-            saveTodos(todos);
-            (inputSlot.node as HTMLInputElement).value = "";
-            inputValue = "";
-            todoListSlot.refresh(renderTodoList);
-            statsSlot.refresh(renderStats);
-          }
-        });
-      });
+      inputRef.bind(
+        yield* input(function* () {
+          yield* attr("type", "text");
+          yield* attr("placeholder", "What needs to be done?");
+          yield* classes(
+            "flex-1",
+            "px-4",
+            "py-2",
+            "border",
+            "border-gray-300",
+            "rounded-lg",
+            "focus:outline-none",
+            "focus:ring-2",
+            "focus:ring-blue-500",
+            "focus:border-transparent",
+          );
+          yield* on("input", (e) => {
+            inputValue = (e.target as HTMLInputElement).value;
+          });
+          yield* on("keypress", (e) => {
+            if ((e as KeyboardEvent).key === "Enter" && inputValue.trim()) {
+              todos.push({
+                id: nextId++,
+                text: inputValue.trim(),
+                completed: false,
+              });
+              saveTodos(todos);
+              (inputRef.node as HTMLInputElement).value = "";
+              inputValue = "";
+              todoListRef.refresh(renderTodoList);
+              statsRef.refresh(renderStats);
+            }
+          });
+        }),
+      );
 
       // Add button
       yield* button(function* () {
-        yield* clss([
+        yield* classes(
           "btn-add",
           "px-6",
           "py-2",
@@ -188,7 +190,7 @@ export const App: Component = () => {
           "rounded-lg",
           "hover:bg-blue-600",
           "font-semibold",
-        ]);
+        );
         yield* on("click", () => {
           if (inputValue.trim()) {
             todos.push({
@@ -197,10 +199,10 @@ export const App: Component = () => {
               completed: false,
             });
             saveTodos(todos);
-            (inputSlot.node as HTMLInputElement).value = "";
+            (inputRef.node as HTMLInputElement).value = "";
             inputValue = "";
-            todoListSlot.refresh(renderTodoList);
-            statsSlot.refresh(renderStats);
+            todoListRef.refresh(renderTodoList);
+            statsRef.refresh(renderStats);
           }
         });
         yield* text("Add");
@@ -208,17 +210,17 @@ export const App: Component = () => {
     });
 
     // Filter buttons
-    filterSlot = yield* div(renderFilterButtons);
+    filterRef.bind(yield* div(renderFilterButtons));
 
     // Todo list
-    todoListSlot = yield* div(renderTodoList);
+    todoListRef.bind(yield* div(renderTodoList));
 
     // Stats
-    statsSlot = yield* div(renderStats);
+    statsRef.bind(yield* div(renderStats));
 
     // Footer info
     yield* p(() => [
-      clss(["text-center", "text-xs", "text-gray-400", "mt-6"]),
+      classes("text-center", "text-xs", "text-gray-400", "mt-6"),
       text("Double-click to edit a todo (not implemented). Data is saved to localStorage."),
     ]);
   });

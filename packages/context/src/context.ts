@@ -17,14 +17,14 @@
  * function ThemedButton() {
  *   return button(function* () {
  *     const theme = yield* inject(ThemeContext);
- *     yield* clss([theme === "dark" ? "bg-gray-800" : "bg-white"]);
+ *     yield* classes(theme === "dark" ? "bg-gray-800" : "bg-white");
  *     yield* text("Click me");
  *   });
  * }
  * ```
  */
 
-import type { Tagged } from "@ydant/core";
+import type { Tagged, Primitive } from "@ydant/core";
 
 /** Context オブジェクト */
 export interface Context<T> {
@@ -43,21 +43,8 @@ export type ContextProvide = Tagged<
 /** Context Inject 型（Tagged Union） */
 export type ContextInject = Tagged<"context-inject", { context: Context<unknown> }>;
 
-// @ydant/core の型を拡張
-declare module "@ydant/core" {
-  interface PluginChildExtensions {
-    ContextProvide: ContextProvide;
-    ContextInject: ContextInject;
-  }
-
-  interface PluginNextExtensions {
-    ContextValue: unknown;
-  }
-
-  interface PluginReturnExtensions {
-    ContextValue: unknown;
-  }
-}
+/** Context から値を取得する DSL プリミティブの戻り値型 */
+type Accessor<T> = Generator<ContextInject, T, T>;
 
 /**
  * Context を作成する
@@ -91,7 +78,7 @@ export function createContext<T>(defaultValue?: T): Context<T> {
  * yield* provide(ThemeContext, "dark");
  * ```
  */
-export function* provide<T>(context: Context<T>, value: T): Generator<ContextProvide, void, void> {
+export function* provide<T>(context: Context<T>, value: T): Primitive<ContextProvide> {
   yield {
     type: "context-provide",
     context: context as Context<unknown>,
@@ -113,7 +100,7 @@ export function* provide<T>(context: Context<T>, value: T): Generator<ContextPro
  * const theme = yield* inject(ThemeContext);
  * ```
  */
-export function* inject<T>(context: Context<T>): Generator<ContextInject, T, T> {
+export function* inject<T>(context: Context<T>): Accessor<T> {
   const value = yield {
     type: "context-inject",
     context: context as Context<unknown>,

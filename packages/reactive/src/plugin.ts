@@ -6,7 +6,7 @@
  * @example
  * ```typescript
  * import { createReactivePlugin } from "@ydant/reactive/plugin";
- * import { mount } from "@ydant/dom";
+ * import { mount } from "@ydant/core";
  *
  * mount(App, document.getElementById("app")!, {
  *   plugins: [createReactivePlugin()]
@@ -14,20 +14,24 @@
  * ```
  */
 
-import type { Child, Builder } from "@ydant/core";
-import type { DomPlugin, PluginAPI, PluginResult } from "@ydant/dom";
+import type { Child, Plugin, PluginAPI, PluginResult } from "@ydant/core";
+import { isTagged } from "@ydant/core";
+// Ensure module augmentation from @ydant/base is loaded
+import "@ydant/base";
 import { runWithSubscriber } from "./tracking";
 
 /**
  * Reactive プラグインを作成する
  */
-export function createReactivePlugin(): DomPlugin {
+export function createReactivePlugin(): Plugin {
   return {
     name: "reactive",
     types: ["reactive"],
+    dependencies: ["base"],
 
     process(child: Child, api: PluginAPI): PluginResult {
-      const builder = (child as { builder: Builder }).builder;
+      if (!isTagged(child, "reactive")) return {};
+      const builder = child.builder;
 
       // コンテナ要素を作成
       const container = document.createElement("span");

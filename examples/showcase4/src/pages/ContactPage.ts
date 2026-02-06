@@ -1,17 +1,5 @@
-import {
-  type Component,
-  div,
-  h1,
-  p,
-  span,
-  button,
-  input,
-  label,
-  text,
-  attr,
-  clss,
-  on,
-} from "@ydant/core";
+import type { Component } from "@ydant/core";
+import { div, h1, p, span, button, input, label, text, attr, classes, on } from "@ydant/base";
 import { signal, reactive } from "@ydant/reactive";
 import { createForm, required, email, minLength } from "../form";
 
@@ -45,16 +33,16 @@ export const ContactPage: Component = () => {
   });
 
   return div(function* () {
-    yield* clss(["p-6", "max-w-md"]);
-    yield* h1(() => [clss(["text-2xl", "font-bold", "mb-4"]), text("Contact")]);
+    yield* classes("p-6", "max-w-md");
+    yield* h1(() => [classes("text-2xl", "font-bold", "mb-4"), text("Contact")]);
 
     yield* p(() => [
-      clss(["text-sm", "text-gray-500", "mb-4"]),
+      classes("text-sm", "text-gray-500", "mb-4"),
       text("This form uses user-implemented validation (not a library)."),
     ]);
 
     yield* div(function* () {
-      yield* clss(["space-y-4"]);
+      yield* classes("space-y-4");
 
       // Name field
       yield* FormField({
@@ -97,7 +85,7 @@ export const ContactPage: Component = () => {
 
       // Submit button
       yield* button(function* () {
-        yield* clss([
+        yield* classes(
           "w-full",
           "px-4",
           "py-2",
@@ -106,7 +94,7 @@ export const ContactPage: Component = () => {
           "rounded",
           "hover:bg-blue-600",
           "disabled:opacity-50",
-        ]);
+        );
         yield* on("click", () => form.submit());
         yield* reactive(() => [text(formState().isSubmitting ? "Sending..." : "Send Message")]);
       });
@@ -124,15 +112,15 @@ interface FormFieldProps {
   getError: () => string | null | undefined;
 }
 
-function FormField(props: FormFieldProps) {
+const FormField: Component<FormFieldProps> = (props) => {
   const { labelText, type, getValue, setValue, onBlur, getError } = props;
 
   return div(function* () {
-    yield* label(() => [clss(["block", "font-medium", "mb-1"]), text(labelText)]);
+    yield* label(() => [classes("block", "font-medium", "mb-1"), text(labelText)]);
     yield* input(function* () {
       yield* attr("type", type);
       yield* attr("value", getValue());
-      yield* clss(["w-full", "px-3", "py-2", "border", "rounded", "dark:bg-gray-700"]);
+      yield* classes("w-full", "px-3", "py-2", "border", "rounded", "dark:bg-gray-700");
       yield* on("input", (e) => {
         setValue((e.target as HTMLInputElement).value);
       });
@@ -140,7 +128,7 @@ function FormField(props: FormFieldProps) {
     });
     yield* reactive(() => {
       const error = getError();
-      return error ? [span(() => [clss(["text-red-500", "text-sm"]), text(error)])] : [];
+      return error ? [span(() => [classes("text-red-500", "text-sm"), text(error)])] : [];
     });
   });
-}
+};

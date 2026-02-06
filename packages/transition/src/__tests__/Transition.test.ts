@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { div, text, clss, type Slot, type Builder } from "@ydant/core";
-import { mount } from "@ydant/dom";
+import type { Builder } from "@ydant/core";
+import { mount } from "@ydant/core";
+import type { Slot } from "@ydant/base";
+import { createBasePlugin, div, text, classes } from "@ydant/base";
 import {
   Transition,
   createTransition,
@@ -36,6 +38,7 @@ describe("Transition", () => {
           children: () => div(() => [text("Visible Content")]),
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Visible Content");
@@ -49,6 +52,7 @@ describe("Transition", () => {
           children: () => div(() => [text("Hidden Content")]),
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).not.toContain("Hidden Content");
@@ -65,6 +69,7 @@ describe("Transition", () => {
           children: () => div(() => [text("Content")]),
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -82,6 +87,7 @@ describe("Transition", () => {
           children: () => div(() => [text("Content")]),
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Content");
@@ -96,6 +102,7 @@ describe("Transition", () => {
           children: () => div(() => [text("Toggle Content")]),
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Toggle Content");
@@ -110,6 +117,7 @@ describe("Transition", () => {
           children: () => div(() => [text("Toggle Content")]),
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).not.toContain("Toggle Content");
@@ -123,9 +131,10 @@ describe("Transition", () => {
           enter: "transition-all",
           enterFrom: "opacity-0 scale-95",
           enterTo: "opacity-100 scale-100",
-          children: () => div(() => [clss(["content-box"]), text("Content")]),
+          children: () => div(() => [classes("content-box"), text("Content")]),
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     // Trigger onMount callback (requestAnimationFrame)
@@ -154,9 +163,10 @@ describe("Transition", () => {
           enter: "transition-opacity",
           enterFrom: "opacity-0",
           enterTo: "opacity-100",
-          children: () => div(() => [clss(["fade-target"]), text("Fading")]),
+          children: () => div(() => [classes("fade-target"), text("Fading")]),
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -186,9 +196,10 @@ describe("Transition", () => {
           enter: "transition-opacity",
           enterFrom: "opacity-0",
           enterTo: "opacity-100",
-          children: () => div(() => [clss(["event-target"]), text("Content")]),
+          children: () => div(() => [classes("event-target"), text("Content")]),
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -213,6 +224,7 @@ describe("Transition", () => {
           children: () => div(() => [text("No Classes")]),
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -453,6 +465,7 @@ describe("createTransition", () => {
           });
         } as Builder),
       container,
+      { plugins: [createBasePlugin()] },
     );
     vi.advanceTimersToNextFrame();
 
@@ -474,10 +487,11 @@ describe("createTransition", () => {
             enter: "fade-enter",
             enterFrom: "fade-enter-from",
             enterTo: "fade-enter-to",
-            children: () => div(() => [clss(["transition-child"]), text("Content")]),
+            children: () => div(() => [classes("transition-child"), text("Content")]),
           });
         } as Builder),
       container,
+      { plugins: [createBasePlugin()] },
     );
     vi.advanceTimersToNextFrame();
 
@@ -506,10 +520,11 @@ describe("createTransition", () => {
             leave: "fade-leave",
             leaveFrom: "fade-leave-from",
             leaveTo: "fade-leave-to",
-            children: () => div(() => [clss(["transition-child"]), text("Content")]),
+            children: () => div(() => [classes("transition-child"), text("Content")]),
           });
         } as Builder),
       container,
+      { plugins: [createBasePlugin()] },
     );
     vi.advanceTimersToNextFrame();
 
@@ -540,6 +555,7 @@ describe("createTransition", () => {
           });
         } as Builder),
       container,
+      { plugins: [createBasePlugin()] },
     );
     vi.advanceTimersToNextFrame();
 
@@ -573,10 +589,11 @@ describe("createTransition", () => {
         div(function* () {
           handle = yield* createTransition({
             enter: "fade-enter",
-            children: () => div(() => [clss(["child"]), text("Content")]),
+            children: () => div(() => [classes("child"), text("Content")]),
           });
         } as Builder),
       container,
+      { plugins: [createBasePlugin()] },
     );
     vi.advanceTimersToNextFrame();
 

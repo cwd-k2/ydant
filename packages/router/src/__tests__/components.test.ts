@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { div, p } from "@ydant/core";
-import { text } from "@ydant/core";
-import type { Component } from "@ydant/core";
-import { mount } from "@ydant/dom";
-import { RouterLink, RouterView } from "../components";
+import { mount, type Component } from "@ydant/core";
+import { createBasePlugin, div, p, text } from "@ydant/base";
+import { RouterLink } from "../RouterLink";
+import { RouterView } from "../RouterView";
 import { navigate } from "../navigation";
 import { updateRoute, currentRoute } from "../state";
 
@@ -26,6 +25,7 @@ describe("RouterLink", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     const link = container.querySelector("a");
@@ -44,6 +44,7 @@ describe("RouterLink", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     const link = container.querySelector("a") as HTMLAnchorElement;
@@ -62,6 +63,7 @@ describe("RouterLink", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     const link = container.querySelector("a") as HTMLAnchorElement;
@@ -89,6 +91,7 @@ describe("RouterLink", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     const link = container.querySelector("a");
@@ -108,6 +111,7 @@ describe("RouterLink", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     const link = container.querySelector("a");
@@ -142,6 +146,7 @@ describe("RouterView", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Home Page");
@@ -164,6 +169,7 @@ describe("RouterView", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -191,6 +197,7 @@ describe("RouterView", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(capturedId).toBe("42");
@@ -210,6 +217,7 @@ describe("RouterView", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     // Only the wrapper divs, no home page content
@@ -229,6 +237,7 @@ describe("RouterView", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("404 Not Found");
@@ -248,6 +257,7 @@ describe("RouterView", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Users List");
@@ -267,6 +277,7 @@ describe("RouterView", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("App Home");
@@ -291,6 +302,7 @@ describe("RouterView", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Protected Content");
@@ -315,17 +327,16 @@ describe("RouterView", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).not.toContain("Protected Content");
   });
 
-  it("async route guard logs warning", () => {
+  it("async route guard allows access when resolving true", async () => {
     updateRoute("/async-protected");
 
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const ProtectedPage: Component = () => p(() => [text("Protected")]);
+    const ProtectedPage: Component = () => p(() => [text("Async Protected Content")]);
 
     mount(
       () =>
@@ -341,11 +352,43 @@ describe("RouterView", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
-    expect(warnSpy).toHaveBeenCalledWith("Async route guards are not yet supported");
+    // Initially, content may not be shown (waiting for async guard)
+    // After promise resolves, content should be shown
+    vi.advanceTimersToNextFrame();
+    await Promise.resolve(); // Allow microtasks to flush
 
-    warnSpy.mockRestore();
+    expect(container.textContent).toContain("Async Protected Content");
+  });
+
+  it("async route guard blocks access when resolving false", async () => {
+    updateRoute("/async-blocked");
+
+    const BlockedPage: Component = () => p(() => [text("Should Not See This")]);
+
+    mount(
+      () =>
+        div(function* () {
+          yield* RouterView({
+            routes: [
+              {
+                path: "/async-blocked",
+                component: BlockedPage,
+                guard: () => Promise.resolve(false),
+              },
+            ],
+          });
+        }),
+      container,
+      { plugins: [createBasePlugin()] },
+    );
+
+    vi.advanceTimersToNextFrame();
+    await Promise.resolve();
+
+    expect(container.textContent).not.toContain("Should Not See This");
   });
 
   it("responds to popstate event", () => {
@@ -383,6 +426,7 @@ describe("RouterView", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -419,6 +463,7 @@ describe("RouterView", () => {
           });
         }),
       container,
+      { plugins: [createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();

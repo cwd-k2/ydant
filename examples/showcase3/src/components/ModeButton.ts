@@ -1,4 +1,5 @@
-import { button, clss, on, text } from "@ydant/core";
+import type { Component } from "@ydant/core";
+import { button, classes, on, text } from "@ydant/base";
 import type { TimerMode } from "../types";
 import { MODE_LABELS, MODE_COLORS } from "../constants";
 
@@ -8,13 +9,13 @@ export interface ModeButtonProps {
   onClick: () => void;
 }
 
-export function ModeButton(props: ModeButtonProps) {
+export const ModeButton: Component<ModeButtonProps> = (props) => {
   const { mode, isActive, onClick } = props;
 
   const colors = MODE_COLORS[mode];
 
   return button(() => [
-    clss([
+    classes(
       "px-4",
       "py-2",
       "rounded-full",
@@ -24,8 +25,8 @@ export function ModeButton(props: ModeButtonProps) {
       ...(isActive
         ? [colors.bg, "text-white", "shadow-lg"]
         : ["bg-gray-100", "text-gray-600", "hover:bg-gray-200"]),
-    ]),
+    ),
     on("click", onClick),
     text(MODE_LABELS[mode]),
   ]);
-}
+};

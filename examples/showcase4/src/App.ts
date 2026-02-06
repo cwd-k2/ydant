@@ -1,8 +1,16 @@
-import { type Component, div, clss, onMount } from "@ydant/core";
+import type { Component } from "@ydant/core";
+import { div, classes, onMount } from "@ydant/base";
 import { RouterView } from "@ydant/router";
 import { NavBar } from "./components/NavBar";
 import { applyThemeToDocument } from "./state/theme";
 import { HomePage, UsersPage, UserDetailPage, ContactPage, NotFoundPage } from "./pages";
+
+/**
+ * ベースパスを検出
+ * - トップレベルから実行: /showcase4
+ * - showcase4 内から実行: (空文字)
+ */
+export const basePath = window.location.pathname.includes("/showcase4") ? "/showcase4" : "";
 
 /**
  * メインアプリケーションコンポーネント
@@ -19,11 +27,12 @@ export const App: Component = () =>
       return () => clearInterval(interval);
     });
 
-    yield* clss(["min-h-screen", "bg-white", "dark:bg-gray-900", "dark:text-white"]);
+    yield* classes("min-h-screen", "bg-white", "dark:bg-gray-900", "dark:text-white");
 
     yield* NavBar();
 
     yield* RouterView({
+      base: basePath,
       routes: [
         { path: "/", component: HomePage },
         { path: "/users", component: UsersPage },

@@ -1,4 +1,5 @@
-import { div, input, span, button, clss, on, attr, text } from "@ydant/core";
+import type { Component } from "@ydant/core";
+import { div, input, span, button, classes, on, attr, text } from "@ydant/base";
 import type { Todo } from "../types";
 
 export interface TodoItemProps {
@@ -7,29 +8,29 @@ export interface TodoItemProps {
   onDelete: () => void;
 }
 
-export function TodoItem(props: TodoItemProps) {
+export const TodoItem: Component<TodoItemProps> = (props) => {
   const { todo, onToggle, onDelete } = props;
 
   return div(() => [
-    clss(["todo-item", "flex", "items-center", "gap-3", "p-3", "border-b", "border-gray-100"]),
+    classes("todo-item", "flex", "items-center", "gap-3", "p-3", "border-b", "border-gray-100"),
 
     // Checkbox
     input(() => [
       attr("type", "checkbox"),
       ...(todo.completed ? [attr("checked", "checked")] : []),
-      clss(["w-5", "h-5", "rounded", "border-gray-300", "cursor-pointer"]),
+      classes("w-5", "h-5", "rounded", "border-gray-300", "cursor-pointer"),
       on("change", onToggle),
     ]),
 
     // Todo text
     span(() => [
-      clss(["flex-1", "text-gray-700", ...(todo.completed ? ["todo-completed"] : [])]),
+      classes("flex-1", "text-gray-700", ...(todo.completed ? ["todo-completed"] : [])),
       text(todo.text),
     ]),
 
     // Delete button
     button(() => [
-      clss([
+      classes(
         "btn-delete",
         "px-2",
         "py-1",
@@ -37,9 +38,9 @@ export function TodoItem(props: TodoItemProps) {
         "hover:text-red-700",
         "hover:bg-red-50",
         "rounded",
-      ]),
+      ),
       on("click", onDelete),
       text("×"),
     ]),
   ]);
-}
+};

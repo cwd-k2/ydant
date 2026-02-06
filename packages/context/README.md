@@ -1,6 +1,6 @@
 # @ydant/context
 
-Context API and persistence helpers for Ydant.
+Context API for Ydant.
 
 ## Installation
 
@@ -13,10 +13,9 @@ pnpm add @ydant/context
 ### Context API
 
 ```typescript
-import { createContext, provide, inject } from "@ydant/context";
-import { div, text, type Component } from "@ydant/core";
-import { mount } from "@ydant/dom";
-import { createContextPlugin } from "@ydant/context";
+import { mount, type Component } from "@ydant/core";
+import { createBasePlugin, div, text } from "@ydant/base";
+import { createContext, provide, inject, createContextPlugin } from "@ydant/context";
 
 // Create context with optional default value
 const ThemeContext = createContext<"light" | "dark">("light");
@@ -35,34 +34,13 @@ const ChildComponent: Component = () =>
     yield* text(`Theme: ${theme}`); // "dark"
   });
 
-// Mount with context plugin
+// Mount with base and context plugins
 mount(App, document.getElementById("app")!, {
-  plugins: [createContextPlugin()],
+  plugins: [createBasePlugin(), createContextPlugin()],
 });
 ```
 
-### Persistence (localStorage)
-
-```typescript
-import { createStorage, persist, save, remove } from "@ydant/context";
-
-// Create persistent storage
-const themeStorage = createStorage<"light" | "dark">("theme", "light");
-
-// Read
-const theme = themeStorage.get();
-
-// Write
-themeStorage.set("dark");
-
-// Remove
-themeStorage.remove();
-
-// Alternative: direct functions
-persist("key", value); // Save
-save("key", value); // Alias for persist
-remove("key"); // Remove
-```
+> **Note:** `@ydant/base` is required for DOM rendering.
 
 ## API
 
@@ -90,30 +68,30 @@ function inject<T>(context: Context<T>): ContextInject;
 
 Retrieves the value from the nearest ancestor provider. Use with `yield*`. Returns the default value if no provider is found.
 
-### createStorage
-
-```typescript
-function createStorage<T>(key: string, defaultValue: T): Storage<T>;
-
-interface Storage<T> {
-  get(): T;
-  set(value: T): void;
-  remove(): void;
-}
-```
-
-Creates a localStorage-backed storage with JSON serialization.
-
 ### createContextPlugin
 
 ```typescript
-function createContextPlugin(): DomPlugin;
+function createContextPlugin(): Plugin;
 ```
 
-Creates a DOM plugin that handles `provide` and `inject`. Must be passed to `mount()`.
+Creates a plugin that handles `provide` and `inject`. Must be passed to `mount()`.
+
+The context plugin extends `RenderContext` and `PluginAPI`:
+
+```typescript
+// RenderContext extensions
+interface RenderContextExtensions {
+  contextValues: Map<symbol, unknown>;
+}
+
+// PluginAPI extensions
+interface PluginAPIExtensions {
+  getContext<T>(id: symbol): T | undefined;
+  setContext<T>(id: symbol, value: T): void;
+}
+```
 
 ## Module Structure
 
 - `context.ts` - Context creation and provide/inject
-- `persist.ts` - localStorage helpers
-- `plugin.ts` - DOM plugin
+- `plugin.ts` - Plugin implementation

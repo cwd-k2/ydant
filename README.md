@@ -9,15 +9,15 @@
 Ydant is an experimental UI library that uses JavaScript generators as a domain-specific language for building DOM structures. It's deliberately minimal and unconventional—a playground for exploring what's possible when generators meet the DOM.
 
 ```typescript
-import { div, button, text, clss, on, type Slot } from "@ydant/core";
-import { mount } from "@ydant/dom";
+import { mount } from "@ydant/core";
+import { div, button, text, classes, on, type Slot } from "@ydant/base";
 
 function Counter(initial: number) {
   let count = initial;
   let countSlot: Slot;
 
   return div(function* () {
-    yield* clss(["counter"]);
+    yield* classes("counter");
 
     countSlot = yield* div(() => [text(`Count: ${count}`)]);
 
@@ -46,31 +46,34 @@ mount(() => Counter(0), document.getElementById("app")!);
 
 ## Packages
 
-| Package               | Description                           | README                                     |
-| --------------------- | ------------------------------------- | ------------------------------------------ |
-| **@ydant/core**       | Types, element factories, primitives  | [Details](./packages/core/README.md)       |
-| **@ydant/dom**        | Rendering engine, plugin system       | [Details](./packages/dom/README.md)        |
-| **@ydant/reactive**   | Signal-based reactivity               | [Details](./packages/reactive/README.md)   |
-| **@ydant/context**    | Context API, localStorage persistence | [Details](./packages/context/README.md)    |
-| **@ydant/router**     | SPA routing                           | [Details](./packages/router/README.md)     |
-| **@ydant/async**      | Suspense, ErrorBoundary               | [Details](./packages/async/README.md)      |
-| **@ydant/transition** | CSS transitions                       | [Details](./packages/transition/README.md) |
+| Package               | Description                         | README                                     |
+| --------------------- | ----------------------------------- | ------------------------------------------ |
+| **@ydant/core**       | Rendering engine, plugin system     | [Details](./packages/core/README.md)       |
+| **@ydant/base**       | Element factories, primitives, Slot | [Details](./packages/base/README.md)       |
+| **@ydant/reactive**   | Signal-based reactivity             | [Details](./packages/reactive/README.md)   |
+| **@ydant/context**    | Context API                         | [Details](./packages/context/README.md)    |
+| **@ydant/router**     | SPA routing                         | [Details](./packages/router/README.md)     |
+| **@ydant/async**      | Suspense, ErrorBoundary             | [Details](./packages/async/README.md)      |
+| **@ydant/transition** | CSS transitions                     | [Details](./packages/transition/README.md) |
 
 ## Quick Start
 
 ```typescript
-import { div, text, clss, type Component } from "@ydant/core";
-import { mount } from "@ydant/dom";
+import { mount } from "@ydant/core";
+import { createBasePlugin, div, text, classes, type Component } from "@ydant/base";
 
-const App: Component = () => div(() => [clss(["app"]), text("Hello, Ydant!")]);
+const App: Component = () => div(() => [classes("app"), text("Hello, Ydant!")]);
 
-mount(App, document.getElementById("root")!);
+mount(App, document.getElementById("root")!, {
+  plugins: [createBasePlugin()],
+});
 ```
 
 ### With Plugins
 
 ```typescript
-import { mount } from "@ydant/dom";
+import { mount } from "@ydant/core";
+import { createBasePlugin, div, button, text, on, type Component } from "@ydant/base";
 import { createReactivePlugin, signal, reactive } from "@ydant/reactive";
 import { createContextPlugin } from "@ydant/context";
 
@@ -83,7 +86,7 @@ const App: Component = () =>
   });
 
 mount(App, document.getElementById("root")!, {
-  plugins: [createReactivePlugin(), createContextPlugin()],
+  plugins: [createBasePlugin(), createReactivePlugin(), createContextPlugin()],
 });
 ```
 

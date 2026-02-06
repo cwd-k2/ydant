@@ -1,0 +1,27 @@
+{
+  "name": "@ydant/base",
+  "version": "0.0.0",
+  "description": "Base DSL primitives and plugin for Ydant",
+  "keywords": [],
+  "license": "MIT",
+  "author": "",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "@ydant/dev": {
+        "types": "./src/index.ts",
+        "default": "./src/index.ts"
+      },
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@ydant/core": "workspace:*"
+  },
+  "packageManager": "pnpm@10.22.0"
+}

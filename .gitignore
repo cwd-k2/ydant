@@ -147,3 +147,6 @@ dist
 MEMO.md
 FEATURE-PLAN.md
 IMPLEMENTATION-PLAN.md
+
+# Claude Code local settings (personal)
+.claude/settings.local.json

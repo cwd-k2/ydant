@@ -3,7 +3,17 @@ import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 
 export default defineConfig({
-  plugins: [dts({ tsconfigPath: "./tsconfig.build.json" })],
+  plugins: [
+    dts({
+      tsconfigPath: "./tsconfig.build.json",
+      copyDtsFiles: true,
+      beforeWriteFile: (filePath, content) => {
+        if (filePath.endsWith("index.d.ts")) {
+          return { content: `/// <reference path="./global.d.ts" />\n${content}` };
+        }
+      },
+    }),
+  ],
   build: {
     outDir: "dist",
     lib: {
@@ -12,10 +22,11 @@ export default defineConfig({
       fileName: (format) => `index.${format}.js`,
     },
     rollupOptions: {
-      external: ["@ydant/core"],
+      external: ["@ydant/core", "@ydant/base"],
       output: {
         globals: {
           "@ydant/core": "YdantCore",
+          "@ydant/base": "YdantBase",
         },
       },
     },

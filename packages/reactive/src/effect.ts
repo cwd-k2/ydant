@@ -18,6 +18,7 @@
  * ```
  */
 
+import type { CleanupFn } from "@ydant/core";
 import { runWithSubscriber } from "./tracking";
 
 /**
@@ -47,8 +48,8 @@ import { runWithSubscriber } from "./tracking";
  * });
  * ```
  */
-export function effect(fn: () => void | (() => void)): () => void {
-  let cleanup: (() => void) | void;
+export function effect(fn: () => void | CleanupFn): CleanupFn {
+  let cleanup: CleanupFn | void;
   let isDisposed = false;
 
   const execute = () => {
@@ -56,7 +57,11 @@ export function effect(fn: () => void | (() => void)): () => void {
 
     // 前回のクリーンアップを実行
     if (cleanup) {
-      cleanup();
+      try {
+        cleanup();
+      } catch (error) {
+        console.error("[ydant] Effect cleanup threw an error:", error);
+      }
       cleanup = undefined;
     }
 
@@ -72,7 +77,11 @@ export function effect(fn: () => void | (() => void)): () => void {
     if (!isDisposed) {
       isDisposed = true;
       if (cleanup) {
-        cleanup();
+        try {
+          cleanup();
+        } catch (error) {
+          console.error("[ydant] Effect cleanup threw an error:", error);
+        }
         cleanup = undefined;
       }
     }

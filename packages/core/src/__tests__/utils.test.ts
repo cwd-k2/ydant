@@ -1,24 +1,28 @@
 import { describe, it, expect } from "vitest";
 import { isTagged, toChildren } from "../utils";
-import type { Text, Instruction } from "../types";
+import type { Instruction, Tagged } from "../types";
+
+// テスト用の型定義
+type TestText = Tagged<"text", { content: string }>;
+type TestAttribute = Tagged<"attribute", { key: string; value: string }>;
 
 describe("isTagged", () => {
   it("returns true when type matches the tag", () => {
-    const value = { type: "text", content: "hello" } as const;
+    const value: TestText = { type: "text", content: "hello" };
     expect(isTagged(value, "text")).toBe(true);
   });
 
   it("returns false when type does not match the tag", () => {
-    const value = { type: "text", content: "hello" } as const;
+    const value: TestText = { type: "text", content: "hello" };
     expect(isTagged(value, "attribute")).toBe(false);
   });
 
   it("works with various tagged types", () => {
-    const attribute = {
+    const attribute: TestAttribute = {
       type: "attribute",
       key: "class",
       value: "container",
-    } as const;
+    };
     const listener = {
       type: "listener",
       key: "click",
@@ -42,16 +46,17 @@ describe("isTagged", () => {
 
 describe("toChildren", () => {
   it("returns iterator as-is when passed an iterator", () => {
-    const items: Text[] = [
+    const items: TestText[] = [
       { type: "text", content: "hello" },
       { type: "text", content: "world" },
     ];
-    // Create a proper iterator that matches the ChildIterator type signature
+    // Create a proper iterator that matches the Instructor type signature
+    // Note: In actual usage, Child type is extended by plugins (e.g., @ydant/base)
     const iterator = (function* () {
       for (const item of items) {
         yield item;
       }
-    })();
+    })() as unknown as Iterator<never, void, void>;
 
     const result = toChildren(iterator);
     expect(result).toBe(iterator);

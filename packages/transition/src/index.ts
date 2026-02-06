@@ -1,11 +1,17 @@
+/// <reference path="./global.d.ts" />
 /**
  * @ydant/transition
  *
  * CSS トランジションを適用するためのコンポーネント群
  */
 
-export { Transition, createTransition, enterTransition, leaveTransition } from "./Transition";
-export type { TransitionProps, TransitionHandle } from "./Transition";
+// Ensure module augmentation from @ydant/base is loaded
+import "@ydant/base";
 
-export { TransitionGroup, createTransitionGroupRefresher } from "./TransitionGroup";
+// ─── Types ───
+export type { TransitionProps, TransitionHandle, TransitionInstruction } from "./Transition";
 export type { TransitionGroupProps } from "./TransitionGroup";
+
+// ─── Runtime ───
+export { Transition, createTransition, enterTransition, leaveTransition } from "./Transition";
+export { TransitionGroup, createTransitionGroupRefresher } from "./TransitionGroup";

@@ -4,11 +4,12 @@
   "private": true,
   "description": "Demo: CSS Transitions with Transition and TransitionGroup",
   "scripts": {
-    "dev": "vite"
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ydant/base": "workspace:*",
     "@ydant/core": "workspace:*",
-    "@ydant/dom": "workspace:*",
     "@ydant/transition": "workspace:*"
   },
   "packageManager": "pnpm@10.22.0"

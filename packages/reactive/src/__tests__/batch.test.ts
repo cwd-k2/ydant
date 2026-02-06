@@ -1,15 +1,14 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { signal } from "../signal";
 import { effect } from "../effect";
-import { batch, scheduleEffect } from "../batch";
+import { batch, scheduleEffect, __resetForTesting__ } from "../batch";
 
 describe("batch", () => {
-  // Note: The current signal implementation does not integrate with batch.
-  // Signal.set() directly notifies subscribers without checking scheduleEffect.
-  // These tests verify the current behavior where batch only works for
-  // manually scheduled effects via scheduleEffect(), not for signal updates.
+  beforeEach(() => {
+    __resetForTesting__();
+  });
 
-  it("executes function synchronously", () => {
+  it("batches multiple signal updates into a single effect execution", () => {
     const firstName = signal("John");
     const lastName = signal("Doe");
 
@@ -26,9 +25,8 @@ describe("batch", () => {
       lastName.set("Smith");
     });
 
-    // Current implementation: signal.set() notifies immediately,
-    // so effect runs for each signal change
-    expect(effectFn).toHaveBeenCalledTimes(3);
+    // Batch should combine updates: 1 (initial) + 1 (after batch) = 2
+    expect(effectFn).toHaveBeenCalledTimes(2);
   });
 
   it("executes nested batches correctly", () => {
@@ -51,11 +49,11 @@ describe("batch", () => {
       a.set(100);
     });
 
-    // Current implementation: each set() triggers effect immediately
-    expect(effectFn).toHaveBeenCalledTimes(4);
+    // Nested batch should still batch all updates: 1 (initial) + 1 (after outer batch) = 2
+    expect(effectFn).toHaveBeenCalledTimes(2);
   });
 
-  it("tracks all signal changes", () => {
+  it("uses final value when same signal is updated multiple times", () => {
     const count = signal(0);
     const calls: number[] = [];
 
@@ -71,11 +69,11 @@ describe("batch", () => {
       count.set(3);
     });
 
-    // Current implementation: effect runs for each change
-    expect(calls).toEqual([0, 1, 2, 3]);
+    // Effect should run once with final value: [0, 3]
+    expect(calls).toEqual([0, 3]);
   });
 
-  it("handles errors in batch", () => {
+  it("handles errors in batch and still flushes pending effects", () => {
     const count = signal(0);
     const effectFn = vi.fn(() => {
       count();
@@ -91,13 +89,21 @@ describe("batch", () => {
       });
     }).toThrow("Test error");
 
-    // Batch depth should be reset even after error
+    // Even with error, batch should have flushed pending effects
+    // 1 (initial) + 1 (batch flush on error) = 2
+    expect(effectFn).toHaveBeenCalledTimes(2);
+
+    // After batch, normal behavior resumes
     count.set(2);
-    expect(effectFn).toHaveBeenCalledTimes(3); // 1 (initial) + 1 (batch) + 1 (after)
+    expect(effectFn).toHaveBeenCalledTimes(3);
   });
 });
 
 describe("scheduleEffect", () => {
+  beforeEach(() => {
+    __resetForTesting__();
+  });
+
   it("returns false when not in batch", () => {
     const effectFn = vi.fn();
     const result = scheduleEffect(effectFn);
