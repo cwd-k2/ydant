@@ -111,15 +111,24 @@ pnpm run dev  # http://localhost:5173
 ## Installation
 
 ```bash
-git clone https://github.com/your-username/ydant.git
-cd ydant
-pnpm install
-pnpm -r run build
+npm install @ydant/core @ydant/base
+```
+
+Optional packages:
+
+```bash
+npm install @ydant/reactive   # Signal-based reactivity
+npm install @ydant/context    # Context API
+npm install @ydant/router     # SPA routing
+npm install @ydant/async      # Suspense, ErrorBoundary
+npm install @ydant/transition # CSS transitions
 ```
 
 ## Development
 
 ```bash
+git clone https://github.com/cwd-k2/ydant.git
+cd ydant
 pnpm install        # Install dependencies
 pnpm -r run build   # Build all packages
 pnpm run dev        # Run unified dev server
