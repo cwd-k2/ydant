@@ -25,8 +25,8 @@ pnpm add @ydant/base
 ## Usage
 
 ```typescript
-import { mount } from "@ydant/core";
-import { createBasePlugin, div, p, text, classes, type Component } from "@ydant/base";
+import { mount, type Component } from "@ydant/core";
+import { createBasePlugin, div, p, text, classes } from "@ydant/base";
 
 const Greeting: Component = () =>
   div(function* () {
@@ -53,7 +53,6 @@ The base plugin extends `RenderContext` and `PluginAPI`:
 // RenderContext extensions
 interface RenderContextExtensions {
   isCurrentElementReused: boolean;
-  pendingKey: string | number | null;
   keyedNodes: Map<string | number, KeyedNode>;
   mountCallbacks: Array<() => void | (() => void)>;
   unmountCallbacks: Array<() => void>;
@@ -73,10 +72,9 @@ interface PluginAPIExtensions {
   onUnmount(callback: () => void): void;
   addUnmountCallbacks(...callbacks: Array<() => void>): void;
   executeMount(): void;
+  getUnmountCallbacks(): Array<() => void>;
 
   // Keyed elements
-  readonly pendingKey: string | number | null;
-  setPendingKey(key: string | number | null): void;
   getKeyedNode(key: string | number): KeyedNode | undefined;
   setKeyedNode(key: string | number, node: KeyedNode): void;
   deleteKeyedNode(key: string | number): void;
@@ -89,18 +87,25 @@ HTML elements: `div`, `span`, `p`, `button`, `input`, `h1`-`h3`, `ul`, `li`, `a`
 
 SVG elements: `svg`, `circle`, `ellipse`, `line`, `path`, `polygon`, `polyline`, `rect`, `g`, `defs`, `use`, `clipPath`, `mask`, `linearGradient`, `radialGradient`, `stop`, `svgText`, `tspan`
 
+Custom elements can be created with factory helpers:
+
+| Function                 | Description                               |
+| ------------------------ | ----------------------------------------- |
+| `createHTMLElement(tag)` | Create an element factory for an HTML tag |
+| `createSVGElement(tag)`  | Create an element factory for an SVG tag  |
+
 ### Primitives
 
-| Function              | Description                |
-| --------------------- | -------------------------- |
-| `text(content)`       | Create a text node         |
-| `attr(key, value)`    | Set an HTML attribute      |
-| `classes(...names)`   | Set class attribute        |
-| `on(event, handler)`  | Add event listener         |
-| `style(styles)`       | Set inline styles          |
-| `key(value)`          | Set key for list diffing   |
-| `onMount(callback)`   | Lifecycle hook for mount   |
-| `onUnmount(callback)` | Lifecycle hook for unmount |
+| Function              | Description                           |
+| --------------------- | ------------------------------------- |
+| `text(content)`       | Create a text node                    |
+| `attr(key, value)`    | Set an HTML attribute                 |
+| `classes(...names)`   | Set class attribute                   |
+| `on(event, handler)`  | Add event listener                    |
+| `style(styles)`       | Set inline styles                     |
+| `keyed(key, factory)` | Wrap a factory with a key for diffing |
+| `onMount(callback)`   | Lifecycle hook for mount              |
+| `onUnmount(callback)` | Lifecycle hook for unmount            |
 
 #### `on()` Type Overloads
 
@@ -128,19 +133,19 @@ yield *
 
 ### Types
 
-| Type            | Description                                                         |
-| --------------- | ------------------------------------------------------------------- |
-| `Slot`          | `{ node: HTMLElement, refresh: (fn) => void }`                      |
-| `SlotRef`       | Mutable reference holder for a `Slot`, created by `createSlotRef()` |
-| `Render`        | `Generator<Child, ChildReturn, ChildNext>` - Rendering generator    |
-| `Component`     | `() => Render` - Root component type                                |
-| `ElementRender` | `Generator<Element, Slot, ChildNext>` - Element factory return      |
-| `Element`       | Tagged type for HTML/SVG elements                                   |
-| `Attribute`     | Tagged type for attributes                                          |
-| `Listener`      | Tagged type for event listeners                                     |
-| `Text`          | Tagged type for text nodes                                          |
-| `Lifecycle`     | Tagged type for lifecycle hooks                                     |
-| `Key`           | Tagged type for list keys                                           |
+| Type            | Description                                                    |
+| --------------- | -------------------------------------------------------------- |
+| `Slot`          | `{ readonly node: HTMLElement, refresh: (children) => void }`  |
+| `SlotRef`       | Reference holder for a `Slot`, created by `createSlotRef()`    |
+| `ElementRender` | `Generator<Element, Slot, ChildNext>` - Element factory return |
+| `Element`       | Tagged type for HTML/SVG elements                              |
+| `Attribute`     | Tagged type for attributes                                     |
+| `Listener`      | Tagged type for event listeners                                |
+| `Text`          | Tagged type for text nodes                                     |
+| `Lifecycle`     | Tagged type for lifecycle hooks                                |
+| `Decoration`    | Union type `Attribute \| Listener`                             |
+
+> `Render`, `Component` types are defined in `@ydant/core`.
 
 ### createSlotRef
 
@@ -148,34 +153,36 @@ yield *
 function createSlotRef(): SlotRef;
 
 interface SlotRef {
-  current: Slot | null;
+  readonly current: Slot | null;
+  bind(slot: Slot): void;
+  refresh(children: Builder): void;
+  readonly node: HTMLElement | null;
 }
 ```
 
-Creates a mutable reference to a `Slot`. Useful for capturing a Slot reference within array syntax where `yield*` is not available:
+Creates a reference holder for a `Slot`. Use `bind()` to associate a Slot, then `refresh()` and `node` to interact with it:
 
 ```typescript
 const ref = createSlotRef();
 
 yield *
   div(function* () {
-    ref.current = yield* div(() => [text("Content")]);
+    ref.bind(yield* div(() => [text("Content")]));
   });
 
 // Later: update via ref
-ref.current?.refresh(() => [text("Updated!")]);
+ref.refresh(() => [text("Updated!")]);
 ```
 
-### Key and Element Reuse
+### keyed() and Element Reuse
 
-When using `key()` for list items, the same key will reuse the existing DOM element:
+`keyed()` wraps an element factory or component, attaching a key for list diffing. The same key will reuse the existing DOM element:
 
 ```typescript
 yield *
   ul(function* () {
     for (const item of items) {
-      yield* key(item.id);
-      yield* li(() => [text(item.name)]);
+      yield* keyed(item.id, li)(() => [text(item.name)]);
     }
   });
 ```
