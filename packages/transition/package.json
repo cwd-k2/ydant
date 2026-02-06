@@ -1,10 +1,32 @@
 {
   "name": "@ydant/transition",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Transition components for Ydant",
-  "keywords": [],
+  "keywords": [
+    "animation",
+    "css",
+    "transition",
+    "ydant"
+  ],
+  "homepage": "https://github.com/cwd-k2/ydant#readme",
+  "bugs": {
+    "url": "https://github.com/cwd-k2/ydant/issues"
+  },
   "license": "MIT",
-  "author": "",
+  "author": "cwd-k2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cwd-k2/ydant.git",
+    "directory": "packages/transition"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.es.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

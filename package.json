@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "keywords": [],
-  "license": "ISC",
+  "license": "MIT",
   "author": "",
   "scripts": {
     "dev": "pnpm --filter examples run dev",
@@ -18,9 +18,13 @@
     "typecheck": "pnpm -r --if-present run typecheck",
     "typecheck:examples": "pnpm --filter 'showcase*' run typecheck",
     "typecheck:packages": "pnpm --filter '@ydant/*' run typecheck",
-    "prepare": "husky"
+    "prepare": "husky",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "pnpm -r run build && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
     "@types/node": "^24.10.1",
     "@vitest/coverage-istanbul": "^4.0.18",
     "happy-dom": "^20.3.7",
