@@ -124,13 +124,8 @@ export function* TransitionGroup<T>(props: TransitionGroupProps<T>): ElementRend
       const item = items[i];
       const itemKey = keyFn(item);
 
-      // keyed() で要素をラップし、キーを付与
-      const itemSlot = yield* keyed(
-        itemKey,
-        div,
-      )(function* () {
-        yield* children(item, i);
-      });
+      // keyed() でコンポーネントに key を付与
+      const itemSlot = yield* keyed(itemKey, children)(item, i);
 
       // 入場トランジションを適用
       yield* onMount(() => {
@@ -196,13 +191,8 @@ export function createTransitionGroupRefresher<T>(
         const itemKey = keyFn(item);
         const isNew = !prevKeys.has(itemKey);
 
-        // keyed() で要素をラップし、キーを付与
-        const itemSlot = yield* keyed(
-          itemKey,
-          div,
-        )(function* () {
-          yield* children(item, i);
-        });
+        // keyed() でコンポーネントに key を付与
+        const itemSlot = yield* keyed(itemKey, children)(item, i);
 
         // 要素を記録
         state.elementsByKey.set(itemKey, itemSlot.node);

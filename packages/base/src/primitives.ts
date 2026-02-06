@@ -2,7 +2,7 @@
  * @ydant/base - プリミティブ
  */
 
-import type { Builder, CleanupFn, Primitive } from "@ydant/core";
+import type { Builder, CleanupFn, Primitive, Render } from "@ydant/core";
 import type { Attribute, Listener, Text, Lifecycle, ElementRender, Slot } from "./types";
 
 /** プリミティブを yield するジェネレーター関数を作成するファクトリ */
@@ -108,26 +108,28 @@ export function* style(
 }
 
 /**
- * 要素ファクトリをラップし、生成される Element に key を付与する
+ * 要素ファクトリやコンポーネントをラップし、生成される Element に key を付与する
  *
  * @param key - 一意な識別子（string または number）
- * @param factory - 要素ファクトリ（div, li 等）
- * @returns key 付き要素ファクトリ
+ * @param factory - 要素ファクトリ（div, li 等）またはコンポーネント
+ * @returns key 付きファクトリ（元と同じ引数を受け取る）
  *
  * @example
  * ```typescript
- * for (const item of items) {
- *   yield* keyed(item.id, li)(() => [text(item.name)]);
- * }
+ * // 要素ファクトリと組み合わせ
+ * yield* keyed(item.id, li)(() => [text(item.name)]);
+ *
+ * // コンポーネントと組み合わせ
+ * yield* keyed(item.id, ListItemView)({ item, onDelete });
  * ```
  */
-export function keyed(
+export function keyed<Args extends unknown[]>(
   key: string | number,
-  factory: (builder: Builder) => ElementRender,
-): (builder: Builder) => ElementRender {
-  return (builder: Builder) => {
+  factory: (...args: Args) => Render,
+): (...args: Args) => ElementRender {
+  return (...args: Args) => {
     return (function* (): ElementRender {
-      const inner = factory(builder);
+      const inner = factory(...args) as ElementRender;
       const first = inner.next();
       if (first.done) return first.value;
       const element = first.value;

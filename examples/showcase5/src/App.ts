@@ -81,21 +81,19 @@ export const App: Component = () => {
         // 並び替え時に同じ key を持つ要素は DOM が再利用される
         yield* keyed(
           item.id,
-          div,
-        )(() => [
-          ListItemView({
-            item,
-            isFirst: i === 0,
-            isLast: i === items.length - 1,
-            onMoveUp: () => moveItem(i, -1),
-            onMoveDown: () => moveItem(i, 1),
-            onDelete: () => {
-              items = items.filter((t) => t.id !== item.id);
-              listRef.refresh(renderList);
-              statsRef.refresh(renderStats);
-            },
-          }),
-        ]);
+          ListItemView,
+        )({
+          item,
+          isFirst: i === 0,
+          isLast: i === items.length - 1,
+          onMoveUp: () => moveItem(i, -1),
+          onMoveDown: () => moveItem(i, 1),
+          onDelete: () => {
+            items = items.filter((t) => t.id !== item.id);
+            listRef.refresh(renderList);
+            statsRef.refresh(renderStats);
+          },
+        });
       }
     }
   };
