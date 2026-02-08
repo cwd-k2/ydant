@@ -104,7 +104,7 @@ export { create*Plugin };
 
 ## JSDoc
 
-公開 API には JSDoc を付ける。特に:
+公開 API には JSDoc を付ける。**英語** で記述する（DOCUMENTATION.md「言語ポリシー」参照）。
 
 - 関数: `@param`, `@returns`, `@example`
 - インターフェース: 各プロパティに説明
