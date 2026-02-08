@@ -55,7 +55,7 @@ Creates a context object that can be provided and injected.
 ### provide
 
 ```typescript
-function provide<T>(context: Context<T>, value: T): ContextProvide;
+function* provide<T>(context: Context<T>, value: T): Primitive<ContextProvide>;
 ```
 
 Provides a value to all descendant components. Use with `yield*`.
@@ -63,7 +63,7 @@ Provides a value to all descendant components. Use with `yield*`.
 ### inject
 
 ```typescript
-function inject<T>(context: Context<T>): ContextInject;
+function* inject<T>(context: Context<T>): Generator<ContextInject, T, T>;
 ```
 
 Retrieves the value from the nearest ancestor provider. Use with `yield*`. Returns the default value if no provider is found.
@@ -74,7 +74,7 @@ Retrieves the value from the nearest ancestor provider. Use with `yield*`. Retur
 function createContextPlugin(): Plugin;
 ```
 
-Creates a plugin that handles `provide` and `inject`. Must be passed to `mount()`.
+Creates a plugin that handles `provide` and `inject`. Must be passed to `mount()`. Depends on `createBasePlugin()`.
 
 The context plugin extends `RenderContext` and `PluginAPI`:
 

@@ -12,10 +12,11 @@ pnpm add @ydant/transition
 
 ### Transition (Enter-only)
 
-For simple show/hide with enter animation only:
+For simple show/hide with enter animation:
 
 ```typescript
-import { div, button, text, on, type Component, type Slot } from "@ydant/core";
+import { mount, type Component } from "@ydant/core";
+import { createBasePlugin, div, button, text, on, type Slot } from "@ydant/base";
 import { Transition } from "@ydant/transition";
 
 const App: Component = () => {
@@ -29,7 +30,9 @@ const App: Component = () => {
         transitionSlot.refresh(() =>
           Transition({
             show,
-            name: "fade",
+            enter: "transition-opacity duration-300",
+            enterFrom: "opacity-0",
+            enterTo: "opacity-100",
             children: () => div(() => [text("Fade me!")]),
           }),
         );
@@ -40,7 +43,9 @@ const App: Component = () => {
     transitionSlot = yield* div(() =>
       Transition({
         show,
-        name: "fade",
+        enter: "transition-opacity duration-300",
+        enterFrom: "opacity-0",
+        enterTo: "opacity-100",
         children: () => div(() => [text("Fade me!")]),
       }),
     );
@@ -53,7 +58,8 @@ const App: Component = () => {
 For full enter/leave animation support with programmatic control:
 
 ```typescript
-import { div, button, text, on, classes, type Component } from "@ydant/core";
+import { type Component } from "@ydant/core";
+import { div, button, text, on } from "@ydant/base";
 import { createTransition, type TransitionHandle } from "@ydant/transition";
 
 const App: Component = () => {
@@ -83,18 +89,7 @@ const App: Component = () => {
 
 ### CSS Classes
 
-#### For `Transition` (name-based)
-
-| Class                 | When Applied   |
-| --------------------- | -------------- |
-| `{name}-enter`        | Start of enter |
-| `{name}-enter-active` | During enter   |
-| `{name}-enter-to`     | End of enter   |
-| `{name}-leave`        | Start of leave |
-| `{name}-leave-active` | During leave   |
-| `{name}-leave-to`     | End of leave   |
-
-#### For `createTransition` (explicit classes)
+Both `Transition` and `createTransition` use explicit class props:
 
 | Prop        | When Applied               |
 | ----------- | -------------------------- |
@@ -105,21 +100,11 @@ const App: Component = () => {
 | `leaveFrom` | Initial state before leave |
 | `leaveTo`   | Final state after leave    |
 
+All props are optional. Classes are applied as space-separated strings (e.g. Tailwind CSS compatible).
+
 ### Example CSS
 
 ```css
-/* For Transition (name="fade") */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* For createTransition */
 .fade-enter {
   transition: opacity 300ms ease;
 }
@@ -145,24 +130,52 @@ const App: Component = () => {
 For animating lists of items:
 
 ```typescript
-import { TransitionGroup } from "@ydant/transition";
+import { type Component } from "@ydant/core";
+import { div, text } from "@ydant/base";
+import { TransitionGroup, createTransitionGroupRefresher } from "@ydant/transition";
 
 const App: Component = () => {
-  const items = [{ id: 1, text: "Item 1" }];
+  const items = [
+    { id: 1, text: "Item 1" },
+    { id: 2, text: "Item 2" },
+  ];
 
   return div(function* () {
-    const { slot, refresh } = yield* TransitionGroup({
-      name: "list",
+    const slot = yield* TransitionGroup({
       items,
       keyFn: (item) => item.id,
-      renderItem: (item) => div(() => [text(item.text)]),
+      enter: "transition-opacity duration-300",
+      enterFrom: "opacity-0",
+      enterTo: "opacity-100",
+      leave: "transition-opacity duration-300",
+      leaveFrom: "opacity-100",
+      leaveTo: "opacity-0",
+      children: (item) => div(() => [text(item.text)]),
     });
 
-    // To update:
-    // items.push({ id: 2, text: "Item 2" });
-    // refresh(items);
+    // To update with transitions, use createTransitionGroupRefresher
   });
 };
+```
+
+#### Updating with createTransitionGroupRefresher
+
+`createTransitionGroupRefresher` creates a stateful refresh function that applies enter/leave transitions on list updates:
+
+```typescript
+const refresher = createTransitionGroupRefresher({
+  keyFn: (item) => item.id,
+  enter: "transition-opacity duration-300",
+  enterFrom: "opacity-0",
+  enterTo: "opacity-100",
+  leave: "transition-opacity duration-300",
+  leaveFrom: "opacity-100",
+  leaveTo: "opacity-0",
+  children: (item) => div(() => [text(item.text)]),
+});
+
+// Later, update items with transitions:
+refresher(slot, newItems);
 ```
 
 ## API
@@ -170,35 +183,30 @@ const App: Component = () => {
 ### Transition
 
 ```typescript
-function Transition(props: TransitionProps): ElementGenerator;
+function Transition(props: TransitionProps): Render;
 
 interface TransitionProps {
   show: boolean;
-  name: string;
-  children: () => Render;
-  onEnter?: () => void;
-  onLeave?: () => void;
-  onAfterEnter?: () => void;
-  onAfterLeave?: () => void;
+  enter?: string;
+  enterFrom?: string;
+  enterTo?: string;
+  leave?: string;
+  leaveFrom?: string;
+  leaveTo?: string;
+  children: () => ChildContent;
 }
 ```
+
+Enter-only transition component. For leave animations, use `createTransition`.
 
 ### createTransition
 
 ```typescript
 function* createTransition(
-  props: CreateTransitionProps
-): Generator<unknown, TransitionHandle, Slot>;
+  props: Omit<TransitionProps, "show">,
+): TransitionInstruction;
 
-interface CreateTransitionProps {
-  enter: string;
-  enterFrom: string;
-  enterTo: string;
-  leave: string;
-  leaveFrom: string;
-  leaveTo: string;
-  children: () => Render;
-}
+type TransitionInstruction = Generator<Element, TransitionHandle, Slot>;
 
 interface TransitionHandle {
   slot: Slot;
@@ -206,27 +214,45 @@ interface TransitionHandle {
 }
 ```
 
+Creates a transition with programmatic show/hide control including leave animations.
+
 ### TransitionGroup
 
 ```typescript
-function TransitionGroup<T>(props: TransitionGroupProps<T>): ElementGenerator;
+function* TransitionGroup<T>(props: TransitionGroupProps<T>): ElementRender;
 
 interface TransitionGroupProps<T> {
-  name: string;
   items: T[];
   keyFn: (item: T) => string | number;
-  renderItem: (item: T) => Render;
+  enter?: string;
+  enterFrom?: string;
+  enterTo?: string;
+  leave?: string;
+  leaveFrom?: string;
+  leaveTo?: string;
+  children: (item: T, index: number) => ElementRender;
 }
 ```
+
+### createTransitionGroupRefresher
+
+```typescript
+function createTransitionGroupRefresher<T>(
+  props: Omit<TransitionGroupProps<T>, "items">,
+): (slot: Slot, items: T[]) => void;
+```
+
+Creates a stateful refresher that applies enter/leave transitions when updating items.
 
 ### Low-level APIs
 
 ```typescript
-function enterTransition(el: HTMLElement, props: EnterProps): Promise<void>;
-function leaveTransition(el: HTMLElement, props: LeaveProps): Promise<void>;
+function enterTransition(el: HTMLElement, props: TransitionProps): Promise<void>;
+function leaveTransition(el: HTMLElement, props: TransitionProps): Promise<void>;
 ```
 
 ## Module Structure
 
-- `Transition.ts` - Single element transitions (Transition, createTransition)
-- `TransitionGroup.ts` - List transitions
+- `Transition.ts` - Transition, createTransition, enterTransition, leaveTransition
+- `TransitionGroup.ts` - TransitionGroup, createTransitionGroupRefresher
+- `utils.ts` - CSS class helpers (addClasses, removeClasses, waitForTransition)

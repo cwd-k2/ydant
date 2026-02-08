@@ -11,16 +11,16 @@ pnpm add @ydant/router
 ## Usage
 
 ```typescript
-import { div, nav, text, type Component } from "@ydant/core";
-import { mount } from "@ydant/dom";
-import { RouterView, RouterLink, useRoute, navigate } from "@ydant/router";
+import { mount, type Component } from "@ydant/core";
+import { createBasePlugin, div, nav, text } from "@ydant/base";
+import { RouterView, RouterLink, getRoute, navigate } from "@ydant/router";
 
 // Define pages
 const HomePage: Component = () => div(() => [text("Home Page")]);
 
 const UserPage: Component = () =>
   div(function* () {
-    const route = useRoute();
+    const route = getRoute();
     yield* text(`User ID: ${route.params.id}`);
   });
 
@@ -45,7 +45,9 @@ const App: Component = () =>
     });
   });
 
-mount(App, document.getElementById("app")!);
+mount(App, document.getElementById("app")!, {
+  plugins: [createBasePlugin()],
+});
 ```
 
 ## API
@@ -53,7 +55,7 @@ mount(App, document.getElementById("app")!);
 ### RouterView
 
 ```typescript
-function RouterView(props: RouterViewProps): ElementGenerator;
+function RouterView(props: RouterViewProps): Render;
 
 interface RouterViewProps {
   routes: RouteDefinition[];
@@ -98,21 +100,21 @@ When a guard returns or resolves to `false`, the route is blocked and an empty v
 ### RouterLink
 
 ```typescript
-function RouterLink(props: RouterLinkProps): ElementGenerator;
+function RouterLink(props: RouterLinkProps): Render;
 
 interface RouterLinkProps {
   href: string;
-  children: () => Render;
+  children: () => Instruction;
   activeClass?: string;
 }
 ```
 
 Creates a navigation link that updates the URL without page reload.
 
-### useRoute
+### getRoute
 
 ```typescript
-function useRoute(): RouteInfo;
+function getRoute(): RouteInfo;
 
 interface RouteInfo {
   path: string;
@@ -154,4 +156,5 @@ Navigate through browser history.
 - `matching.ts` - Path matching utilities
 - `state.ts` - Route state management
 - `navigation.ts` - Navigation functions
-- `components.ts` - RouterView, RouterLink
+- `RouterView.ts` - RouterView component
+- `RouterLink.ts` - RouterLink component

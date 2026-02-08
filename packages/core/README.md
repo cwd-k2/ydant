@@ -40,7 +40,7 @@ mount(App, document.getElementById("app")!, {
 ### Mount
 
 ```typescript
-function mount(component: Component, container: HTMLElement, options?: MountOptions): void;
+function mount(app: Component, parent: HTMLElement, options?: MountOptions): void;
 
 interface MountOptions {
   plugins?: Plugin[];
@@ -51,39 +51,45 @@ interface MountOptions {
 
 ```typescript
 interface Plugin {
-  name: string;
-  types: string[];
+  readonly name: string;
+  readonly types: readonly string[];
   /** Plugin names that must be registered before this plugin */
-  dependencies?: string[];
+  readonly dependencies?: readonly string[];
   /** Initialize plugin-specific properties in RenderContext */
-  initContext?(ctx: Record<string, unknown>, parentCtx?: Record<string, unknown>): void;
+  initContext?(
+    ctx: RenderContextCore & Partial<RenderContextExtensions>,
+    parentCtx?: RenderContext,
+  ): void;
   /** Extend PluginAPI with plugin-specific methods */
-  extendAPI?(api: Record<string, unknown>, ctx: Record<string, unknown>): void;
-  /** Merge parent context into child context (called when creating child contexts) */
-  mergeChildContext?(childCtx: Record<string, unknown>, parentCtx: Record<string, unknown>): void;
+  extendAPI?(api: Partial<PluginAPIExtensions>, ctx: RenderContext): void;
+  /** Merge child context state into parent context (called after processChildren) */
+  mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
   /** Process a child element */
   process(child: Child, api: PluginAPI): PluginResult;
 }
 
 interface PluginResult {
-  value?: unknown; // Value to pass back via next()
+  value?: ChildNext | undefined;
 }
 ```
 
 ### Types
 
-| Type               | Description                                                           |
-| ------------------ | --------------------------------------------------------------------- |
-| `Tagged<T,P>`      | Helper type for tagged unions: `{ type: T } & P`                      |
-| `Child`            | Union of all yieldable types (extended by plugins)                    |
-| `ChildNext`        | Union of values passed via `next()` (extended by plugins)             |
-| `ChildReturn`      | Union of return values (extended by plugins)                          |
-| `Render`           | `Generator<Child, ChildReturn, ChildNext>` - Base rendering generator |
-| `Component`        | `() => Render` - Root component type                                  |
-| `ComponentWith<P>` | `(props: P) => Render` - Component type with props                    |
-| `Builder`          | `() => Instructor \| Instruction[]` - Element factory argument        |
-| `Instructor`       | `Iterator<Child, ChildReturn, ChildNext>` - Internal iterator         |
-| `Instruction`      | `Generator<Child, ChildReturn, ChildNext>` - Primitive return type    |
+| Type             | Description                                                           |
+| ---------------- | --------------------------------------------------------------------- |
+| `Tagged<T,P>`    | Helper type for tagged unions: `{ type: T } & P`                      |
+| `CleanupFn`      | `() => void` - Lifecycle cleanup function                             |
+| `Child`          | Union of all yieldable types (extended by plugins)                    |
+| `ChildOfType<T>` | Extract a specific type from `Child` by tag                           |
+| `ChildNext`      | Union of values passed via `next()` (extended by plugins)             |
+| `ChildReturn`    | Union of return values (extended by plugins)                          |
+| `Builder`        | `() => Instructor \| Instruction[]` - Element factory argument        |
+| `Instructor`     | `Iterator<Child, ChildReturn, ChildNext>` - Internal iterator         |
+| `Instruction`    | `Generator<Child, ChildReturn, ChildNext>` - Primitive return type    |
+| `Primitive<T>`   | `Generator<T, void, void>` - Side-effect-only primitive return type   |
+| `ChildContent`   | `Generator<Child, unknown, ChildNext>` - Children builder return type |
+| `Render`         | `Generator<Child, ChildReturn, ChildNext>` - Base rendering generator |
+| `Component<P?>`  | `() => Render` (no args) or `(props: P) => Render` (with props)       |
 
 ### Plugin Extension Interfaces
 
@@ -164,21 +170,20 @@ export function createMyPlugin(): Plugin {
 
     // Initialize context properties
     initContext(ctx, parentCtx) {
-      ctx.myData = parentCtx?.myData
-        ? new Map(parentCtx.myData as Map<string, unknown>)
-        : new Map();
+      ctx.myData = parentCtx?.myData ? new Map(parentCtx.myData) : new Map();
     },
 
-    // Merge parent context into child context
-    mergeChildContext(childCtx, parentCtx) {
-      childCtx.myData = new Map(parentCtx.myData as Map<string, unknown>);
+    // Merge child context state into parent context
+    mergeChildContext(parentCtx, childCtx) {
+      for (const [key, value] of childCtx.myData) {
+        parentCtx.myData.set(key, value);
+      }
     },
 
     // Extend PluginAPI with methods
     extendAPI(api, ctx) {
-      const myData = ctx.myData as Map<string, unknown>;
-      api.getMyData = (key: string) => myData.get(key);
-      api.setMyData = (key: string, value: unknown) => myData.set(key, value);
+      api.getMyData = (key: string) => ctx.myData.get(key);
+      api.setMyData = (key: string, value: unknown) => ctx.myData.set(key, value);
     },
 
     // Process child elements

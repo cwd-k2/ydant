@@ -41,8 +41,8 @@ dispose(); // Stop tracking
 ### With DOM (reactive primitive)
 
 ```typescript
-import { div, button, text, on, type Component } from "@ydant/core";
-import { mount } from "@ydant/dom";
+import { mount, type Component } from "@ydant/core";
+import { createBasePlugin, div, button, text, on } from "@ydant/base";
 import { signal, reactive, createReactivePlugin } from "@ydant/reactive";
 
 const count = signal(0);
@@ -56,7 +56,7 @@ const Counter: Component = () =>
   });
 
 mount(Counter, document.getElementById("app")!, {
-  plugins: [createReactivePlugin()],
+  plugins: [createBasePlugin(), createReactivePlugin()],
 });
 ```
 
@@ -67,10 +67,11 @@ mount(Counter, document.getElementById("app")!, {
 ```typescript
 function signal<T>(initialValue: T): Signal<T>;
 
-interface Signal<T> {
-  (): T; // Read
+interface Signal<T> extends Readable<T> {
+  (): T; // Read (tracks dependencies)
+  peek(): T; // Read without tracking
   set(value: T): void; // Write
-  update(fn: (v: T) => T): void; // Update with function
+  update(fn: (prev: T) => T): void; // Update with function
 }
 ```
 
@@ -79,8 +80,9 @@ interface Signal<T> {
 ```typescript
 function computed<T>(fn: () => T): Computed<T>;
 
-interface Computed<T> {
+interface Computed<T> extends Readable<T> {
   (): T; // Read (automatically tracks dependencies)
+  peek(): T; // Read without tracking
 }
 ```
 
@@ -129,14 +131,14 @@ Without `batch`, each `set()` call would trigger the effect immediately. With `b
 ### createReactivePlugin
 
 ```typescript
-function createReactivePlugin(): DomPlugin;
+function createReactivePlugin(): Plugin;
 ```
 
-Creates a DOM plugin that handles `reactive` blocks. Must be passed to `mount()`.
+Creates a plugin that handles `reactive` blocks. Must be passed to `mount()`. Depends on `createBasePlugin()`.
 
 ## Module Structure
 
-- `types.ts` - Subscriber type
+- `types.ts` - Subscriber, Readable types
 - `signal.ts` - Signal implementation
 - `computed.ts` - Computed implementation
 - `effect.ts` - Effect implementation

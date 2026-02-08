@@ -13,7 +13,8 @@ pnpm add @ydant/async
 ### Suspense
 
 ```typescript
-import { div, text, type Component } from "@ydant/core";
+import { type Component } from "@ydant/core";
+import { div, text } from "@ydant/base";
 import { Suspense, createResource } from "@ydant/async";
 
 // Create async resource
@@ -30,7 +31,7 @@ const UserProfile: Component = () =>
 const App: Component = () =>
   Suspense({
     fallback: () => text("Loading..."),
-    children: UserProfile,
+    children: () => UserProfile(),
   });
 ```
 
@@ -41,7 +42,7 @@ import { ErrorBoundary } from "@ydant/async";
 
 const App: Component = () =>
   ErrorBoundary({
-    fallback: (error) => text(`Error: ${error.message}`),
+    fallback: (error, reset) => text(`Error: ${error.message}`),
     children: () => RiskyComponent(),
   });
 ```
@@ -51,11 +52,11 @@ const App: Component = () =>
 ```typescript
 const App: Component = () =>
   ErrorBoundary({
-    fallback: (error) => text(`Error: ${error.message}`),
+    fallback: (error, reset) => text(`Error: ${error.message}`),
     children: () =>
       Suspense({
         fallback: () => text("Loading..."),
-        children: AsyncContent,
+        children: () => AsyncContent(),
       }),
   });
 ```
@@ -65,11 +66,11 @@ const App: Component = () =>
 ### Suspense
 
 ```typescript
-function Suspense(props: SuspenseProps): ElementGenerator;
+function* Suspense(props: SuspenseProps): Render;
 
 interface SuspenseProps {
   fallback: () => Render;
-  children: Component;
+  children: () => ChildContent;
 }
 ```
 
@@ -78,25 +79,34 @@ Shows fallback while async content is loading.
 ### ErrorBoundary
 
 ```typescript
-function ErrorBoundary(props: ErrorBoundaryProps): ElementGenerator;
+function* ErrorBoundary(props: ErrorBoundaryProps): Render;
 
 interface ErrorBoundaryProps {
-  fallback: (error: Error) => Render;
-  children: () => ElementGenerator;
+  fallback: (error: Error, reset: () => void) => Render;
+  children: () => ChildContent;
 }
 ```
 
-Catches errors in child components and shows fallback.
+Catches errors in child components and shows fallback. The `reset` callback allows retrying.
 
 ### createResource
 
 ```typescript
-function createResource<T>(fetcher: () => Promise<T>): Resource<T>;
+function createResource<T>(
+  fetcher: () => Promise<T>,
+  options?: {
+    initialValue?: T;
+    refetchInterval?: number;
+  },
+): Resource<T>;
 
 interface Resource<T> {
   (): T; // Throws promise if pending, error if failed
-  refetch(): void;
-  state: "pending" | "ready" | "error";
+  peek(): T; // Read without suspend (throws if pending/error)
+  readonly loading: boolean;
+  readonly error: Error | null;
+  refetch(): Promise<void>;
+  dispose(): void; // Stop auto-refetch
 }
 ```
 
@@ -104,6 +114,6 @@ Creates a resource that suspends while loading.
 
 ## Module Structure
 
-- `suspense.ts` - Suspense component
-- `error-boundary.ts` - ErrorBoundary component
+- `Suspense.ts` - Suspense component
+- `ErrorBoundary.ts` - ErrorBoundary component
 - `resource.ts` - createResource

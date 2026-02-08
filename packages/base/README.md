@@ -58,14 +58,14 @@ interface RenderContextExtensions {
   unmountCallbacks: Array<() => void>;
 }
 
-// PluginAPI extensions (in addition to core's parent, currentElement, processChildren, createChildAPI)
+// PluginAPI extensions
 interface PluginAPIExtensions {
   // DOM operations
-  readonly isCurrentElementReused: boolean;
-  setCurrentElementReused(reused: boolean): void;
-  appendChild(node: Node): void;
-  setCurrentElement(element: Element | null): void;
+  readonly parent: Node;
+  readonly currentElement: globalThis.Element | null;
+  setCurrentElement(element: globalThis.Element | null): void;
   setParent(parent: Node): void;
+  appendChild(node: Node): void;
 
   // Lifecycle
   onMount(callback: () => void | (() => void)): void;
@@ -74,7 +74,13 @@ interface PluginAPIExtensions {
   executeMount(): void;
   getUnmountCallbacks(): Array<() => void>;
 
+  // Children processing
+  processChildren(builder: Builder, options?: { parent?: Node; inheritContext?: boolean }): void;
+  createChildAPI(parent: Node): PluginAPI;
+
   // Keyed elements
+  readonly isCurrentElementReused: boolean;
+  setCurrentElementReused(reused: boolean): void;
   getKeyedNode(key: string | number): KeyedNode | undefined;
   setKeyedNode(key: string | number, node: KeyedNode): void;
   deleteKeyedNode(key: string | number): void;
