@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isTagged, toChildren } from "../utils";
+import { isTagged, toRender } from "../utils";
 import type { Render, Tagged } from "../types";
 
 // テスト用の型定義
@@ -44,7 +44,7 @@ describe("isTagged", () => {
   });
 });
 
-describe("toChildren", () => {
+describe("toRender", () => {
   it("returns generator as-is when passed a single generator", () => {
     const items: TestText[] = [
       { type: "text", content: "hello" },
@@ -58,7 +58,7 @@ describe("toChildren", () => {
       }
     })() as unknown as Render;
 
-    const result = toChildren(gen);
+    const result = toRender(gen);
     expect(result).toBe(gen);
   });
 
@@ -70,7 +70,7 @@ describe("toChildren", () => {
       yield { type: "text", content: "world" } as const;
     }
 
-    const result = toChildren([gen1(), gen2()] as Render[]);
+    const result = toRender([gen1(), gen2()] as Render[]);
     const items: unknown[] = [];
     let next = result.next();
     while (!next.done) {
@@ -84,7 +84,7 @@ describe("toChildren", () => {
   });
 
   it("handles empty array", () => {
-    const result = toChildren([]);
+    const result = toRender([]);
     const items: unknown[] = [];
     let next = result.next();
     while (!next.done) {
@@ -101,7 +101,7 @@ describe("toChildren", () => {
       yield { type: "text", content: "b" } as const;
     }
 
-    const result = toChildren([gen()] as Render[]);
+    const result = toRender([gen()] as Render[]);
     const items: unknown[] = [];
     let next = result.next();
     while (!next.done) {

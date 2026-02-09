@@ -3,7 +3,7 @@
  */
 
 import type { Builder, Render } from "../types";
-import { toChildren } from "../utils";
+import { toRender } from "../utils";
 import type { Plugin, RenderAPI } from "../plugin";
 import type { RenderContext } from "./types";
 
@@ -102,7 +102,7 @@ export function createRenderAPIFactory(
           ctx,
         );
 
-        const children = toChildren(builder());
+        const children = toRender(builder());
         processIterator(children, childCtx);
 
         // Propagate child state back to parent

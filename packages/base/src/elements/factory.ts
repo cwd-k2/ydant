@@ -3,7 +3,7 @@
  */
 
 import type { Builder, DSL } from "@ydant/core";
-import { toChildren } from "@ydant/core";
+import { toRender } from "@ydant/core";
 import type { Element, Slot } from "../types";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -19,7 +19,7 @@ export function createHTMLElement(tag: string): (builder: Builder) => DSL<"eleme
   // TNext is structurally fixed at declaration. The `as Slot` cast is safe —
   // the base plugin always passes a Slot back when processing an Element.
   return function* (builder: Builder): DSL<"element"> {
-    const children = toChildren(builder());
+    const children = toRender(builder());
     return (yield { type: "element", tag, children } as Element) as Slot;
   };
 }
@@ -31,7 +31,7 @@ export function createHTMLElement(tag: string): (builder: Builder) => DSL<"eleme
  */
 export function createSVGElement(tag: string): (builder: Builder) => DSL<"element"> {
   return function* (builder: Builder): DSL<"element"> {
-    const children = toChildren(builder());
+    const children = toRender(builder());
     return (yield {
       type: "element",
       tag,

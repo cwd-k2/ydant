@@ -130,7 +130,7 @@ interface RenderContext {
 | Function               | Description                                       |
 | ---------------------- | ------------------------------------------------- |
 | `isTagged(value, tag)` | Type guard for tagged union types                 |
-| `toChildren(result)`   | Normalize `Render \| Render[]` to single `Render` |
+| `toRender(result)`     | Normalize `Render \| Render[]` to single `Render` |
 
 ## Creating Plugins
 

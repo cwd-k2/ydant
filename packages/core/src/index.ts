@@ -29,7 +29,7 @@ export type { Plugin, RenderAPI } from "./plugin";
 // Utilities
 // =============================================================================
 
-export { isTagged, toChildren } from "./utils";
+export { isTagged, toRender } from "./utils";
 
 // =============================================================================
 // Mount
