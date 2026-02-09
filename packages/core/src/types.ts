@@ -74,10 +74,10 @@ export type Feedback = void | FeedbackOf[keyof DSLSchema];
 // =============================================================================
 
 /**
- * The generator type for rendering — used by element factories, components, and children props.
+ * The generator type for rendering — used by components, element factories, and content props.
  *
- * When `@ydant/base` augments {@link DSLSchema} with `Slot`, the concrete type
- * becomes `Generator<Instruction, Slot, Slot>`.
+ * Accepts all {@link Instruction} types as yield values, and all
+ * {@link Feedback} / return types registered in {@link DSLSchema}.
  */
 export type Render = Generator<Instruction, void | ReturnOf[keyof DSLSchema], Feedback>;
 
