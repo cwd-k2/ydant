@@ -3,12 +3,12 @@
  */
 
 import type { Render, ChildNext, Child } from "../types";
-import type { Plugin, PluginAPI } from "../plugin";
-import { createRenderContext, createPluginAPIFactory } from "./context";
+import type { Plugin, RenderAPI } from "../plugin";
+import { createRenderContext, createRenderAPIFactory } from "./context";
 import { processIterator } from "./iterator";
 
-// PluginAPI ファクトリを遅延初期化
-let createPluginAPI: ((ctx: ReturnType<typeof createRenderContext>) => PluginAPI) | null = null;
+// RenderAPI ファクトリを遅延初期化
+let createRenderAPI: ((ctx: ReturnType<typeof createRenderContext>) => RenderAPI) | null = null;
 
 /**
  * Render（ジェネレータ）を DOM に描画
@@ -18,9 +18,9 @@ export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Pl
 
   const ctx = createRenderContext(parent, null, plugins);
 
-  // PluginAPI ファクトリを初期化
-  if (!createPluginAPI) {
-    createPluginAPI = createPluginAPIFactory(processIterator);
+  // RenderAPI ファクトリを初期化
+  if (!createRenderAPI) {
+    createRenderAPI = createRenderAPIFactory(processIterator);
   }
 
   let result = gen.next();
@@ -34,9 +34,9 @@ export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Pl
       const plugin = plugins.get(type);
 
       if (plugin) {
-        const api = createPluginAPI(ctx);
-        const pluginResult = plugin.process(value as Child, api);
-        result = gen.next(pluginResult.value as ChildNext);
+        const api = createRenderAPI(ctx);
+        const processResult = plugin.process(value as Child, api);
+        result = gen.next(processResult.value as ChildNext);
         continue;
       }
     }
@@ -48,5 +48,5 @@ export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Pl
 
 // Re-export for internal use
 export { processIterator } from "./iterator";
-export { createRenderContext, createPluginAPIFactory } from "./context";
-export type { RenderContext, RenderContextCore, RenderContextExtension } from "./types";
+export { createRenderContext, createRenderAPIFactory } from "./context";
+export type { RenderContext } from "./types";

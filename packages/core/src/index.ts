@@ -11,7 +11,7 @@
 export type {
   CleanupFn,
   Tagged,
-  Extension,
+  DSLSchema,
   DSL,
   Child,
   ChildOfType,
@@ -30,7 +30,7 @@ export type {
 // Plugin System
 // =============================================================================
 
-export type { Plugin, PluginAPI, PluginResult, MountOptions } from "./plugin";
+export type { Plugin, RenderAPI, ProcessResult, MountOptions } from "./plugin";
 
 // =============================================================================
 // Utilities
@@ -48,5 +48,5 @@ export { mount } from "./mount";
 // Render (internal, for plugin implementations)
 // =============================================================================
 
-export { render, processIterator, createRenderContext, createPluginAPIFactory } from "./render";
-export type { RenderContext, RenderContextCore, RenderContextExtension } from "./render";
+export { render, processIterator, createRenderContext, createRenderAPIFactory } from "./render";
+export type { RenderContext } from "./render";

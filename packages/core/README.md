@@ -56,19 +56,16 @@ interface Plugin {
   /** Plugin names that must be registered before this plugin */
   readonly dependencies?: readonly string[];
   /** Initialize plugin-specific properties in RenderContext */
-  initContext?(
-    ctx: RenderContextCore & Partial<RenderContextExtension>,
-    parentCtx?: RenderContext,
-  ): void;
-  /** Extend PluginAPI with plugin-specific methods */
-  extendAPI?(api: Partial<PluginAPI>, ctx: RenderContext): void;
+  initContext?(ctx: RenderContext, parentCtx?: RenderContext): void;
+  /** Extend RenderAPI with plugin-specific methods */
+  extendAPI?(api: Partial<RenderAPI>, ctx: RenderContext): void;
   /** Merge child context state into parent context (called after processChildren) */
   mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
   /** Process a child element */
-  process(child: Child, api: PluginAPI): PluginResult;
+  process(child: Child, api: RenderAPI): ProcessResult;
 }
 
-interface PluginResult {
+interface ProcessResult {
   value?: ChildNext | undefined;
 }
 ```
@@ -79,12 +76,12 @@ interface PluginResult {
 | ---------------- | --------------------------------------------------------------------- |
 | `Tagged<T,P>`    | Helper type for tagged unions: `{ type: T } & P`                      |
 | `CleanupFn`      | `() => void` - Lifecycle cleanup function                             |
-| `Extension`      | Co-locates instruction and feedback types per DSL operation           |
+| `DSLSchema`      | Co-locates instruction and feedback types per DSL operation           |
 | `DSL<Key>`       | Typed generator for a specific DSL operation key                      |
-| `Child`          | Union of all yieldable types (derived from `Extension`)               |
+| `Child`          | Union of all yieldable types (derived from `DSLSchema`)               |
 | `ChildOfType<T>` | Extract a specific type from `Child` by tag                           |
-| `ChildNext`      | Union of values passed via `next()` (derived from `Extension`)        |
-| `ChildReturn`    | Union of return values (derived from `Extension`)                     |
+| `ChildNext`      | Union of values passed via `next()` (derived from `DSLSchema`)        |
+| `ChildReturn`    | Union of return values (derived from `DSLSchema`)                     |
 | `Builder`        | `() => Instructor \| Instruction[]` - Element factory argument        |
 | `Instructor`     | `Iterator<Child, ChildReturn, ChildNext>` - Internal iterator         |
 | `Instruction`    | `Generator<Child, ChildReturn, ChildNext>` - Primitive return type    |
@@ -100,17 +97,17 @@ Plugins can extend these interfaces via module augmentation:
 ```typescript
 declare module "@ydant/core" {
   // Extend RenderContext with custom properties
-  interface RenderContextExtension {
+  interface RenderContext {
     myProperty: MyType;
   }
 
-  // Extend PluginAPI with custom methods
-  interface PluginAPI {
+  // Extend RenderAPI with custom methods
+  interface RenderAPI {
     myMethod(): void;
   }
 
   // Co-locate instruction, feedback, and return types per DSL operation
-  interface Extension {
+  interface DSLSchema {
     mytype: { instruction: Tagged<"mytype", { value: string }>; feedback: MyResultType };
     // return omitted → falls back to feedback (MyResultType)
     // Use explicit `return` when it differs from feedback:
@@ -129,16 +126,14 @@ function* myOperation(): DSL<"mytype"> {
 
 ### RenderContext
 
-The rendering context holds state during rendering. Plugins extend it via `RenderContextExtension`:
+The rendering context holds state during rendering. Plugins extend it via `declare module`:
 
 ```typescript
-interface RenderContextCore {
+interface RenderContext {
   parent: Node;
   currentElement: Element | null;
   plugins: Map<string, Plugin>;
 }
-
-type RenderContext = RenderContextCore & RenderContextExtension;
 ```
 
 ### Utilities
@@ -151,14 +146,14 @@ type RenderContext = RenderContextCore & RenderContextExtension;
 ## Creating Plugins
 
 ```typescript
-import type { Plugin, PluginAPI, PluginResult, Child } from "@ydant/core";
+import type { Plugin, RenderAPI, ProcessResult, Child } from "@ydant/core";
 
 // 1. Declare type extensions
 declare module "@ydant/core" {
-  interface RenderContextExtension {
+  interface RenderContext {
     myData: Map<string, unknown>;
   }
-  interface PluginAPI {
+  interface RenderAPI {
     getMyData(key: string): unknown;
     setMyData(key: string, value: unknown): void;
   }
@@ -183,14 +178,14 @@ export function createMyPlugin(): Plugin {
       }
     },
 
-    // Extend PluginAPI with methods
+    // Extend RenderAPI with methods
     extendAPI(api, ctx) {
       api.getMyData = (key: string) => ctx.myData.get(key);
       api.setMyData = (key: string, value: unknown) => ctx.myData.set(key, value);
     },
 
     // Process child elements
-    process(child: Child, api: PluginAPI): PluginResult {
+    process(child: Child, api: RenderAPI): ProcessResult {
       if ((child as { type: string }).type === "mytype") {
         // Process the child using api.getMyData(), api.setMyData()
         return { value: result };

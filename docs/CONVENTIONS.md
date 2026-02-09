@@ -167,15 +167,15 @@ export type Text = Tagged<"text", { content: string }>;
 ```ts
 // packages/<name>/src/global.d.ts
 declare module "@ydant/core" {
-  interface Extension {
+  interface DSLSchema {
     mytype: { instruction: Tagged<"mytype", { ... }> };
   }
 
-  interface RenderContextExtension {
+  interface RenderContext {
     myProperty: SomeType;
   }
 
-  interface PluginAPI {
+  interface RenderAPI {
     myMethod(): void;
   }
 }
@@ -183,11 +183,11 @@ declare module "@ydant/core" {
 
 ### 拡張ポイント一覧
 
-| インターフェース         | 用途                                        |
-| ------------------------ | ------------------------------------------- |
-| `Extension`              | DSL 操作定義（instruction/feedback/return） |
-| `RenderContextExtension` | レンダリングコンテキストのプロパティを追加  |
-| `PluginAPI`              | プラグイン API のメソッドを追加             |
+| インターフェース | 用途                                        |
+| ---------------- | ------------------------------------------- |
+| `DSLSchema`      | DSL 操作定義（instruction/feedback/return） |
+| `RenderContext`  | レンダリングコンテキストのプロパティを追加  |
+| `RenderAPI`      | プラグイン API のメソッドを追加             |
 
 ### 型エイリアスの使い分け
 
@@ -215,7 +215,7 @@ export function createMyPlugin(): Plugin {
     types: ["mytype"],  // 処理する type の配列
 
     // コンテキスト初期化
-    initContext(ctx: RenderContextCore & Partial<RenderContextExtension>) {
+    initContext(ctx: RenderContext) {
       ctx.myProperty = initialValue;
     },
 
@@ -225,12 +225,12 @@ export function createMyPlugin(): Plugin {
     },
 
     // API 拡張
-    extendAPI(api: Partial<PluginAPI>, ctx: RenderContext) {
+    extendAPI(api: Partial<RenderAPI>, ctx: RenderContext) {
       api.myMethod = () => { ... };
     },
 
     // 子要素の処理
-    process(child: Child, api: PluginAPI): PluginResult {
+    process(child: Child, api: RenderAPI): ProcessResult {
       if (isTagged(child, "mytype")) {
         return processMyType(child, api);
       }
@@ -240,12 +240,11 @@ export function createMyPlugin(): Plugin {
 }
 ```
 
-### PluginResult の形式
+### ProcessResult の形式
 
 ```ts
-interface PluginResult {
-  next?: ChildNext; // イテレータに渡す値
-  return?: ChildReturn; // 早期終了時の戻り値
+interface ProcessResult {
+  value?: ChildNext; // ジェネレータに返す値
 }
 ```
 

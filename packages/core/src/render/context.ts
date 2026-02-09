@@ -4,8 +4,8 @@
 
 import type { Builder, Instructor } from "../types";
 import { toChildren } from "../utils";
-import type { Plugin, PluginAPI } from "../plugin";
-import type { RenderContext, RenderContextCore } from "./types";
+import type { Plugin, RenderAPI } from "../plugin";
+import type { RenderContext } from "./types";
 
 /**
  * 登録されたプラグインをユニークに反復処理する
@@ -23,17 +23,17 @@ function forEachUniquePlugin(
   }
 }
 
-/** RenderContext のコア部分を作成 */
-export function createRenderContextCore(
+/** RenderContext のコアフィールドのみで初期オブジェクトを作成（拡張プロパティは各プラグインの initContext で設定） */
+function createRenderContextBase(
   parent: Node,
   currentElement: globalThis.Element | null,
   plugins: Map<string, Plugin>,
-): RenderContextCore {
+): RenderContext {
   return {
     parent,
     currentElement,
     plugins,
-  };
+  } as RenderContext;
 }
 
 /**
@@ -50,7 +50,7 @@ export function createRenderContext(
   plugins: Map<string, Plugin>,
   parentCtx?: RenderContext,
 ): RenderContext {
-  const ctx = createRenderContextCore(parent, currentElement, plugins) as RenderContext;
+  const ctx = createRenderContextBase(parent, currentElement, plugins);
 
   // 各プラグインの initContext を呼び出し
   forEachUniquePlugin(plugins, (plugin) => {
@@ -61,7 +61,7 @@ export function createRenderContext(
 }
 
 /**
- * RenderContext から PluginAPI を作成
+ * RenderContext から RenderAPI を作成
  *
  * processIterator を循環参照で受け取る必要があるため、
  * ファクトリ関数として実装
@@ -69,10 +69,10 @@ export function createRenderContext(
  * NOTE: core は基本的な API のみを提供し、プラグイン固有のメソッドは
  * 各プラグインの extendAPI で追加される。
  */
-export function createPluginAPIFactory(
+export function createRenderAPIFactory(
   processIterator: (iter: Instructor, ctx: RenderContext) => void,
 ) {
-  return function createPluginAPI(ctx: RenderContext): PluginAPI {
+  return function createRenderAPI(ctx: RenderContext): RenderAPI {
     // キャッシュがあればそのまま返す
     if (ctx._cachedAPI) {
       return ctx._cachedAPI;
@@ -109,24 +109,24 @@ export function createPluginAPIFactory(
           plugin.mergeChildContext?.(ctx, childCtx);
         });
       },
-      createChildAPI(parent: Node): PluginAPI {
+      createChildAPI(parent: Node): RenderAPI {
         const childCtx = createRenderContext(
           parent,
           parent instanceof globalThis.Element ? parent : null,
           ctx.plugins,
           ctx,
         );
-        return createPluginAPI(childCtx);
+        return createRenderAPI(childCtx);
       },
     };
 
     // 各プラグインの extendAPI を呼び出して API を拡張
     forEachUniquePlugin(ctx.plugins, (plugin) => {
-      plugin.extendAPI?.(api as Partial<PluginAPI>, ctx);
+      plugin.extendAPI?.(api as Partial<RenderAPI>, ctx);
     });
 
-    const pluginAPI = api as unknown as PluginAPI;
-    ctx._cachedAPI = pluginAPI;
-    return pluginAPI;
+    const renderAPI = api as unknown as RenderAPI;
+    ctx._cachedAPI = renderAPI;
+    return renderAPI;
   };
 }

@@ -3,15 +3,15 @@
  */
 
 import type { Child, ChildNext } from "./types";
-import type { RenderContext, RenderContextCore, RenderContextExtension } from "./render/types";
+import type { RenderContext } from "./render/types";
 
 // =============================================================================
 // Plugin API Extension Types
 // -----------------------------------------------------------------------------
 // プラグインは declare module "@ydant/core" を使って以下のインターフェースを
-// 拡張することで、PluginAPI に独自のメソッドを追加できる。
+// 拡張することで、RenderAPI に独自のメソッドを追加できる。
 //
-// @ydant/base が BasePluginAPI を追加し、DOM 操作に必要なメソッドを提供する。
+// @ydant/base が BaseRenderAPI を追加し、DOM 操作に必要なメソッドを提供する。
 // =============================================================================
 
 /**
@@ -24,16 +24,16 @@ import type { RenderContext, RenderContextCore, RenderContextExtension } from ".
  * ```typescript
  * // @ydant/base で DOM 操作用のメソッドを追加
  * declare module "@ydant/core" {
- *   interface PluginAPI extends BasePluginAPI {}
+ *   interface RenderAPI extends BaseRenderAPI {}
  * }
  * ```
  */
-export interface PluginAPI {}
+export interface RenderAPI {}
 
 /**
  * プラグインの処理結果
  */
-export interface PluginResult {
+export interface ProcessResult {
   /** ジェネレータに返す値 */
   value?: ChildNext | undefined;
 }
@@ -52,26 +52,23 @@ export interface Plugin {
    * RenderContext を初期化する
    *
    * mount 時および子コンテキスト作成時に呼び出される。
-   * プラグインは RenderContextExtension で定義した独自プロパティを
-   * ここで初期化する。
+   * プラグインは RenderContext を declare module で拡張し、
+   * ここで独自プロパティを初期化する。
    *
-   * @param ctx - 初期化対象のコンテキスト（構築途中のため Partial）
+   * @param ctx - 初期化対象のコンテキスト（コアフィールドは設定済み、拡張プロパティは各プラグインが設定）
    * @param parentCtx - 親コンテキスト（ルートの場合は undefined）
    */
-  initContext?(
-    ctx: RenderContextCore & Partial<RenderContextExtension>,
-    parentCtx?: RenderContext,
-  ): void;
+  initContext?(ctx: RenderContext, parentCtx?: RenderContext): void;
   /**
-   * PluginAPI を拡張する
+   * RenderAPI を拡張する
    *
-   * プラグイン固有のメソッドを PluginAPI に追加する。
-   * PluginAPI で定義した独自のメソッドをここで実装する。
+   * プラグイン固有のメソッドを RenderAPI に追加する。
+   * RenderAPI で定義した独自のメソッドをここで実装する。
    *
-   * @param api - 拡張対象の PluginAPI オブジェクト
+   * @param api - 拡張対象の RenderAPI オブジェクト
    * @param ctx - 現在の RenderContext（initContext 後なので構築済み）
    */
-  extendAPI?(api: Partial<PluginAPI>, ctx: RenderContext): void;
+  extendAPI?(api: Partial<RenderAPI>, ctx: RenderContext): void;
   /**
    * 子コンテキストの状態を親コンテキストにマージする
    *
@@ -83,7 +80,7 @@ export interface Plugin {
    */
   mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
   /** Child を処理する */
-  process(child: Child, api: PluginAPI): PluginResult;
+  process(child: Child, api: RenderAPI): ProcessResult;
 }
 
 /**

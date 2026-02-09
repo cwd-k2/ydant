@@ -76,16 +76,16 @@ function createContextPlugin(): Plugin;
 
 Creates a plugin that handles `provide` and `inject`. Must be passed to `mount()`. Depends on `createBasePlugin()`.
 
-The context plugin extends `RenderContext` and `PluginAPI`:
+The context plugin extends `RenderContext` and `RenderAPI`:
 
 ```typescript
 // RenderContext extensions
-interface RenderContextExtension {
+interface RenderContext {
   contextValues: Map<symbol, unknown>;
 }
 
-// PluginAPI extensions
-interface PluginAPI {
+// RenderAPI extensions
+interface RenderAPI {
   getContext<T>(id: symbol): T | undefined;
   setContext<T>(id: symbol, value: T): void;
 }

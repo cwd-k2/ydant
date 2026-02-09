@@ -4,13 +4,13 @@
 
 import type { Builder, Instructor } from "@ydant/core";
 import { isTagged } from "@ydant/core";
-import type { PluginAPI, PluginResult } from "@ydant/core";
+import type { RenderAPI, ProcessResult } from "@ydant/core";
 import type { Element, Slot } from "../types";
 
 /**
  * Element を DOM ノードに変換し、Slot を返す
  */
-export function processElement(element: Element, api: PluginAPI): PluginResult {
+export function processElement(element: Element, api: RenderAPI): ProcessResult {
   const elementKey = element.key ?? null;
 
   // key があり、既存のノードが存在する場合は再利用
@@ -110,7 +110,7 @@ function applyDecorations(element: Element, node: globalThis.Element, isReused: 
  */
 function createSlot(
   node: globalThis.Element,
-  childApi: PluginAPI,
+  childApi: RenderAPI,
   unmountCallbacksRef: Array<() => void>,
 ): Slot {
   return {

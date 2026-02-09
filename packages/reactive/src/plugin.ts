@@ -14,7 +14,7 @@
  * ```
  */
 
-import type { Child, Plugin, PluginAPI, PluginResult } from "@ydant/core";
+import type { Child, Plugin, RenderAPI, ProcessResult } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 // Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
@@ -29,7 +29,7 @@ export function createReactivePlugin(): Plugin {
     types: ["reactive"],
     dependencies: ["base"],
 
-    process(child: Child, api: PluginAPI): PluginResult {
+    process(child: Child, api: RenderAPI): ProcessResult {
       if (!isTagged(child, "reactive")) return {};
       const builder = child.builder;
 

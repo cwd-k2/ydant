@@ -4,12 +4,12 @@
  * core の interface を拡張し、base プラグインの型を追加する
  */
 
-import type { Builder, PluginAPI } from "@ydant/core";
+import type { Builder, RenderAPI } from "@ydant/core";
 import type { Element, Attribute, Listener, Text, Lifecycle, Slot, KeyedNode } from "./types";
 
 declare module "@ydant/core" {
   // RenderContext に base プラグイン用のプロパティを追加
-  interface RenderContextExtension {
+  interface RenderContext {
     /** 現在の要素が再利用されたかどうか（リスナー・ライフサイクルの重複登録を防ぐ） */
     isCurrentElementReused: boolean;
     /** キー付き要素のマップ */
@@ -20,8 +20,8 @@ declare module "@ydant/core" {
     unmountCallbacks: Array<() => void>;
   }
 
-  // PluginAPI に base プラグインのメソッドを追加
-  interface PluginAPI {
+  // RenderAPI に base プラグインのメソッドを追加
+  interface RenderAPI {
     // === DOM 操作 ===
     /** 現在の親ノード */
     readonly parent: Node;
@@ -56,7 +56,7 @@ declare module "@ydant/core" {
       },
     ): void;
     /** 新しい子コンテキストの API を作成 */
-    createChildAPI(parent: Node): PluginAPI;
+    createChildAPI(parent: Node): RenderAPI;
 
     // === keyed 要素 ===
     /** 現在の要素が再利用されたかどうか */
@@ -71,9 +71,9 @@ declare module "@ydant/core" {
     deleteKeyedNode(key: string | number): void;
   }
 
-  // base の DSL 型を Extension に追加
+  // base の DSL 型を DSLSchema に追加
   // "element" の feedback: Slot が ChildReturn にも反映される（return → feedback フォールバック）
-  interface Extension {
+  interface DSLSchema {
     element: { instruction: Element; feedback: Slot };
     attribute: { instruction: Attribute };
     listener: { instruction: Listener };

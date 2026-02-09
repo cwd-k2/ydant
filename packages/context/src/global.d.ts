@@ -8,22 +8,22 @@ import type { ContextProvide, ContextInject } from "./context";
 
 declare module "@ydant/core" {
   // RenderContext に context プラグイン用のプロパティを追加
-  interface RenderContextExtension {
+  interface RenderContext {
     /** Context の値を保持するマップ */
     contextValues: Map<symbol, unknown>;
   }
 
-  // PluginAPI に context プラグインのメソッドを追加
-  interface PluginAPI {
+  // RenderAPI に context プラグインのメソッドを追加
+  interface RenderAPI {
     /** Context から値を取得 */
     getContext<T>(id: symbol): T | undefined;
     /** Context に値を設定 */
     setContext<T>(id: symbol, value: T): void;
   }
 
-  // context の DSL 型を Extension に追加
+  // context の DSL 型を DSLSchema に追加
   // "context-inject" の feedback: unknown が ChildReturn にも反映される
-  interface Extension {
+  interface DSLSchema {
     "context-provide": { instruction: ContextProvide };
     "context-inject": { instruction: ContextInject; feedback: unknown };
   }

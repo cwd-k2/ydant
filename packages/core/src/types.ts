@@ -9,7 +9,7 @@ export type Tagged<T extends string, P = {}> = { type: T } & P;
 export type CleanupFn = () => void;
 
 // =============================================================================
-// Plugin Extension Types
+// Plugin DSLSchema Types
 // -----------------------------------------------------------------------------
 // プラグインは declare module "@ydant/core" を使って以下のインターフェースを
 // 拡張することで、独自の型を追加できる。
@@ -25,7 +25,7 @@ export type CleanupFn = () => void;
  * @example
  * ```typescript
  * declare module "@ydant/core" {
- *   interface Extension {
+ *   interface DSLSchema {
  *     "element": { instruction: Element; feedback: Slot };
  *     "text": { instruction: Text };
  *     "transition": { return: TransitionHandle };
@@ -33,29 +33,29 @@ export type CleanupFn = () => void;
  * }
  * ```
  */
-export interface Extension {}
+export interface DSLSchema {}
 
-/** Extension の各キーから instruction 型を抽出した mapped type */
+/** DSLSchema の各キーから instruction 型を抽出した mapped type */
 type InstructionOf = {
-  [K in keyof Extension]: Extension[K] extends { instruction: infer I } ? I : never;
+  [K in keyof DSLSchema]: DSLSchema[K] extends { instruction: infer I } ? I : never;
 };
 
-/** Extension の各キーから feedback 型を抽出した mapped type */
+/** DSLSchema の各キーから feedback 型を抽出した mapped type */
 type FeedbackOf = {
-  [K in keyof Extension]: Extension[K] extends { feedback: infer F } ? F : void;
+  [K in keyof DSLSchema]: DSLSchema[K] extends { feedback: infer F } ? F : void;
 };
 
-/** Extension の各キーから return 型を抽出した mapped type（return → feedback → void のフォールバック） */
+/** DSLSchema の各キーから return 型を抽出した mapped type（return → feedback → void のフォールバック） */
 type ReturnOf = {
-  [K in keyof Extension]: Extension[K] extends { return: infer R }
+  [K in keyof DSLSchema]: DSLSchema[K] extends { return: infer R }
     ? R
-    : Extension[K] extends { feedback: infer F }
+    : DSLSchema[K] extends { feedback: infer F }
       ? F
       : void;
 };
 
 /** DSL 操作ごとの型付きジェネレーター */
-export type DSL<Key extends keyof Extension> = Generator<
+export type DSL<Key extends keyof DSLSchema> = Generator<
   InstructionOf[Key],
   ReturnOf[Key],
   FeedbackOf[Key]
@@ -65,17 +65,17 @@ export type DSL<Key extends keyof Extension> = Generator<
 // Core Types (基盤型のみ)
 // =============================================================================
 
-/** 子要素として yield できるもの（Extension から導出） */
-export type Child = InstructionOf[keyof Extension];
+/** 子要素として yield できるもの（DSLSchema から導出） */
+export type Child = InstructionOf[keyof DSLSchema];
 
 /** Child から特定の type を抽出するヘルパー型 */
 export type ChildOfType<T extends string> = Extract<Child, { type: T }>;
 
-/** next() に渡される値の型（Extension から導出） */
-export type ChildNext = void | FeedbackOf[keyof Extension];
+/** next() に渡される値の型（DSLSchema から導出） */
+export type ChildNext = void | FeedbackOf[keyof DSLSchema];
 
-/** return で返される値の型（Extension から導出） */
-export type ChildReturn = void | ReturnOf[keyof Extension];
+/** return で返される値の型（DSLSchema から導出） */
+export type ChildReturn = void | ReturnOf[keyof DSLSchema];
 
 // =============================================================================
 // Generator Types
@@ -103,7 +103,7 @@ export type ChildContent = Generator<Child, unknown, ChildNext>;
 /**
  * Element を yield し、最終的に ChildReturn を返すジェネレーター
  *
- * base パッケージでは Slot が Extension の feedback/return に含まれるため、
+ * base パッケージでは Slot が DSLSchema の feedback/return に含まれるため、
  * より具体的な型 (Generator<Child, Slot, Slot>) として使用される
  */
 export type Render = Generator<Child, ChildReturn, ChildNext>;

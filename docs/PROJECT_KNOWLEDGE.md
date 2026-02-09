@@ -66,11 +66,11 @@ function* () {
 
 プラグインは以下の型を拡張できる：
 
-| 拡張ポイント             | 用途                                        |
-| ------------------------ | ------------------------------------------- |
-| `Extension`              | DSL 操作定義（instruction/feedback/return） |
-| `RenderContextExtension` | コンテキストプロパティ                      |
-| `PluginAPI`              | API メソッド                                |
+| 拡張ポイント    | 用途                                        |
+| --------------- | ------------------------------------------- |
+| `DSLSchema`     | DSL 操作定義（instruction/feedback/return） |
+| `RenderContext` | コンテキストプロパティ                      |
+| `RenderAPI`     | API メソッド                                |
 
 ### Slot パターン
 
@@ -109,7 +109,7 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 
 ### Phase 4: API リファクタリング
 
-- RenderContext/PluginAPI を拡張可能に
+- RenderContext/RenderAPI を拡張可能に
 - Component<P> 型の統合
 - createSlotRef の導入
 - 型エイリアスの整備

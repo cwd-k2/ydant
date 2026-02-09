@@ -7,7 +7,7 @@
 import type { Reactive } from "./reactive";
 
 declare module "@ydant/core" {
-  interface Extension {
+  interface DSLSchema {
     reactive: { instruction: Reactive };
   }
 }

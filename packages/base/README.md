@@ -47,19 +47,19 @@ mount(Greeting, document.getElementById("app")!, {
 | -------------------- | ------------------------------------------ |
 | `createBasePlugin()` | Create plugin to process base DSL elements |
 
-The base plugin extends `RenderContext` and `PluginAPI`:
+The base plugin extends `RenderContext` and `RenderAPI`:
 
 ```typescript
 // RenderContext extensions
-interface RenderContextExtension {
+interface RenderContext {
   isCurrentElementReused: boolean;
   keyedNodes: Map<string | number, KeyedNode>;
   mountCallbacks: Array<() => void | (() => void)>;
   unmountCallbacks: Array<() => void>;
 }
 
-// PluginAPI extensions
-interface PluginAPI {
+// RenderAPI extensions
+interface RenderAPI {
   // DOM operations
   readonly parent: Node;
   readonly currentElement: globalThis.Element | null;
@@ -76,7 +76,7 @@ interface PluginAPI {
 
   // Children processing
   processChildren(builder: Builder, options?: { parent?: Node; inheritContext?: boolean }): void;
-  createChildAPI(parent: Node): PluginAPI;
+  createChildAPI(parent: Node): RenderAPI;
 
   // Keyed elements
   readonly isCurrentElementReused: boolean;

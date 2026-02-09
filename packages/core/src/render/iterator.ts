@@ -3,12 +3,12 @@
  */
 
 import type { Child, Instructor, ChildNext } from "../types";
-import type { PluginAPI } from "../plugin";
+import type { RenderAPI } from "../plugin";
 import type { RenderContext } from "./types";
-import { createPluginAPIFactory } from "./context";
+import { createRenderAPIFactory } from "./context";
 
-// 循環参照を解決するため、PluginAPI ファクトリを遅延初期化
-let createPluginAPI: ((ctx: RenderContext) => PluginAPI) | null = null;
+// 循環参照を解決するため、RenderAPI ファクトリを遅延初期化
+let createRenderAPI: ((ctx: RenderContext) => RenderAPI) | null = null;
 
 /**
  * Child イテレータを処理し、DOM に反映する
@@ -17,9 +17,9 @@ let createPluginAPI: ((ctx: RenderContext) => PluginAPI) | null = null;
  * 対応するプラグインがない type はスキップされる。
  */
 export function processIterator(iter: Instructor, ctx: RenderContext): void {
-  // 初回呼び出し時に PluginAPI ファクトリを初期化
-  if (!createPluginAPI) {
-    createPluginAPI = createPluginAPIFactory(processIterator);
+  // 初回呼び出し時に RenderAPI ファクトリを初期化
+  if (!createRenderAPI) {
+    createRenderAPI = createRenderAPIFactory(processIterator);
   }
 
   let result = iter.next();
@@ -33,9 +33,9 @@ export function processIterator(iter: Instructor, ctx: RenderContext): void {
       const plugin = ctx.plugins.get(type);
 
       if (plugin) {
-        const api = createPluginAPI(ctx);
-        const pluginResult = plugin.process(value as Child, api);
-        result = iter.next(pluginResult.value as ChildNext);
+        const api = createRenderAPI(ctx);
+        const processResult = plugin.process(value as Child, api);
+        result = iter.next(processResult.value as ChildNext);
         continue;
       }
     }
