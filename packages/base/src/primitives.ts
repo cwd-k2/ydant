@@ -10,9 +10,9 @@ export function* attr(key: string, value: string): DSL<"attribute"> {
   yield { type: "attribute", key, value };
 }
 
-/** Sets the `class` attribute by joining all arguments. Accepts strings and string arrays. */
-export function* classes(...classNames: (string | string[])[]): DSL<"attribute"> {
-  const value = classNames.flat().join(" ");
+/** Sets the `class` attribute by joining all arguments. */
+export function* classes(...classNames: string[]): DSL<"attribute"> {
+  const value = classNames.join(" ");
   yield { type: "attribute", key: "class", value };
 }
 

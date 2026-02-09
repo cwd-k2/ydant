@@ -31,25 +31,15 @@ describe("classes", () => {
     });
   });
 
-  it("handles array argument", () => {
-    const gen = classes(["container", "flex", "items-center"]);
+  it("handles spread array", () => {
+    const dynamicClasses = ["container", "flex", "items-center"];
+    const gen = classes(...dynamicClasses);
     const result = gen.next();
 
     expect(result.value).toEqual({
       type: "attribute",
       key: "class",
       value: "container flex items-center",
-    });
-  });
-
-  it("handles mixed arguments", () => {
-    const gen = classes("a", ["b", "c"]);
-    const result = gen.next();
-
-    expect(result.value).toEqual({
-      type: "attribute",
-      key: "class",
-      value: "a b c",
     });
   });
 
