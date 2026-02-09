@@ -1,5 +1,5 @@
 /**
- * @ydant/base - 要素ファクトリ
+ * @ydant/base - Element factories
  */
 
 import type { Builder } from "@ydant/core";
@@ -9,34 +9,29 @@ import type { Element, ElementRender, Slot } from "../types";
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**
- * HTML 要素ファクトリを作成
+ * Creates an HTML element factory for the given tag name.
  *
- * @returns ElementRender を返すジェネレーター関数
- *          yield* で使用すると Slot を返す
+ * The returned function takes a {@link Builder} and returns an {@link ElementRender}
+ * generator. Using `yield*` on it produces a {@link Slot} handle.
  */
 export function createHTMLElement(tag: string): (builder: Builder) => ElementRender {
-  // 注: ジェネレーターの ChildNext は void | Slot | ... だが、
-  // Element を yield したときは必ず Slot が返される。
-  // この型の精密化はジェネレーターの型システムの制約上困難なため、
-  // 内部実装で処理し、外部には ElementRender として正しい型を公開する。
+  // The generator's ChildNext includes void | Slot | ..., but yielding an Element
+  // is contractually guaranteed to receive a Slot back from the plugin system.
+  // We cast internally and expose the correct ElementRender type externally.
   return function* (builder: Builder): ElementRender {
     const children = toChildren(builder());
-    // Element の yield は必ず Slot を返す（プラグインシステムの契約）
     return (yield { type: "element", tag, children } as Element) as Slot;
   };
 }
 
 /**
- * SVG 要素ファクトリを作成
+ * Creates an SVG element factory for the given tag name.
  *
- * @returns ElementRender を返すジェネレーター関数
- *          yield* で使用すると Slot を返す
+ * Same as {@link createHTMLElement} but uses the SVG namespace.
  */
 export function createSVGElement(tag: string): (builder: Builder) => ElementRender {
-  // 注: 同上
   return function* (builder: Builder): ElementRender {
     const children = toChildren(builder());
-    // Element の yield は必ず Slot を返す（プラグインシステムの契約）
     return (yield {
       type: "element",
       tag,

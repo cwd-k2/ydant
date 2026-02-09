@@ -1,5 +1,5 @@
 /**
- * @ydant/base - DSL 型定義
+ * @ydant/base - DSL type definitions
  */
 
 import type { Tagged, CleanupFn, Instructor, Builder, ChildNext } from "@ydant/core";
@@ -8,11 +8,14 @@ import type { Tagged, CleanupFn, Instructor, Builder, ChildNext } from "@ydant/c
 // Slot Types
 // =============================================================================
 
-/** 要素のスロット（DOM 参照と更新関数を持つ） */
+/**
+ * A handle to a mounted DOM element, providing access to its node
+ * and the ability to re-render its children.
+ */
 export interface Slot {
-  /** マウントされた DOM 要素 */
+  /** The underlying DOM element. */
   readonly node: HTMLElement;
-  /** 子要素を再レンダリングする */
+  /** Replaces the element's children by running a new {@link Builder}. */
   refresh(children: Builder): void;
 }
 
@@ -21,13 +24,11 @@ export interface Slot {
 // =============================================================================
 
 /**
- * 要素ファクトリの戻り値型
+ * The return type of element factories (e.g., `div`, `span`).
  *
- * Element を yield し、必ず Slot を返すジェネレーター。
- * 汎用の Render より具体的な型で、yield* div() が Slot を返すことを保証する。
- *
- * ChildNext は void を含むが、Element yield 時は必ず Slot が返される。
- * 型システムでこれを表現するため、Element と Slot のみに限定している。
+ * A generator that yields exactly one {@link Element} and returns a {@link Slot}.
+ * More specific than the generic `Render` type — guarantees that `yield* div(...)`
+ * always produces a `Slot`.
  */
 export type ElementRender = Generator<Element, Slot, ChildNext>;
 
@@ -35,16 +36,16 @@ export type ElementRender = Generator<Element, Slot, ChildNext>;
 // Core Primitive Types
 // =============================================================================
 
-/** HTML 属性 */
+/** Sets an HTML attribute on the current element. */
 export type Attribute = Tagged<"attribute", { key: string; value: string }>;
 
-/** イベントリスナ */
+/** Attaches a DOM event listener to the current element. */
 export type Listener = Tagged<"listener", { key: string; value: (e: Event) => void }>;
 
-/** テキストノード */
+/** Creates a text node and appends it to the current parent. */
 export type Text = Tagged<"text", { content: string }>;
 
-/** マウント時のライフサイクルイベント */
+/** A lifecycle hook that runs when the component is mounted. May return a cleanup function. */
 export type MountLifecycle = Tagged<
   "lifecycle",
   {
@@ -53,7 +54,7 @@ export type MountLifecycle = Tagged<
   }
 >;
 
-/** アンマウント時のライフサイクルイベント */
+/** A lifecycle hook that runs when the component is unmounted. */
 export type UnmountLifecycle = Tagged<
   "lifecycle",
   {
@@ -62,14 +63,14 @@ export type UnmountLifecycle = Tagged<
   }
 >;
 
-/** ライフサイクルイベント */
+/** A lifecycle hook — either {@link MountLifecycle} or {@link UnmountLifecycle}. */
 export type Lifecycle = MountLifecycle | UnmountLifecycle;
 
 // =============================================================================
 // Plugin Types
 // =============================================================================
 
-/** Keyed 要素の情報 */
+/** Tracks a keyed element's DOM node and its associated unmount callbacks for reuse. */
 export interface KeyedNode {
   key: string | number;
   node: globalThis.Element;
@@ -80,10 +81,10 @@ export interface KeyedNode {
 // Element Types
 // =============================================================================
 
-/** HTML 要素の装飾 (Attribute, Listener) */
+/** An inline decoration applied during element creation — either an {@link Attribute} or {@link Listener}. */
 export type Decoration = Attribute | Listener;
 
-/** HTML 要素 */
+/** A DSL instruction that creates a DOM element with children and optional decorations. */
 export type Element = Tagged<
   "element",
   {

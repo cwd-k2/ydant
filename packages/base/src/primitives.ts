@@ -1,11 +1,11 @@
 /**
- * @ydant/base - プリミティブ
+ * @ydant/base - DSL primitives
  */
 
 import type { Builder, CleanupFn, Primitive, Render } from "@ydant/core";
 import type { Attribute, Listener, Text, Lifecycle, ElementRender, Slot } from "./types";
 
-/** プリミティブを yield するジェネレーター関数を作成するファクトリ */
+/** Creates a single-yield generator function from a value factory. Used internally to define primitives. */
 function createPrimitive<T extends Attribute | Listener | Text | Lifecycle, Args extends unknown[]>(
   factory: (...args: Args) => T,
 ) {
@@ -14,7 +14,7 @@ function createPrimitive<T extends Attribute | Listener | Text | Lifecycle, Args
   };
 }
 
-/** HTML 属性を yield */
+/** Sets an HTML attribute on the current element. Use with `yield*`. */
 export const attr = createPrimitive(
   (key: string, value: string): Attribute => ({
     type: "attribute",
@@ -23,7 +23,7 @@ export const attr = createPrimitive(
   }),
 );
 
-/** class 属性のショートハンド */
+/** Sets the `class` attribute by joining all arguments. Accepts strings and string arrays. */
 export function classes(...classNames: (string | string[])[]): Primitive<Attribute> {
   return (function* () {
     const value = classNames.flat().join(" ");
@@ -31,12 +31,12 @@ export function classes(...classNames: (string | string[])[]): Primitive<Attribu
   })();
 }
 
-/** イベントリスナを yield（HTMLElementEventMap のイベント型を推論） */
+/** Attaches a DOM event listener. Infers the event type from {@link HTMLElementEventMap}. */
 export function on<K extends keyof HTMLElementEventMap>(
   key: K,
   handler: (e: HTMLElementEventMap[K]) => void,
 ): Primitive<Listener>;
-/** イベントリスナを yield（カスタムイベント用フォールバック） */
+/** Attaches a DOM event listener for custom event names. */
 export function on(key: string, handler: (e: Event) => void): Primitive<Listener>;
 export function on(key: string, handler: (e: Event) => void): Primitive<Listener> {
   return (function* () {
@@ -44,19 +44,19 @@ export function on(key: string, handler: (e: Event) => void): Primitive<Listener
   })();
 }
 
-/** テキストノードを yield */
+/** Creates a text node and appends it to the current parent. Use with `yield*`. */
 export const text = createPrimitive((content: string): Text => ({ type: "text", content }));
 
 /**
- * コンポーネントがマウントされた時に実行されるコールバックを登録する
+ * Registers a callback that runs after the component is mounted to the DOM.
  *
- * @param callback - マウント時に実行される関数。クリーンアップ関数を返すことができる。
+ * The callback may return a cleanup function, which will be called on unmount.
  *
  * @example
  * ```typescript
  * yield* onMount(() => {
  *   const interval = setInterval(() => console.log("tick"), 1000);
- *   return () => clearInterval(interval);  // クリーンアップ
+ *   return () => clearInterval(interval); // cleanup
  * });
  * ```
  */
@@ -65,9 +65,7 @@ export function* onMount(callback: () => void | CleanupFn): Primitive<Lifecycle>
 }
 
 /**
- * コンポーネントがアンマウントされる時に実行されるコールバックを登録する
- *
- * @param callback - アンマウント時に実行される関数
+ * Registers a callback that runs when the component is unmounted from the DOM.
  *
  * @example
  * ```typescript
@@ -81,9 +79,9 @@ export function* onUnmount(callback: () => void): Primitive<Lifecycle> {
 }
 
 /**
- * インラインスタイルを設定する
+ * Sets inline styles on the current element.
  *
- * @param properties - CSS プロパティのオブジェクト
+ * Accepts camelCase properties (auto-converted to kebab-case) and CSS custom properties.
  *
  * @example
  * ```typescript
@@ -99,7 +97,7 @@ export function* style(
 ): Primitive<Attribute> {
   const styleValue = Object.entries(properties as Record<string, string>)
     .map(([k, v]) => {
-      // camelCase を kebab-case に変換（CSS 変数は除く）
+      // Convert camelCase to kebab-case (skip CSS custom properties)
       const prop = k.startsWith("--") ? k : k.replace(/([A-Z])/g, "-$1").toLowerCase();
       return `${prop}: ${v}`;
     })
@@ -108,18 +106,18 @@ export function* style(
 }
 
 /**
- * 要素ファクトリやコンポーネントをラップし、生成される Element に key を付与する
+ * Wraps an element factory or component to attach a stable key for DOM reuse.
  *
- * @param key - 一意な識別子（string または number）
- * @param factory - 要素ファクトリ（div, li 等）またはコンポーネント
- * @returns key 付きファクトリ（元と同じ引数を受け取る）
+ * When the same key appears across re-renders, the existing DOM node is reused
+ * instead of being recreated, preserving state and improving performance.
+ *
+ * @param key - A unique identifier (string or number) within the parent scope.
+ * @param factory - An element factory (`div`, `li`, etc.) or a component.
+ * @returns A keyed factory that accepts the same arguments as the original.
  *
  * @example
  * ```typescript
- * // 要素ファクトリと組み合わせ
  * yield* keyed(item.id, li)(() => [text(item.name)]);
- *
- * // コンポーネントと組み合わせ
  * yield* keyed(item.id, ListItemView)({ item, onDelete });
  * ```
  */

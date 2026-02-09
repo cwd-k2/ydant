@@ -1,29 +1,29 @@
 /**
- * @ydant/base - SlotRef ヘルパー
+ * @ydant/base - SlotRef helper
  */
 
 import type { Builder } from "@ydant/core";
 import type { Slot } from "./types";
 
 /**
- * Slot への参照を保持するオブジェクト
+ * A mutable reference to a {@link Slot}, enabling imperative updates
+ * from event handlers and other callbacks.
  *
- * イベントハンドラ等から Slot を操作するためのヘルパー。
- * bind() で Slot を関連付け、refresh() で子要素を再レンダリングする。
+ * Bind a Slot with `bind()`, then call `refresh()` to re-render its children.
  */
 export interface SlotRef {
-  /** 現在バインドされている Slot（未バインドなら null） */
+  /** The currently bound {@link Slot}, or `null` if not yet bound. */
   readonly current: Slot | null;
-  /** Slot をバインドする */
+  /** Associates this ref with a {@link Slot}. */
   bind(slot: Slot): void;
-  /** バインドされた Slot の子要素を再レンダリングする */
+  /** Re-renders the bound Slot's children. No-op if unbound. */
   refresh(children: Builder): void;
-  /** バインドされた Slot の DOM 要素（未バインドなら null） */
+  /** The DOM element of the bound Slot, or `null` if unbound. */
   readonly node: HTMLElement | null;
 }
 
 /**
- * SlotRef を作成する
+ * Creates a {@link SlotRef} for imperative Slot access.
  *
  * @example
  * ```typescript

@@ -1,6 +1,9 @@
 import type { Tagged, Child, ChildOfType, Instruction, Instructor } from "./types";
 
-/** Tagged 型の判定関数（Child に対する型ガード付きオーバーロード） */
+/**
+ * Checks whether a tagged object matches a given type tag.
+ * When called with a {@link Child}, narrows to the corresponding {@link ChildOfType}.
+ */
 export function isTagged<T extends Child["type"]>(value: Child, tag: T): value is ChildOfType<T>;
 export function isTagged<T extends string>(
   value: { type: string },
@@ -10,7 +13,7 @@ export function isTagged(value: { type: string }, tag: string): boolean {
   return value.type === tag;
 }
 
-/** Builder の結果を Instructor に正規化する */
+/** Normalizes a {@link Builder}'s return value into a single {@link Instructor} iterator. */
 export function toChildren(result: Instructor | Instruction[]): Instructor {
   if (Array.isArray(result)) {
     return (function* () {

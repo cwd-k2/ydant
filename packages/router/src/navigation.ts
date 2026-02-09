@@ -1,24 +1,24 @@
 /**
- * ナビゲーション API
+ * Navigation API
  */
 
 import type { RouteInfo } from "./types";
 import { currentRoute, updateRoute } from "./state";
 
 /**
- * 現在のルート情報を取得
+ * Get the current route information.
  *
- * @returns 現在のルート情報（パス、パラメータ、クエリ）
+ * @returns The current route info including path, params, and query
  */
 export function getRoute(): RouteInfo {
   return currentRoute;
 }
 
 /**
- * プログラムによるナビゲーション
+ * Navigate to a new path programmatically using the History API.
  *
- * @param path - 遷移先のパス
- * @param replace - true の場合、履歴に追加せずに置き換え
+ * @param path - The destination path to navigate to
+ * @param replace - When true, replaces the current history entry instead of pushing a new one
  */
 export function navigate(path: string, replace = false): void {
   if (replace) {
@@ -30,14 +30,14 @@ export function navigate(path: string, replace = false): void {
 }
 
 /**
- * 履歴を戻る
+ * Navigate back one step in the browser history.
  */
 export function goBack(): void {
   window.history.back();
 }
 
 /**
- * 履歴を進む
+ * Navigate forward one step in the browser history.
  */
 export function goForward(): void {
   window.history.forward();

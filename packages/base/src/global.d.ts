@@ -1,53 +1,52 @@
 /**
- * @ydant/base - Module Augmentation
+ * @ydant/base - Module augmentation
  *
- * core の interface を拡張し、base プラグインの型を追加する
+ * Extends core interfaces (RenderContext, RenderAPI, DSLSchema) with
+ * the properties and methods required by the base plugin.
  */
 
 import type { Builder, RenderAPI } from "@ydant/core";
 import type { Element, Attribute, Listener, Text, Lifecycle, Slot, KeyedNode } from "./types";
 
 declare module "@ydant/core" {
-  // RenderContext に base プラグイン用のプロパティを追加
   interface RenderContext {
-    /** 現在の要素が再利用されたかどうか（リスナー・ライフサイクルの重複登録を防ぐ） */
+    /** Whether the current element was reused via key matching (prevents duplicate listeners/lifecycle). */
     isCurrentElementReused: boolean;
-    /** キー付き要素のマップ */
+    /** Lookup map of keyed elements available for reuse. */
     keyedNodes: Map<string | number, KeyedNode>;
-    /** マウント時に実行するコールバック */
+    /** Callbacks to run after the component is mounted to the DOM. */
     mountCallbacks: Array<() => void | (() => void)>;
-    /** アンマウント時に実行するコールバック */
+    /** Callbacks to run when the component is unmounted from the DOM. */
     unmountCallbacks: Array<() => void>;
   }
 
-  // RenderAPI に base プラグインのメソッドを追加
   interface RenderAPI {
-    // === DOM 操作 ===
-    /** 現在の親ノード */
+    // === DOM manipulation ===
+    /** The current parent node that children are appended to. */
     readonly parent: Node;
-    /** 現在処理中の要素 */
+    /** The element currently being decorated, or `null` between elements. */
     readonly currentElement: globalThis.Element | null;
-    /** 現在の要素を設定 */
+    /** Sets the element currently being decorated. */
     setCurrentElement(element: globalThis.Element | null): void;
-    /** 親を設定 */
+    /** Changes the current parent node. */
     setParent(parent: Node): void;
-    /** 親ノードに子ノードを追加 */
+    /** Appends a node to the current parent. */
     appendChild(node: Node): void;
 
-    // === ライフサイクル ===
-    /** マウント時のコールバックを登録 */
+    // === Lifecycle ===
+    /** Registers a callback to run after mount. May return a cleanup function. */
     onMount(callback: () => void | (() => void)): void;
-    /** アンマウント時のコールバックを登録 */
+    /** Registers a callback to run on unmount. */
     onUnmount(callback: () => void): void;
-    /** unmount コールバックを追加 */
+    /** Adds multiple unmount callbacks at once. */
     addUnmountCallbacks(...callbacks: Array<() => void>): void;
-    /** mount コールバックを実行 */
+    /** Schedules execution of pending mount callbacks (via requestAnimationFrame). */
     executeMount(): void;
-    /** 現在のコンテキストの unmount コールバックを取得 */
+    /** Returns the current context's unmount callback array. */
     getUnmountCallbacks(): Array<() => void>;
 
-    // === 子要素処理 ===
-    /** 子要素を処理する */
+    // === Child processing ===
+    /** Processes a {@link Builder}'s instructions in a new child context. */
     processChildren(
       builder: Builder,
       options?: {
@@ -55,24 +54,24 @@ declare module "@ydant/core" {
         inheritContext?: boolean;
       },
     ): void;
-    /** 新しい子コンテキストの API を作成 */
+    /** Creates a new child-scoped {@link RenderAPI} for the given parent node. */
     createChildAPI(parent: Node): RenderAPI;
 
-    // === keyed 要素 ===
-    /** 現在の要素が再利用されたかどうか */
+    // === Keyed elements ===
+    /** Whether the current element was reused from a previous render via key matching. */
     readonly isCurrentElementReused: boolean;
-    /** 要素再利用フラグを設定 */
+    /** Sets the element-reuse flag for the current context. */
     setCurrentElementReused(reused: boolean): void;
-    /** keyed node を取得 */
+    /** Retrieves a keyed node by its key, or `undefined` if not found. */
     getKeyedNode(key: string | number): KeyedNode | undefined;
-    /** keyed node を設定 */
+    /** Stores a keyed node for potential reuse in future renders. */
     setKeyedNode(key: string | number, node: KeyedNode): void;
-    /** keyed node を削除 */
+    /** Removes a keyed node from the reuse map. */
     deleteKeyedNode(key: string | number): void;
   }
 
-  // base の DSL 型を DSLSchema に追加
-  // "element" の feedback: Slot が ChildReturn にも反映される（return → feedback フォールバック）
+  // Register base DSL types. The "element" entry's feedback (Slot) also
+  // becomes the return type via the feedback fallback in DSLSchema.
   interface DSLSchema {
     element: { instruction: Element; feedback: Slot };
     attribute: { instruction: Attribute };

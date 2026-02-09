@@ -1,5 +1,5 @@
 /**
- * Signal: 単一の値を保持するリアクティブコンテナ
+ * Signal — a reactive container holding a single value.
  *
  * @example
  * ```typescript
@@ -16,32 +16,29 @@ import type { Subscriber, Readable } from "./types";
 import { getCurrentSubscriber } from "./tracking";
 import { scheduleEffect } from "./batch";
 
-/** Signal インターフェース */
+/** A read-write reactive value. Extends {@link Readable} with `set` and `update`. */
 export interface Signal<T> extends Readable<T> {
-  /** 値を設定する */
+  /** Replaces the current value. Notifies subscribers if the value changed. */
   set(value: T): void;
-  /** 関数で値を更新する */
+  /** Updates the value by applying a function to the previous value. */
   update(fn: (prev: T) => T): void;
 }
 
 /**
- * Signal を作成する
- *
- * @param initialValue - 初期値
- * @returns Signal オブジェクト
+ * Creates a {@link Signal} with the given initial value.
  *
  * @example
  * ```typescript
  * const count = signal(0);
  *
- * // 読み取り
+ * // Read (with dependency tracking)
  * console.log(count());  // 0
  *
- * // 書き込み
+ * // Write
  * count.set(5);
  * count.update(n => n * 2);  // 10
  *
- * // 購読なしで読み取り
+ * // Read without tracking
  * console.log(count.peek());  // 10
  * ```
  */
@@ -50,7 +47,7 @@ export function signal<T>(initialValue: T): Signal<T> {
   const subscribers = new Set<Subscriber>();
 
   const read = (() => {
-    // 現在の購読者がいれば登録
+    // Register the current subscriber (if any) as a dependency
     const subscriber = getCurrentSubscriber();
     if (subscriber) {
       subscribers.add(subscriber);
@@ -61,12 +58,12 @@ export function signal<T>(initialValue: T): Signal<T> {
   read.set = (newValue: T) => {
     if (!Object.is(value, newValue)) {
       value = newValue;
-      // 全ての購読者に通知（batch 中は遅延）
+      // Notify all subscribers (deferred during batch)
       for (const sub of subscribers) {
-        // batch 中であれば遅延実行キューに追加
+        // Queue for deferred execution if inside a batch
         const scheduled = scheduleEffect(sub);
         if (!scheduled) {
-          // batch 外なら即座に実行
+          // Outside batch — execute immediately
           sub();
         }
       }

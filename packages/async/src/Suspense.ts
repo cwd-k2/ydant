@@ -1,8 +1,8 @@
 /**
  * Suspense
  *
- * 非同期コンポーネントのローディング状態を管理する。
- * 子コンポーネントが Promise を throw した場合、fallback を表示する。
+ * Manages the loading state of asynchronous components.
+ * Displays a fallback UI when a child component throws a Promise.
  *
  * @example
  * ```typescript
@@ -19,21 +19,21 @@
 import type { ChildContent, Render } from "@ydant/core";
 import { div } from "@ydant/base";
 
-/** Suspense コンポーネントの props */
+/** Props for the Suspense component. */
 export interface SuspenseProps {
-  /** ローディング中に表示するコンポーネント */
+  /** Component to display while loading. */
   fallback: () => Render;
-  /** 子コンポーネント */
+  /** Child content that may suspend by throwing a Promise. */
   children: () => ChildContent;
 }
 
 /**
- * Suspense コンポーネント
+ * Suspense component for handling asynchronous loading states.
  *
- * 注意: 現在の実装では、ジェネレータベースの DSL と
- * Promise throw パターンの組み合わせに制限があります。
- * 代替として、Resource の loading/error プロパティを使った
- * 明示的なローディング状態管理を推奨します。
+ * Note: The current implementation has limitations when combining
+ * the generator-based DSL with the Promise-throw pattern.
+ * As an alternative, explicit loading state management using
+ * the Resource's loading/error properties is recommended.
  */
 export function* Suspense(props: SuspenseProps): Render {
   const { fallback, children } = props;
@@ -42,7 +42,7 @@ export function* Suspense(props: SuspenseProps): Render {
     let isSuspended = false;
     let pendingPromise: Promise<unknown> | null = null;
 
-    // 子コンポーネントを試行
+    // Attempt to render children
     try {
       yield* children();
     } catch (thrown) {
@@ -54,11 +54,11 @@ export function* Suspense(props: SuspenseProps): Render {
       }
     }
 
-    // サスペンド状態の場合は fallback を表示
+    // Show fallback when suspended
     if (isSuspended && pendingPromise) {
       yield* fallback();
 
-      // Promise が解決したら再レンダリング（エラー時も再試行して ErrorBoundary に任せる）
+      // Re-render when the Promise resolves (on error, retry and let ErrorBoundary handle it)
       pendingPromise
         .then(() => {
           containerSlot.refresh(function* () {
@@ -66,8 +66,8 @@ export function* Suspense(props: SuspenseProps): Render {
           });
         })
         .catch(() => {
-          // エラー時も再レンダリングを試行
-          // Resource がエラー状態なら children() 内で throw される
+          // Retry rendering on error as well
+          // If the Resource is in an error state, children() will throw
           containerSlot.refresh(function* () {
             yield* children();
           });
@@ -79,9 +79,9 @@ export function* Suspense(props: SuspenseProps): Render {
 }
 
 /**
- * 明示的なローディング状態を使った代替パターン
+ * Alternative pattern using explicit loading state.
  *
- * Resource の loading プロパティを使って条件分岐する。
+ * Uses the Resource's loading property for conditional rendering.
  *
  * @example
  * ```typescript

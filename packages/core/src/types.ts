@@ -2,25 +2,23 @@
 // Utility Types
 // =============================================================================
 
-/** Tagged Union を作成するヘルパー型 */
+/** Creates a discriminated union member with a `type` tag and optional payload. */
 export type Tagged<T extends string, P = {}> = { type: T } & P;
 
-/** ライフサイクルや副作用のクリーンアップ関数 */
+/** A teardown function returned by lifecycle hooks or side effects. */
 export type CleanupFn = () => void;
 
 // =============================================================================
 // Plugin DSLSchema Types
-// -----------------------------------------------------------------------------
-// プラグインは declare module "@ydant/core" を使って以下のインターフェースを
-// 拡張することで、独自の型を追加できる。
 // =============================================================================
 
 /**
- * DSL 操作ごとに instruction, feedback, return を co-locate する拡張インターフェース
+ * Central registry of all DSL operations, extended by plugins via module augmentation.
  *
- * - `instruction` — yield する値の型
- * - `feedback` — yield から返る値の型（省略時 void）
- * - `return` — Generator の return 値の型（省略時 feedback にフォールバック）
+ * Each key represents a DSL operation and maps to an object with:
+ * - `instruction` — the value yielded to the runtime
+ * - `feedback` — the value returned from `yield` (defaults to `void`)
+ * - `return` — the generator's return type (falls back to `feedback`, then `void`)
  *
  * @example
  * ```typescript
@@ -35,17 +33,17 @@ export type CleanupFn = () => void;
  */
 export interface DSLSchema {}
 
-/** DSLSchema の各キーから instruction 型を抽出した mapped type */
+/** Extracts the `instruction` type from each entry in {@link DSLSchema}. */
 type InstructionOf = {
   [K in keyof DSLSchema]: DSLSchema[K] extends { instruction: infer I } ? I : never;
 };
 
-/** DSLSchema の各キーから feedback 型を抽出した mapped type */
+/** Extracts the `feedback` type from each entry in {@link DSLSchema}, defaulting to `void`. */
 type FeedbackOf = {
   [K in keyof DSLSchema]: DSLSchema[K] extends { feedback: infer F } ? F : void;
 };
 
-/** DSLSchema の各キーから return 型を抽出した mapped type（return → feedback → void のフォールバック） */
+/** Extracts the `return` type from each entry in {@link DSLSchema}, falling back to `feedback` then `void`. */
 type ReturnOf = {
   [K in keyof DSLSchema]: DSLSchema[K] extends { return: infer R }
     ? R
@@ -54,7 +52,10 @@ type ReturnOf = {
       : void;
 };
 
-/** DSL 操作ごとの型付きジェネレーター */
+/**
+ * A typed generator for a single DSL operation.
+ * Use with `yield*` to perform an operation and receive its feedback/return value.
+ */
 export type DSL<Key extends keyof DSLSchema> = Generator<
   InstructionOf[Key],
   ReturnOf[Key],
@@ -62,57 +63,57 @@ export type DSL<Key extends keyof DSLSchema> = Generator<
 >;
 
 // =============================================================================
-// Core Types (基盤型のみ)
+// Core Types
 // =============================================================================
 
-/** 子要素として yield できるもの（DSLSchema から導出） */
+/** Union of all yieldable values derived from {@link DSLSchema}. */
 export type Child = InstructionOf[keyof DSLSchema];
 
-/** Child から特定の type を抽出するヘルパー型 */
+/** Extracts the {@link Child} variant matching a specific `type` tag. */
 export type ChildOfType<T extends string> = Extract<Child, { type: T }>;
 
-/** next() に渡される値の型（DSLSchema から導出） */
+/** Union of all feedback values that `next()` can pass back to a generator. */
 export type ChildNext = void | FeedbackOf[keyof DSLSchema];
 
-/** return で返される値の型（DSLSchema から導出） */
+/** Union of all return values a generator can produce. */
 export type ChildReturn = void | ReturnOf[keyof DSLSchema];
 
 // =============================================================================
 // Generator Types
 // =============================================================================
 
-/** レンダリング命令の Iterator（内部処理用） */
+/** An iterator that yields {@link Child} values. Used internally to walk rendering instructions. */
 export type Instructor = Iterator<Child, ChildReturn, ChildNext>;
 
-/** レンダリング命令（text, attr, on 等）の戻り値型 */
+/** A generator that produces rendering instructions (e.g., text, attr, on). Returned by primitives. */
 export type Instruction = Generator<Child, ChildReturn, ChildNext>;
 
-/** 要素ファクトリ（div, span 等）の引数型 */
+/** A factory function that produces rendering instructions for an element's children. */
 export type Builder = () => Instructor | Instruction[];
 
-/** 副作用のみを実行する DSL プリミティブの戻り値型 */
+/** A single-yield generator used by DSL primitives that perform a side effect and return nothing. */
 export type Primitive<T extends Child> = Generator<T, void, void>;
 
-/** コンポーネントの children として渡すビルダー関数の戻り値型 */
+/** The generator type for a component's `children` prop — yields any {@link Child} and returns an opaque value. */
 export type ChildContent = Generator<Child, unknown, ChildNext>;
 
 // =============================================================================
-// Render & Component Types (基底型)
+// Render & Component Types
 // =============================================================================
 
 /**
- * Element を yield し、最終的に ChildReturn を返すジェネレーター
+ * The generator type returned by element factories and components.
  *
- * base パッケージでは Slot が DSLSchema の feedback/return に含まれるため、
- * より具体的な型 (Generator<Child, Slot, Slot>) として使用される
+ * When `@ydant/base` augments {@link DSLSchema} with `Slot`, the concrete type
+ * becomes `Generator<Child, Slot, Slot>`.
  */
 export type Render = Generator<Child, ChildReturn, ChildNext>;
 
 /**
- * コンポーネント型
+ * A component — a function that returns a {@link Render} generator.
  *
- * - `Component` — 引数なし `() => Render`
- * - `Component<Props>` — Props を受け取る `(props: Props) => Render`
+ * - `Component` — no-arg component: `() => Render`
+ * - `Component<Props>` — component with props: `(props: Props) => Render`
  *
  * @example
  * ```typescript

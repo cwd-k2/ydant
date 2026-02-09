@@ -1,24 +1,19 @@
 /**
- * @ydant/core - レンダリング内部型定義
+ * @ydant/core - Internal rendering types
  */
 
 import type { Plugin } from "../plugin";
 
 // =============================================================================
 // RenderContext
-// -----------------------------------------------------------------------------
-// プラグインは declare module "@ydant/core" を使って RenderContext を
-// 拡張することで、独自のプロパティを追加できる。
-//
-// @ydant/base が keyedNodes 等を追加
-// @ydant/context が contextValues を追加
 // =============================================================================
 
 /**
- * レンダリングコンテキスト
+ * Per-scope state carried through the rendering tree.
  *
- * コアフィールド（parent, currentElement, plugins）を持ち、
- * プラグインは declare module で独自のプロパティを追加できる。
+ * Core fields are defined here; plugins add their own properties
+ * via module augmentation (e.g., `@ydant/base` adds `keyedNodes`,
+ * `@ydant/context` adds `contextValues`).
  *
  * @example
  * ```typescript
@@ -30,12 +25,12 @@ import type { Plugin } from "../plugin";
  * ```
  */
 export interface RenderContext {
-  /** 親ノード */
+  /** The DOM node that children are appended to. */
   parent: Node;
-  /** 現在処理中の要素 */
+  /** The element currently being decorated, or `null` between elements. */
   currentElement: globalThis.Element | null;
-  /** 登録されたプラグイン */
+  /** Registered plugins keyed by their type tags. */
   plugins: Map<string, Plugin>;
-  /** キャッシュされた RenderAPI（内部用） */
+  /** @internal Cached {@link import("../plugin").RenderAPI} instance for this context. */
   _cachedAPI?: import("../plugin").RenderAPI;
 }

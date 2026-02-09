@@ -1,8 +1,8 @@
 /**
- * バッチ更新: 複数の Signal 更新を一度にまとめて通知する
+ * Batch updates — groups multiple Signal writes so subscribers are notified only once.
  *
- * NOTE: batchDepth と pendingEffects はモジュールレベルのグローバル状態。
- * テスト間での分離には __resetForTesting__() を使用。
+ * `batchDepth` and `pendingEffects` are module-level globals.
+ * Use `__resetForTesting__()` to isolate state between tests.
  *
  * @example
  * ```typescript
@@ -12,35 +12,30 @@
  * effect(() => {
  *   console.log(`${firstName()} ${lastName()}`);
  * });
- * // 出力: "John Doe"
+ * // Output: "John Doe"
  *
  * batch(() => {
  *   firstName.set("Jane");
  *   lastName.set("Smith");
  * });
- * // 出力: "Jane Smith" (1回だけ)
+ * // Output: "Jane Smith" (only once)
  * ```
  */
 
 let batchDepth = 0;
 let pendingEffects = new Set<() => void>();
 
-/**
- * テスト用: 状態をリセット
- * @internal
- */
+/** @internal Resets batch state. For use in tests only. */
 export function __resetForTesting__(): void {
   batchDepth = 0;
   pendingEffects = new Set();
 }
 
 /**
- * バッチ更新を実行する
+ * Executes a function in a batch context.
  *
- * バッチ内で行われた複数の Signal 更新は、バッチ終了時に
- * まとめて1回だけ effect を実行する。
- *
- * @param fn - バッチ内で実行する関数
+ * Signal updates inside the batch are collected; their effects run once
+ * when the outermost batch completes. Batches can be nested.
  */
 export function batch(fn: () => void): void {
   batchDepth++;
@@ -59,9 +54,8 @@ export function batch(fn: () => void): void {
 }
 
 /**
- * 内部用: バッチ中かどうかを確認し、effect を遅延実行キューに追加
- *
- * @returns バッチ中で遅延された場合は true
+ * @internal Queues an effect for deferred execution if a batch is active.
+ * @returns `true` if the effect was queued (inside a batch), `false` otherwise.
  */
 export function scheduleEffect(effect: () => void): boolean {
   if (batchDepth > 0) {

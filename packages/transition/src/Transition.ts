@@ -1,7 +1,7 @@
 /**
- * Transition コンポーネント
+ * Transition component
  *
- * 要素の表示/非表示時に CSS トランジションを適用する。
+ * Applies CSS transitions when elements are shown or hidden.
  *
  * @example
  * ```typescript
@@ -24,36 +24,36 @@ import { div, onMount } from "@ydant/base";
 import { addClasses, removeClasses, waitForTransition } from "./utils";
 
 export interface TransitionProps {
-  /** 要素を表示するかどうか */
+  /** Whether to show the element */
   show: boolean;
-  /** 入場トランジションの基本クラス */
+  /** Base classes applied during the entire enter transition */
   enter?: string;
-  /** 入場開始時のクラス */
+  /** Classes applied at the start of the enter transition */
   enterFrom?: string;
-  /** 入場終了時のクラス */
+  /** Classes applied at the end of the enter transition */
   enterTo?: string;
-  /** 退場トランジションの基本クラス */
+  /** Base classes applied during the entire leave transition */
   leave?: string;
-  /** 退場開始時のクラス */
+  /** Classes applied at the start of the leave transition */
   leaveFrom?: string;
-  /** 退場終了時のクラス */
+  /** Classes applied at the end of the leave transition */
   leaveTo?: string;
-  /** トランジション対象の子要素 */
+  /** Factory function that returns the child content to transition */
   children: () => ChildContent;
 }
 
 /**
- * 入場トランジションを実行
+ * Run an enter transition on the given element
  */
 export async function enterTransition(el: HTMLElement, props: TransitionProps): Promise<void> {
-  // 初期状態を設定
+  // Set initial state
   addClasses(el, props.enter);
   addClasses(el, props.enterFrom);
 
-  // 強制リフロー
+  // Force reflow
   void el.offsetHeight;
 
-  // 次のフレームでトランジションを開始
+  // Start transition on the next frame
   await new Promise<void>((resolve) => {
     requestAnimationFrame(() => {
       addClasses(el, props.enterTo);
@@ -62,26 +62,26 @@ export async function enterTransition(el: HTMLElement, props: TransitionProps): 
     });
   });
 
-  // トランジション終了を待つ
+  // Wait for transition to finish
   await waitForTransition(el);
 
-  // クリーンアップ
+  // Clean up transition classes
   removeClasses(el, props.enter);
   removeClasses(el, props.enterTo);
 }
 
 /**
- * 退場トランジションを実行
+ * Run a leave transition on the given element
  */
 export async function leaveTransition(el: HTMLElement, props: TransitionProps): Promise<void> {
-  // 初期状態を設定
+  // Set initial state
   addClasses(el, props.leave);
   addClasses(el, props.leaveFrom);
 
-  // 強制リフロー
+  // Force reflow
   void el.offsetHeight;
 
-  // 次のフレームでトランジションを開始
+  // Start transition on the next frame
   await new Promise<void>((resolve) => {
     requestAnimationFrame(() => {
       addClasses(el, props.leaveTo);
@@ -90,15 +90,15 @@ export async function leaveTransition(el: HTMLElement, props: TransitionProps): 
     });
   });
 
-  // トランジション終了を待つ
+  // Wait for transition to finish
   await waitForTransition(el);
 
-  // クリーンアップ
+  // Clean up transition classes
   removeClasses(el, props.leave);
   removeClasses(el, props.leaveTo);
 }
 
-// 状態を保持するための WeakMap
+// WeakMap to persist transition state across renders
 const transitionStates = new WeakMap<
   HTMLElement,
   {
@@ -109,22 +109,22 @@ const transitionStates = new WeakMap<
 >();
 
 /**
- * Transition コンポーネント
+ * Transition component
  *
- * show の変化に応じて enter アニメーションを実行する。
+ * Runs an enter animation in response to changes in `show`.
  *
- * 注意: 現在の実装では enter アニメーションのみサポート。
- * leave アニメーションが必要な場合は `createTransition` を使用すること。
+ * Note: The current implementation only supports enter animations.
+ * For leave animation support, use `createTransition` instead.
  *
- * @see createTransition - leave アニメーションをサポートする代替 API
+ * @see createTransition - Alternative API that supports leave animations
  */
 export function Transition(props: TransitionProps): Render {
   const { show, children } = props;
 
   return div(function* () {
-    // コンテナ div を作成（常に存在）
+    // Create a container div (always present in the DOM)
     const containerSlot = yield* div(function* () {
-      // show=true の場合のみ子要素を描画
+      // Only render children when show is true
       if (show) {
         yield* children();
       }
@@ -133,7 +133,7 @@ export function Transition(props: TransitionProps): Render {
     yield* onMount(() => {
       const container = containerSlot.node;
 
-      // 状態を取得または初期化
+      // Retrieve or initialize transition state
       let state = transitionStates.get(container);
       if (!state) {
         state = {
@@ -147,21 +147,20 @@ export function Transition(props: TransitionProps): Render {
       const child = container.firstElementChild as HTMLElement | null;
 
       if (show && !state.isShowing) {
-        // 入場: false → true
+        // Enter: false -> true
         state.isShowing = true;
         if (child) {
           enterTransition(child, props);
         }
       } else if (!show && state.isShowing && !state.isAnimating) {
-        // 退場: true → false
-        // 子要素が既に削除されている（refresh で消えた）ので、
-        // 一旦復元してアニメーションを実行する必要がある
-        // これは現在のアーキテクチャでは困難なため、
-        // 代わりに display: none で非表示にするアプローチを取る
+        // Leave: true -> false
+        // The child element has already been removed (cleared by refresh),
+        // so restoring it for animation would require architectural changes.
+        // Instead, we simply update the state here.
         state.isShowing = false;
       }
 
-      // クリーンアップ
+      // Clean up state on unmount
       return () => {
         transitionStates.delete(container);
       };
@@ -170,23 +169,23 @@ export function Transition(props: TransitionProps): Render {
 }
 
 /**
- * 状態管理付き Transition コンポーネント
+ * Handle returned by `createTransition`, providing control over the transition state.
  *
- * leave アニメーションをサポートするために、
- * 専用の refresh 関数を提供する。
+ * Supports leave animations by providing a dedicated `setShow` function
+ * that manages the animation lifecycle.
  */
 export interface TransitionHandle {
-  /** Transition の Slot */
+  /** The Slot representing the transition container */
   slot: Slot;
-  /** show 状態を更新（アニメーション付き） */
+  /** Update the show state with an animated transition */
   setShow: (show: boolean) => Promise<void>;
 }
 
-/** createTransition の戻り値型。yield* で使用し、TransitionHandle を返す。 */
+/** Return type of `createTransition`. Use with `yield*` to obtain a TransitionHandle. */
 export type TransitionInstruction = Generator<Element, TransitionHandle, Slot>;
 
 /**
- * 状態管理付き Transition を作成
+ * Create a stateful Transition with full enter/leave animation support
  *
  * @example
  * ```typescript

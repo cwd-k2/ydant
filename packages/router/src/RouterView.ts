@@ -1,8 +1,8 @@
 /**
- * RouterView コンポーネント
+ * RouterView component
  *
- * 現在のパスに基づいて適切なコンポーネントを表示する。
- * ルート定義と現在の URL を照合し、マッチしたコンポーネントをレンダリングする。
+ * Renders the component that matches the current URL path.
+ * Compares route definitions against the current URL and renders the first match.
  *
  * @example
  * ```typescript
@@ -13,7 +13,7 @@
  *     { path: "/users/:id", component: UserDetail },
  *     { path: "*", component: NotFound },
  *   ],
- *   base: "/app",  // オプション: ベースパス
+ *   base: "/app",  // optional: base path prefix
  * });
  * ```
  */
@@ -25,7 +25,7 @@ import { currentRoute, routeListeners, updateRoute } from "./state";
 import { matchPath } from "./matching";
 
 /**
- * マッチするルートを検索し、ガードの結果とコンポーネントを返す
+ * Find the first route definition that matches the current path, returning the route and extracted params.
  */
 function findMatchedRoute(
   routes: RouteDefinition[],
@@ -46,7 +46,7 @@ function findMatchedRoute(
 }
 
 /**
- * 同期的にルートをレンダリング（guard が同期の場合）
+ * Synchronously render the matched route's component (only when the guard is synchronous).
  */
 function renderMatchedRouteSync(routes: RouteDefinition[], base: string): Render[] {
   const matched = findMatchedRoute(routes, base);
@@ -55,14 +55,14 @@ function renderMatchedRouteSync(routes: RouteDefinition[], base: string): Render
   const { route, params } = matched;
   currentRoute.params = params;
 
-  // guard がない場合はコンポーネントを返す
+  // If there is no guard, render the component directly
   if (!route.guard) {
     return [route.component()];
   }
 
   const allowed = route.guard();
   if (allowed instanceof Promise) {
-    // async guard の場合は空を返す（後で refresh される）
+    // For async guards, return empty; a refresh will be triggered later
     return [];
   }
 
@@ -70,7 +70,7 @@ function renderMatchedRouteSync(routes: RouteDefinition[], base: string): Render
 }
 
 /**
- * 非同期ガードを処理し、必要に応じて refresh を呼ぶ
+ * Handle async route guards and call refresh when the guard resolves to true.
  */
 async function handleAsyncGuard(
   routes: RouteDefinition[],
@@ -90,33 +90,33 @@ async function handleAsyncGuard(
         currentRoute.params = params;
         refresh(() => [route.component()]);
       }
-      // false の場合は refresh しない（空のまま）
+      // If the guard returned false, do not refresh (stays empty)
     }
   }
 }
 
 /**
- * RouterView コンポーネント
+ * RouterView component
  *
- * 現在のパスに基づいて適切なコンポーネントを表示する。
- * History API の popstate イベントを監視し、URL 変更時に再レンダリングする。
+ * Displays the component matching the current URL path.
+ * Listens for History API popstate events to re-render on URL changes.
  *
- * @param props - RouterView のプロパティ
- * @param props.routes - ルート定義の配列
- * @param props.base - ベースパス（オプション、デフォルト: ""）
- * @returns コンテナ要素の Render
+ * @param props - RouterView properties
+ * @param props.routes - Array of route definitions to match against
+ * @param props.base - Base path prefix (optional, defaults to "")
+ * @returns A Render for the container element
  */
 export function RouterView(props: RouterViewProps): Render {
   const { routes, base = "" } = props;
 
   return div(function* () {
-    // コンテナの子要素として内部コンテナを作成
+    // Create an inner container slot for the matched route's content
     const innerSlot = yield* div(() => renderMatchedRouteSync(routes, base));
 
-    // 初回の async guard を処理
+    // Handle initial async guard evaluation
     handleAsyncGuard(routes, base, (builder) => innerSlot.refresh(builder));
 
-    // popstate イベントのリスナーを登録
+    // Register a popstate event listener for browser navigation
     yield* onMount(() => {
       const handlePopState = () => {
         updateRoute(window.location.pathname);
@@ -126,7 +126,7 @@ export function RouterView(props: RouterViewProps): Render {
 
       window.addEventListener("popstate", handlePopState);
 
-      // ルート変更リスナーを登録
+      // Register a route change listener for programmatic navigation
       const routeChangeListener = () => {
         innerSlot.refresh(() => renderMatchedRouteSync(routes, base));
         handleAsyncGuard(routes, base, (builder) => innerSlot.refresh(builder));

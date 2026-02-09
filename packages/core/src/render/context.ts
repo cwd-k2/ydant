@@ -1,5 +1,5 @@
 /**
- * @ydant/core - RenderContext 管理
+ * @ydant/core - RenderContext management
  */
 
 import type { Builder, Instructor } from "../types";
@@ -8,8 +8,8 @@ import type { Plugin, RenderAPI } from "../plugin";
 import type { RenderContext } from "./types";
 
 /**
- * 登録されたプラグインをユニークに反復処理する
- * （同じプラグインが複数の type で登録されている場合、1回だけ呼び出す）
+ * Iterates over registered plugins, calling each one exactly once.
+ * A plugin registered for multiple type tags is only visited once.
  */
 function forEachUniquePlugin(
   plugins: Map<string, Plugin>,
@@ -23,7 +23,7 @@ function forEachUniquePlugin(
   }
 }
 
-/** RenderContext のコアフィールドのみで初期オブジェクトを作成（拡張プロパティは各プラグインの initContext で設定） */
+/** Creates a bare {@link RenderContext} with only core fields. Plugin properties are added by {@link Plugin.initContext}. */
 function createRenderContextBase(
   parent: Node,
   currentElement: globalThis.Element | null,
@@ -37,12 +37,13 @@ function createRenderContextBase(
 }
 
 /**
- * RenderContext を作成し、各プラグインで初期化
+ * Creates a fully initialized {@link RenderContext} by constructing the base
+ * and running each plugin's `initContext` hook.
  *
- * @param parent - 親ノード
- * @param currentElement - 現在の要素
- * @param plugins - 登録されたプラグイン
- * @param parentCtx - 親コンテキスト（子コンテキスト作成時）
+ * @param parent - The parent DOM node.
+ * @param currentElement - The element being decorated, or `null`.
+ * @param plugins - Registered plugins.
+ * @param parentCtx - The parent context (for child context creation), or `undefined` at root.
  */
 export function createRenderContext(
   parent: Node,
@@ -52,7 +53,7 @@ export function createRenderContext(
 ): RenderContext {
   const ctx = createRenderContextBase(parent, currentElement, plugins);
 
-  // 各プラグインの initContext を呼び出し
+  // Let each plugin initialize its properties on the context
   forEachUniquePlugin(plugins, (plugin) => {
     plugin.initContext?.(ctx, parentCtx);
   });
@@ -61,26 +62,26 @@ export function createRenderContext(
 }
 
 /**
- * RenderContext から RenderAPI を作成
+ * Returns a factory that builds a {@link RenderAPI} from a {@link RenderContext}.
  *
- * processIterator を循環参照で受け取る必要があるため、
- * ファクトリ関数として実装
+ * Structured as a higher-order function to break the circular dependency
+ * between this module and `processIterator`.
  *
- * NOTE: core は基本的な API のみを提供し、プラグイン固有のメソッドは
- * 各プラグインの extendAPI で追加される。
+ * The core provides only `parent`, `currentElement`, `processChildren`, and
+ * `createChildAPI`. Plugin-specific methods are added via {@link Plugin.extendAPI}.
  */
 export function createRenderAPIFactory(
   processIterator: (iter: Instructor, ctx: RenderContext) => void,
 ) {
   return function createRenderAPI(ctx: RenderContext): RenderAPI {
-    // キャッシュがあればそのまま返す
+    // Return cached API if available
     if (ctx._cachedAPI) {
       return ctx._cachedAPI;
     }
 
     const api: Record<string, unknown> = {
       // ========================================================================
-      // コア機能（プラグインが拡張する基盤）
+      // Core API (plugins extend on top of these)
       // ========================================================================
       get parent() {
         return ctx.parent;
@@ -104,7 +105,7 @@ export function createRenderAPIFactory(
         const children = toChildren(builder());
         processIterator(children, childCtx);
 
-        // 各プラグインの mergeChildContext を呼び出し
+        // Propagate child state back to parent
         forEachUniquePlugin(ctx.plugins, (plugin) => {
           plugin.mergeChildContext?.(ctx, childCtx);
         });
@@ -120,7 +121,7 @@ export function createRenderAPIFactory(
       },
     };
 
-    // 各プラグインの extendAPI を呼び出して API を拡張
+    // Let each plugin add its methods to the API
     forEachUniquePlugin(ctx.plugins, (plugin) => {
       plugin.extendAPI?.(api as Partial<RenderAPI>, ctx);
     });

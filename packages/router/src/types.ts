@@ -1,45 +1,45 @@
 /**
- * Router の型定義
+ * Type definitions for the router package
  */
 
 import type { Component, Instruction } from "@ydant/core";
 
-/** ルート定義 */
+/** A single route entry that maps a URL pattern to a component */
 export interface RouteDefinition {
-  /** パスパターン（例: "/users/:id"） */
+  /** URL path pattern, supporting dynamic segments (e.g. "/users/:id") */
   path: string;
-  /** パスにマッチした時に表示するコンポーネント */
+  /** Component to render when the path pattern matches the current URL */
   component: Component;
-  /** ルートガード（false を返すとナビゲーションをキャンセル） */
+  /** Optional navigation guard; returning false cancels the navigation */
   guard?: () => boolean | Promise<boolean>;
 }
 
-/** ルート情報 */
+/** Parsed information about the current route */
 export interface RouteInfo {
-  /** 現在のパス */
+  /** Current URL pathname */
   path: string;
-  /** パスパラメータ（例: { id: "123" }） */
+  /** Dynamic path parameters extracted from the URL (e.g. { id: "123" }) */
   params: Record<string, string>;
-  /** クエリパラメータ */
+  /** Parsed query string parameters */
   query: Record<string, string>;
-  /** ハッシュ */
+  /** URL hash fragment */
   hash: string;
 }
 
-/** RouterView コンポーネントの props */
+/** Props for the RouterView component */
 export interface RouterViewProps {
-  /** ルート定義の配列 */
+  /** Array of route definitions to match against */
   routes: RouteDefinition[];
-  /** ベースパス（オプション） */
+  /** Optional base path prefix for all routes */
   base?: string;
 }
 
-/** RouterLink コンポーネントの props */
+/** Props for the RouterLink component */
 export interface RouterLinkProps {
-  /** リンク先のパス */
+  /** Destination path for the link */
   href: string;
-  /** リンクの子要素 */
+  /** Child content rendered inside the link element */
   children: () => Instruction;
-  /** アクティブ時に追加するクラス */
+  /** CSS class name applied when the link's href matches the current route */
   activeClass?: string;
 }

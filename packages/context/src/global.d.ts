@@ -1,28 +1,26 @@
 /**
- * @ydant/context - Module Augmentation
+ * @ydant/context - Module augmentation
  *
- * core の interface を拡張し、context プラグインの型を追加する
+ * Extends core interfaces with context-related properties and DSL types.
  */
 
 import type { ContextProvide, ContextInject } from "./context";
 
 declare module "@ydant/core" {
-  // RenderContext に context プラグイン用のプロパティを追加
   interface RenderContext {
-    /** Context の値を保持するマップ */
+    /** Map of context values keyed by their symbol identifiers. Inherited from parent contexts. */
     contextValues: Map<symbol, unknown>;
   }
 
-  // RenderAPI に context プラグインのメソッドを追加
   interface RenderAPI {
-    /** Context から値を取得 */
+    /** Retrieves a context value by its symbol identifier. */
     getContext<T>(id: symbol): T | undefined;
-    /** Context に値を設定 */
+    /** Sets a context value by its symbol identifier. */
     setContext<T>(id: symbol, value: T): void;
   }
 
-  // context の DSL 型を DSLSchema に追加
-  // "context-inject" の feedback: unknown が ChildReturn にも反映される
+  // The "context-inject" feedback type is `unknown` because the actual type
+  // is determined by the Context<T> generic at the call site.
   interface DSLSchema {
     "context-provide": { instruction: ContextProvide };
     "context-inject": { instruction: ContextInject; feedback: unknown };

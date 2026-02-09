@@ -1,5 +1,5 @@
 /**
- * @ydant/core - Child イテレータの処理
+ * @ydant/core - Child iterator processing
  */
 
 import type { Child, Instructor, ChildNext } from "../types";
@@ -7,17 +7,15 @@ import type { RenderAPI } from "../plugin";
 import type { RenderContext } from "./types";
 import { createRenderAPIFactory } from "./context";
 
-// 循環参照を解決するため、RenderAPI ファクトリを遅延初期化
+// Lazily initialized to break the circular dependency with context.ts
 let createRenderAPI: ((ctx: RenderContext) => RenderAPI) | null = null;
 
 /**
- * Child イテレータを処理し、DOM に反映する
- *
- * すべての type はプラグインで処理される。
- * 対応するプラグインがない type はスキップされる。
+ * Walks an {@link Instructor} iterator, dispatching each yielded {@link Child}
+ * to the appropriate plugin. Unrecognized types are silently skipped.
  */
 export function processIterator(iter: Instructor, ctx: RenderContext): void {
-  // 初回呼び出し時に RenderAPI ファクトリを初期化
+  // Initialize the RenderAPI factory on first call
   if (!createRenderAPI) {
     createRenderAPI = createRenderAPIFactory(processIterator);
   }
@@ -27,7 +25,7 @@ export function processIterator(iter: Instructor, ctx: RenderContext): void {
   while (!result.done) {
     const value = result.value;
 
-    // プラグインをチェック
+    // Dispatch to the plugin that handles this type
     if (value && typeof value === "object" && "type" in value) {
       const type = (value as { type: string }).type;
       const plugin = ctx.plugins.get(type);
@@ -40,7 +38,7 @@ export function processIterator(iter: Instructor, ctx: RenderContext): void {
       }
     }
 
-    // 対応するプラグインがない場合はスキップ
+    // No plugin registered for this type — skip
     result = iter.next();
   }
 }

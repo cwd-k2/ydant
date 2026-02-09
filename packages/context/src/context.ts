@@ -1,8 +1,7 @@
 /**
- * Context API
+ * Context API — shares values down the component tree without prop drilling.
  *
- * コンポーネントツリー内で値を共有するための仕組み。
- * provide で値を提供し、inject で値を取得する。
+ * Use {@link provide} to supply a value and {@link inject} to consume it.
  *
  * @example
  * ```typescript
@@ -26,30 +25,30 @@
 
 import type { Tagged, Primitive } from "@ydant/core";
 
-/** Context オブジェクト */
+/** A context descriptor holding an identifier and an optional default value. */
 export interface Context<T> {
-  /** Context の一意な識別子 */
+  /** Unique symbol identifying this context. */
   readonly id: symbol;
-  /** デフォルト値 */
+  /** Value returned by {@link inject} when no provider is found. */
   readonly defaultValue: T | undefined;
 }
 
-/** Context Provider 型（Tagged Union） */
+/** A DSL instruction that provides a value to the context. */
 export type ContextProvide = Tagged<
   "context-provide",
   { context: Context<unknown>; value: unknown }
 >;
 
-/** Context Inject 型（Tagged Union） */
+/** A DSL instruction that reads a value from the context. */
 export type ContextInject = Tagged<"context-inject", { context: Context<unknown> }>;
 
-/** Context から値を取得する DSL プリミティブの戻り値型 */
+/** The generator type for `inject` — yields a request and returns the resolved value. */
 type Accessor<T> = Generator<ContextInject, T, T>;
 
 /**
- * Context を作成する
+ * Creates a new {@link Context}.
  *
- * @param defaultValue - inject 時に provider が見つからない場合に使用される値
+ * @param defaultValue - The fallback value used when no ancestor provides one.
  *
  * @example
  * ```typescript
@@ -65,13 +64,8 @@ export function createContext<T>(defaultValue?: T): Context<T> {
 }
 
 /**
- * Context に値を提供する
- *
- * このジェネレーターを yield* すると、その子孫コンポーネントで
- * inject() を使ってこの値を取得できるようになる。
- *
- * @param context - 提供する Context
- * @param value - 提供する値
+ * Provides a value for the given {@link Context}, making it available
+ * to all descendant components via {@link inject}.
  *
  * @example
  * ```typescript
@@ -87,13 +81,10 @@ export function* provide<T>(context: Context<T>, value: T): Primitive<ContextPro
 }
 
 /**
- * Context から値を取得する
+ * Reads the value of a {@link Context} from the nearest ancestor provider.
+ * Falls back to `defaultValue` if no provider is found.
  *
- * 親コンポーネントで provide された値を取得する。
- * provider が見つからない場合は defaultValue を返す。
- *
- * @param context - 取得する Context
- * @returns Context の値
+ * @returns The context value.
  *
  * @example
  * ```typescript

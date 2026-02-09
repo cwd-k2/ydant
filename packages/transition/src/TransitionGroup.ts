@@ -1,8 +1,8 @@
 /**
- * TransitionGroup コンポーネント
+ * TransitionGroup component
  *
- * リスト要素の追加/削除時に CSS トランジションを適用する。
- * keyed() を使って要素を追跡し、追加・削除・移動を検出する。
+ * Applies CSS transitions when list items are added or removed.
+ * Uses keyed() to track elements and detect additions, removals, and moves.
  *
  * @example
  * ```typescript
@@ -25,109 +25,109 @@ import { div, keyed, onMount } from "@ydant/base";
 import { addClasses, removeClasses, waitForTransition } from "./utils";
 
 export interface TransitionGroupProps<T> {
-  /** トランジション対象のアイテム配列 */
+  /** Array of items to apply transitions to */
   items: T[];
-  /** 各アイテムのユニークキーを返す関数 */
+  /** Function that returns a unique key for each item */
   keyFn: (item: T) => string | number;
-  /** 入場トランジションの基本クラス */
+  /** Base classes applied during the entire enter transition */
   enter?: string;
-  /** 入場開始時のクラス */
+  /** Classes applied at the start of the enter transition */
   enterFrom?: string;
-  /** 入場終了時のクラス */
+  /** Classes applied at the end of the enter transition */
   enterTo?: string;
-  /** 退場トランジションの基本クラス */
+  /** Base classes applied during the entire leave transition */
   leave?: string;
-  /** 退場開始時のクラス */
+  /** Classes applied at the start of the leave transition */
   leaveFrom?: string;
-  /** 退場終了時のクラス */
+  /** Classes applied at the end of the leave transition */
   leaveTo?: string;
-  /** 各アイテムをレンダリングする関数（要素を返す必要がある） */
+  /** Render function for each item (must return an element) */
   children: (item: T, index: number) => ElementRender;
 }
 
 /**
- * 入場トランジションを実行
+ * Run an enter transition on the given element
  */
 async function enterTransition<T>(el: HTMLElement, props: TransitionGroupProps<T>): Promise<void> {
-  // 初期状態を設定
+  // Set initial state
   addClasses(el, props.enter);
   addClasses(el, props.enterFrom);
 
-  // 強制リフロー
+  // Force reflow
   void el.offsetHeight;
 
-  // 次のフレームでトランジションを開始
+  // Start transition on the next frame
   requestAnimationFrame(() => {
     removeClasses(el, props.enterFrom);
     addClasses(el, props.enterTo);
   });
 
-  // トランジション終了を待つ
+  // Wait for transition to finish
   await waitForTransition(el);
 
-  // クリーンアップ
+  // Clean up transition classes
   removeClasses(el, props.enter);
   removeClasses(el, props.enterTo);
 }
 
 /**
- * 退場トランジションを実行し、完了後に要素を削除
+ * Run a leave transition on the given element and remove it from the DOM when complete
  */
 async function leaveTransition<T>(
   el: HTMLElement,
   props: Omit<TransitionGroupProps<T>, "items">,
 ): Promise<void> {
-  // leave が設定されていない場合は即座に削除
+  // If no leave classes are configured, remove immediately
   if (!props.leave && !props.leaveFrom && !props.leaveTo) {
     el.remove();
     return;
   }
 
-  // 初期状態を設定
+  // Set initial state
   addClasses(el, props.leave);
   addClasses(el, props.leaveFrom);
 
-  // 強制リフロー
+  // Force reflow
   void el.offsetHeight;
 
-  // 次のフレームでトランジションを開始
+  // Start transition on the next frame
   requestAnimationFrame(() => {
     removeClasses(el, props.leaveFrom);
     addClasses(el, props.leaveTo);
   });
 
-  // トランジション終了を待つ
+  // Wait for transition to finish
   await waitForTransition(el);
 
-  // 要素を削除
+  // Remove element from DOM
   el.remove();
 }
 
 /**
- * TransitionGroup コンポーネント
+ * TransitionGroup component
  *
- * keyed() と Slot.refresh() を組み合わせて、
- * リスト要素の追加・削除時にトランジションを適用する。
+ * Combines keyed() with Slot.refresh() to apply CSS transitions
+ * when list items are added or removed.
  */
 export function* TransitionGroup<T>(props: TransitionGroupProps<T>): ElementRender {
   const { items, keyFn, children } = props;
 
-  // 現在のキーセットを追跡
+  // Track the current set of keys
   const currentKeys = new Set<string | number>();
   for (const item of items) {
     currentKeys.add(keyFn(item));
   }
 
-  // コンテナ要素を作成
+  // Create the container element
   const containerSlot = yield* div(function* () {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const itemKey = keyFn(item);
 
-      // keyed() でコンポーネントに key を付与
+      // Assign a key to the component via keyed()
       const itemSlot = yield* keyed(itemKey, children)(item, i);
 
-      // 入場トランジションを適用
+      // Apply enter transition
       yield* onMount(() => {
         enterTransition(itemSlot.node, props);
       });
@@ -137,29 +137,28 @@ export function* TransitionGroup<T>(props: TransitionGroupProps<T>): ElementRend
   return containerSlot;
 }
 
-/** Stateful refresher の内部状態 */
+/** Internal state for the stateful refresher */
 interface RefresherState<T> {
-  /** 前回の items */
+  /** Previous items array */
   prevItems: T[];
-  /** key -> HTMLElement のマップ */
+  /** Map from key to the corresponding HTMLElement */
   elementsByKey: Map<string | number, HTMLElement>;
 }
 
 /**
- * TransitionGroup のリフレッシュ用ヘルパー（stateful）
+ * Create a stateful refresher for TransitionGroup
  *
- * Slot.refresh() と組み合わせて使用する。
- * 新しいアイテムリストを受け取り、トランジション付きで更新する。
- *
- * 削除されるアイテムには leave トランジションが適用され、
- * トランジション完了後に DOM から削除される。
+ * Designed to be used with Slot.refresh(). Accepts a new item list and
+ * performs a transition-aware update: newly added items get an enter
+ * transition, and removed items get a leave transition before being
+ * removed from the DOM.
  */
 export function createTransitionGroupRefresher<T>(
   props: Omit<TransitionGroupProps<T>, "items">,
 ): (slot: Slot, items: T[]) => void {
   const { keyFn, children } = props;
 
-  // 状態を保持
+  // Maintain state across refreshes
   const state: RefresherState<T> = {
     prevItems: [],
     elementsByKey: new Map(),
@@ -171,33 +170,33 @@ export function createTransitionGroupRefresher<T>(
       newKeys.add(keyFn(item));
     }
 
-    // 削除されるアイテムを検出し、leave トランジションを開始
+    // Detect removed items and start leave transitions
     const prevKeys = new Set(state.prevItems.map(keyFn));
     for (const prevKey of prevKeys) {
       if (!newKeys.has(prevKey)) {
         const el = state.elementsByKey.get(prevKey);
         if (el) {
-          // leave トランジションを開始（非同期で削除される）
+          // Start leave transition (element is removed asynchronously)
           leaveTransition(el, props);
           state.elementsByKey.delete(prevKey);
         }
       }
     }
 
-    // 新しいアイテムで refresh
+    // Refresh with the new items
     slot.refresh(function* () {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         const itemKey = keyFn(item);
         const isNew = !prevKeys.has(itemKey);
 
-        // keyed() でコンポーネントに key を付与
+        // Assign a key to the component via keyed()
         const itemSlot = yield* keyed(itemKey, children)(item, i);
 
-        // 要素を記録
+        // Record the element reference
         state.elementsByKey.set(itemKey, itemSlot.node);
 
-        // 新しい要素のみ入場トランジションを適用
+        // Apply enter transition only to newly added elements
         if (isNew) {
           yield* onMount(() => {
             enterTransition(itemSlot.node, props as TransitionGroupProps<T>);
@@ -206,7 +205,7 @@ export function createTransitionGroupRefresher<T>(
       }
     });
 
-    // 状態を更新
+    // Update state
     state.prevItems = [...items];
   };
 }

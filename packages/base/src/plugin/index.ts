@@ -1,5 +1,5 @@
 /**
- * @ydant/base - ベースプラグイン
+ * @ydant/base - Base plugin
  */
 
 import type { Child, Plugin, RenderAPI, ProcessResult, RenderContext } from "@ydant/core";
@@ -9,10 +9,8 @@ import { processAttribute, processListener, processText, processLifecycle } from
 import type { KeyedNode } from "../types";
 
 /**
- * マウントコールバックを実行
- *
- * DOM 更新完了後（requestAnimationFrame のタイミング）に実行し、
- * クリーンアップ関数が返された場合は unmountCallbacks に追加する
+ * Executes pending mount callbacks on the next animation frame.
+ * If a mount callback returns a cleanup function, it is added to unmountCallbacks.
  */
 function executeMount(ctx: RenderContext): void {
   const mountCallbacks = ctx.mountCallbacks;
@@ -30,9 +28,8 @@ function executeMount(ctx: RenderContext): void {
 }
 
 /**
- * ベースプラグインを作成
- *
- * element, text, attribute, listener, key, lifecycle を処理するプラグイン
+ * Creates the base plugin that handles core DOM operations:
+ * element creation, text nodes, attributes, event listeners, and lifecycle hooks.
  */
 export function createBasePlugin(): Plugin {
   return {
@@ -60,7 +57,7 @@ export function createBasePlugin(): Plugin {
     },
 
     extendAPI(api: Partial<RenderAPI>, ctx: RenderContext) {
-      // DOM 操作関連
+      // DOM manipulation
       Object.defineProperty(api, "isCurrentElementReused", {
         get() {
           return ctx.isCurrentElementReused;
@@ -80,7 +77,7 @@ export function createBasePlugin(): Plugin {
         ctx.isCurrentElementReused = reused;
       };
 
-      // keyedNodes 関連
+      // Keyed element management
       const keyedNodes = ctx.keyedNodes;
       api.getKeyedNode = (key: string | number) => keyedNodes.get(key);
       api.setKeyedNode = (key: string | number, node: KeyedNode) => {
@@ -90,7 +87,7 @@ export function createBasePlugin(): Plugin {
         keyedNodes.delete(key);
       };
 
-      // lifecycle 関連
+      // Lifecycle management
       const mountCallbacks = ctx.mountCallbacks;
       const unmountCallbacks = ctx.unmountCallbacks;
 

@@ -1,18 +1,19 @@
 /**
- * Reactive パッケージの型定義
+ * @ydant/reactive - Core type definitions
  */
 
-/** Signal/Effect の購読者（変更通知を受け取るコールバック） */
+/** A callback invoked when a reactive dependency changes. Used internally by Signal, Computed, and Effect. */
 export type Subscriber = () => void;
 
 /**
- * 読み取り可能なリアクティブ値の共通インターフェース
+ * A readable reactive value — the common interface shared by {@link Signal} and {@link Computed}.
  *
- * Signal, Computed など、値の読み取りと peek をサポートする型の基底インターフェース。
+ * Call it as a function to read the value (with dependency tracking),
+ * or use `peek()` to read without subscribing.
  */
 export interface Readable<T> {
-  /** 値を読み取る（依存関係を追跡） */
+  /** Reads the current value, registering the caller as a dependency. */
   (): T;
-  /** 現在の値を取得（購読なし、依存関係を追跡しない） */
+  /** Reads the current value without tracking dependencies. */
   peek(): T;
 }

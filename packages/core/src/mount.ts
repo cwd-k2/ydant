@@ -1,21 +1,22 @@
 /**
- * @ydant/core - マウント関数
+ * @ydant/core - Mount function
  */
 
 import type { Plugin, MountOptions } from "./plugin";
 import type { Render } from "./types";
 import { render } from "./render";
 
-// Component の戻り値型は Render（Generator ベース）
-// base で DSLSchema に Slot が追加されると、より具体的な型になる
 type Component = () => Render;
 
 /**
- * Component を DOM にマウントする
+ * Mounts a component into the DOM, starting the rendering pipeline.
  *
- * @param app - マウントするコンポーネント
- * @param parent - マウント先の DOM 要素
- * @param options - マウントオプション（プラグインなど）
+ * Registers plugins, validates their dependencies, and renders
+ * the component's generator into the target element.
+ *
+ * @param app - The root component to render.
+ * @param parent - The DOM element to render into.
+ * @param options - Configuration including plugins to register.
  *
  * @example
  * ```typescript
@@ -30,7 +31,7 @@ type Component = () => Render;
  * ```
  */
 export function mount(app: Component, parent: HTMLElement, options?: MountOptions): void {
-  // プラグインを Map に変換（type -> plugin）
+  // Build a lookup map: type tag -> plugin
   const plugins = new Map<string, Plugin>();
   const pluginNames = new Set<string>();
 
@@ -42,7 +43,7 @@ export function mount(app: Component, parent: HTMLElement, options?: MountOption
       }
     }
 
-    // 依存関係の検証
+    // Validate plugin dependencies
     for (const plugin of options.plugins) {
       if (plugin.dependencies) {
         for (const dep of plugin.dependencies) {

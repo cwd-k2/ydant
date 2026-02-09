@@ -1,7 +1,8 @@
 /**
- * Context Plugin for DOM Renderer
+ * @ydant/context - Context plugin
  *
- * Context API (provide/inject) を DOM レンダラーで処理するプラグイン。
+ * Processes `provide` and `inject` DSL instructions,
+ * propagating context values through the rendering tree.
  *
  * @example
  * ```typescript
@@ -19,9 +20,7 @@ import { isTagged } from "@ydant/core";
 // Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
 
-/**
- * Context プラグインを作成する
- */
+/** Creates the context plugin. Depends on the base plugin. */
 export function createContextPlugin(): Plugin {
   return {
     name: "context",
@@ -29,7 +28,7 @@ export function createContextPlugin(): Plugin {
     dependencies: ["base"],
 
     initContext(ctx: RenderContext, parentCtx?: RenderContext) {
-      // 親コンテキストがあれば値を継承、なければ新規作成
+      // Inherit parent's context values, or start fresh
       const parentValues = parentCtx?.contextValues;
       ctx.contextValues = parentValues ? new Map(parentValues) : new Map();
     },
@@ -46,12 +45,12 @@ export function createContextPlugin(): Plugin {
 
     process(child: Child, api: RenderAPI): ProcessResult {
       if (isTagged(child, "context-provide")) {
-        // Context に値を設定
+        // Store the value in the context map
         api.setContext(child.context.id, child.value);
         return {};
       }
       if (isTagged(child, "context-inject")) {
-        // Context から値を取得
+        // Look up the value, falling back to defaultValue
         const value = api.getContext(child.context.id) ?? child.context.defaultValue;
         return { value };
       }

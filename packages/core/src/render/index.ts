@@ -1,5 +1,5 @@
 /**
- * @ydant/core - レンダリング処理
+ * @ydant/core - Top-level rendering
  */
 
 import type { Render, ChildNext, Child } from "../types";
@@ -7,18 +7,16 @@ import type { Plugin, RenderAPI } from "../plugin";
 import { createRenderContext, createRenderAPIFactory } from "./context";
 import { processIterator } from "./iterator";
 
-// RenderAPI ファクトリを遅延初期化
+// Lazily initialized RenderAPI factory
 let createRenderAPI: ((ctx: ReturnType<typeof createRenderContext>) => RenderAPI) | null = null;
 
-/**
- * Render（ジェネレータ）を DOM に描画
- */
+/** Renders a top-level {@link Render} generator into a DOM element, clearing it first. */
 export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Plugin>): void {
   parent.innerHTML = "";
 
   const ctx = createRenderContext(parent, null, plugins);
 
-  // RenderAPI ファクトリを初期化
+  // Initialize the RenderAPI factory on first call
   if (!createRenderAPI) {
     createRenderAPI = createRenderAPIFactory(processIterator);
   }
@@ -28,7 +26,7 @@ export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Pl
   while (!result.done) {
     const value = result.value;
 
-    // Element はプラグインで処理
+    // Dispatch to the plugin that handles this type
     if (value && typeof value === "object" && "type" in value) {
       const type = (value as { type: string }).type;
       const plugin = plugins.get(type);
@@ -41,7 +39,7 @@ export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Pl
       }
     }
 
-    // 対応するプラグインがない場合はスキップ
+    // No plugin registered for this type — skip
     result = gen.next(undefined as ChildNext);
   }
 }

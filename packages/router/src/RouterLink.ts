@@ -1,8 +1,8 @@
 /**
- * RouterLink コンポーネント
+ * RouterLink component
  *
- * クリック時に navigate() を呼び出す <a> 要素を生成する。
- * SPA ルーティングのためのリンクコンポーネント。
+ * Renders an `<a>` element that performs SPA navigation via navigate() on click.
+ * Prevents the browser's default link behavior to enable client-side routing.
  *
  * @example
  * ```typescript
@@ -21,16 +21,16 @@ import { currentRoute } from "./state";
 import { navigate } from "./navigation";
 
 /**
- * RouterLink コンポーネント
+ * RouterLink component
  *
- * クリック時にブラウザのデフォルト動作を防ぎ、
- * History API を使用して SPA ルーティングを行う。
+ * Renders an anchor element that intercepts click events and uses
+ * the History API for SPA navigation instead of full page reloads.
  *
- * @param props - RouterLink のプロパティ
- * @param props.href - リンク先のパス
- * @param props.children - リンクの子要素
- * @param props.activeClass - アクティブ時に適用するクラス名（オプション）
- * @returns リンク要素の Render
+ * @param props - RouterLink properties
+ * @param props.href - Destination path for the link
+ * @param props.children - Child content to render inside the link
+ * @param props.activeClass - CSS class name applied when href matches the current route (optional)
+ * @returns A Render for the anchor element
  */
 export function RouterLink(props: RouterLinkProps): Render {
   const { href, children, activeClass } = props;
@@ -38,7 +38,7 @@ export function RouterLink(props: RouterLinkProps): Render {
   return a(function* () {
     yield* attr("href", href);
 
-    // アクティブクラスの適用
+    // Apply the active class when the current route matches this link's href
     if (activeClass && currentRoute.path === href) {
       yield* attr("class", activeClass);
     }
