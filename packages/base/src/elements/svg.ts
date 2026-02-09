@@ -4,9 +4,7 @@
 
 // Required so .d.ts output emits regular import statements instead of import()
 // oxlint-disable-next-line no-unused-vars
-import type { Builder } from "@ydant/core";
-// oxlint-disable-next-line no-unused-vars
-import type { ElementRender } from "../types";
+import type { Builder, DSL } from "@ydant/core";
 import { createSVGElement } from "./factory";
 
 export const svg = createSVGElement("svg");

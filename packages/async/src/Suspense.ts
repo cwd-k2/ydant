@@ -16,7 +16,7 @@
  * ```
  */
 
-import type { ChildContent, Render } from "@ydant/core";
+import type { ChildContent, DSL, Render } from "@ydant/core";
 import { div } from "@ydant/base";
 
 /** Props for the Suspense component. */
@@ -35,7 +35,7 @@ export interface SuspenseProps {
  * As an alternative, explicit loading state management using
  * the Resource's loading/error properties is recommended.
  */
-export function* Suspense(props: SuspenseProps): Render {
+export function* Suspense(props: SuspenseProps): DSL<"element"> {
   const { fallback, children } = props;
 
   const containerSlot = yield* div(function* () {

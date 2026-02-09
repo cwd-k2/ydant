@@ -66,29 +66,27 @@ interface Plugin {
 }
 
 interface ProcessResult {
-  value?: ChildNext | undefined;
+  /** The value to send back to the generator via next(). */
+  value?: unknown;
 }
 ```
 
 ### Types
 
-| Type             | Description                                                           |
-| ---------------- | --------------------------------------------------------------------- |
-| `Tagged<T,P>`    | Helper type for tagged unions: `{ type: T } & P`                      |
-| `CleanupFn`      | `() => void` - Lifecycle cleanup function                             |
-| `DSLSchema`      | Co-locates instruction and feedback types per DSL operation           |
-| `DSL<Key>`       | Typed generator for a specific DSL operation key                      |
-| `Child`          | Union of all yieldable types (derived from `DSLSchema`)               |
-| `ChildOfType<T>` | Extract a specific type from `Child` by tag                           |
-| `ChildNext`      | Union of values passed via `next()` (derived from `DSLSchema`)        |
-| `ChildReturn`    | Union of return values (derived from `DSLSchema`)                     |
-| `Builder`        | `() => Instructor \| Instruction[]` - Element factory argument        |
-| `Instructor`     | `Iterator<Child, ChildReturn, ChildNext>` - Internal iterator         |
-| `Instruction`    | `Generator<Child, ChildReturn, ChildNext>` - Primitive return type    |
-| `Primitive<T>`   | `Generator<T, void, void>` - Side-effect-only primitive return type   |
-| `ChildContent`   | `Generator<Child, unknown, ChildNext>` - Children builder return type |
-| `Render`         | `Generator<Child, ChildReturn, ChildNext>` - Base rendering generator |
-| `Component<P?>`  | `() => Render` (no args) or `(props: P) => Render` (with props)       |
+| Type            | Description                                                         |
+| --------------- | ------------------------------------------------------------------- |
+| `Tagged<T,P>`   | Helper type for tagged unions: `{ type: T } & P`                    |
+| `CleanupFn`     | `() => void` - Lifecycle cleanup function                           |
+| `DSLSchema`     | Co-locates instruction and feedback types per DSL operation         |
+| `DSL<Key>`      | Typed generator for a specific DSL operation key                    |
+| `Child`         | Union of all yieldable types (derived from `DSLSchema`)             |
+| `Builder`       | `() => Instructor \| Instruction[]` - Element factory argument      |
+| `Instructor`    | Iterator over DSL instructions — the internal iteration protocol    |
+| `Instruction`   | Generator for a single DSL operation — primitive return type        |
+| `Primitive<T>`  | `Generator<T, void, void>` - Side-effect-only primitive return type |
+| `ChildContent`  | Generator yielding DSL instructions — children builder return type  |
+| `Render`        | Generator for a complete component — base rendering type            |
+| `Component<P?>` | `() => Render` (no args) or `(props: P) => Render` (with props)     |
 
 ### Plugin Extension Interfaces
 

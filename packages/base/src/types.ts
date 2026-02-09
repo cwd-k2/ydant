@@ -2,7 +2,7 @@
  * @ydant/base - DSL type definitions
  */
 
-import type { Tagged, CleanupFn, Instructor, Builder, ChildNext } from "@ydant/core";
+import type { Tagged, CleanupFn, Instructor, Builder } from "@ydant/core";
 
 // =============================================================================
 // Slot Types
@@ -18,19 +18,6 @@ export interface Slot {
   /** Replaces the element's children by running a new {@link Builder}. */
   refresh(children: Builder): void;
 }
-
-// =============================================================================
-// Render & Component Types
-// =============================================================================
-
-/**
- * The return type of element factories (e.g., `div`, `span`).
- *
- * A generator that yields exactly one {@link Element} and returns a {@link Slot}.
- * More specific than the generic `Render` type — guarantees that `yield* div(...)`
- * always produces a `Slot`.
- */
-export type ElementRender = Generator<Element, Slot, ChildNext>;
 
 // =============================================================================
 // Core Primitive Types

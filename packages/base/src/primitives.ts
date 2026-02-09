@@ -2,8 +2,8 @@
  * @ydant/base - DSL primitives
  */
 
-import type { Builder, CleanupFn, Primitive, Render } from "@ydant/core";
-import type { Attribute, Listener, Text, Lifecycle, ElementRender, Slot } from "./types";
+import type { CleanupFn, DSL, Primitive, Render } from "@ydant/core";
+import type { Attribute, Listener, Text, Lifecycle, Slot } from "./types";
 
 /** Creates a single-yield generator function from a value factory. Used internally to define primitives. */
 function createPrimitive<T extends Attribute | Listener | Text | Lifecycle, Args extends unknown[]>(
@@ -124,16 +124,16 @@ export function* style(
 export function keyed<Args extends unknown[]>(
   key: string | number,
   factory: (...args: Args) => Render,
-): (...args: Args) => ElementRender {
+): (...args: Args) => DSL<"element"> {
   return (...args: Args) => {
-    return (function* (): ElementRender {
-      const inner = factory(...args) as ElementRender;
+    return (function* (): DSL<"element"> {
+      const inner = factory(...args) as DSL<"element">;
       const first = inner.next();
       if (first.done) return first.value;
       const element = first.value;
       const slot = (yield { ...element, key }) as Slot;
       inner.next(slot);
       return slot;
-    })() as ElementRender;
+    })() as DSL<"element">;
   };
 }

@@ -139,17 +139,16 @@ yield *
 
 ### Types
 
-| Type            | Description                                                    |
-| --------------- | -------------------------------------------------------------- |
-| `Slot`          | `{ readonly node: HTMLElement, refresh: (children) => void }`  |
-| `SlotRef`       | Reference holder for a `Slot`, created by `createSlotRef()`    |
-| `ElementRender` | `Generator<Element, Slot, ChildNext>` - Element factory return |
-| `Element`       | Tagged type for HTML/SVG elements                              |
-| `Attribute`     | Tagged type for attributes                                     |
-| `Listener`      | Tagged type for event listeners                                |
-| `Text`          | Tagged type for text nodes                                     |
-| `Lifecycle`     | Tagged type for lifecycle hooks                                |
-| `Decoration`    | Union type `Attribute \| Listener`                             |
+| Type         | Description                                                   |
+| ------------ | ------------------------------------------------------------- |
+| `Slot`       | `{ readonly node: HTMLElement, refresh: (children) => void }` |
+| `SlotRef`    | Reference holder for a `Slot`, created by `createSlotRef()`   |
+| `Element`    | Tagged type for HTML/SVG elements                             |
+| `Attribute`  | Tagged type for attributes                                    |
+| `Listener`   | Tagged type for event listeners                               |
+| `Text`       | Tagged type for text nodes                                    |
+| `Lifecycle`  | Tagged type for lifecycle hooks                               |
+| `Decoration` | Union type `Attribute \| Listener`                            |
 
 > `Render`, `Component` types are defined in `@ydant/core`.
 

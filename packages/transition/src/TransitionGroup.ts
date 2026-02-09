@@ -20,7 +20,8 @@
  * ```
  */
 
-import type { Slot, ElementRender } from "@ydant/base";
+import type { DSL } from "@ydant/core";
+import type { Slot } from "@ydant/base";
 import { div, keyed, onMount } from "@ydant/base";
 import { addClasses, removeClasses, waitForTransition } from "./utils";
 
@@ -42,7 +43,7 @@ export interface TransitionGroupProps<T> {
   /** Classes applied at the end of the leave transition */
   leaveTo?: string;
   /** Render function for each item (must return an element) */
-  children: (item: T, index: number) => ElementRender;
+  children: (item: T, index: number) => DSL<"element">;
 }
 
 /**
@@ -109,7 +110,7 @@ async function leaveTransition<T>(
  * Combines keyed() with Slot.refresh() to apply CSS transitions
  * when list items are added or removed.
  */
-export function* TransitionGroup<T>(props: TransitionGroupProps<T>): ElementRender {
+export function* TransitionGroup<T>(props: TransitionGroupProps<T>): DSL<"element"> {
   const { items, keyFn, children } = props;
 
   // Track the current set of keys
