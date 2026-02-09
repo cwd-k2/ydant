@@ -226,22 +226,13 @@ export function createMyPlugin(): Plugin {
       api.myMethod = () => { ... };
     },
 
-    // 子要素の処理
-    process(child: Child, api: RenderAPI): ProcessResult {
-      if (isTagged(child, "mytype")) {
-        return processMyType(child, api);
+    // Instruction の処理
+    process(instruction: Instruction, api: RenderAPI): Feedback {
+      if (isTagged(instruction, "mytype")) {
+        return processMyType(instruction, api);
       }
-      return {};
     },
   };
-}
-```
-
-### ProcessResult の形式
-
-```ts
-interface ProcessResult {
-  value?: ChildNext; // ジェネレータに返す値
 }
 ```
 

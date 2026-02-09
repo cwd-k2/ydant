@@ -8,13 +8,22 @@
 // Types (DSL 非依存の基盤型のみ)
 // =============================================================================
 
-export type { Tagged, DSLSchema, DSL, Instruction, Builder, Render, Component } from "./types";
+export type {
+  Tagged,
+  DSLSchema,
+  DSL,
+  Instruction,
+  Feedback,
+  Builder,
+  Render,
+  Component,
+} from "./types";
 
 // =============================================================================
 // Plugin System
 // =============================================================================
 
-export type { Plugin, RenderAPI, ProcessResult } from "./plugin";
+export type { Plugin, RenderAPI } from "./plugin";
 
 // =============================================================================
 // Utilities

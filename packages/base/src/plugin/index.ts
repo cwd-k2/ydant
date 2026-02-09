@@ -2,7 +2,7 @@
  * @ydant/base - Base plugin
  */
 
-import type { Instruction, Plugin, RenderAPI, ProcessResult, RenderContext } from "@ydant/core";
+import type { Instruction, Feedback, Plugin, RenderAPI, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 import { processElement } from "./element";
 import { processAttribute, processListener, processText, processLifecycle } from "./primitives";
@@ -106,23 +106,26 @@ export function createBasePlugin(): Plugin {
       api.getUnmountCallbacks = () => unmountCallbacks;
     },
 
-    process(instruction: Instruction, api: RenderAPI): ProcessResult {
+    process(instruction: Instruction, api: RenderAPI): Feedback {
       if (isTagged(instruction, "element")) {
         return processElement(instruction, api);
       }
       if (isTagged(instruction, "text")) {
-        return processText(instruction, api);
+        processText(instruction, api);
+        return;
       }
       if (isTagged(instruction, "attribute")) {
-        return processAttribute(instruction, api);
+        processAttribute(instruction, api);
+        return;
       }
       if (isTagged(instruction, "listener")) {
-        return processListener(instruction, api);
+        processListener(instruction, api);
+        return;
       }
       if (isTagged(instruction, "lifecycle")) {
-        return processLifecycle(instruction, api);
+        processLifecycle(instruction, api);
+        return;
       }
-      return {};
     },
   };
 }

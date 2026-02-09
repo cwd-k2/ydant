@@ -15,7 +15,7 @@
  * ```
  */
 
-import type { Instruction, Plugin, RenderAPI, ProcessResult, RenderContext } from "@ydant/core";
+import type { Instruction, Feedback, Plugin, RenderAPI, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 // Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
@@ -43,19 +43,16 @@ export function createContextPlugin(): Plugin {
       };
     },
 
-    process(instruction: Instruction, api: RenderAPI): ProcessResult {
+    process(instruction: Instruction, api: RenderAPI): Feedback {
       if (isTagged(instruction, "context-provide")) {
         // Store the value in the context map
         api.setContext(instruction.context.id, instruction.value);
-        return {};
+        return;
       }
       if (isTagged(instruction, "context-inject")) {
         // Look up the value, falling back to defaultValue
-        const value = api.getContext(instruction.context.id) ?? instruction.context.defaultValue;
-        return { value };
+        return api.getContext(instruction.context.id) ?? instruction.context.defaultValue;
       }
-
-      return {};
     },
   };
 }

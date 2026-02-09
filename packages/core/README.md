@@ -61,13 +61,8 @@ interface Plugin {
   extendAPI?(api: Partial<RenderAPI>, ctx: RenderContext): void;
   /** Merge child context state into parent context (called after processChildren) */
   mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
-  /** Process a child element */
-  process(child: Child, api: RenderAPI): ProcessResult;
-}
-
-interface ProcessResult {
-  /** The value to send back to the generator via next(). */
-  value?: unknown;
+  /** Process an instruction and return feedback for the generator */
+  process(instruction: Instruction, api: RenderAPI): Feedback;
 }
 ```
 
@@ -76,10 +71,10 @@ interface ProcessResult {
 | Type            | Description                                                     |
 | --------------- | --------------------------------------------------------------- |
 | `Tagged<T,P>`   | Helper type for tagged unions: `{ type: T } & P`                |
-| `CleanupFn`     | `() => void` - Lifecycle cleanup function                       |
 | `DSLSchema`     | Co-locates instruction and feedback types per DSL operation     |
 | `DSL<Key>`      | Typed generator for a specific DSL operation key                |
-| `Child`         | Union of all yieldable types (derived from `DSLSchema`)         |
+| `Instruction`   | Union of all yieldable types (derived from `DSLSchema`)         |
+| `Feedback`      | Union of all feedback types returned by `process()`             |
 | `Render`        | Generator for rendering — components, elements, and children    |
 | `Builder`       | `() => Render \| Render[]` - Element children factory           |
 | `Component<P?>` | `() => Render` (no args) or `(props: P) => Render` (with props) |
@@ -140,7 +135,7 @@ interface RenderContext {
 ## Creating Plugins
 
 ```typescript
-import type { Plugin, RenderAPI, ProcessResult, Child } from "@ydant/core";
+import type { Instruction, Feedback, Plugin, RenderAPI } from "@ydant/core";
 
 // 1. Declare type extensions
 declare module "@ydant/core" {
@@ -178,13 +173,12 @@ export function createMyPlugin(): Plugin {
       api.setMyData = (key: string, value: unknown) => ctx.myData.set(key, value);
     },
 
-    // Process child elements
-    process(child: Child, api: RenderAPI): ProcessResult {
-      if ((child as { type: string }).type === "mytype") {
-        // Process the child using api.getMyData(), api.setMyData()
-        return { value: result };
+    // Process instructions
+    process(instruction: Instruction, api: RenderAPI): Feedback {
+      if ((instruction as { type: string }).type === "mytype") {
+        // Process the instruction using api.getMyData(), api.setMyData()
+        return result;
       }
-      return {};
     },
   };
 }

@@ -24,12 +24,6 @@ import type { RenderContext } from "./render/types";
  */
 export interface RenderAPI {}
 
-/** The return value from {@link Plugin.process}, carrying feedback to the generator. */
-export interface ProcessResult {
-  /** The value to send back to the generator via `next()`. */
-  value?: Feedback | undefined;
-}
-
 /** A plugin that teaches the core runtime how to handle specific DSL operations. */
 export interface Plugin {
   /** Unique identifier for this plugin. */
@@ -70,5 +64,5 @@ export interface Plugin {
    */
   mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
   /** Processes a single {@link Instruction} and returns feedback for the generator. */
-  process(instruction: Instruction, api: RenderAPI): ProcessResult;
+  process(instruction: Instruction, api: RenderAPI): Feedback;
 }

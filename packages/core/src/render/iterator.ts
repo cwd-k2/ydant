@@ -32,8 +32,8 @@ export function processIterator(iter: Render, ctx: RenderContext): void {
 
       if (plugin) {
         const api = createRenderAPI(ctx);
-        const processResult = plugin.process(value as Instruction, api);
-        result = iter.next(processResult.value as Feedback);
+        const feedback = plugin.process(value as Instruction, api);
+        result = iter.next(feedback as Feedback);
         continue;
       }
     }

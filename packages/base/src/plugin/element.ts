@@ -4,11 +4,11 @@
 
 import type { Builder, Render } from "@ydant/core";
 import { isTagged } from "@ydant/core";
-import type { RenderAPI, ProcessResult } from "@ydant/core";
+import type { Feedback, RenderAPI } from "@ydant/core";
 import type { Element, Slot } from "../types";
 
 /** Processes an {@link Element} instruction: creates (or reuses) a DOM node, applies decorations, renders children, and returns a {@link Slot}. */
-export function processElement(element: Element, api: RenderAPI): ProcessResult {
+export function processElement(element: Element, api: RenderAPI): Feedback {
   const elementKey = element.key ?? null;
 
   // Reuse existing node if a matching keyed element exists
@@ -73,7 +73,7 @@ export function processElement(element: Element, api: RenderAPI): ProcessResult 
   // Schedule mount callbacks for this element's subtree
   childApi.executeMount();
 
-  return { value: slot };
+  return slot;
 }
 
 /**

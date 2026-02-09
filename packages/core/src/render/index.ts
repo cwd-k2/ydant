@@ -33,8 +33,8 @@ export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Pl
 
       if (plugin) {
         const api = createRenderAPI(ctx);
-        const processResult = plugin.process(value as Instruction, api);
-        result = gen.next(processResult.value as Feedback);
+        const feedback = plugin.process(value as Instruction, api);
+        result = gen.next(feedback as Feedback);
         continue;
       }
     }
