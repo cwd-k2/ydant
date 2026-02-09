@@ -6,7 +6,7 @@ createTransition による enter/leave アニメーションのデモ。
 
 - Fade トランジション（enter/leave 両対応）
 - Slide トランジション
-- Toast 通知（key() によるリスト管理）
+- Toast 通知（keyed() によるリスト管理）
 
 ## 実装のポイント
 

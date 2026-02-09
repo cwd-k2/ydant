@@ -98,7 +98,7 @@ mount(App, document.getElementById("root")!, {
 | [showcase2](./examples/showcase2/) | ToDo アプリ - CRUD、localStorage                |
 | [showcase3](./examples/showcase3/) | ポモドーロタイマー - SVG、ライフサイクル        |
 | [showcase4](./examples/showcase4/) | SPA - Router、Context、プラグイン               |
-| [showcase5](./examples/showcase5/) | ソート可能リスト - key() による効率的な更新     |
+| [showcase5](./examples/showcase5/) | ソート可能リスト - keyed() による効率的な更新   |
 | [showcase6](./examples/showcase6/) | 非同期 - Suspense、ErrorBoundary                |
 | [showcase7](./examples/showcase7/) | トランジション - enter/leave アニメーション     |
 
