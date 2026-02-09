@@ -6,11 +6,10 @@ import type {
   Child,
   Plugin,
   PluginAPI,
-  PluginAPIExtensions,
   PluginResult,
   RenderContext,
   RenderContextCore,
-  RenderContextExtensions,
+  RenderContextExtension,
 } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 import { processElement } from "./element";
@@ -48,7 +47,7 @@ export function createBasePlugin(): Plugin {
     name: "base",
     types: ["element", "text", "attribute", "listener", "lifecycle"],
 
-    initContext(ctx: RenderContextCore & Partial<RenderContextExtensions>) {
+    initContext(ctx: RenderContextCore & Partial<RenderContextExtension>) {
       ctx.isCurrentElementReused = false;
       ctx.keyedNodes = new Map();
       ctx.mountCallbacks = [];
@@ -68,7 +67,7 @@ export function createBasePlugin(): Plugin {
       }
     },
 
-    extendAPI(api: Partial<PluginAPIExtensions>, ctx: RenderContext) {
+    extendAPI(api: Partial<PluginAPI>, ctx: RenderContext) {
       // DOM 操作関連
       Object.defineProperty(api, "isCurrentElementReused", {
         get() {

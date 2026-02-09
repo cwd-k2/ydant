@@ -66,13 +66,11 @@ function* () {
 
 プラグインは以下の型を拡張できる：
 
-| 拡張ポイント              | 用途                   |
-| ------------------------- | ---------------------- |
-| `RenderContextExtensions` | コンテキストプロパティ |
-| `PluginAPIExtensions`     | API メソッド           |
-| `PluginChildExtensions`   | yield 可能な型         |
-| `PluginNextExtensions`    | next() で渡す値        |
-| `PluginReturnExtensions`  | 戻り値の型             |
+| 拡張ポイント             | 用途                                        |
+| ------------------------ | ------------------------------------------- |
+| `Extension`              | DSL 操作定義（instruction/feedback/return） |
+| `RenderContextExtension` | コンテキストプロパティ                      |
+| `PluginAPI`              | API メソッド                                |
 
 ### Slot パターン
 

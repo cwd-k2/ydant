@@ -4,7 +4,7 @@
 
 import type { Builder, Instructor } from "../types";
 import { toChildren } from "../utils";
-import type { Plugin, PluginAPI, PluginAPIExtensions } from "../plugin";
+import type { Plugin, PluginAPI } from "../plugin";
 import type { RenderContext, RenderContextCore } from "./types";
 
 /**
@@ -122,7 +122,7 @@ export function createPluginAPIFactory(
 
     // 各プラグインの extendAPI を呼び出して API を拡張
     forEachUniquePlugin(ctx.plugins, (plugin) => {
-      plugin.extendAPI?.(api as Partial<PluginAPIExtensions>, ctx);
+      plugin.extendAPI?.(api as Partial<PluginAPI>, ctx);
     });
 
     const pluginAPI = api as unknown as PluginAPI;

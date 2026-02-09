@@ -57,11 +57,11 @@ interface Plugin {
   readonly dependencies?: readonly string[];
   /** Initialize plugin-specific properties in RenderContext */
   initContext?(
-    ctx: RenderContextCore & Partial<RenderContextExtensions>,
+    ctx: RenderContextCore & Partial<RenderContextExtension>,
     parentCtx?: RenderContext,
   ): void;
   /** Extend PluginAPI with plugin-specific methods */
-  extendAPI?(api: Partial<PluginAPIExtensions>, ctx: RenderContext): void;
+  extendAPI?(api: Partial<PluginAPI>, ctx: RenderContext): void;
   /** Merge child context state into parent context (called after processChildren) */
   mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
   /** Process a child element */
@@ -100,12 +100,12 @@ Plugins can extend these interfaces via module augmentation:
 ```typescript
 declare module "@ydant/core" {
   // Extend RenderContext with custom properties
-  interface RenderContextExtensions {
+  interface RenderContextExtension {
     myProperty: MyType;
   }
 
   // Extend PluginAPI with custom methods
-  interface PluginAPIExtensions {
+  interface PluginAPI {
     myMethod(): void;
   }
 
@@ -129,7 +129,7 @@ function* myOperation(): DSL<"mytype"> {
 
 ### RenderContext
 
-The rendering context holds state during rendering. Plugins extend it via `RenderContextExtensions`:
+The rendering context holds state during rendering. Plugins extend it via `RenderContextExtension`:
 
 ```typescript
 interface RenderContextCore {
@@ -138,7 +138,7 @@ interface RenderContextCore {
   plugins: Map<string, Plugin>;
 }
 
-type RenderContext = RenderContextCore & RenderContextExtensions;
+type RenderContext = RenderContextCore & RenderContextExtension;
 ```
 
 ### Utilities
@@ -155,10 +155,10 @@ import type { Plugin, PluginAPI, PluginResult, Child } from "@ydant/core";
 
 // 1. Declare type extensions
 declare module "@ydant/core" {
-  interface RenderContextExtensions {
+  interface RenderContextExtension {
     myData: Map<string, unknown>;
   }
-  interface PluginAPIExtensions {
+  interface PluginAPI {
     getMyData(key: string): unknown;
     setMyData(key: string, value: unknown): void;
   }

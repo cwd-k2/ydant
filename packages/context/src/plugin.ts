@@ -18,11 +18,10 @@ import type {
   Child,
   Plugin,
   PluginAPI,
-  PluginAPIExtensions,
   PluginResult,
   RenderContext,
   RenderContextCore,
-  RenderContextExtensions,
+  RenderContextExtension,
 } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 // Ensure module augmentation from @ydant/base is loaded
@@ -38,7 +37,7 @@ export function createContextPlugin(): Plugin {
     dependencies: ["base"],
 
     initContext(
-      ctx: RenderContextCore & Partial<RenderContextExtensions>,
+      ctx: RenderContextCore & Partial<RenderContextExtension>,
       parentCtx?: RenderContext,
     ) {
       // 親コンテキストがあれば値を継承、なければ新規作成
@@ -46,7 +45,7 @@ export function createContextPlugin(): Plugin {
       ctx.contextValues = parentValues ? new Map(parentValues) : new Map();
     },
 
-    extendAPI(api: Partial<PluginAPIExtensions>, ctx: RenderContext) {
+    extendAPI(api: Partial<PluginAPI>, ctx: RenderContext) {
       const contextValues = ctx.contextValues;
       api.getContext = <T>(id: symbol): T | undefined => {
         return contextValues.get(id) as T | undefined;

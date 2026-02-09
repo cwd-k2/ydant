@@ -80,12 +80,12 @@ The context plugin extends `RenderContext` and `PluginAPI`:
 
 ```typescript
 // RenderContext extensions
-interface RenderContextExtensions {
+interface RenderContextExtension {
   contextValues: Map<symbol, unknown>;
 }
 
 // PluginAPI extensions
-interface PluginAPIExtensions {
+interface PluginAPI {
   getContext<T>(id: symbol): T | undefined;
   setContext<T>(id: symbol, value: T): void;
 }

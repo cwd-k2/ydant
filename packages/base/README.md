@@ -51,7 +51,7 @@ The base plugin extends `RenderContext` and `PluginAPI`:
 
 ```typescript
 // RenderContext extensions
-interface RenderContextExtensions {
+interface RenderContextExtension {
   isCurrentElementReused: boolean;
   keyedNodes: Map<string | number, KeyedNode>;
   mountCallbacks: Array<() => void | (() => void)>;
@@ -59,7 +59,7 @@ interface RenderContextExtensions {
 }
 
 // PluginAPI extensions
-interface PluginAPIExtensions {
+interface PluginAPI {
   // DOM operations
   readonly parent: Node;
   readonly currentElement: globalThis.Element | null;

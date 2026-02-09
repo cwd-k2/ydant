@@ -9,7 +9,7 @@ import type { Element, Attribute, Listener, Text, Lifecycle, Slot, KeyedNode } f
 
 declare module "@ydant/core" {
   // RenderContext に base プラグイン用のプロパティを追加
-  interface RenderContextExtensions {
+  interface RenderContextExtension {
     /** 現在の要素が再利用されたかどうか（リスナー・ライフサイクルの重複登録を防ぐ） */
     isCurrentElementReused: boolean;
     /** キー付き要素のマップ */
@@ -21,7 +21,7 @@ declare module "@ydant/core" {
   }
 
   // PluginAPI に base プラグインのメソッドを追加
-  interface PluginAPIExtensions {
+  interface PluginAPI {
     // === DOM 操作 ===
     /** 現在の親ノード */
     readonly parent: Node;

@@ -30,7 +30,7 @@ export type {
 // Plugin System
 // =============================================================================
 
-export type { Plugin, PluginAPI, PluginAPIExtensions, PluginResult, MountOptions } from "./plugin";
+export type { Plugin, PluginAPI, PluginResult, MountOptions } from "./plugin";
 
 // =============================================================================
 // Utilities
@@ -49,4 +49,4 @@ export { mount } from "./mount";
 // =============================================================================
 
 export { render, processIterator, createRenderContext, createPluginAPIFactory } from "./render";
-export type { RenderContext, RenderContextCore, RenderContextExtensions } from "./render";
+export type { RenderContext, RenderContextCore, RenderContextExtension } from "./render";

@@ -3,7 +3,7 @@
  */
 
 import type { Child, ChildNext } from "./types";
-import type { RenderContext, RenderContextCore, RenderContextExtensions } from "./render/types";
+import type { RenderContext, RenderContextCore, RenderContextExtension } from "./render/types";
 
 // =============================================================================
 // Plugin API Extension Types
@@ -15,24 +15,20 @@ import type { RenderContext, RenderContextCore, RenderContextExtensions } from "
 // =============================================================================
 
 /**
- * プラグインが PluginAPI を拡張するためのインターフェース
+ * プラグインが使用できる API
+ *
+ * プラグインは declare module "@ydant/core" を使ってこのインターフェースを
+ * 拡張することで、独自のメソッドを追加できる。
  *
  * @example
  * ```typescript
  * // @ydant/base で DOM 操作用のメソッドを追加
  * declare module "@ydant/core" {
- *   interface PluginAPIExtensions extends BasePluginAPI {}
+ *   interface PluginAPI extends BasePluginAPI {}
  * }
  * ```
  */
-export interface PluginAPIExtensions {}
-
-/**
- * プラグインが使用できる API
- *
- * 実際のメソッドは @ydant/base の PluginAPIExtensions 拡張で定義される
- */
-export type PluginAPI = PluginAPIExtensions;
+export interface PluginAPI {}
 
 /**
  * プラグインの処理結果
@@ -56,26 +52,26 @@ export interface Plugin {
    * RenderContext を初期化する
    *
    * mount 時および子コンテキスト作成時に呼び出される。
-   * プラグインは RenderContextExtensions で定義した独自プロパティを
+   * プラグインは RenderContextExtension で定義した独自プロパティを
    * ここで初期化する。
    *
    * @param ctx - 初期化対象のコンテキスト（構築途中のため Partial）
    * @param parentCtx - 親コンテキスト（ルートの場合は undefined）
    */
   initContext?(
-    ctx: RenderContextCore & Partial<RenderContextExtensions>,
+    ctx: RenderContextCore & Partial<RenderContextExtension>,
     parentCtx?: RenderContext,
   ): void;
   /**
    * PluginAPI を拡張する
    *
    * プラグイン固有のメソッドを PluginAPI に追加する。
-   * PluginAPIExtensions で定義した独自のメソッドをここで実装する。
+   * PluginAPI で定義した独自のメソッドをここで実装する。
    *
    * @param api - 拡張対象の PluginAPI オブジェクト
    * @param ctx - 現在の RenderContext（initContext 後なので構築済み）
    */
-  extendAPI?(api: Partial<PluginAPIExtensions>, ctx: RenderContext): void;
+  extendAPI?(api: Partial<PluginAPI>, ctx: RenderContext): void;
   /**
    * 子コンテキストの状態を親コンテキストにマージする
    *

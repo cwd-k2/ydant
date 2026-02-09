@@ -167,15 +167,15 @@ export type Text = Tagged<"text", { content: string }>;
 ```ts
 // packages/<name>/src/global.d.ts
 declare module "@ydant/core" {
-  interface PluginChildExtensions {
-    MyType: Tagged<"mytype", { ... }>;
+  interface Extension {
+    mytype: { instruction: Tagged<"mytype", { ... }> };
   }
 
-  interface RenderContextExtensions {
+  interface RenderContextExtension {
     myProperty: SomeType;
   }
 
-  interface PluginAPIExtensions {
+  interface PluginAPI {
     myMethod(): void;
   }
 }
@@ -183,13 +183,11 @@ declare module "@ydant/core" {
 
 ### 拡張ポイント一覧
 
-| インターフェース          | 用途                                       |
-| ------------------------- | ------------------------------------------ |
-| `PluginChildExtensions`   | `yield` できる Child 型を追加              |
-| `PluginNextExtensions`    | `next()` で渡す値の型を追加                |
-| `PluginReturnExtensions`  | return で返す値の型を追加                  |
-| `RenderContextExtensions` | レンダリングコンテキストのプロパティを追加 |
-| `PluginAPIExtensions`     | プラグイン API のメソッドを追加            |
+| インターフェース         | 用途                                        |
+| ------------------------ | ------------------------------------------- |
+| `Extension`              | DSL 操作定義（instruction/feedback/return） |
+| `RenderContextExtension` | レンダリングコンテキストのプロパティを追加  |
+| `PluginAPI`              | プラグイン API のメソッドを追加             |
 
 ### 型エイリアスの使い分け
 
@@ -217,7 +215,7 @@ export function createMyPlugin(): Plugin {
     types: ["mytype"],  // 処理する type の配列
 
     // コンテキスト初期化
-    initContext(ctx: RenderContextCore & Partial<RenderContextExtensions>) {
+    initContext(ctx: RenderContextCore & Partial<RenderContextExtension>) {
       ctx.myProperty = initialValue;
     },
 
@@ -227,7 +225,7 @@ export function createMyPlugin(): Plugin {
     },
 
     // API 拡張
-    extendAPI(api: Partial<PluginAPIExtensions>, ctx: RenderContext) {
+    extendAPI(api: Partial<PluginAPI>, ctx: RenderContext) {
       api.myMethod = () => { ... };
     },
 

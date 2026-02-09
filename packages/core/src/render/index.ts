@@ -49,4 +49,4 @@ export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Pl
 // Re-export for internal use
 export { processIterator } from "./iterator";
 export { createRenderContext, createPluginAPIFactory } from "./context";
-export type { RenderContext, RenderContextCore, RenderContextExtensions } from "./types";
+export type { RenderContext, RenderContextCore, RenderContextExtension } from "./types";

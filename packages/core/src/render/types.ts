@@ -7,10 +7,10 @@ import type { Plugin } from "../plugin";
 // =============================================================================
 // RenderContext Extension Types
 // -----------------------------------------------------------------------------
-// プラグインは declare module "@ydant/core" を使って RenderContextExtensions を
+// プラグインは declare module "@ydant/core" を使って RenderContextExtension を
 // 拡張することで、RenderContext に独自のプロパティを追加できる。
 //
-// @ydant/base が pendingKey, keyedNodes を追加
+// @ydant/base が keyedNodes 等を追加
 // @ydant/context が contextValues を追加
 // =============================================================================
 
@@ -21,14 +21,13 @@ import type { Plugin } from "../plugin";
  * ```typescript
  * // @ydant/base で keyed 要素管理用のプロパティを追加
  * declare module "@ydant/core" {
- *   interface RenderContextExtensions {
- *     pendingKey: string | number | null;
+ *   interface RenderContextExtension {
  *     keyedNodes: Map<string | number, unknown>;
  *   }
  * }
  * ```
  */
-export interface RenderContextExtensions {}
+export interface RenderContextExtension {}
 
 /** レンダリングコンテキスト（コア部分） */
 export interface RenderContextCore {
@@ -43,4 +42,4 @@ export interface RenderContextCore {
 }
 
 /** レンダリングコンテキスト */
-export type RenderContext = RenderContextCore & RenderContextExtensions;
+export type RenderContext = RenderContextCore & RenderContextExtension;

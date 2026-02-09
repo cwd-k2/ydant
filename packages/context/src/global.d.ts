@@ -8,13 +8,13 @@ import type { ContextProvide, ContextInject } from "./context";
 
 declare module "@ydant/core" {
   // RenderContext に context プラグイン用のプロパティを追加
-  interface RenderContextExtensions {
+  interface RenderContextExtension {
     /** Context の値を保持するマップ */
     contextValues: Map<symbol, unknown>;
   }
 
   // PluginAPI に context プラグインのメソッドを追加
-  interface PluginAPIExtensions {
+  interface PluginAPI {
     /** Context から値を取得 */
     getContext<T>(id: symbol): T | undefined;
     /** Context に値を設定 */
