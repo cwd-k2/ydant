@@ -36,7 +36,7 @@ describe("TransitionGroup", () => {
           yield* TransitionGroup({
             items,
             keyFn: (item) => item.id,
-            children: (item) => div(() => [text(item.name)]),
+            content: (item) => div(() => [text(item.name)]),
           });
         }),
       container,
@@ -55,7 +55,7 @@ describe("TransitionGroup", () => {
           yield* TransitionGroup<Item>({
             items: [],
             keyFn: (item) => item.id,
-            children: (item) => div(() => [text(item.name)]),
+            content: (item) => div(() => [text(item.name)]),
           });
         }),
       container,
@@ -79,7 +79,7 @@ describe("TransitionGroup", () => {
             enter: "transition-opacity",
             enterFrom: "opacity-0",
             enterTo: "opacity-100",
-            children: (item) => div(() => [text(item.name)]),
+            content: (item) => div(() => [text(item.name)]),
           });
         }),
       container,
@@ -91,7 +91,7 @@ describe("TransitionGroup", () => {
     expect(container.textContent).toContain("Item 1");
   });
 
-  it("passes index to children function", () => {
+  it("passes index to content function", () => {
     const items: Item[] = [
       { id: 1, name: "First" },
       { id: 2, name: "Second" },
@@ -105,7 +105,7 @@ describe("TransitionGroup", () => {
           yield* TransitionGroup({
             items,
             keyFn: (item) => item.id,
-            children: (item, index) => {
+            content: (item, index) => {
               capturedIndices.push(index);
               return div(() => [text(`${item.name} at ${index}`)]);
             },
@@ -139,7 +139,7 @@ describe("TransitionGroup", () => {
           yield* TransitionGroup({
             items,
             keyFn: originalKeyFn,
-            children: (item) => div(() => [text(item.name)]),
+            content: (item) => div(() => [text(item.name)]),
           });
         }),
       container,
@@ -168,7 +168,7 @@ describe("createTransitionGroupRefresher", () => {
   it("creates a refresher function", () => {
     const refresher = createTransitionGroupRefresher<Item>({
       keyFn: (item) => item.id,
-      children: (item) => div(() => [text(item.name)]),
+      content: (item) => div(() => [text(item.name)]),
     });
 
     expect(typeof refresher).toBe("function");
@@ -179,7 +179,7 @@ describe("createTransitionGroupRefresher", () => {
 
     const refresher = createTransitionGroupRefresher<Item>({
       keyFn: (item) => item.id,
-      children: (item) => div(() => [text(item.name)]),
+      content: (item) => div(() => [text(item.name)]),
     });
 
     let containerSlot!: Slot;
@@ -231,7 +231,7 @@ describe("createTransitionGroupRefresher", () => {
             leave: "transition-opacity",
             leaveFrom: "opacity-100",
             leaveTo: "opacity-0",
-            children: (item) => div(() => [text(item.name)]),
+            content: (item) => div(() => [text(item.name)]),
           });
         }),
       container,
@@ -252,7 +252,7 @@ describe("createTransitionGroupRefresher", () => {
       leave: "transition-opacity",
       leaveFrom: "opacity-100",
       leaveTo: "opacity-0",
-      children: (item) => div(() => [text(item.name)]),
+      content: (item) => div(() => [text(item.name)]),
     });
 
     refresher(containerSlot, items);
@@ -282,7 +282,7 @@ describe("createTransitionGroupRefresher", () => {
             leave: "fade-out",
             leaveFrom: "opacity-100",
             leaveTo: "opacity-0",
-            children: (item) => div(() => [text(item.name)]),
+            content: (item) => div(() => [text(item.name)]),
           });
         }),
       container,
@@ -302,7 +302,7 @@ describe("createTransitionGroupRefresher", () => {
       leave: "fade-out",
       leaveFrom: "opacity-100",
       leaveTo: "opacity-0",
-      children: (item) => div(() => [text(item.name)]),
+      content: (item) => div(() => [text(item.name)]),
     });
 
     refresher(containerSlot, items);

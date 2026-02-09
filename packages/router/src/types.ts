@@ -2,7 +2,7 @@
  * Type definitions for the router package
  */
 
-import type { Component, Instruction } from "@ydant/core";
+import type { Component, Render } from "@ydant/core";
 
 /** A single route entry that maps a URL pattern to a component */
 export interface RouteDefinition {
@@ -39,7 +39,7 @@ export interface RouterLinkProps {
   /** Destination path for the link */
   href: string;
   /** Child content rendered inside the link element */
-  children: () => Instruction;
+  children: () => Render;
   /** CSS class name applied when the link's href matches the current route */
   activeClass?: string;
 }

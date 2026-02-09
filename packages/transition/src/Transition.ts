@@ -13,12 +13,12 @@
  *   leave: "transition-opacity duration-300",
  *   leaveFrom: "opacity-100",
  *   leaveTo: "opacity-0",
- *   children: () => div(() => [text("Content")]),
+ *   content: () => div(() => [text("Content")]),
  * });
  * ```
  */
 
-import type { Builder, ChildContent, Render } from "@ydant/core";
+import type { Builder, Render } from "@ydant/core";
 import type { Slot, Element } from "@ydant/base";
 import { div, onMount } from "@ydant/base";
 import { addClasses, removeClasses, waitForTransition } from "./utils";
@@ -38,8 +38,8 @@ export interface TransitionProps {
   leaveFrom?: string;
   /** Classes applied at the end of the leave transition */
   leaveTo?: string;
-  /** Factory function that returns the child content to transition */
-  children: () => ChildContent;
+  /** Factory function that returns the content to transition */
+  content: () => Render;
 }
 
 /**
@@ -119,14 +119,14 @@ const transitionStates = new WeakMap<
  * @see createTransition - Alternative API that supports leave animations
  */
 export function Transition(props: TransitionProps): Render {
-  const { show, children } = props;
+  const { show, content } = props;
 
   return div(function* () {
     // Create a container div (always present in the DOM)
     const containerSlot = yield* div(function* () {
-      // Only render children when show is true
+      // Only render content when show is true
       if (show) {
-        yield* children();
+        yield* content();
       }
     });
 
@@ -196,7 +196,7 @@ export type TransitionInstruction = Generator<Element, TransitionHandle, Slot>;
  *   leave: "fade-leave",
  *   leaveFrom: "fade-leave-from",
  *   leaveTo: "fade-leave-to",
- *   children: () => div(() => [text("Content")]),
+ *   content: () => div(() => [text("Content")]),
  * });
  *
  * // Show with animation
@@ -207,14 +207,14 @@ export type TransitionInstruction = Generator<Element, TransitionHandle, Slot>;
  * ```
  */
 export function* createTransition(props: Omit<TransitionProps, "show">): TransitionInstruction {
-  const { children } = props;
+  const { content } = props;
 
   let isShowing = false;
   let isAnimating = false;
 
   const renderContent: Builder = function* () {
     if (isShowing) {
-      yield* children();
+      yield* content();
     }
   };
 

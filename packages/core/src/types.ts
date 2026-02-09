@@ -5,9 +5,6 @@
 /** Creates a discriminated union member with a `type` tag and optional payload. */
 export type Tagged<T extends string, P = {}> = { type: T } & P;
 
-/** A teardown function returned by lifecycle hooks or side effects. */
-export type CleanupFn = () => void;
-
 // =============================================================================
 // Plugin DSLSchema Types
 // =============================================================================
@@ -66,48 +63,26 @@ export type DSL<Key extends keyof DSLSchema> = Generator<
 // Core Types
 // =============================================================================
 
-/** Union of all yieldable values derived from {@link DSLSchema}. */
-export type Child = InstructionOf[keyof DSLSchema];
-
-/** Extracts the {@link Child} variant matching a specific `type` tag. */
-export type ChildOfType<T extends string> = Extract<Child, { type: T }>;
+/** Union of all yieldable instruction values derived from {@link DSLSchema}. */
+export type Instruction = InstructionOf[keyof DSLSchema];
 
 /** Union of all feedback values that `next()` can pass back to a generator. */
-export type ChildNext = void | FeedbackOf[keyof DSLSchema];
-
-/** Union of all return values a generator can produce. */
-export type ChildReturn = void | ReturnOf[keyof DSLSchema];
-
-// =============================================================================
-// Generator Types
-// =============================================================================
-
-/** An iterator that yields {@link Child} values. Used internally to walk rendering instructions. */
-export type Instructor = Iterator<Child, ChildReturn, ChildNext>;
-
-/** A generator that produces rendering instructions (e.g., text, attr, on). Returned by primitives. */
-export type Instruction = Generator<Child, ChildReturn, ChildNext>;
-
-/** A factory function that produces rendering instructions for an element's children. */
-export type Builder = () => Instructor | Instruction[];
-
-/** A single-yield generator used by DSL primitives that perform a side effect and return nothing. */
-export type Primitive<T extends Child> = Generator<T, void, void>;
-
-/** The generator type for a component's `children` prop — yields any {@link Child} and returns an opaque value. */
-export type ChildContent = Generator<Child, unknown, ChildNext>;
+export type Feedback = void | FeedbackOf[keyof DSLSchema];
 
 // =============================================================================
 // Render & Component Types
 // =============================================================================
 
 /**
- * The generator type returned by element factories and components.
+ * The generator type for rendering — used by element factories, components, and children props.
  *
  * When `@ydant/base` augments {@link DSLSchema} with `Slot`, the concrete type
- * becomes `Generator<Child, Slot, Slot>`.
+ * becomes `Generator<Instruction, Slot, Slot>`.
  */
-export type Render = Generator<Child, ChildReturn, ChildNext>;
+export type Render = Generator<Instruction, void | ReturnOf[keyof DSLSchema], Feedback>;
+
+/** A factory function that produces rendering instructions for an element's children. */
+export type Builder = () => Render | Render[];
 
 /**
  * A component — a function that returns a {@link Render} generator.

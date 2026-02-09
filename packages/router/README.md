@@ -104,7 +104,7 @@ function RouterLink(props: RouterLinkProps): Render;
 
 interface RouterLinkProps {
   href: string;
-  children: () => Instruction;
+  children: () => Render;
   activeClass?: string;
 }
 ```

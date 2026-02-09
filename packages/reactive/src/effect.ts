@@ -18,7 +18,6 @@
  * ```
  */
 
-import type { CleanupFn } from "@ydant/core";
 import { runWithSubscriber } from "./tracking";
 
 /**
@@ -27,7 +26,7 @@ import { runWithSubscriber } from "./tracking";
  * The callback may return a cleanup function, which is called before each re-execution
  * and when the effect is disposed.
  *
- * @param fn - The effect function. May return a {@link CleanupFn}.
+ * @param fn - The effect function. May return a cleanup function.
  * @returns A dispose function that stops the effect and runs its cleanup.
  *
  * @example
@@ -41,8 +40,8 @@ import { runWithSubscriber } from "./tracking";
  * });
  * ```
  */
-export function effect(fn: () => void | CleanupFn): CleanupFn {
-  let cleanup: CleanupFn | void;
+export function effect(fn: () => void | (() => void)): () => void {
+  let cleanup: (() => void) | void;
   let isDisposed = false;
 
   const execute = () => {

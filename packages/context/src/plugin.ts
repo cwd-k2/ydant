@@ -15,7 +15,7 @@
  * ```
  */
 
-import type { Child, Plugin, RenderAPI, ProcessResult, RenderContext } from "@ydant/core";
+import type { Instruction, Plugin, RenderAPI, ProcessResult, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 // Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
@@ -43,15 +43,15 @@ export function createContextPlugin(): Plugin {
       };
     },
 
-    process(child: Child, api: RenderAPI): ProcessResult {
-      if (isTagged(child, "context-provide")) {
+    process(instruction: Instruction, api: RenderAPI): ProcessResult {
+      if (isTagged(instruction, "context-provide")) {
         // Store the value in the context map
-        api.setContext(child.context.id, child.value);
+        api.setContext(instruction.context.id, instruction.value);
         return {};
       }
-      if (isTagged(child, "context-inject")) {
+      if (isTagged(instruction, "context-inject")) {
         // Look up the value, falling back to defaultValue
-        const value = api.getContext(child.context.id) ?? child.context.defaultValue;
+        const value = api.getContext(instruction.context.id) ?? instruction.context.defaultValue;
         return { value };
       }
 

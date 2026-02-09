@@ -15,7 +15,7 @@
  *   leave: "transition-opacity duration-300",
  *   leaveFrom: "opacity-100",
  *   leaveTo: "opacity-0",
- *   children: (item) => div(() => [text(item.name)]),
+ *   content: (item) => div(() => [text(item.name)]),
  * });
  * ```
  */
@@ -43,7 +43,7 @@ export interface TransitionGroupProps<T> {
   /** Classes applied at the end of the leave transition */
   leaveTo?: string;
   /** Render function for each item (must return an element) */
-  children: (item: T, index: number) => DSL<"element">;
+  content: (item: T, index: number) => DSL<"element">;
 }
 
 /**
@@ -111,7 +111,7 @@ async function leaveTransition<T>(
  * when list items are added or removed.
  */
 export function* TransitionGroup<T>(props: TransitionGroupProps<T>): DSL<"element"> {
-  const { items, keyFn, children } = props;
+  const { items, keyFn, content } = props;
 
   // Track the current set of keys
   const currentKeys = new Set<string | number>();
@@ -126,7 +126,7 @@ export function* TransitionGroup<T>(props: TransitionGroupProps<T>): DSL<"elemen
       const itemKey = keyFn(item);
 
       // Assign a key to the component via keyed()
-      const itemSlot = yield* keyed(itemKey, children)(item, i);
+      const itemSlot = yield* keyed(itemKey, content)(item, i);
 
       // Apply enter transition
       yield* onMount(() => {
@@ -157,7 +157,7 @@ interface RefresherState<T> {
 export function createTransitionGroupRefresher<T>(
   props: Omit<TransitionGroupProps<T>, "items">,
 ): (slot: Slot, items: T[]) => void {
-  const { keyFn, children } = props;
+  const { keyFn, content } = props;
 
   // Maintain state across refreshes
   const state: RefresherState<T> = {
@@ -192,7 +192,7 @@ export function createTransitionGroupRefresher<T>(
         const isNew = !prevKeys.has(itemKey);
 
         // Assign a key to the component via keyed()
-        const itemSlot = yield* keyed(itemKey, children)(item, i);
+        const itemSlot = yield* keyed(itemKey, content)(item, i);
 
         // Record the element reference
         state.elementsByKey.set(itemKey, itemSlot.node);

@@ -2,7 +2,7 @@
  * @ydant/base - DSL type definitions
  */
 
-import type { Tagged, CleanupFn, Instructor, Builder } from "@ydant/core";
+import type { Tagged, Render, Builder } from "@ydant/core";
 
 // =============================================================================
 // Slot Types
@@ -37,7 +37,7 @@ export type MountLifecycle = Tagged<
   "lifecycle",
   {
     event: "mount";
-    callback: () => void | CleanupFn;
+    callback: () => void | (() => void);
   }
 >;
 
@@ -76,7 +76,7 @@ export type Element = Tagged<
   "element",
   {
     tag: string;
-    children: Instructor;
+    children: Render;
     decorations?: Decoration[];
     key?: string | number;
     ns?: string;

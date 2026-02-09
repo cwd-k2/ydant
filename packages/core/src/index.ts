@@ -8,26 +8,13 @@
 // Types (DSL 非依存の基盤型のみ)
 // =============================================================================
 
-export type {
-  CleanupFn,
-  Tagged,
-  DSLSchema,
-  DSL,
-  Child,
-  Builder,
-  Instructor,
-  Instruction,
-  Primitive,
-  ChildContent,
-  Render,
-  Component,
-} from "./types";
+export type { Tagged, DSLSchema, DSL, Instruction, Builder, Render, Component } from "./types";
 
 // =============================================================================
 // Plugin System
 // =============================================================================
 
-export type { Plugin, RenderAPI, ProcessResult, MountOptions } from "./plugin";
+export type { Plugin, RenderAPI, ProcessResult } from "./plugin";
 
 // =============================================================================
 // Utilities

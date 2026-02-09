@@ -31,7 +31,7 @@ const UserProfile: Component = () =>
 const App: Component = () =>
   Suspense({
     fallback: () => text("Loading..."),
-    children: () => UserProfile(),
+    content: () => UserProfile(),
   });
 ```
 
@@ -43,7 +43,7 @@ import { ErrorBoundary } from "@ydant/async";
 const App: Component = () =>
   ErrorBoundary({
     fallback: (error, reset) => text(`Error: ${error.message}`),
-    children: () => RiskyComponent(),
+    content: () => RiskyComponent(),
   });
 ```
 
@@ -53,10 +53,10 @@ const App: Component = () =>
 const App: Component = () =>
   ErrorBoundary({
     fallback: (error, reset) => text(`Error: ${error.message}`),
-    children: () =>
+    content: () =>
       Suspense({
         fallback: () => text("Loading..."),
-        children: () => AsyncContent(),
+        content: () => AsyncContent(),
       }),
   });
 ```
@@ -70,7 +70,7 @@ function* Suspense(props: SuspenseProps): Render;
 
 interface SuspenseProps {
   fallback: () => Render;
-  children: () => ChildContent;
+  content: () => Render;
 }
 ```
 
@@ -83,7 +83,7 @@ function* ErrorBoundary(props: ErrorBoundaryProps): Render;
 
 interface ErrorBoundaryProps {
   fallback: (error: Error, reset: () => void) => Render;
-  children: () => ChildContent;
+  content: () => Render;
 }
 ```
 

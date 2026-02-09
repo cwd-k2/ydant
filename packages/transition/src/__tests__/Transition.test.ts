@@ -30,12 +30,12 @@ describe("Transition", () => {
     vi.restoreAllMocks();
   });
 
-  it("renders children when show=true", () => {
+  it("renders content when show=true", () => {
     mount(
       () =>
         Transition({
           show: true,
-          children: () => div(() => [text("Visible Content")]),
+          content: () => div(() => [text("Visible Content")]),
         }),
       container,
       { plugins: [createBasePlugin()] },
@@ -49,7 +49,7 @@ describe("Transition", () => {
       () =>
         Transition({
           show: false,
-          children: () => div(() => [text("Hidden Content")]),
+          content: () => div(() => [text("Hidden Content")]),
         }),
       container,
       { plugins: [createBasePlugin()] },
@@ -66,7 +66,7 @@ describe("Transition", () => {
           enter: "transition-opacity",
           enterFrom: "opacity-0",
           enterTo: "opacity-100",
-          children: () => div(() => [text("Content")]),
+          content: () => div(() => [text("Content")]),
         }),
       container,
       { plugins: [createBasePlugin()] },
@@ -84,7 +84,7 @@ describe("Transition", () => {
       () =>
         Transition({
           show: true,
-          children: () => div(() => [text("Content")]),
+          content: () => div(() => [text("Content")]),
         }),
       container,
       { plugins: [createBasePlugin()] },
@@ -99,7 +99,7 @@ describe("Transition", () => {
       () =>
         Transition({
           show: true,
-          children: () => div(() => [text("Toggle Content")]),
+          content: () => div(() => [text("Toggle Content")]),
         }),
       container,
       { plugins: [createBasePlugin()] },
@@ -114,7 +114,7 @@ describe("Transition", () => {
       () =>
         Transition({
           show: false,
-          children: () => div(() => [text("Toggle Content")]),
+          content: () => div(() => [text("Toggle Content")]),
         }),
       container,
       { plugins: [createBasePlugin()] },
@@ -131,7 +131,7 @@ describe("Transition", () => {
           enter: "transition-all",
           enterFrom: "opacity-0 scale-95",
           enterTo: "opacity-100 scale-100",
-          children: () => div(() => [classes("content-box"), text("Content")]),
+          content: () => div(() => [classes("content-box"), text("Content")]),
         }),
       container,
       { plugins: [createBasePlugin()] },
@@ -163,7 +163,7 @@ describe("Transition", () => {
           enter: "transition-opacity",
           enterFrom: "opacity-0",
           enterTo: "opacity-100",
-          children: () => div(() => [classes("fade-target"), text("Fading")]),
+          content: () => div(() => [classes("fade-target"), text("Fading")]),
         }),
       container,
       { plugins: [createBasePlugin()] },
@@ -196,7 +196,7 @@ describe("Transition", () => {
           enter: "transition-opacity",
           enterFrom: "opacity-0",
           enterTo: "opacity-100",
-          children: () => div(() => [classes("event-target"), text("Content")]),
+          content: () => div(() => [classes("event-target"), text("Content")]),
         }),
       container,
       { plugins: [createBasePlugin()] },
@@ -221,7 +221,7 @@ describe("Transition", () => {
           enter: "",
           enterFrom: "",
           enterTo: "",
-          children: () => div(() => [text("No Classes")]),
+          content: () => div(() => [text("No Classes")]),
         }),
       container,
       { plugins: [createBasePlugin()] },
@@ -257,7 +257,7 @@ describe("enterTransition", () => {
       enter: "transition-opacity",
       enterFrom: "opacity-0",
       enterTo: "opacity-100",
-      children: () => div(() => []),
+      content: () => div(() => []),
     };
 
     enterTransition(element, props);
@@ -283,7 +283,7 @@ describe("enterTransition", () => {
       enter: "transition-all duration-300",
       enterFrom: "opacity-0 scale-95",
       enterTo: "opacity-100 scale-100",
-      children: () => div(() => []),
+      content: () => div(() => []),
     };
 
     enterTransition(element, props);
@@ -299,7 +299,7 @@ describe("enterTransition", () => {
   it("handles undefined classes", async () => {
     const props: TransitionProps = {
       show: true,
-      children: () => div(() => []),
+      content: () => div(() => []),
     };
 
     enterTransition(element, props);
@@ -334,7 +334,7 @@ describe("leaveTransition", () => {
       leave: "transition-opacity",
       leaveFrom: "opacity-100",
       leaveTo: "opacity-0",
-      children: () => div(() => []),
+      content: () => div(() => []),
     };
 
     leaveTransition(element, props);
@@ -358,7 +358,7 @@ describe("leaveTransition", () => {
       leave: "transition-all",
       leaveFrom: "opacity-100 scale-100",
       leaveTo: "opacity-0 scale-95",
-      children: () => div(() => []),
+      content: () => div(() => []),
     };
 
     leaveTransition(element, props);
@@ -388,7 +388,7 @@ describe("leaveTransition", () => {
       leave: "transition-opacity",
       leaveFrom: "opacity-100",
       leaveTo: "opacity-0",
-      children: () => div(() => []),
+      content: () => div(() => []),
     };
 
     leaveTransition(element, props);
@@ -410,7 +410,7 @@ describe("leaveTransition", () => {
       leave: "transition-opacity",
       leaveFrom: "opacity-100",
       leaveTo: "opacity-0",
-      children: () => div(() => []),
+      content: () => div(() => []),
     };
 
     leaveTransition(element, props);
@@ -461,7 +461,7 @@ describe("createTransition", () => {
             leave: "fade-leave",
             leaveFrom: "fade-leave-from",
             leaveTo: "fade-leave-to",
-            children: () => div(() => [text("Transition Content")]),
+            content: () => div(() => [text("Transition Content")]),
           });
         } as Builder),
       container,
@@ -487,7 +487,7 @@ describe("createTransition", () => {
             enter: "fade-enter",
             enterFrom: "fade-enter-from",
             enterTo: "fade-enter-to",
-            children: () => div(() => [classes("transition-child"), text("Content")]),
+            content: () => div(() => [classes("transition-child"), text("Content")]),
           });
         } as Builder),
       container,
@@ -520,7 +520,7 @@ describe("createTransition", () => {
             leave: "fade-leave",
             leaveFrom: "fade-leave-from",
             leaveTo: "fade-leave-to",
-            children: () => div(() => [classes("transition-child"), text("Content")]),
+            content: () => div(() => [classes("transition-child"), text("Content")]),
           });
         } as Builder),
       container,
@@ -551,7 +551,7 @@ describe("createTransition", () => {
       () =>
         div(function* () {
           handle = yield* createTransition({
-            children: () => div(() => [text("Content")]),
+            content: () => div(() => [text("Content")]),
           });
         } as Builder),
       container,
@@ -589,7 +589,7 @@ describe("createTransition", () => {
         div(function* () {
           handle = yield* createTransition({
             enter: "fade-enter",
-            children: () => div(() => [classes("child"), text("Content")]),
+            content: () => div(() => [classes("child"), text("Content")]),
           });
         } as Builder),
       container,

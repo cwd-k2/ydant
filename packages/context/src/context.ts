@@ -23,7 +23,7 @@
  * ```
  */
 
-import type { Tagged, Primitive } from "@ydant/core";
+import type { Tagged, DSL } from "@ydant/core";
 
 /** A context descriptor holding an identifier and an optional default value. */
 export interface Context<T> {
@@ -72,7 +72,7 @@ export function createContext<T>(defaultValue?: T): Context<T> {
  * yield* provide(ThemeContext, "dark");
  * ```
  */
-export function* provide<T>(context: Context<T>, value: T): Primitive<ContextProvide> {
+export function* provide<T>(context: Context<T>, value: T): DSL<"context-provide"> {
   yield {
     type: "context-provide",
     context: context as Context<unknown>,

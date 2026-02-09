@@ -73,20 +73,16 @@ interface ProcessResult {
 
 ### Types
 
-| Type            | Description                                                         |
-| --------------- | ------------------------------------------------------------------- |
-| `Tagged<T,P>`   | Helper type for tagged unions: `{ type: T } & P`                    |
-| `CleanupFn`     | `() => void` - Lifecycle cleanup function                           |
-| `DSLSchema`     | Co-locates instruction and feedback types per DSL operation         |
-| `DSL<Key>`      | Typed generator for a specific DSL operation key                    |
-| `Child`         | Union of all yieldable types (derived from `DSLSchema`)             |
-| `Builder`       | `() => Instructor \| Instruction[]` - Element factory argument      |
-| `Instructor`    | Iterator over DSL instructions — the internal iteration protocol    |
-| `Instruction`   | Generator for a single DSL operation — primitive return type        |
-| `Primitive<T>`  | `Generator<T, void, void>` - Side-effect-only primitive return type |
-| `ChildContent`  | Generator yielding DSL instructions — children builder return type  |
-| `Render`        | Generator for a complete component — base rendering type            |
-| `Component<P?>` | `() => Render` (no args) or `(props: P) => Render` (with props)     |
+| Type            | Description                                                     |
+| --------------- | --------------------------------------------------------------- |
+| `Tagged<T,P>`   | Helper type for tagged unions: `{ type: T } & P`                |
+| `CleanupFn`     | `() => void` - Lifecycle cleanup function                       |
+| `DSLSchema`     | Co-locates instruction and feedback types per DSL operation     |
+| `DSL<Key>`      | Typed generator for a specific DSL operation key                |
+| `Child`         | Union of all yieldable types (derived from `DSLSchema`)         |
+| `Render`        | Generator for rendering — components, elements, and children    |
+| `Builder`       | `() => Render \| Render[]` - Element children factory           |
+| `Component<P?>` | `() => Render` (no args) or `(props: P) => Render` (with props) |
 
 ### Plugin Extension Interfaces
 
@@ -136,10 +132,10 @@ interface RenderContext {
 
 ### Utilities
 
-| Function               | Description                            |
-| ---------------------- | -------------------------------------- |
-| `isTagged(value, tag)` | Type guard for tagged union types      |
-| `toChildren(result)`   | Normalize array/iterator to Instructor |
+| Function               | Description                                       |
+| ---------------------- | ------------------------------------------------- |
+| `isTagged(value, tag)` | Type guard for tagged union types                 |
+| `toChildren(result)`   | Normalize `Render \| Render[]` to single `Render` |
 
 ## Creating Plugins
 

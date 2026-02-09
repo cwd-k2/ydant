@@ -2,50 +2,37 @@
  * @ydant/base - DSL primitives
  */
 
-import type { CleanupFn, DSL, Primitive, Render } from "@ydant/core";
-import type { Attribute, Listener, Text, Lifecycle, Slot } from "./types";
-
-/** Creates a single-yield generator function from a value factory. Used internally to define primitives. */
-function createPrimitive<T extends Attribute | Listener | Text | Lifecycle, Args extends unknown[]>(
-  factory: (...args: Args) => T,
-) {
-  return function* (...args: Args): Primitive<T> {
-    yield factory(...args);
-  };
-}
+import type { DSL, Render } from "@ydant/core";
+import type { Slot } from "./types";
 
 /** Sets an HTML attribute on the current element. Use with `yield*`. */
-export const attr = createPrimitive(
-  (key: string, value: string): Attribute => ({
-    type: "attribute",
-    key,
-    value,
-  }),
-);
+export function* attr(key: string, value: string): DSL<"attribute"> {
+  yield { type: "attribute", key, value };
+}
 
 /** Sets the `class` attribute by joining all arguments. Accepts strings and string arrays. */
-export function classes(...classNames: (string | string[])[]): Primitive<Attribute> {
-  return (function* () {
-    const value = classNames.flat().join(" ");
-    yield { type: "attribute" as const, key: "class", value };
-  })();
+export function* classes(...classNames: (string | string[])[]): DSL<"attribute"> {
+  const value = classNames.flat().join(" ");
+  yield { type: "attribute", key: "class", value };
 }
 
 /** Attaches a DOM event listener. Infers the event type from {@link HTMLElementEventMap}. */
 export function on<K extends keyof HTMLElementEventMap>(
   key: K,
   handler: (e: HTMLElementEventMap[K]) => void,
-): Primitive<Listener>;
+): DSL<"listener">;
 /** Attaches a DOM event listener for custom event names. */
-export function on(key: string, handler: (e: Event) => void): Primitive<Listener>;
-export function on(key: string, handler: (e: Event) => void): Primitive<Listener> {
+export function on(key: string, handler: (e: Event) => void): DSL<"listener">;
+export function on(key: string, handler: (e: Event) => void): DSL<"listener"> {
   return (function* () {
     yield { type: "listener" as const, key, value: handler };
   })();
 }
 
 /** Creates a text node and appends it to the current parent. Use with `yield*`. */
-export const text = createPrimitive((content: string): Text => ({ type: "text", content }));
+export function* text(content: string): DSL<"text"> {
+  yield { type: "text", content };
+}
 
 /**
  * Registers a callback that runs after the component is mounted to the DOM.
@@ -60,7 +47,7 @@ export const text = createPrimitive((content: string): Text => ({ type: "text", 
  * });
  * ```
  */
-export function* onMount(callback: () => void | CleanupFn): Primitive<Lifecycle> {
+export function* onMount(callback: () => void | (() => void)): DSL<"lifecycle"> {
   yield { type: "lifecycle", event: "mount", callback };
 }
 
@@ -74,7 +61,7 @@ export function* onMount(callback: () => void | CleanupFn): Primitive<Lifecycle>
  * });
  * ```
  */
-export function* onUnmount(callback: () => void): Primitive<Lifecycle> {
+export function* onUnmount(callback: () => void): DSL<"lifecycle"> {
   yield { type: "lifecycle", event: "unmount", callback };
 }
 
@@ -94,7 +81,7 @@ export function* onUnmount(callback: () => void): Primitive<Lifecycle> {
  */
 export function* style(
   properties: Partial<CSSStyleDeclaration> & Record<`--${string}`, string>,
-): Primitive<Attribute> {
+): DSL<"attribute"> {
   const styleValue = Object.entries(properties as Record<string, string>)
     .map(([k, v]) => {
       // Convert camelCase to kebab-case (skip CSS custom properties)

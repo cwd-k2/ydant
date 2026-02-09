@@ -1,8 +1,8 @@
 /**
- * @ydant/core - Child iterator processing
+ * @ydant/core - Instruction iterator processing
  */
 
-import type { Child, Instructor, ChildNext } from "../types";
+import type { Instruction, Render, Feedback } from "../types";
 import type { RenderAPI } from "../plugin";
 import type { RenderContext } from "./types";
 import { createRenderAPIFactory } from "./context";
@@ -11,10 +11,10 @@ import { createRenderAPIFactory } from "./context";
 let createRenderAPI: ((ctx: RenderContext) => RenderAPI) | null = null;
 
 /**
- * Walks an {@link Instructor} iterator, dispatching each yielded {@link Child}
+ * Walks a {@link Render} generator, dispatching each yielded {@link Instruction}
  * to the appropriate plugin. Unrecognized types are silently skipped.
  */
-export function processIterator(iter: Instructor, ctx: RenderContext): void {
+export function processIterator(iter: Render, ctx: RenderContext): void {
   // Initialize the RenderAPI factory on first call
   if (!createRenderAPI) {
     createRenderAPI = createRenderAPIFactory(processIterator);
@@ -32,8 +32,8 @@ export function processIterator(iter: Instructor, ctx: RenderContext): void {
 
       if (plugin) {
         const api = createRenderAPI(ctx);
-        const processResult = plugin.process(value as Child, api);
-        result = iter.next(processResult.value as ChildNext);
+        const processResult = plugin.process(value as Instruction, api);
+        result = iter.next(processResult.value as Feedback);
         continue;
       }
     }

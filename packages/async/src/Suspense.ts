@@ -8,7 +8,7 @@
  * ```typescript
  * yield* Suspense({
  *   fallback: () => div(() => [text("Loading...")]),
- *   children: function* () {
+ *   content: function* () {
  *     const data = dataResource();  // suspend if pending
  *     yield* div(() => [text(data.message)]);
  *   },
@@ -16,15 +16,15 @@
  * ```
  */
 
-import type { ChildContent, DSL, Render } from "@ydant/core";
+import type { DSL, Render } from "@ydant/core";
 import { div } from "@ydant/base";
 
 /** Props for the Suspense component. */
 export interface SuspenseProps {
   /** Component to display while loading. */
   fallback: () => Render;
-  /** Child content that may suspend by throwing a Promise. */
-  children: () => ChildContent;
+  /** Content that may suspend by throwing a Promise. */
+  content: () => Render;
 }
 
 /**
@@ -36,15 +36,15 @@ export interface SuspenseProps {
  * the Resource's loading/error properties is recommended.
  */
 export function* Suspense(props: SuspenseProps): DSL<"element"> {
-  const { fallback, children } = props;
+  const { fallback, content } = props;
 
   const containerSlot = yield* div(function* () {
     let isSuspended = false;
     let pendingPromise: Promise<unknown> | null = null;
 
-    // Attempt to render children
+    // Attempt to render content
     try {
-      yield* children();
+      yield* content();
     } catch (thrown) {
       if (thrown instanceof Promise) {
         isSuspended = true;
@@ -62,14 +62,14 @@ export function* Suspense(props: SuspenseProps): DSL<"element"> {
       pendingPromise
         .then(() => {
           containerSlot.refresh(function* () {
-            yield* children();
+            yield* content();
           });
         })
         .catch(() => {
           // Retry rendering on error as well
-          // If the Resource is in an error state, children() will throw
+          // If the Resource is in an error state, content() will throw
           containerSlot.refresh(function* () {
-            yield* children();
+            yield* content();
           });
         });
     }

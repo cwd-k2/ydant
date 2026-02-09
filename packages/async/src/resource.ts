@@ -10,7 +10,7 @@
  * // Use inside a component
  * yield* Suspense({
  *   fallback: () => div(() => [text("Loading...")]),
- *   children: function* () {
+ *   content: function* () {
  *     const user = userResource();  // Suspends until data is ready
  *     yield* h1(() => [text(`Hello, ${user.name}`)]);
  *   },

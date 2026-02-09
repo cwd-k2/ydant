@@ -2,7 +2,7 @@
  * @ydant/base - Element processing
  */
 
-import type { Builder, Instructor } from "@ydant/core";
+import type { Builder, Render } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 import type { RenderAPI, ProcessResult } from "@ydant/core";
 import type { Element, Slot } from "../types";
@@ -58,7 +58,7 @@ export function processElement(element: Element, api: RenderAPI): ProcessResult 
   }
 
   if (element.children) {
-    childApi.processChildren(() => element.children as Instructor, {
+    childApi.processChildren(() => element.children as Render, {
       parent: node,
     });
   }

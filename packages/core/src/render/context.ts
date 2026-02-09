@@ -2,7 +2,7 @@
  * @ydant/core - RenderContext management
  */
 
-import type { Builder, Instructor } from "../types";
+import type { Builder, Render } from "../types";
 import { toChildren } from "../utils";
 import type { Plugin, RenderAPI } from "../plugin";
 import type { RenderContext } from "./types";
@@ -71,7 +71,7 @@ export function createRenderContext(
  * `createChildAPI`. Plugin-specific methods are added via {@link Plugin.extendAPI}.
  */
 export function createRenderAPIFactory(
-  processIterator: (iter: Instructor, ctx: RenderContext) => void,
+  processIterator: (iter: Render, ctx: RenderContext) => void,
 ) {
   return function createRenderAPI(ctx: RenderContext): RenderAPI {
     // Return cached API if available

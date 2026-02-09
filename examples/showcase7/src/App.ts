@@ -42,7 +42,7 @@ function ToggleSection(): Render {
       leave: "fade-leave",
       leaveFrom: "fade-leave-from",
       leaveTo: "fade-leave-to",
-      children: () =>
+      content: () =>
         div(() => [
           classes("p-4", "bg-blue-100", "rounded-lg"),
           p(() => [text("This content fades in and out!")]),
@@ -92,7 +92,7 @@ function SlideSection(): Render {
       leave: "slide-leave",
       leaveFrom: "slide-leave-from",
       leaveTo: "slide-leave-to",
-      children: () =>
+      content: () =>
         div(() => [
           classes("p-4", "bg-green-100", "rounded-lg"),
           p(() => [text("This panel slides in and out!")]),

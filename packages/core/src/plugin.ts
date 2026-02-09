@@ -2,7 +2,7 @@
  * @ydant/core - Plugin system
  */
 
-import type { Child, ChildNext } from "./types";
+import type { Instruction, Feedback } from "./types";
 import type { RenderContext } from "./render/types";
 
 // =============================================================================
@@ -27,7 +27,7 @@ export interface RenderAPI {}
 /** The return value from {@link Plugin.process}, carrying feedback to the generator. */
 export interface ProcessResult {
   /** The value to send back to the generator via `next()`. */
-  value?: ChildNext | undefined;
+  value?: Feedback | undefined;
 }
 
 /** A plugin that teaches the core runtime how to handle specific DSL operations. */
@@ -69,12 +69,6 @@ export interface Plugin {
    * @param childCtx - The child context that was just processed.
    */
   mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
-  /** Processes a single {@link Child} instruction and returns feedback for the generator. */
-  process(child: Child, api: RenderAPI): ProcessResult;
-}
-
-/** Options for {@link mount}. */
-export interface MountOptions {
-  /** Plugins to register. At minimum, `createBasePlugin()` is required for DOM rendering. */
-  plugins?: Plugin[];
+  /** Processes a single {@link Instruction} and returns feedback for the generator. */
+  process(instruction: Instruction, api: RenderAPI): ProcessResult;
 }

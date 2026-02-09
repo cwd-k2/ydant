@@ -2,7 +2,7 @@
  * @ydant/core - Mount function
  */
 
-import type { Plugin, MountOptions } from "./plugin";
+import type { Plugin } from "./plugin";
 import type { Render } from "./types";
 import { render } from "./render";
 
@@ -30,7 +30,7 @@ type Component = () => Render;
  * });
  * ```
  */
-export function mount(app: Component, parent: HTMLElement, options?: MountOptions): void {
+export function mount(app: Component, parent: HTMLElement, options?: { plugins?: Plugin[] }): void {
   // Build a lookup map: type tag -> plugin
   const plugins = new Map<string, Plugin>();
   const pluginNames = new Set<string>();

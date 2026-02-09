@@ -20,7 +20,7 @@
  * ```
  */
 
-import type { Tagged, Builder, Primitive } from "@ydant/core";
+import type { Tagged, Builder, DSL } from "@ydant/core";
 
 /** A DSL instruction representing a reactive block that auto-updates when its Signal dependencies change. */
 export type Reactive = Tagged<"reactive", { builder: Builder }>;
@@ -38,6 +38,6 @@ export type Reactive = Tagged<"reactive", { builder: Builder }>;
  * ]);
  * ```
  */
-export function* reactive(builder: Builder): Primitive<Reactive> {
+export function* reactive(builder: Builder): DSL<"reactive"> {
   yield { type: "reactive", builder };
 }

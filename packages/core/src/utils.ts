@@ -1,10 +1,13 @@
-import type { Tagged, Child, ChildOfType, Instruction, Instructor } from "./types";
+import type { Tagged, Instruction, Render } from "./types";
 
 /**
  * Checks whether a tagged object matches a given type tag.
- * When called with a {@link Child}, narrows to the corresponding {@link ChildOfType}.
+ * When called with an {@link Instruction}, narrows to the matching variant.
  */
-export function isTagged<T extends Child["type"]>(value: Child, tag: T): value is ChildOfType<T>;
+export function isTagged<T extends Instruction["type"]>(
+  value: Instruction,
+  tag: T,
+): value is Extract<Instruction, { type: T }>;
 export function isTagged<T extends string>(
   value: { type: string },
   tag: T,
@@ -13,14 +16,14 @@ export function isTagged(value: { type: string }, tag: string): boolean {
   return value.type === tag;
 }
 
-/** Normalizes a {@link Builder}'s return value into a single {@link Instructor} iterator. */
-export function toChildren(result: Instructor | Instruction[]): Instructor {
+/** Normalizes a {@link Builder}'s return value into a single {@link Render} generator. */
+export function toChildren(result: Render | Render[]): Render {
   if (Array.isArray(result)) {
     return (function* () {
-      for (const instruction of result) {
-        yield* instruction;
+      for (const render of result) {
+        yield* render;
       }
-    })() as Instructor;
+    })() as Render;
   }
   return result;
 }

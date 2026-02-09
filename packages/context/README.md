@@ -55,7 +55,7 @@ Creates a context object that can be provided and injected.
 ### provide
 
 ```typescript
-function* provide<T>(context: Context<T>, value: T): Primitive<ContextProvide>;
+function* provide<T>(context: Context<T>, value: T): DSL<"context-provide">;
 ```
 
 Provides a value to all descendant components. Use with `yield*`.

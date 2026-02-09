@@ -35,7 +35,7 @@ return div(function* () {
     leave: "fade-leave",
     leaveFrom: "fade-leave-from",
     leaveTo: "fade-leave-to",
-    children: () => div(() => [text("Animated content")]),
+    content: () => div(() => [text("Animated content")]),
   });
 });
 ```

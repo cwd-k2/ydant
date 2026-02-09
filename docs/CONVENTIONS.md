@@ -27,15 +27,14 @@ Ydant プロジェクトにおける命名規則、型の使い分け、コー�
 
 ## 型の使い分け
 
-| 型              | 用途                                                | 定義元            |
-| --------------- | --------------------------------------------------- | ----------------- |
-| `Render`        | コンポーネント関数の戻り値型                        | `@ydant/core`     |
-| `ElementRender` | 要素ファクトリ (`div()` 等) の戻り値型              | `@ydant/base`     |
-| `Primitive<T>`  | 副作用プリミティブ (`text()`, `on()` 等) の戻り値型 | `@ydant/core`     |
-| `ChildContent`  | `children` プロパティに渡すビルダー関数の戻り値型   | `@ydant/core`     |
-| `CleanupFn`     | ライフサイクル・副作用のクリーンアップ関数          | `@ydant/core`     |
-| `Component<P>`  | コンポーネント型（Props なし / あり）               | `@ydant/core`     |
-| `Readable<T>`   | 読み取り可能なリアクティブ値の共通インターフェース  | `@ydant/reactive` |
+| 型             | 用途                                                  | 定義元            |
+| -------------- | ----------------------------------------------------- | ----------------- |
+| `DSL<Key>`     | 個別 DSL 操作の戻り値型（`DSL<"text">` 等）           | `@ydant/core`     |
+| `Render`       | コンポーネント・要素・children の汎用ジェネレーター型 | `@ydant/core`     |
+| `Builder`      | 子要素のファクトリ関数 `() => Render \| Render[]`     | `@ydant/core`     |
+| `CleanupFn`    | ライフサイクル・副作用のクリーンアップ関数            | `@ydant/core`     |
+| `Component<P>` | コンポーネント型（Props なし / あり）                 | `@ydant/core`     |
+| `Readable<T>`  | 読み取り可能なリアクティブ値の共通インターフェース    | `@ydant/reactive` |
 
 ---
 
@@ -192,14 +191,12 @@ declare module "@ydant/core" {
 ### 型エイリアスの使い分け
 
 ```ts
-// Render: コンポーネント全体の戻り値（汎用）
+// Render: コンポーネント・要素の戻り値（汎用）
 function MyComponent(): Render { ... }
 
-// ElementRender: 要素ファクトリの戻り値（Slot を保証）
-function div(builder: Builder): ElementRender { ... }
-
-// Primitive<T>: プリミティブの戻り値（副作用のみ）
-function text(content: string): Primitive<Text> { ... }
+// DSL<Key>: 個別 DSL 操作の戻り値（操作ごとに型付け）
+function text(content: string): DSL<"text"> { ... }
+function div(builder: Builder): DSL<"element"> { ... }
 ```
 
 ---
@@ -252,26 +249,16 @@ interface ProcessResult {
 
 ## プリミティブ実装
 
-### ファクトリ関数パターン
+### 基本パターン
+
+プリミティブは `DSL<Key>` を返すジェネレーター関数として定義する:
 
 ```ts
-// 汎用ファクトリ
-function createPrimitive<T extends SomeChild, Args extends unknown[]>(
-  factory: (...args: Args) => T,
-) {
-  return function* (...args: Args): Primitive<T> {
-    yield factory(...args);
-  };
+export function* text(content: string): DSL<"text"> {
+  yield { type: "text", content };
 }
 
-// 使用
-export const text = createPrimitive((content: string): Text => ({ type: "text", content }));
-```
-
-### 直接定義（複雑なロジックがある場合）
-
-```ts
-export function* style(properties: Partial<CSSStyleDeclaration>): Primitive<Attribute> {
+export function* style(properties: Partial<CSSStyleDeclaration>): DSL<"attribute"> {
   const styleValue = Object.entries(properties)
     .map(([k, v]) => `${toKebab(k)}: ${v}`)
     .join("; ");
@@ -319,8 +306,8 @@ yield * keyed(item.id, li)(() => [text(item.name)]);
 // コンポーネントと組み合わせ
 yield * keyed(item.id, ListItemView)({ item, onDelete });
 
-// 関数と組み合わせ（TransitionGroup 内の children など）
-yield * keyed(itemKey, children)(item, i);
+// 関数と組み合わせ（TransitionGroup 内の content など）
+yield * keyed(itemKey, content)(item, i);
 ```
 
 ---
@@ -335,7 +322,7 @@ export interface TransitionProps {
   enter?: string;
   enterFrom?: string;
   enterTo?: string;
-  children: () => ChildContent;
+  content: () => Render;
 }
 
 export function Transition(props: TransitionProps): Render {

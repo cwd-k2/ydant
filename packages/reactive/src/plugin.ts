@@ -15,7 +15,7 @@
  * ```
  */
 
-import type { Child, Plugin, RenderAPI, ProcessResult } from "@ydant/core";
+import type { Instruction, Plugin, RenderAPI, ProcessResult } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 // Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
@@ -28,9 +28,9 @@ export function createReactivePlugin(): Plugin {
     types: ["reactive"],
     dependencies: ["base"],
 
-    process(child: Child, api: RenderAPI): ProcessResult {
-      if (!isTagged(child, "reactive")) return {};
-      const builder = child.builder;
+    process(instruction: Instruction, api: RenderAPI): ProcessResult {
+      if (!isTagged(instruction, "reactive")) return {};
+      const builder = instruction.builder;
 
       // Create a container element for the reactive block
       const container = document.createElement("span");
