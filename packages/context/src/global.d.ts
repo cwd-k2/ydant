@@ -21,19 +21,10 @@ declare module "@ydant/core" {
     setContext<T>(id: symbol, value: T): void;
   }
 
-  // context の DSL 型を Child に追加
-  interface PluginChildExtensions {
-    ContextProvide: ContextProvide;
-    ContextInject: ContextInject;
-  }
-
-  // inject の戻り値を ChildNext に追加
-  interface PluginNextExtensions {
-    ContextValue: unknown;
-  }
-
-  // inject の戻り値を ChildReturn に追加
-  interface PluginReturnExtensions {
-    ContextValue: unknown;
+  // context の DSL 型を Extension に追加
+  // "context-inject" の feedback: unknown が ChildReturn にも反映される
+  interface Extension {
+    "context-provide": { instruction: ContextProvide };
+    "context-inject": { instruction: ContextInject; feedback: unknown };
   }
 }

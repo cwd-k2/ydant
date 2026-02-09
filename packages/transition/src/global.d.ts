@@ -7,7 +7,8 @@
 import type { TransitionHandle } from "./Transition";
 
 declare module "@ydant/core" {
-  interface PluginReturnExtensions {
-    TransitionHandle: TransitionHandle;
+  // instruction/feedback を持たず、return のみを追加する Extension エントリ
+  interface Extension {
+    transition: { return: TransitionHandle };
   }
 }

@@ -7,7 +7,7 @@ import type { Render } from "./types";
 import { render } from "./render";
 
 // Component の戻り値型は Render（Generator ベース）
-// base で PluginReturnExtensions に Slot が追加されると、より具体的な型になる
+// base で Extension に Slot が追加されると、より具体的な型になる
 type Component = () => Render;
 
 /**

@@ -11,6 +11,8 @@
 export type {
   CleanupFn,
   Tagged,
+  Extension,
+  DSL,
   Child,
   ChildOfType,
   ChildNext,
@@ -22,10 +24,6 @@ export type {
   ChildContent,
   Render,
   Component,
-  // Plugin extension points
-  PluginChildExtensions,
-  PluginNextExtensions,
-  PluginReturnExtensions,
 } from "./types";
 
 // =============================================================================

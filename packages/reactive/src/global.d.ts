@@ -7,7 +7,7 @@
 import type { Reactive } from "./reactive";
 
 declare module "@ydant/core" {
-  interface PluginChildExtensions {
-    Reactive: Reactive;
+  interface Extension {
+    reactive: { instruction: Reactive };
   }
 }

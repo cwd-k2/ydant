@@ -16,65 +16,66 @@ export type CleanupFn = () => void;
 // =============================================================================
 
 /**
- * プラグインが Child 型を拡張するためのインターフェース
+ * DSL 操作ごとに instruction, feedback, return を co-locate する拡張インターフェース
+ *
+ * - `instruction` — yield する値の型
+ * - `feedback` — yield から返る値の型（省略時 void）
+ * - `return` — Generator の return 値の型（省略時 feedback にフォールバック）
  *
  * @example
  * ```typescript
- * // @ydant/base で Element 型を追加
  * declare module "@ydant/core" {
- *   interface PluginChildExtensions {
- *     Element: Tagged<"element", { tag: string; children: Instructor }>;
+ *   interface Extension {
+ *     "element": { instruction: Element; feedback: Slot };
+ *     "text": { instruction: Text };
+ *     "transition": { return: TransitionHandle };
  *   }
  * }
  * ```
  */
-export interface PluginChildExtensions {}
+export interface Extension {}
 
-/**
- * プラグインが next() に渡す値の型を拡張するためのインターフェース
- *
- * @example
- * ```typescript
- * // @ydant/base で Slot を追加
- * declare module "@ydant/core" {
- *   interface PluginNextExtensions {
- *     Slot: Slot;
- *   }
- * }
- * ```
- */
-export interface PluginNextExtensions {}
+/** Extension の各キーから instruction 型を抽出した mapped type */
+type InstructionOf = {
+  [K in keyof Extension]: Extension[K] extends { instruction: infer I } ? I : never;
+};
 
-/**
- * プラグインが return で返す値の型を拡張するためのインターフェース
- *
- * @example
- * ```typescript
- * // @ydant/base で Slot を追加
- * declare module "@ydant/core" {
- *   interface PluginReturnExtensions {
- *     Slot: Slot;
- *   }
- * }
- * ```
- */
-export interface PluginReturnExtensions {}
+/** Extension の各キーから feedback 型を抽出した mapped type */
+type FeedbackOf = {
+  [K in keyof Extension]: Extension[K] extends { feedback: infer F } ? F : void;
+};
+
+/** Extension の各キーから return 型を抽出した mapped type（return → feedback → void のフォールバック） */
+type ReturnOf = {
+  [K in keyof Extension]: Extension[K] extends { return: infer R }
+    ? R
+    : Extension[K] extends { feedback: infer F }
+      ? F
+      : void;
+};
+
+/** DSL 操作ごとの型付きジェネレーター */
+export type DSL<Key extends keyof Extension> = Generator<
+  InstructionOf[Key],
+  ReturnOf[Key],
+  FeedbackOf[Key]
+>;
 
 // =============================================================================
 // Core Types (基盤型のみ)
 // =============================================================================
 
-/** 子要素として yield できるもの（プラグインによって拡張可能） */
-export type Child = PluginChildExtensions[keyof PluginChildExtensions];
+/** 子要素として yield できるもの（Extension から導出） */
+export type Child = InstructionOf[keyof Extension];
 
 /** Child から特定の type を抽出するヘルパー型 */
 export type ChildOfType<T extends string> = Extract<Child, { type: T }>;
 
-/** next() に渡される値の型（プラグインによって拡張可能） */
-export type ChildNext = void | PluginNextExtensions[keyof PluginNextExtensions];
+/** next() に渡される値の型（Extension から導出） */
+export type ChildNext = void | FeedbackOf[keyof Extension];
 
-/** return で返される値の型（プラグインによって拡張可能） */
-export type ChildReturn = void | PluginReturnExtensions[keyof PluginReturnExtensions];
+/** return で返される値の型（Extension から導出） */
+export type ChildReturn = void | ReturnOf[keyof Extension];
 
 // =============================================================================
 // Generator Types
@@ -102,7 +103,7 @@ export type ChildContent = Generator<Child, unknown, ChildNext>;
 /**
  * Element を yield し、最終的に ChildReturn を返すジェネレーター
  *
- * base パッケージでは Slot が PluginReturnExtensions に追加されるため、
+ * base パッケージでは Slot が Extension の feedback/return に含まれるため、
  * より具体的な型 (Generator<Child, Slot, Slot>) として使用される
  */
 export type Render = Generator<Child, ChildReturn, ChildNext>;

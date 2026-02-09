@@ -79,10 +79,12 @@ interface PluginResult {
 | ---------------- | --------------------------------------------------------------------- |
 | `Tagged<T,P>`    | Helper type for tagged unions: `{ type: T } & P`                      |
 | `CleanupFn`      | `() => void` - Lifecycle cleanup function                             |
-| `Child`          | Union of all yieldable types (extended by plugins)                    |
+| `Extension`      | Co-locates instruction and feedback types per DSL operation           |
+| `DSL<Key>`       | Typed generator for a specific DSL operation key                      |
+| `Child`          | Union of all yieldable types (derived from `Extension`)               |
 | `ChildOfType<T>` | Extract a specific type from `Child` by tag                           |
-| `ChildNext`      | Union of values passed via `next()` (extended by plugins)             |
-| `ChildReturn`    | Union of return values (extended by plugins)                          |
+| `ChildNext`      | Union of values passed via `next()` (derived from `Extension`)        |
+| `ChildReturn`    | Union of return values (derived from `Extension`)                     |
 | `Builder`        | `() => Instructor \| Instruction[]` - Element factory argument        |
 | `Instructor`     | `Iterator<Child, ChildReturn, ChildNext>` - Internal iterator         |
 | `Instruction`    | `Generator<Child, ChildReturn, ChildNext>` - Primitive return type    |
@@ -107,20 +109,21 @@ declare module "@ydant/core" {
     myMethod(): void;
   }
 
-  // Extend Child types (yieldable values)
-  interface PluginChildExtensions {
-    MyType: Tagged<"mytype", { value: string }>;
+  // Co-locate instruction, feedback, and return types per DSL operation
+  interface Extension {
+    mytype: { instruction: Tagged<"mytype", { value: string }>; feedback: MyResultType };
+    // return omitted → falls back to feedback (MyResultType)
+    // Use explicit `return` when it differs from feedback:
+    // "other": { instruction: OtherType; feedback: Bar; return: Baz };
+    // Or for return-only entries (no instruction):
+    // "composite": { return: CompositeHandle };
   }
+}
 
-  // Extend values passed via next()
-  interface PluginNextExtensions {
-    MyResult: MyResultType;
-  }
-
-  // Extend return values
-  interface PluginReturnExtensions {
-    MyResult: MyResultType;
-  }
+// Use DSL<Key> for typed generators
+function* myOperation(): DSL<"mytype"> {
+  const result = yield myInstruction; // result is MyResultType
+  return result;
 }
 ```
 

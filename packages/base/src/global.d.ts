@@ -71,22 +71,13 @@ declare module "@ydant/core" {
     deleteKeyedNode(key: string | number): void;
   }
 
-  // base の DSL 型を Child に追加
-  interface PluginChildExtensions {
-    Element: Element;
-    Attribute: Attribute;
-    Listener: Listener;
-    Text: Text;
-    Lifecycle: Lifecycle;
-  }
-
-  // Slot を ChildNext に追加（Element の yield* で受け取る値）
-  interface PluginNextExtensions {
-    Slot: Slot;
-  }
-
-  // Slot を ChildReturn に追加（Component の戻り値）
-  interface PluginReturnExtensions {
-    Slot: Slot;
+  // base の DSL 型を Extension に追加
+  // "element" の feedback: Slot が ChildReturn にも反映される（return → feedback フォールバック）
+  interface Extension {
+    element: { instruction: Element; feedback: Slot };
+    attribute: { instruction: Attribute };
+    listener: { instruction: Listener };
+    text: { instruction: Text };
+    lifecycle: { instruction: Lifecycle };
   }
 }
