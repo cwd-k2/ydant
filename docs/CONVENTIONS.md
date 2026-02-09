@@ -27,14 +27,15 @@ Ydant プロジェクトにおける命名規則、型の使い分け、コー�
 
 ## 型の使い分け
 
-| 型             | 用途                                                  | 定義元            |
-| -------------- | ----------------------------------------------------- | ----------------- |
-| `DSL<Key>`     | 個別 DSL 操作の戻り値型（`DSL<"text">` 等）           | `@ydant/core`     |
-| `Render`       | コンポーネント・要素・children の汎用ジェネレーター型 | `@ydant/core`     |
-| `Builder`      | 子要素のファクトリ関数 `() => Render \| Render[]`     | `@ydant/core`     |
-| `CleanupFn`    | ライフサイクル・副作用のクリーンアップ関数            | `@ydant/core`     |
-| `Component<P>` | コンポーネント型（Props なし / あり）                 | `@ydant/core`     |
-| `Readable<T>`  | 読み取り可能なリアクティブ値の共通インターフェース    | `@ydant/reactive` |
+| 型             | 用途                                                       | 定義元            |
+| -------------- | ---------------------------------------------------------- | ----------------- |
+| `DSL<Key>`     | 個別 DSL 操作の戻り値型（`DSL<"text">` 等）                | `@ydant/core`     |
+| `Instruction`  | 全 DSL 命令の union 型                                     | `@ydant/core`     |
+| `Feedback`     | `process()` の戻り値型（ジェネレーターへのフィードバック） | `@ydant/core`     |
+| `Render`       | コンポーネント・要素ファクトリの汎用ジェネレーター型       | `@ydant/core`     |
+| `Builder`      | 子要素のファクトリ関数 `() => Render \| Render[]`          | `@ydant/core`     |
+| `Component<P>` | コンポーネント型（Props なし / あり）                      | `@ydant/core`     |
+| `Readable<T>`  | 読み取り可能なリアクティブ値の共通インターフェース         | `@ydant/reactive` |
 
 ---
 
@@ -77,6 +78,25 @@ div(function* () {
 
 ```ts
 div(() => [classes("border"), text("simple")]);
+```
+
+### Props の命名: `children` vs `content`
+
+- **`children`**: DOM 要素の実際の子要素に使う（`RouterLink.children`, `Element.children`, `Slot.refresh(children)`）
+- **`content`**: 抽象的な描画関数を受け取る Props に使う（`Suspense.content`, `ErrorBoundary.content`, `Transition.content`, `TransitionGroup.content`）
+
+```ts
+// ✅ children: <a> 要素の DOM 子要素
+interface RouterLinkProps {
+  href: string;
+  children: () => Render;
+}
+
+// ✅ content: 抽象的な描画関数
+interface SuspenseProps {
+  fallback: () => Render;
+  content: () => Render;
+}
 ```
 
 ---
@@ -342,7 +362,7 @@ export function Transition(props: TransitionProps): Render {
 
 ```ts
 // 1. 型インポート
-import type { Tagged, CleanupFn } from "@ydant/core";
+import type { Instruction, Feedback } from "@ydant/core";
 import type { Slot, Element } from "@ydant/base";
 
 // 2. 外部パッケージ

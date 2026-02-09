@@ -121,6 +121,14 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - 型システムの強化
 - module augmentation を global.d.ts に分離
 
+### Phase 6: 型システム統合
+
+- 7 つのジェネレーター型を `DSL<Key>`, `Render`, `Builder` の 3 つに統合
+- `Child` → `Instruction`, `ChildNext` → `Feedback` にリネーム（DSL 用語に統一）
+- `ProcessResult`, `CleanupFn`, `MountOptions`, `ChildOfType` 等の薄いラッパーを廃止
+- Props 命名: `children` を DOM 子要素に限定、抽象的描画関数は `content` に統一
+- `toChildren` → `toRender` リネーム
+
 ---
 
 ## 学んだ教訓
@@ -137,11 +145,11 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 3. **paths から customConditions へ**
    - 型解決を pnpm workspace と整合させる
 
-4. **Render vs ElementRender の型ギャップ**
-   - `Component<P>` は `Render`（広い型）を返す宣言だが、実際には `div(...)` 等を返すため `ElementRender`（狭い型）が実行時の型
-   - `keyed()` のように「最初の yield が Element である」ことを前提とするユーティリティでは、`Render` を受け入れて内部で `as ElementRender` にキャストする対処が必要
-   - `ElementRender extends Render` なので引数の位置では `Render` を受ければ両方渡せる
-   - 将来的に `Component<P>` の戻り値を `ElementRender` に精密化するか、`ElementComponent<P>` のような型を導入する余地がある
+4. **DSL<Key> による型の統合**
+   - 以前は `Primitive<T>`, `Instruction`, `ChildContent`, `ElementRender` など用途別の型が乱立していた
+   - `DSLSchema` の `instruction` / `feedback` / `return` 3 フィールドから全てを導出する設計に統合
+   - `DSL<Key>` が個別操作の型、`Render` が汎用ジェネレーター型として機能
+   - 中間ラッパー（`ProcessResult` 等）も不要になり、プラグインは `Feedback` を直接返却
 
 ### 設計関連
 
