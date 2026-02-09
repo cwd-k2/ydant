@@ -3,23 +3,18 @@
  */
 
 import type { Render, Feedback, Instruction } from "../types";
-import type { Plugin, RenderAPI } from "../plugin";
-import { createRenderContext, createRenderAPIFactory } from "./context";
+import type { Plugin } from "../plugin";
+import { createRenderContextFactory } from "./context";
 import { processIterator } from "./iterator";
 
-// Lazily initialized RenderAPI factory
-let createRenderAPI: ((ctx: ReturnType<typeof createRenderContext>) => RenderAPI) | null = null;
+// Initialize the context factory with processIterator
+const createRenderContext = createRenderContextFactory(processIterator);
 
 /** Renders a top-level {@link Render} generator into a DOM element, clearing it first. */
 export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Plugin>): void {
   parent.innerHTML = "";
 
   const ctx = createRenderContext(parent, null, plugins);
-
-  // Initialize the RenderAPI factory on first call
-  if (!createRenderAPI) {
-    createRenderAPI = createRenderAPIFactory(processIterator);
-  }
 
   let result = gen.next();
 
@@ -32,8 +27,7 @@ export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Pl
       const plugin = plugins.get(type);
 
       if (plugin) {
-        const api = createRenderAPI(ctx);
-        const feedback = plugin.process(value as Instruction, api);
+        const feedback = plugin.process(value as Instruction, ctx);
         result = gen.next(feedback as Feedback);
         continue;
       }
@@ -46,5 +40,5 @@ export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Pl
 
 // Re-export for internal use
 export { processIterator } from "./iterator";
-export { createRenderContext, createRenderAPIFactory } from "./context";
+export { createRenderContextFactory } from "./context";
 export type { RenderContext } from "./types";

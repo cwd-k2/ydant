@@ -2,27 +2,28 @@
  * @ydant/base - Element processing
  */
 
-import type { Builder, Render } from "@ydant/core";
+import type { Render, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
-import type { Feedback, RenderAPI } from "@ydant/core";
+import type { Feedback } from "@ydant/core";
 import type { Element, Slot } from "../types";
+import { executeMount } from "./index";
 
 /** Processes an {@link Element} instruction: creates (or reuses) a DOM node, applies decorations, renders children, and returns a {@link Slot}. */
-export function processElement(element: Element, api: RenderAPI): Feedback {
+export function processElement(element: Element, ctx: RenderContext): Feedback {
   const elementKey = element.key ?? null;
 
   // Reuse existing node if a matching keyed element exists
   let node: globalThis.Element;
   let isReused = false;
 
-  if (elementKey !== null && api.getKeyedNode(elementKey)) {
-    const existing = api.getKeyedNode(elementKey)!;
+  if (elementKey !== null && ctx.keyedNodes.get(elementKey)) {
+    const existing = ctx.keyedNodes.get(elementKey)!;
     node = existing.node;
     isReused = true;
 
     // Carry over unmount callbacks from the previous lifecycle
-    api.addUnmountCallbacks(...existing.unmountCallbacks);
-    api.deleteKeyedNode(elementKey);
+    ctx.unmountCallbacks.push(...existing.unmountCallbacks);
+    ctx.keyedNodes.delete(elementKey);
   } else {
     node = element.ns
       ? document.createElementNS(element.ns, element.tag)
@@ -30,19 +31,19 @@ export function processElement(element: Element, api: RenderAPI): Feedback {
   }
 
   // Append to parent (moves the node if reused)
-  api.appendChild(node);
+  ctx.parent.appendChild(node);
 
   // Apply inline decorations (attributes, listeners)
   applyDecorations(element, node, isReused);
 
-  // Create a child-scoped API for this element
-  const childApi = api.createChildAPI(node);
+  // Create a child-scoped context for this element
+  const childCtx = ctx.createChildContext(node);
 
   // Register in keyedNodes if keyed. The unmount callbacks array is populated
   // after child processing completes (see below).
   const unmountCallbacksRef: Array<() => void> = [];
   if (elementKey !== null) {
-    api.setKeyedNode(elementKey, {
+    ctx.keyedNodes.set(elementKey, {
       key: elementKey,
       node,
       unmountCallbacks: unmountCallbacksRef,
@@ -50,7 +51,7 @@ export function processElement(element: Element, api: RenderAPI): Feedback {
   }
 
   // Create the Slot handle for this element
-  const slot = createSlot(node, childApi, unmountCallbacksRef);
+  const slot = createSlot(node, childCtx, unmountCallbacksRef);
 
   // Process children (clear first when reusing a keyed element)
   if (isReused) {
@@ -58,20 +59,20 @@ export function processElement(element: Element, api: RenderAPI): Feedback {
   }
 
   if (element.children) {
-    childApi.processChildren(() => element.children as Render, {
+    childCtx.processChildren(() => element.children as Render, {
       parent: node,
     });
   }
 
   // Collect child unmount callbacks so Slot.refresh() can clean them up
-  const childUnmountCallbacks = childApi.getUnmountCallbacks();
+  const childUnmountCallbacks = childCtx.unmountCallbacks;
   unmountCallbacksRef.push(...childUnmountCallbacks);
 
   // Propagate to parent so ancestor refresh() also triggers cleanup
-  api.addUnmountCallbacks(...unmountCallbacksRef);
+  ctx.unmountCallbacks.push(...unmountCallbacksRef);
 
   // Schedule mount callbacks for this element's subtree
-  childApi.executeMount();
+  executeMount(childCtx);
 
   return slot;
 }
@@ -101,14 +102,14 @@ function applyDecorations(element: Element, node: globalThis.Element, isReused: 
 /** Creates a {@link Slot} that can re-render its children and manage unmount callbacks. */
 function createSlot(
   node: globalThis.Element,
-  childApi: RenderAPI,
+  childCtx: RenderContext,
   unmountCallbacksRef: Array<() => void>,
 ): Slot {
   return {
     node: node as HTMLElement,
-    refresh(builder: Builder) {
+    refresh(builder) {
       // Get current unmount callbacks (includes cleanup functions added by executeMount)
-      const currentUnmountCallbacks = childApi.getUnmountCallbacks();
+      const currentUnmountCallbacks = childCtx.unmountCallbacks;
 
       // Run all unmount callbacks (both initial and cleanup functions), deduplicated
       const allCallbacks = new Set([...unmountCallbacksRef, ...currentUnmountCallbacks]);
@@ -123,14 +124,14 @@ function createSlot(
       }
 
       // Render new children
-      childApi.processChildren(builder, { parent: node });
+      childCtx.processChildren(builder, { parent: node });
 
       // Collect new unmount callbacks from the fresh render
-      const newUnmountCallbacks = childApi.getUnmountCallbacks();
+      const newUnmountCallbacks = childCtx.unmountCallbacks;
       unmountCallbacksRef.push(...newUnmountCallbacks);
 
       // Schedule mount callbacks
-      childApi.executeMount();
+      executeMount(childCtx);
     },
   };
 }

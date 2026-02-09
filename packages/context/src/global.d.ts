@@ -12,13 +12,6 @@ declare module "@ydant/core" {
     contextValues: Map<symbol, unknown>;
   }
 
-  interface RenderAPI {
-    /** Retrieves a context value by its symbol identifier. */
-    getContext<T>(id: symbol): T | undefined;
-    /** Sets a context value by its symbol identifier. */
-    setContext<T>(id: symbol, value: T): void;
-  }
-
   // The "context-inject" feedback type is `unknown` because the actual type
   // is determined by the Context<T> generic at the call site.
   interface DSLSchema {

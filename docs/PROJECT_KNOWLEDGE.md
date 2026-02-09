@@ -69,8 +69,7 @@ function* () {
 | 拡張ポイント    | 用途                                        |
 | --------------- | ------------------------------------------- |
 | `DSLSchema`     | DSL 操作定義（instruction/feedback/return） |
-| `RenderContext` | コンテキストプロパティ                      |
-| `RenderAPI`     | API メソッド                                |
+| `RenderContext` | コンテキストのプロパティ・メソッド          |
 
 ### Slot パターン
 
@@ -109,7 +108,7 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 
 ### Phase 4: API リファクタリング
 
-- RenderContext/RenderAPI を拡張可能に
+- RenderContext を拡張可能に
 - Component<P> 型の統合
 - createSlotRef の導入
 - 型エイリアスの整備
@@ -128,6 +127,15 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - `ProcessResult`, `CleanupFn`, `MountOptions`, `ChildOfType` 等の薄いラッパーを廃止
 - Props 命名: `children` を DOM 子要素に限定、抽象的描画関数は `content` に統一
 - `toChildren` → `toRender` リネーム
+
+### Phase 7: プラグインインターフェース統合
+
+- `RenderAPI` を廃止し `RenderContext` に一本化
+- `Plugin.extendAPI` フックを削除
+- `Plugin.process` の引数を `RenderAPI` → `RenderContext` に変更
+- `processChildren` と `createChildContext` をコア定義の `RenderContext` メソッドに移動
+- module augmentation が `RenderContext` の 1 箇所に集約
+- 拡張ポイント: `DSLSchema` + `RenderContext` の 2 つに整理
 
 ---
 

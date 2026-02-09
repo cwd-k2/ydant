@@ -15,7 +15,7 @@
  * ```
  */
 
-import type { Instruction, Feedback, Plugin, RenderAPI } from "@ydant/core";
+import type { Instruction, Feedback, Plugin, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 // Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
@@ -28,14 +28,14 @@ export function createReactivePlugin(): Plugin {
     types: ["reactive"],
     dependencies: ["base"],
 
-    process(instruction: Instruction, api: RenderAPI): Feedback {
+    process(instruction: Instruction, ctx: RenderContext): Feedback {
       if (!isTagged(instruction, "reactive")) return;
       const builder = instruction.builder;
 
       // Create a container element for the reactive block
       const container = document.createElement("span");
       container.setAttribute("data-reactive", "");
-      api.appendChild(container);
+      ctx.parent.appendChild(container);
 
       // Unmount callbacks accumulated during rendering
       let unmountCallbacks: Array<() => void> = [];
@@ -53,7 +53,7 @@ export function createReactivePlugin(): Plugin {
 
         // Process children while tracking Signal dependencies
         runWithSubscriber(update, () => {
-          api.processChildren(builder, { parent: container });
+          ctx.processChildren(builder, { parent: container });
         });
       };
 
@@ -61,7 +61,7 @@ export function createReactivePlugin(): Plugin {
       update();
 
       // Cleanup on unmount
-      api.onUnmount(() => {
+      ctx.unmountCallbacks.push(() => {
         for (const callback of unmountCallbacks) {
           callback();
         }

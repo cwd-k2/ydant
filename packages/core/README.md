@@ -57,12 +57,10 @@ interface Plugin {
   readonly dependencies?: readonly string[];
   /** Initialize plugin-specific properties in RenderContext */
   initContext?(ctx: RenderContext, parentCtx?: RenderContext): void;
-  /** Extend RenderAPI with plugin-specific methods */
-  extendAPI?(api: Partial<RenderAPI>, ctx: RenderContext): void;
   /** Merge child context state into parent context (called after processChildren) */
   mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
   /** Process an instruction and return feedback for the generator */
-  process(instruction: Instruction, api: RenderAPI): Feedback;
+  process(instruction: Instruction, ctx: RenderContext): Feedback;
 }
 ```
 
@@ -90,11 +88,6 @@ declare module "@ydant/core" {
     myProperty: MyType;
   }
 
-  // Extend RenderAPI with custom methods
-  interface RenderAPI {
-    myMethod(): void;
-  }
-
   // Co-locate instruction, feedback, and return types per DSL operation
   interface DSLSchema {
     mytype: { instruction: Tagged<"mytype", { value: string }>; feedback: MyResultType };
@@ -115,13 +108,15 @@ function* myOperation(): DSL<"mytype"> {
 
 ### RenderContext
 
-The rendering context holds state during rendering. Plugins extend it via `declare module`:
+The rendering context holds state and methods during rendering. Core fields include `parent`, `currentElement`, `plugins`, `processChildren`, and `createChildContext`. Plugins extend it via `declare module`:
 
 ```typescript
 interface RenderContext {
   parent: Node;
   currentElement: Element | null;
   plugins: Map<string, Plugin>;
+  processChildren(builder: Builder, options?: { parent?: Node }): void;
+  createChildContext(parent: Node): RenderContext;
 }
 ```
 
@@ -135,16 +130,12 @@ interface RenderContext {
 ## Creating Plugins
 
 ```typescript
-import type { Instruction, Feedback, Plugin, RenderAPI } from "@ydant/core";
+import type { Instruction, Feedback, Plugin, RenderContext } from "@ydant/core";
 
 // 1. Declare type extensions
 declare module "@ydant/core" {
   interface RenderContext {
     myData: Map<string, unknown>;
-  }
-  interface RenderAPI {
-    getMyData(key: string): unknown;
-    setMyData(key: string, value: unknown): void;
   }
 }
 
@@ -167,16 +158,10 @@ export function createMyPlugin(): Plugin {
       }
     },
 
-    // Extend RenderAPI with methods
-    extendAPI(api, ctx) {
-      api.getMyData = (key: string) => ctx.myData.get(key);
-      api.setMyData = (key: string, value: unknown) => ctx.myData.set(key, value);
-    },
-
-    // Process instructions
-    process(instruction: Instruction, api: RenderAPI): Feedback {
+    // Process instructions — access ctx properties directly
+    process(instruction: Instruction, ctx: RenderContext): Feedback {
       if ((instruction as { type: string }).type === "mytype") {
-        // Process the instruction using api.getMyData(), api.setMyData()
+        // Access context properties directly: ctx.myData.get(key), ctx.myData.set(key, value)
         return result;
       }
     },

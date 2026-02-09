@@ -193,20 +193,15 @@ declare module "@ydant/core" {
   interface RenderContext {
     myProperty: SomeType;
   }
-
-  interface RenderAPI {
-    myMethod(): void;
-  }
 }
 ```
 
 ### 拡張ポイント一覧
 
-| インターフェース | 用途                                        |
-| ---------------- | ------------------------------------------- |
-| `DSLSchema`      | DSL 操作定義（instruction/feedback/return） |
-| `RenderContext`  | レンダリングコンテキストのプロパティを追加  |
-| `RenderAPI`      | プラグイン API のメソッドを追加             |
+| インターフェース | 用途                                                 |
+| ---------------- | ---------------------------------------------------- |
+| `DSLSchema`      | DSL 操作定義（instruction/feedback/return）          |
+| `RenderContext`  | レンダリングコンテキストのプロパティ・メソッドを追加 |
 
 ### 型エイリアスの使い分け
 
@@ -229,7 +224,7 @@ function div(builder: Builder): DSL<"element"> { ... }
 export function createMyPlugin(): Plugin {
   return {
     name: "my-plugin",
-    types: ["mytype"],  // 処理する type の配列
+    types: ["mytype"], // 処理する type の配列
 
     // コンテキスト初期化
     initContext(ctx: RenderContext) {
@@ -241,15 +236,10 @@ export function createMyPlugin(): Plugin {
       // 必要に応じて親に情報を伝播
     },
 
-    // API 拡張
-    extendAPI(api: Partial<RenderAPI>, ctx: RenderContext) {
-      api.myMethod = () => { ... };
-    },
-
-    // Instruction の処理
-    process(instruction: Instruction, api: RenderAPI): Feedback {
+    // Instruction の処理（ctx のプロパティに直接アクセス）
+    process(instruction: Instruction, ctx: RenderContext): Feedback {
       if (isTagged(instruction, "mytype")) {
-        return processMyType(instruction, api);
+        return processMyType(instruction, ctx);
       }
     },
   };

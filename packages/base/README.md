@@ -47,45 +47,18 @@ mount(Greeting, document.getElementById("app")!, {
 | -------------------- | ------------------------------------------ |
 | `createBasePlugin()` | Create plugin to process base DSL elements |
 
-The base plugin extends `RenderContext` and `RenderAPI`:
+The base plugin extends `RenderContext`:
 
 ```typescript
-// RenderContext extensions
 interface RenderContext {
   isCurrentElementReused: boolean;
   keyedNodes: Map<string | number, KeyedNode>;
   mountCallbacks: Array<() => void | (() => void)>;
   unmountCallbacks: Array<() => void>;
 }
-
-// RenderAPI extensions
-interface RenderAPI {
-  // DOM operations
-  readonly parent: Node;
-  readonly currentElement: globalThis.Element | null;
-  setCurrentElement(element: globalThis.Element | null): void;
-  setParent(parent: Node): void;
-  appendChild(node: Node): void;
-
-  // Lifecycle
-  onMount(callback: () => void | (() => void)): void;
-  onUnmount(callback: () => void): void;
-  addUnmountCallbacks(...callbacks: Array<() => void>): void;
-  executeMount(): void;
-  getUnmountCallbacks(): Array<() => void>;
-
-  // Children processing
-  processChildren(builder: Builder, options?: { parent?: Node; inheritContext?: boolean }): void;
-  createChildAPI(parent: Node): RenderAPI;
-
-  // Keyed elements
-  readonly isCurrentElementReused: boolean;
-  setCurrentElementReused(reused: boolean): void;
-  getKeyedNode(key: string | number): KeyedNode | undefined;
-  setKeyedNode(key: string | number, node: KeyedNode): void;
-  deleteKeyedNode(key: string | number): void;
-}
 ```
+
+Plugin process functions access these properties directly on the context (e.g., `ctx.parent.appendChild(node)`, `ctx.mountCallbacks.push(cb)`, `ctx.keyedNodes.get(key)`).
 
 ### Element Factories
 

@@ -1,6 +1,6 @@
-# Showcase 5: Sortable List with key()
+# Showcase 5: Sortable List with keyed()
 
-`key()` プリミティブによる効率的なリスト更新のデモ。
+`keyed()` ラッパーによる効率的なリスト更新のデモ。
 
 ## 機能
 
@@ -10,14 +10,13 @@
 
 ## 実装のポイント
 
-### key() による差分更新
+### keyed() による差分更新
 
 リスト要素に一意なキーを設定することで、DOM ノードが再利用される:
 
 ```typescript
 for (const item of items) {
-  yield * key(item.id); // 次の要素にキーを関連付け
-  yield * li(() => [text(item.name)]);
+  yield * keyed(item.id, li)(() => [text(item.name)]);
 }
 ```
 
@@ -27,18 +26,17 @@ for (const item of items) {
 - input のフォーカスやスクロール位置の保持
 - アニメーションの継続
 
-### key なしとの違い
+### keyed なしとの違い
 
 ```typescript
-// key なし: ソート時にすべての li が再作成される
+// keyed なし: ソート時にすべての li が再作成される
 for (const item of items) {
   yield * li(() => [text(item.name)]);
 }
 
-// key あり: 同じ key を持つ li は DOM ノードが再利用される
+// keyed あり: 同じ key を持つ li は DOM ノードが再利用される
 for (const item of items) {
-  yield * key(item.id);
-  yield * li(() => [text(item.name)]);
+  yield * keyed(item.id, li)(() => [text(item.name)]);
 }
 ```
 

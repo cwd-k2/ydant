@@ -2,6 +2,7 @@
  * @ydant/core - Internal rendering types
  */
 
+import type { Builder } from "../types";
 import type { Plugin } from "../plugin";
 
 // =============================================================================
@@ -31,6 +32,8 @@ export interface RenderContext {
   currentElement: globalThis.Element | null;
   /** Registered plugins keyed by their type tags. */
   plugins: Map<string, Plugin>;
-  /** @internal Cached {@link import("../plugin").RenderAPI} instance for this context. */
-  _cachedAPI?: import("../plugin").RenderAPI;
+  /** Processes a {@link Builder}'s instructions in a new child context. */
+  processChildren(builder: Builder, options?: { parent?: Node }): void;
+  /** Creates a new child-scoped {@link RenderContext} for the given parent node. */
+  createChildContext(parent: Node): RenderContext;
 }

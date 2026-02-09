@@ -4,7 +4,7 @@
 
 import type { Builder, Render } from "../types";
 import { toRender } from "../utils";
-import type { Plugin, RenderAPI } from "../plugin";
+import type { Plugin } from "../plugin";
 import type { RenderContext } from "./types";
 
 /**
@@ -23,111 +23,64 @@ function forEachUniquePlugin(
   }
 }
 
-/** Creates a bare {@link RenderContext} with only core fields. Plugin properties are added by {@link Plugin.initContext}. */
-function createRenderContextBase(
-  parent: Node,
-  currentElement: globalThis.Element | null,
-  plugins: Map<string, Plugin>,
-): RenderContext {
-  return {
-    parent,
-    currentElement,
-    plugins,
-  } as RenderContext;
-}
-
 /**
- * Creates a fully initialized {@link RenderContext} by constructing the base
- * and running each plugin's `initContext` hook.
+ * Returns a factory that builds a fully initialized {@link RenderContext}.
  *
- * @param parent - The parent DOM node.
- * @param currentElement - The element being decorated, or `null`.
- * @param plugins - Registered plugins.
- * @param parentCtx - The parent context (for child context creation), or `undefined` at root.
+ * Structured as a higher-order function so that `processChildren` can
+ * capture the `processIterator` function via closure, breaking the
+ * circular dependency between this module and `iterator.ts`.
  */
-export function createRenderContext(
-  parent: Node,
-  currentElement: globalThis.Element | null,
-  plugins: Map<string, Plugin>,
-  parentCtx?: RenderContext,
-): RenderContext {
-  const ctx = createRenderContextBase(parent, currentElement, plugins);
-
-  // Let each plugin initialize its properties on the context
-  forEachUniquePlugin(plugins, (plugin) => {
-    plugin.initContext?.(ctx, parentCtx);
-  });
-
-  return ctx;
-}
-
-/**
- * Returns a factory that builds a {@link RenderAPI} from a {@link RenderContext}.
- *
- * Structured as a higher-order function to break the circular dependency
- * between this module and `processIterator`.
- *
- * The core provides only `parent`, `currentElement`, `processChildren`, and
- * `createChildAPI`. Plugin-specific methods are added via {@link Plugin.extendAPI}.
- */
-export function createRenderAPIFactory(
+export function createRenderContextFactory(
   processIterator: (iter: Render, ctx: RenderContext) => void,
 ) {
-  return function createRenderAPI(ctx: RenderContext): RenderAPI {
-    // Return cached API if available
-    if (ctx._cachedAPI) {
-      return ctx._cachedAPI;
-    }
+  function createRenderContext(
+    parent: Node,
+    currentElement: globalThis.Element | null,
+    plugins: Map<string, Plugin>,
+    parentCtx?: RenderContext,
+  ): RenderContext {
+    const ctx = {
+      parent,
+      currentElement,
+      plugins,
+    } as RenderContext;
 
-    const api: Record<string, unknown> = {
-      // ========================================================================
-      // Core API (plugins extend on top of these)
-      // ========================================================================
-      get parent() {
-        return ctx.parent;
-      },
-      get currentElement() {
-        return ctx.currentElement;
-      },
-      processChildren(
-        builder: Builder,
-        options?: { parent?: Node; inheritContext?: boolean },
-      ): void {
-        const targetParent = options?.parent ?? ctx.parent;
+    // Core-provided methods (capture processIterator via closure)
+    ctx.processChildren = (builder: Builder, options?: { parent?: Node }): void => {
+      const targetParent = options?.parent ?? ctx.parent;
 
-        const childCtx = createRenderContext(
-          targetParent,
-          targetParent instanceof globalThis.Element ? targetParent : null,
-          ctx.plugins,
-          ctx,
-        );
+      const childCtx = createRenderContext(
+        targetParent,
+        targetParent instanceof globalThis.Element ? targetParent : null,
+        ctx.plugins,
+        ctx,
+      );
 
-        const children = toRender(builder());
-        processIterator(children, childCtx);
+      const children = toRender(builder());
+      processIterator(children, childCtx);
 
-        // Propagate child state back to parent
-        forEachUniquePlugin(ctx.plugins, (plugin) => {
-          plugin.mergeChildContext?.(ctx, childCtx);
-        });
-      },
-      createChildAPI(parent: Node): RenderAPI {
-        const childCtx = createRenderContext(
-          parent,
-          parent instanceof globalThis.Element ? parent : null,
-          ctx.plugins,
-          ctx,
-        );
-        return createRenderAPI(childCtx);
-      },
+      // Propagate child state back to parent
+      forEachUniquePlugin(ctx.plugins, (plugin) => {
+        plugin.mergeChildContext?.(ctx, childCtx);
+      });
     };
 
-    // Let each plugin add its methods to the API
-    forEachUniquePlugin(ctx.plugins, (plugin) => {
-      plugin.extendAPI?.(api as Partial<RenderAPI>, ctx);
+    ctx.createChildContext = (parent: Node): RenderContext => {
+      return createRenderContext(
+        parent,
+        parent instanceof globalThis.Element ? parent : null,
+        ctx.plugins,
+        ctx,
+      );
+    };
+
+    // Let each plugin initialize its properties on the context
+    forEachUniquePlugin(plugins, (plugin) => {
+      plugin.initContext?.(ctx, parentCtx);
     });
 
-    const renderAPI = api as unknown as RenderAPI;
-    ctx._cachedAPI = renderAPI;
-    return renderAPI;
-  };
+    return ctx;
+  }
+
+  return createRenderContext;
 }

@@ -3,23 +3,13 @@
  */
 
 import type { Instruction, Render, Feedback } from "../types";
-import type { RenderAPI } from "../plugin";
 import type { RenderContext } from "./types";
-import { createRenderAPIFactory } from "./context";
-
-// Lazily initialized to break the circular dependency with context.ts
-let createRenderAPI: ((ctx: RenderContext) => RenderAPI) | null = null;
 
 /**
  * Walks a {@link Render} generator, dispatching each yielded {@link Instruction}
  * to the appropriate plugin. Unrecognized types are silently skipped.
  */
 export function processIterator(iter: Render, ctx: RenderContext): void {
-  // Initialize the RenderAPI factory on first call
-  if (!createRenderAPI) {
-    createRenderAPI = createRenderAPIFactory(processIterator);
-  }
-
   let result = iter.next();
 
   while (!result.done) {
@@ -31,8 +21,7 @@ export function processIterator(iter: Render, ctx: RenderContext): void {
       const plugin = ctx.plugins.get(type);
 
       if (plugin) {
-        const api = createRenderAPI(ctx);
-        const feedback = plugin.process(value as Instruction, api);
+        const feedback = plugin.process(value as Instruction, ctx);
         result = iter.next(feedback as Feedback);
         continue;
       }

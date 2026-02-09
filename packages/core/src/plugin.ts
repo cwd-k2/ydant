@@ -5,25 +5,6 @@
 import type { Instruction, Feedback } from "./types";
 import type { RenderContext } from "./render/types";
 
-// =============================================================================
-// Plugin API Extension Types
-// =============================================================================
-
-/**
- * The API surface available to plugins during child processing.
- *
- * Plugins extend this interface via module augmentation to add their own methods.
- * For example, `@ydant/base` adds DOM-manipulation methods (appendChild, setParent, etc.).
- *
- * @example
- * ```typescript
- * declare module "@ydant/core" {
- *   interface RenderAPI extends BaseRenderAPI {}
- * }
- * ```
- */
-export interface RenderAPI {}
-
 /** A plugin that teaches the core runtime how to handle specific DSL operations. */
 export interface Plugin {
   /** Unique identifier for this plugin. */
@@ -43,17 +24,6 @@ export interface Plugin {
    */
   initContext?(ctx: RenderContext, parentCtx?: RenderContext): void;
   /**
-   * Adds plugin-specific methods to the {@link RenderAPI}.
-   *
-   * Called once per context when the API is first requested.
-   * Implementations should assign methods to `api` that match the
-   * interface declared via module augmentation.
-   *
-   * @param api - The API object to extend.
-   * @param ctx - The fully initialized {@link RenderContext}.
-   */
-  extendAPI?(api: Partial<RenderAPI>, ctx: RenderContext): void;
-  /**
    * Propagates state from a child context back to its parent.
    *
    * Called after `processChildren` finishes iterating a child's instructions.
@@ -64,5 +34,5 @@ export interface Plugin {
    */
   mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
   /** Processes a single {@link Instruction} and returns feedback for the generator. */
-  process(instruction: Instruction, api: RenderAPI): Feedback;
+  process(instruction: Instruction, ctx: RenderContext): Feedback;
 }

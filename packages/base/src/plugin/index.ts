@@ -2,17 +2,16 @@
  * @ydant/base - Base plugin
  */
 
-import type { Instruction, Feedback, Plugin, RenderAPI, RenderContext } from "@ydant/core";
+import type { Instruction, Feedback, Plugin, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 import { processElement } from "./element";
 import { processAttribute, processListener, processText, processLifecycle } from "./primitives";
-import type { KeyedNode } from "../types";
 
 /**
  * Executes pending mount callbacks on the next animation frame.
  * If a mount callback returns a cleanup function, it is added to unmountCallbacks.
  */
-function executeMount(ctx: RenderContext): void {
+export function executeMount(ctx: RenderContext): void {
   const mountCallbacks = ctx.mountCallbacks;
   const unmountCallbacks = ctx.unmountCallbacks;
 
@@ -56,74 +55,24 @@ export function createBasePlugin(): Plugin {
       }
     },
 
-    extendAPI(api: Partial<RenderAPI>, ctx: RenderContext) {
-      // DOM manipulation
-      Object.defineProperty(api, "isCurrentElementReused", {
-        get() {
-          return ctx.isCurrentElementReused;
-        },
-        enumerable: true,
-      });
-      api.appendChild = (node: Node) => {
-        (ctx.parent as Node).appendChild(node);
-      };
-      api.setCurrentElement = (element: globalThis.Element | null) => {
-        ctx.currentElement = element;
-      };
-      api.setParent = (parent: Node) => {
-        ctx.parent = parent;
-      };
-      api.setCurrentElementReused = (reused: boolean) => {
-        ctx.isCurrentElementReused = reused;
-      };
-
-      // Keyed element management
-      const keyedNodes = ctx.keyedNodes;
-      api.getKeyedNode = (key: string | number) => keyedNodes.get(key);
-      api.setKeyedNode = (key: string | number, node: KeyedNode) => {
-        keyedNodes.set(key, node);
-      };
-      api.deleteKeyedNode = (key: string | number) => {
-        keyedNodes.delete(key);
-      };
-
-      // Lifecycle management
-      const mountCallbacks = ctx.mountCallbacks;
-      const unmountCallbacks = ctx.unmountCallbacks;
-
-      api.onMount = (callback: () => void | (() => void)) => {
-        mountCallbacks.push(callback);
-      };
-      api.onUnmount = (callback: () => void) => {
-        unmountCallbacks.push(callback);
-      };
-      api.addUnmountCallbacks = (...callbacks: Array<() => void>) => {
-        unmountCallbacks.push(...callbacks);
-      };
-      api.executeMount = () => {
-        executeMount(ctx);
-      };
-      api.getUnmountCallbacks = () => unmountCallbacks;
-    },
-
-    process(instruction: Instruction, api: RenderAPI): Feedback {
+    process(instruction: Instruction, ctx: RenderContext): Feedback {
       if (isTagged(instruction, "element")) {
-        return processElement(instruction, api);
+        return processElement(instruction, ctx);
       }
       if (isTagged(instruction, "text")) {
-        processText(instruction, api);
+        processText(instruction, ctx);
         return;
       }
       if (isTagged(instruction, "attribute")) {
-        processAttribute(instruction, api);
+        processAttribute(instruction, ctx);
         return;
       }
       if (isTagged(instruction, "listener")) {
-        processListener(instruction, api);
+        processListener(instruction, ctx);
         return;
       }
       if (isTagged(instruction, "lifecycle")) {
-        processLifecycle(instruction, api);
+        processLifecycle(instruction, ctx);
         return;
       }
     },
