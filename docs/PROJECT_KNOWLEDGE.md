@@ -137,6 +137,13 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - module augmentation が `RenderContext` の 1 箇所に集約
 - 拡張ポイント: `SpellSchema` + `RenderContext` の 2 つに整理
 
+### Phase 8: 命名リファクタリング — Spell / Request / Response
+
+- `DSLSchema` → `SpellSchema`, `DSL<Key>` → `Spell<Key>`（ユーザー向けメタファー層）
+- `Instruction` → `Request`, `Feedback` → `Response`（内部の機械的な層）
+- SpellSchema フィールド: `instruction` → `request`, `feedback` → `response`
+- 方針: 「ユーザーに近い部分はメタファー、内部は機械的に」で層を分ける
+
 ---
 
 ## 学んだ教訓
