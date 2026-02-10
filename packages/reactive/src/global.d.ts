@@ -5,8 +5,13 @@
  */
 
 import type { Reactive } from "./reactive";
+import type { ReactiveScope } from "./scope";
 
 declare module "@ydant/core" {
+  interface RenderContext {
+    reactiveScope: ReactiveScope;
+  }
+
   interface SpellSchema {
     reactive: { request: Reactive };
   }

@@ -13,6 +13,7 @@
 
 import type { Subscriber, Readable } from "./types";
 import { getCurrentSubscriber, runWithSubscriber } from "./tracking";
+import { getActiveScope, runInScope } from "./scope";
 
 /** A read-only reactive derived value. See {@link computed}. */
 export interface Computed<T> extends Readable<T> {}
@@ -21,6 +22,9 @@ export interface Computed<T> extends Readable<T> {}
  * Creates a {@link Computed} value derived from other reactive sources.
  *
  * The computation is lazy — it only re-evaluates when read after a dependency change.
+ *
+ * Captures the active ReactiveScope at creation time and recomputes
+ * within that scope, ensuring correct subscriber tracking across mount boundaries.
  *
  * @param fn - A function that computes the derived value by reading reactive sources.
  *
@@ -39,6 +43,7 @@ export function computed<T>(fn: () => T): Computed<T> {
   let cachedValue: T;
   let isDirty = true;
   const subscribers = new Set<Subscriber>();
+  const scope = getActiveScope();
 
   // This computed subscribes to its dependencies as a subscriber
   const recompute = () => {
@@ -57,8 +62,10 @@ export function computed<T>(fn: () => T): Computed<T> {
     }
 
     if (isDirty) {
-      // Recompute while tracking dependencies
-      cachedValue = runWithSubscriber(recompute, fn);
+      // Recompute while tracking dependencies, within the captured scope
+      runInScope(scope, () => {
+        cachedValue = runWithSubscriber(recompute, fn);
+      });
       isDirty = false;
     }
 

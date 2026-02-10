@@ -32,7 +32,8 @@ export const HomePage: Component = () =>
         classes("text-sm"),
         text(
           "This app uses the plugin system: createReactivePlugin() and createContextPlugin() " +
-            "are passed to mount() to enable reactive and context features.",
+            "are passed to mount() to enable each feature. " +
+            "Router components (RouterView, RouterLink) work with base primitives alone.",
         ),
       ]);
     });

@@ -1,0 +1,15 @@
+{
+  "name": "showcase10",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo: Form Validation with SlotRef (no reactive plugin)",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ydant/base": "workspace:*",
+    "@ydant/core": "workspace:*"
+  },
+  "packageManager": "pnpm@10.22.0"
+}

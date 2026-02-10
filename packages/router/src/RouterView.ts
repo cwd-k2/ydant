@@ -3,6 +3,7 @@
  *
  * Renders the component that matches the current URL path.
  * Compares route definitions against the current URL and renders the first match.
+ * Listens for `popstate` and `ydant:route-change` DOM events for re-rendering.
  *
  * @example
  * ```typescript
@@ -21,22 +22,21 @@
 import type { Render } from "@ydant/core";
 import { div, onMount } from "@ydant/base";
 import type { RouteDefinition, RouterViewProps } from "./types";
-import { currentRoute, routeListeners, updateRoute } from "./state";
+import { ROUTE_CHANGE_EVENT } from "./state";
 import { matchPath } from "./matching";
 
 /**
- * Find the first route definition that matches the current path, returning the route and extracted params.
+ * Find the first route definition that matches the given path, returning the route and extracted params.
  */
 function findMatchedRoute(
   routes: RouteDefinition[],
   base: string,
+  path: string,
 ): { route: RouteDefinition; params: Record<string, string> } | null {
-  const path = currentRoute.path.startsWith(base)
-    ? currentRoute.path.slice(base.length) || "/"
-    : currentRoute.path;
+  const relativePath = path.startsWith(base) ? path.slice(base.length) || "/" : path;
 
   for (const route of routes) {
-    const { match, params } = matchPath(path, route.path);
+    const { match, params } = matchPath(relativePath, route.path);
     if (match) {
       return { route, params };
     }
@@ -46,18 +46,18 @@ function findMatchedRoute(
 }
 
 /**
- * Synchronously render the matched route's component (only when the guard is synchronous).
+ * Build the content for a matched route, passing params as props to the component.
  */
-function renderMatchedRouteSync(routes: RouteDefinition[], base: string): Render[] {
-  const matched = findMatchedRoute(routes, base);
+function renderMatchedRouteContent(
+  matched: { route: RouteDefinition; params: Record<string, string> } | null,
+): Render[] {
   if (!matched) return [];
 
   const { route, params } = matched;
-  currentRoute.params = params;
 
-  // If there is no guard, render the component directly
+  // If there is no guard, render the component directly with params
   if (!route.guard) {
-    return [route.component()];
+    return [route.component({ params })];
   }
 
   const allowed = route.guard();
@@ -66,18 +66,16 @@ function renderMatchedRouteSync(routes: RouteDefinition[], base: string): Render
     return [];
   }
 
-  return allowed ? [route.component()] : [];
+  return allowed ? [route.component({ params })] : [];
 }
 
 /**
  * Handle async route guards and call refresh when the guard resolves to true.
  */
 async function handleAsyncGuard(
-  routes: RouteDefinition[],
-  base: string,
+  matched: { route: RouteDefinition; params: Record<string, string> } | null,
   refresh: (builder: () => Render[]) => void,
 ): Promise<void> {
-  const matched = findMatchedRoute(routes, base);
   if (!matched) return;
 
   const { route, params } = matched;
@@ -87,10 +85,8 @@ async function handleAsyncGuard(
     if (allowed instanceof Promise) {
       const result = await allowed;
       if (result) {
-        currentRoute.params = params;
-        refresh(() => [route.component()]);
+        refresh(() => [route.component({ params })]);
       }
-      // If the guard returned false, do not refresh (stays empty)
     }
   }
 }
@@ -99,7 +95,8 @@ async function handleAsyncGuard(
  * RouterView component
  *
  * Displays the component matching the current URL path.
- * Listens for History API popstate events to re-render on URL changes.
+ * Listens for `popstate` (browser back/forward) and `ydant:route-change`
+ * (programmatic navigation) events to re-render on URL changes.
  *
  * @param props - RouterView properties
  * @param props.routes - Array of route definitions to match against
@@ -110,32 +107,28 @@ export function RouterView(props: RouterViewProps): Render {
   const { routes, base = "" } = props;
 
   return div(function* () {
+    const matched = findMatchedRoute(routes, base, window.location.pathname);
+
     // Create an inner container slot for the matched route's content
-    const innerSlot = yield* div(() => renderMatchedRouteSync(routes, base));
+    const innerSlot = yield* div(() => renderMatchedRouteContent(matched));
 
     // Handle initial async guard evaluation
-    handleAsyncGuard(routes, base, (builder) => innerSlot.refresh(builder));
+    handleAsyncGuard(matched, (builder) => innerSlot.refresh(builder));
 
-    // Register a popstate event listener for browser navigation
+    // Listen for route change events
     yield* onMount(() => {
-      const handlePopState = () => {
-        updateRoute(window.location.pathname);
-        innerSlot.refresh(() => renderMatchedRouteSync(routes, base));
-        handleAsyncGuard(routes, base, (builder) => innerSlot.refresh(builder));
+      const handleRouteChange = () => {
+        const newMatched = findMatchedRoute(routes, base, window.location.pathname);
+        innerSlot.refresh(() => renderMatchedRouteContent(newMatched));
+        handleAsyncGuard(newMatched, (builder) => innerSlot.refresh(builder));
       };
 
-      window.addEventListener("popstate", handlePopState);
-
-      // Register a route change listener for programmatic navigation
-      const routeChangeListener = () => {
-        innerSlot.refresh(() => renderMatchedRouteSync(routes, base));
-        handleAsyncGuard(routes, base, (builder) => innerSlot.refresh(builder));
-      };
-      routeListeners.add(routeChangeListener);
+      window.addEventListener("popstate", handleRouteChange);
+      window.addEventListener(ROUTE_CHANGE_EVENT, handleRouteChange);
 
       return () => {
-        window.removeEventListener("popstate", handlePopState);
-        routeListeners.delete(routeChangeListener);
+        window.removeEventListener("popstate", handleRouteChange);
+        window.removeEventListener(ROUTE_CHANGE_EVENT, handleRouteChange);
       };
     });
   });

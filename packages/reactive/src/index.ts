@@ -32,6 +32,7 @@ export type { Subscriber, Readable } from "./types";
 export type { Signal } from "./signal";
 export type { Computed } from "./computed";
 export type { Reactive } from "./reactive";
+export type { ReactiveScope } from "./scope";
 
 // ─── Runtime ───
 export { signal } from "./signal";

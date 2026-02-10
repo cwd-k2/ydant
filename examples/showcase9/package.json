@@ -1,0 +1,17 @@
+{
+  "name": "showcase9",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo: Admin Dashboard with Route Guards and refetchInterval",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ydant/async": "workspace:*",
+    "@ydant/base": "workspace:*",
+    "@ydant/core": "workspace:*",
+    "@ydant/router": "workspace:*"
+  },
+  "packageManager": "pnpm@10.22.0"
+}
