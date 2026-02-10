@@ -33,7 +33,7 @@ export type Listener = Tagged<"listener", { key: string; value: (e: Event) => vo
 export type Text = Tagged<"text", { content: string }>;
 
 /** A lifecycle hook that runs when the component is mounted. May return a cleanup function. */
-export type MountLifecycle = Tagged<
+type MountLifecycle = Tagged<
   "lifecycle",
   {
     event: "mount";
@@ -42,7 +42,7 @@ export type MountLifecycle = Tagged<
 >;
 
 /** A lifecycle hook that runs when the component is unmounted. */
-export type UnmountLifecycle = Tagged<
+type UnmountLifecycle = Tagged<
   "lifecycle",
   {
     event: "unmount";
@@ -68,16 +68,13 @@ export interface KeyedNode {
 // Element Types
 // =============================================================================
 
-/** An inline decoration applied during element creation — either an {@link Attribute} or {@link Listener}. */
-export type Decoration = Attribute | Listener;
-
 /** A DSL instruction that creates a DOM element with children and optional decorations. */
 export type Element = Tagged<
   "element",
   {
     tag: string;
     children: Render;
-    decorations?: Decoration[];
+    decorations?: Array<Attribute | Listener>;
     key?: string | number;
     ns?: string;
   }

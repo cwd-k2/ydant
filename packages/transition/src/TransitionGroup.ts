@@ -23,7 +23,7 @@
 import type { Spell } from "@ydant/core";
 import type { Slot } from "@ydant/base";
 import { div, keyed, onMount } from "@ydant/base";
-import { addClasses, removeClasses, waitForTransition } from "./utils";
+import { runTransition } from "./utils";
 
 export interface TransitionGroupProps<T> {
   /** Array of items to apply transitions to */
@@ -46,33 +46,13 @@ export interface TransitionGroupProps<T> {
   content: (item: T, index: number) => Spell<"element">;
 }
 
-/**
- * Run an enter transition on the given element
- */
+/** Run an enter transition on the given element. */
 async function enterTransition<T>(el: HTMLElement, props: TransitionGroupProps<T>): Promise<void> {
-  // Set initial state
-  addClasses(el, props.enter);
-  addClasses(el, props.enterFrom);
-
-  // Force reflow
-  void el.offsetHeight;
-
-  // Start transition on the next frame
-  requestAnimationFrame(() => {
-    removeClasses(el, props.enterFrom);
-    addClasses(el, props.enterTo);
-  });
-
-  // Wait for transition to finish
-  await waitForTransition(el);
-
-  // Clean up transition classes
-  removeClasses(el, props.enter);
-  removeClasses(el, props.enterTo);
+  return runTransition(el, { base: props.enter, from: props.enterFrom, to: props.enterTo });
 }
 
 /**
- * Run a leave transition on the given element and remove it from the DOM when complete
+ * Run a leave transition on the given element and remove it from the DOM when complete.
  */
 async function leaveTransition<T>(
   el: HTMLElement,
@@ -84,23 +64,7 @@ async function leaveTransition<T>(
     return;
   }
 
-  // Set initial state
-  addClasses(el, props.leave);
-  addClasses(el, props.leaveFrom);
-
-  // Force reflow
-  void el.offsetHeight;
-
-  // Start transition on the next frame
-  requestAnimationFrame(() => {
-    removeClasses(el, props.leaveFrom);
-    addClasses(el, props.leaveTo);
-  });
-
-  // Wait for transition to finish
-  await waitForTransition(el);
-
-  // Remove element from DOM
+  await runTransition(el, { base: props.leave, from: props.leaveFrom, to: props.leaveTo });
   el.remove();
 }
 

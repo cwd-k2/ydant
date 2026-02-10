@@ -21,7 +21,7 @@
 import type { Builder, Render } from "@ydant/core";
 import type { Slot, Element } from "@ydant/base";
 import { div, onMount } from "@ydant/base";
-import { addClasses, removeClasses, waitForTransition } from "./utils";
+import { runTransition } from "./utils";
 
 export interface TransitionProps {
   /** Whether to show the element */
@@ -42,60 +42,14 @@ export interface TransitionProps {
   content: () => Render;
 }
 
-/**
- * Run an enter transition on the given element
- */
-export async function enterTransition(el: HTMLElement, props: TransitionProps): Promise<void> {
-  // Set initial state
-  addClasses(el, props.enter);
-  addClasses(el, props.enterFrom);
-
-  // Force reflow
-  void el.offsetHeight;
-
-  // Start transition on the next frame
-  await new Promise<void>((resolve) => {
-    requestAnimationFrame(() => {
-      addClasses(el, props.enterTo);
-      removeClasses(el, props.enterFrom);
-      resolve();
-    });
-  });
-
-  // Wait for transition to finish
-  await waitForTransition(el);
-
-  // Clean up transition classes
-  removeClasses(el, props.enter);
-  removeClasses(el, props.enterTo);
+/** Run an enter transition on the given element. */
+async function enterTransition(el: HTMLElement, props: TransitionProps): Promise<void> {
+  return runTransition(el, { base: props.enter, from: props.enterFrom, to: props.enterTo });
 }
 
-/**
- * Run a leave transition on the given element
- */
-export async function leaveTransition(el: HTMLElement, props: TransitionProps): Promise<void> {
-  // Set initial state
-  addClasses(el, props.leave);
-  addClasses(el, props.leaveFrom);
-
-  // Force reflow
-  void el.offsetHeight;
-
-  // Start transition on the next frame
-  await new Promise<void>((resolve) => {
-    requestAnimationFrame(() => {
-      addClasses(el, props.leaveTo);
-      removeClasses(el, props.leaveFrom);
-      resolve();
-    });
-  });
-
-  // Wait for transition to finish
-  await waitForTransition(el);
-
-  // Clean up transition classes
-  removeClasses(el, props.leave);
-  removeClasses(el, props.leaveTo);
+/** Run a leave transition on the given element. */
+async function leaveTransition(el: HTMLElement, props: TransitionProps): Promise<void> {
+  return runTransition(el, { base: props.leave, from: props.leaveFrom, to: props.leaveTo });
 }
 
 // WeakMap to persist transition state across renders

@@ -41,5 +41,4 @@ export { mount } from "./mount";
 // Render (internal, for plugin implementations)
 // =============================================================================
 
-export { render, processIterator, createRenderContextFactory } from "./render";
 export type { RenderContext } from "./render";

@@ -3,13 +3,8 @@ import type { Builder } from "@ydant/core";
 import { mount } from "@ydant/core";
 import type { Slot } from "@ydant/base";
 import { createBasePlugin, div, text, classes } from "@ydant/base";
-import {
-  Transition,
-  createTransition,
-  enterTransition,
-  leaveTransition,
-  type TransitionProps,
-} from "../Transition";
+import { Transition, createTransition } from "../Transition";
+import { runTransition } from "../utils";
 
 describe("Transition", () => {
   let container: HTMLElement;
@@ -233,7 +228,7 @@ describe("Transition", () => {
   });
 });
 
-describe("enterTransition", () => {
+describe("runTransition", () => {
   let element: HTMLElement;
 
   beforeEach(() => {
@@ -251,18 +246,14 @@ describe("enterTransition", () => {
     vi.restoreAllMocks();
   });
 
-  it("adds enter and enterFrom classes initially", async () => {
-    const props: TransitionProps = {
-      show: true,
-      enter: "transition-opacity",
-      enterFrom: "opacity-0",
-      enterTo: "opacity-100",
-      content: () => div(() => []),
-    };
+  it("adds base and from classes initially", async () => {
+    runTransition(element, {
+      base: "transition-opacity",
+      from: "opacity-0",
+      to: "opacity-100",
+    });
 
-    enterTransition(element, props);
-
-    // Initially, enter and enterFrom should be added
+    // Initially, base and from should be added
     expect(element.classList.contains("transition-opacity")).toBe(true);
     expect(element.classList.contains("opacity-0")).toBe(true);
 
@@ -278,15 +269,11 @@ describe("enterTransition", () => {
   });
 
   it("handles multiple classes in a single string", async () => {
-    const props: TransitionProps = {
-      show: true,
-      enter: "transition-all duration-300",
-      enterFrom: "opacity-0 scale-95",
-      enterTo: "opacity-100 scale-100",
-      content: () => div(() => []),
-    };
-
-    enterTransition(element, props);
+    runTransition(element, {
+      base: "transition-all duration-300",
+      from: "opacity-0 scale-95",
+      to: "opacity-100 scale-100",
+    });
 
     expect(element.classList.contains("transition-all")).toBe(true);
     expect(element.classList.contains("duration-300")).toBe(true);
@@ -297,77 +284,25 @@ describe("enterTransition", () => {
   });
 
   it("handles undefined classes", async () => {
-    const props: TransitionProps = {
-      show: true,
-      content: () => div(() => []),
-    };
-
-    enterTransition(element, props);
+    runTransition(element, {});
     await vi.runAllTimersAsync();
 
     // Should complete without error
     expect(element.classList.length).toBe(0);
   });
-});
 
-describe("leaveTransition", () => {
-  let element: HTMLElement;
-
-  beforeEach(() => {
-    element = document.createElement("div");
-    document.body.appendChild(element);
-    vi.useFakeTimers();
-
-    vi.spyOn(window, "getComputedStyle").mockReturnValue({
-      transitionDuration: "0s",
-    } as CSSStyleDeclaration);
-  });
-
-  afterEach(() => {
-    element.remove();
-    vi.restoreAllMocks();
-  });
-
-  it("adds leave and leaveFrom classes initially", async () => {
-    const props: TransitionProps = {
-      show: false,
-      leave: "transition-opacity",
-      leaveFrom: "opacity-100",
-      leaveTo: "opacity-0",
-      content: () => div(() => []),
-    };
-
-    leaveTransition(element, props);
-
-    // Initially, leave and leaveFrom should be added
-    expect(element.classList.contains("transition-opacity")).toBe(true);
-    expect(element.classList.contains("opacity-100")).toBe(true);
-
-    // Advance RAF
-    await vi.runAllTimersAsync();
-
-    // After completion, all classes should be removed
-    expect(element.classList.contains("transition-opacity")).toBe(false);
-    expect(element.classList.contains("opacity-100")).toBe(false);
-    expect(element.classList.contains("opacity-0")).toBe(false);
-  });
-
-  it("transitions from leaveFrom to leaveTo", async () => {
-    const props: TransitionProps = {
-      show: false,
-      leave: "transition-all",
-      leaveFrom: "opacity-100 scale-100",
-      leaveTo: "opacity-0 scale-95",
-      content: () => div(() => []),
-    };
-
-    leaveTransition(element, props);
+  it("swaps from to to classes after rAF", async () => {
+    runTransition(element, {
+      base: "transition-all",
+      from: "opacity-100 scale-100",
+      to: "opacity-0 scale-95",
+    });
 
     // Before RAF
     expect(element.classList.contains("opacity-100")).toBe(true);
     expect(element.classList.contains("scale-100")).toBe(true);
 
-    // After RAF, leaveFrom is removed and leaveTo is added
+    // After RAF, from is removed and to is added
     vi.advanceTimersToNextFrame();
 
     expect(element.classList.contains("opacity-100")).toBe(false);
@@ -383,15 +318,11 @@ describe("leaveTransition", () => {
       transitionDuration: "0.3s",
     } as CSSStyleDeclaration);
 
-    const props: TransitionProps = {
-      show: false,
-      leave: "transition-opacity",
-      leaveFrom: "opacity-100",
-      leaveTo: "opacity-0",
-      content: () => div(() => []),
-    };
-
-    leaveTransition(element, props);
+    runTransition(element, {
+      base: "transition-opacity",
+      from: "opacity-100",
+      to: "opacity-0",
+    });
 
     // Run all async operations
     await vi.runAllTimersAsync();
@@ -405,15 +336,11 @@ describe("leaveTransition", () => {
       transitionDuration: "1s",
     } as CSSStyleDeclaration);
 
-    const props: TransitionProps = {
-      show: false,
-      leave: "transition-opacity",
-      leaveFrom: "opacity-100",
-      leaveTo: "opacity-0",
-      content: () => div(() => []),
-    };
-
-    leaveTransition(element, props);
+    runTransition(element, {
+      base: "transition-opacity",
+      from: "opacity-100",
+      to: "opacity-0",
+    });
 
     vi.advanceTimersToNextFrame();
 

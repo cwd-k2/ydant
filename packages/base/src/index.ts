@@ -6,7 +6,7 @@
  */
 
 // Types
-export type { Slot, Element, Attribute, Listener, Text, Lifecycle, Decoration } from "./types";
+export type { Slot, Element, Attribute, Listener, Text, Lifecycle } from "./types";
 
 // Primitives
 export { attr, classes, on, text, onMount, onUnmount, style, keyed } from "./primitives";

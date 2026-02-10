@@ -3,10 +3,8 @@
  */
 
 import type { Plugin } from "./plugin";
-import type { Render } from "./types";
+import type { Component } from "./types";
 import { render } from "./render";
-
-type Component = () => Render;
 
 /**
  * Mounts a component into the DOM, starting the rendering pipeline.

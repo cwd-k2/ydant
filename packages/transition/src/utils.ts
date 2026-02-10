@@ -36,6 +36,33 @@ export function removeClasses(el: HTMLElement, classes: string | undefined): voi
 }
 
 /**
+ * Core CSS transition animation: applies base+from, swaps to `to`, waits, then cleans up.
+ *
+ * @param el - Target HTML element
+ * @param classes - Transition class names (base, from, to)
+ */
+export async function runTransition(
+  el: HTMLElement,
+  classes: { base?: string; from?: string; to?: string },
+): Promise<void> {
+  addClasses(el, classes.base);
+  addClasses(el, classes.from);
+
+  // Force reflow so the browser registers the initial state
+  void el.offsetHeight;
+
+  requestAnimationFrame(() => {
+    removeClasses(el, classes.from);
+    addClasses(el, classes.to);
+  });
+
+  await waitForTransition(el);
+
+  removeClasses(el, classes.base);
+  removeClasses(el, classes.to);
+}
+
+/**
  * Wait for a CSS transition to complete on an element
  *
  * Reads the element's computed transitionDuration and listens for the
