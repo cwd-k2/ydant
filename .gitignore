@@ -150,3 +150,6 @@ IMPLEMENTATION-PLAN.md
 
 # Claude Code local settings (personal)
 .claude/settings.local.json
+
+# E2E test artifacts
+e2e/tmp/
