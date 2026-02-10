@@ -35,9 +35,16 @@ export function createBasePlugin(): Plugin {
     name: "base",
     types: ["element", "text", "attribute", "listener", "lifecycle"],
 
-    initContext(ctx: RenderContext) {
-      ctx.isCurrentElementReused = false;
-      ctx.keyedNodes = new Map();
+    initContext(ctx: RenderContext, parentCtx?: RenderContext) {
+      if (parentCtx && ctx.parent === parentCtx.parent) {
+        // processChildren path: same scope, inherit keyed nodes for reuse
+        ctx.isCurrentElementReused = parentCtx.isCurrentElementReused;
+        ctx.keyedNodes = parentCtx.keyedNodes;
+      } else {
+        // createChildContext path or root: new scope
+        ctx.isCurrentElementReused = false;
+        ctx.keyedNodes = new Map();
+      }
       ctx.mountCallbacks = [];
       ctx.unmountCallbacks = [];
     },

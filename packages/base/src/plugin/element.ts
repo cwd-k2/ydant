@@ -38,6 +38,7 @@ export function processElement(element: Element, ctx: RenderContext): Response {
 
   // Create a child-scoped context for this element
   const childCtx = ctx.createChildContext(node);
+  childCtx.isCurrentElementReused = isReused;
 
   // Register in keyedNodes if keyed. The unmount callbacks array is populated
   // after child processing completes (see below).
