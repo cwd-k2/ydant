@@ -31,8 +31,9 @@ export const HomePage: Component = () =>
       yield* p(() => [
         classes("text-sm"),
         text(
-          "This app uses the plugin system: createReactivePlugin(), createContextPlugin(), " +
-            "and createRouterPlugin() are passed to mount() to enable each feature.",
+          "This app uses the plugin system: createReactivePlugin() and createContextPlugin() " +
+            "are passed to mount() to enable each feature. " +
+            "Router components (RouterView, RouterLink) work with base primitives alone.",
         ),
       ]);
     });

@@ -18,17 +18,13 @@ Router, Context, Reactive プラグインを組み合わせた SPA デモ。
 ```typescript
 import { createReactivePlugin } from "@ydant/reactive";
 import { createContextPlugin } from "@ydant/context";
-import { createRouterPlugin } from "@ydant/router";
 
 mount(App, root, {
-  plugins: [
-    createBasePlugin(),
-    createReactivePlugin(),
-    createContextPlugin(),
-    createRouterPlugin(),
-  ],
+  plugins: [createBasePlugin(), createReactivePlugin(), createContextPlugin()],
 });
 ```
+
+Router コンポーネント（RouterView, RouterLink）は base プリミティブ上に構築されているため、プラグイン登録不要で動作する。
 
 ### Router の使い方
 

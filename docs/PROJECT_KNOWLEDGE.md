@@ -149,7 +149,7 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - **reactive**: グローバル `current` subscriber を `ReactiveScope` にスコープ化。`initContext` で mount ツリーごとに独立した追跡コンテキストを提供
 - **router**: グローバル `currentRoute`/`routeListeners` を排除。`window.location` から都度導出 + DOM カスタムイベント (`ydant:route-change`) で通知
 - **router**: `RouteInfo.params` を廃止し、route component の props (`RouteComponentProps`) として渡すように変更
-- **router**: `createRouterPlugin()` を導入（プラグインアーキテクチャの採用）
+- **router**: プラグインレスの設計を維持（base プリミティブ上のコンポーネント集）
 - バッチ (`batch()`) は横断的関心事としてグローバルに維持
 
 ---

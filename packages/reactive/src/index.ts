@@ -40,7 +40,6 @@ export { computed } from "./computed";
 export { effect } from "./effect";
 export { batch, scheduleEffect } from "./batch";
 export { reactive } from "./reactive";
-export { createReactiveScope } from "./scope";
 
 // ─── Plugin ───
 export { createReactivePlugin } from "./plugin";

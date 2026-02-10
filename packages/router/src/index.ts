@@ -43,6 +43,3 @@ export type {
 export { getRoute, navigate, goBack, goForward } from "./navigation";
 export { RouterView } from "./RouterView";
 export { RouterLink } from "./RouterLink";
-
-// ─── Plugin ───
-export { createRouterPlugin } from "./plugin";

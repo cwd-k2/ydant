@@ -149,14 +149,6 @@ function goForward(): void;
 
 Navigate through browser history.
 
-### createRouterPlugin
-
-```typescript
-function createRouterPlugin(): Plugin;
-```
-
-Creates the router plugin. Depends on `createBasePlugin()`. Currently minimal — serves as the registration point for the router in the plugin system.
-
 ## Path Patterns
 
 - `/users` - Exact match
@@ -174,6 +166,5 @@ Route state is **not cached** — `getRoute()` derives from `window.location` on
 - `matching.ts` - Path matching utilities
 - `state.ts` - Event constants
 - `navigation.ts` - Navigation functions (getRoute, navigate, goBack, goForward)
-- `plugin.ts` - Router plugin
 - `RouterView.ts` - RouterView component
 - `RouterLink.ts` - RouterLink component
