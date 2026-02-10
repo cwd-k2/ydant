@@ -99,12 +99,12 @@ afterEach(() => {
 });
 ```
 
-#### グローバル状態のリセット
+#### テスト間の状態分離
 
-グローバル状態を持つパッケージでは:
+プラグインのスコーピング（`initContext` による per-mount 状態）と mount/unmount ライフサイクルで分離するのが基本。スコーピングでカバーできない残存グローバル状態がある場合のみ `__resetForTesting__()` を使う:
 
 ```typescript
-import { __resetForTesting__ } from "../state";
+import { __resetForTesting__ } from "../tracking";
 
 beforeEach(() => {
   __resetForTesting__();
