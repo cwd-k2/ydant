@@ -1,5 +1,5 @@
 /**
- * @ydant/base - DSL primitives
+ * @ydant/base - Primitives
  */
 
 import type { Spell, Render } from "@ydant/core";

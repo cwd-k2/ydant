@@ -51,7 +51,7 @@ describe("toRender", () => {
       { type: "text", content: "world" },
     ];
     // Create a proper generator that matches the Render type signature
-    // Note: In actual usage, Instruction type is extended by plugins (e.g., @ydant/base)
+    // Note: In actual usage, Request type is extended by plugins (e.g., @ydant/base)
     const gen = (function* () {
       for (const item of items) {
         yield item;

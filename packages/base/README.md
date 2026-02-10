@@ -43,9 +43,9 @@ mount(Greeting, document.getElementById("app")!, {
 
 ### Plugin
 
-| Function             | Description                                |
-| -------------------- | ------------------------------------------ |
-| `createBasePlugin()` | Create plugin to process base DSL elements |
+| Function             | Description                                           |
+| -------------------- | ----------------------------------------------------- |
+| `createBasePlugin()` | Create plugin to process base elements and primitives |
 
 The base plugin extends `RenderContext`:
 
