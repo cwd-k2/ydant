@@ -6,7 +6,25 @@ import type { Render, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 import type { Response } from "@ydant/core";
 import type { Element, Slot } from "../types";
-import { executeMount } from "./index";
+
+/**
+ * Executes pending mount callbacks on the next animation frame.
+ * If a mount callback returns a cleanup function, it is added to unmountCallbacks.
+ */
+export function executeMount(ctx: RenderContext): void {
+  const mountCallbacks = ctx.mountCallbacks;
+  const unmountCallbacks = ctx.unmountCallbacks;
+
+  requestAnimationFrame(() => {
+    for (const callback of mountCallbacks) {
+      const cleanup = callback();
+      if (typeof cleanup === "function") {
+        unmountCallbacks.push(cleanup);
+      }
+    }
+    ctx.mountCallbacks = [];
+  });
+}
 
 /** Processes an {@link Element} request: creates (or reuses) a DOM node, applies decorations, renders children, and returns a {@link Slot}. */
 export function processElement(element: Element, ctx: RenderContext): Response {

@@ -17,8 +17,6 @@
 
 import type { Request, Response, Plugin, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
-// Ensure module augmentation from @ydant/base is loaded
-import "@ydant/base";
 
 /** Creates the context plugin. Depends on the base plugin. */
 export function createContextPlugin(): Plugin {

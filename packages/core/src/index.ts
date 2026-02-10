@@ -23,7 +23,7 @@ export type {
 // Plugin System
 // =============================================================================
 
-export type { Plugin } from "./plugin";
+export type { Plugin, RenderContext } from "./plugin";
 
 // =============================================================================
 // Utilities
@@ -36,9 +36,3 @@ export { isTagged, toRender } from "./utils";
 // =============================================================================
 
 export { mount } from "./mount";
-
-// =============================================================================
-// Render (internal, for plugin implementations)
-// =============================================================================
-
-export type { RenderContext } from "./render";

@@ -4,8 +4,7 @@
 
 import type { Builder, Render } from "../types";
 import { toRender } from "../utils";
-import type { Plugin } from "../plugin";
-import type { RenderContext } from "./types";
+import type { Plugin, RenderContext } from "../plugin";
 
 /**
  * Iterates over registered plugins, calling each one exactly once.

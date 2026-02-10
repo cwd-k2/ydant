@@ -8,25 +8,6 @@ import { processElement } from "./element";
 import { processAttribute, processListener, processText, processLifecycle } from "./primitives";
 
 /**
- * Executes pending mount callbacks on the next animation frame.
- * If a mount callback returns a cleanup function, it is added to unmountCallbacks.
- */
-export function executeMount(ctx: RenderContext): void {
-  const mountCallbacks = ctx.mountCallbacks;
-  const unmountCallbacks = ctx.unmountCallbacks;
-
-  requestAnimationFrame(() => {
-    for (const callback of mountCallbacks) {
-      const cleanup = callback();
-      if (typeof cleanup === "function") {
-        unmountCallbacks.push(cleanup);
-      }
-    }
-    ctx.mountCallbacks = [];
-  });
-}
-
-/**
  * Creates the base plugin that handles core DOM operations:
  * element creation, text nodes, attributes, event listeners, and lifecycle hooks.
  */

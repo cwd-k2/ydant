@@ -16,5 +16,3 @@ export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Pl
   const ctx = createRenderContext(parent, null, plugins);
   processIterator(gen, ctx);
 }
-
-export type { RenderContext } from "./types";

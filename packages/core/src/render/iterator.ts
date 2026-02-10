@@ -3,7 +3,7 @@
  */
 
 import type { Request, Render, Response } from "../types";
-import type { RenderContext } from "./types";
+import type { RenderContext } from "../plugin";
 
 /**
  * Walks a {@link Render} generator, dispatching each yielded {@link Request}
