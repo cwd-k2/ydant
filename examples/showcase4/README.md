@@ -18,16 +18,23 @@ Router, Context, Reactive プラグインを組み合わせた SPA デモ。
 ```typescript
 import { createReactivePlugin } from "@ydant/reactive";
 import { createContextPlugin } from "@ydant/context";
+import { createRouterPlugin } from "@ydant/router";
 
 mount(App, root, {
-  plugins: [createReactivePlugin(), createContextPlugin()],
+  plugins: [
+    createBasePlugin(),
+    createReactivePlugin(),
+    createContextPlugin(),
+    createRouterPlugin(),
+  ],
 });
 ```
 
 ### Router の使い方
 
 ```typescript
-import { RouterView, RouterLink, useRoute, navigate } from "@ydant/router";
+import type { RouteComponentProps } from "@ydant/router";
+import { RouterView, RouterLink, navigate } from "@ydant/router";
 
 // ルート定義
 yield *
@@ -39,9 +46,11 @@ yield *
     ],
   });
 
-// パラメータ取得
-const route = useRoute();
-const userId = route.params.id;
+// パラメータ取得（ルートコンポーネントの props 経由）
+const UserDetailPage: Component<RouteComponentProps> = ({ params }) => {
+  const userId = params.id;
+  // ...
+};
 
 // プログラムナビゲーション
 navigate("/users/123");

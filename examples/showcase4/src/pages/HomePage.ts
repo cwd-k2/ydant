@@ -31,8 +31,8 @@ export const HomePage: Component = () =>
       yield* p(() => [
         classes("text-sm"),
         text(
-          "This app uses the plugin system: createReactivePlugin() and createContextPlugin() " +
-            "are passed to mount() to enable reactive and context features.",
+          "This app uses the plugin system: createReactivePlugin(), createContextPlugin(), " +
+            "and createRouterPlugin() are passed to mount() to enable each feature.",
         ),
       ]);
     });
