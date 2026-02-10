@@ -1,16 +1,38 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount, type Component } from "@ydant/core";
 import { createBasePlugin, div, p, text } from "@ydant/base";
+import type { RouteComponentProps } from "../types";
 import { RouterLink } from "../RouterLink";
 import { RouterView } from "../RouterView";
 import { navigate } from "../navigation";
-import { updateRoute, currentRoute, __resetForTesting__ } from "../state";
+
+/**
+ * Set window.location.pathname for testing.
+ * jsdom does not allow direct assignment to window.location.pathname,
+ * so we mock the whole location object.
+ */
+function setLocationPathname(pathname: string) {
+  Object.defineProperty(window, "location", {
+    value: {
+      ...window.location,
+      pathname,
+      origin: "http://localhost",
+      href: `http://localhost${pathname}`,
+      search: "",
+      hash: "",
+    },
+    writable: true,
+    configurable: true,
+  });
+}
 
 describe("RouterLink", () => {
   let container: HTMLElement;
+  let savedLocation: Location;
 
   beforeEach(() => {
-    __resetForTesting__();
+    savedLocation = window.location;
+    setLocationPathname("/");
     container = document.createElement("div");
     document.body.appendChild(container);
     vi.spyOn(window.history, "pushState").mockImplementation(() => {});
@@ -18,6 +40,11 @@ describe("RouterLink", () => {
 
   afterEach(() => {
     container.remove();
+    Object.defineProperty(window, "location", {
+      value: savedLocation,
+      writable: true,
+      configurable: true,
+    });
   });
 
   it("renders an anchor element", () => {
@@ -84,7 +111,7 @@ describe("RouterLink", () => {
   });
 
   it("applies activeClass when path matches", () => {
-    updateRoute("/current");
+    setLocationPathname("/current");
 
     mount(
       () =>
@@ -104,7 +131,7 @@ describe("RouterLink", () => {
   });
 
   it("does not apply activeClass when path does not match", () => {
-    updateRoute("/other");
+    setLocationPathname("/other");
 
     mount(
       () =>
@@ -126,9 +153,11 @@ describe("RouterLink", () => {
 
 describe("RouterView", () => {
   let container: HTMLElement;
+  let savedLocation: Location;
 
   beforeEach(() => {
-    __resetForTesting__();
+    savedLocation = window.location;
+    setLocationPathname("/");
     container = document.createElement("div");
     document.body.appendChild(container);
     vi.useFakeTimers();
@@ -138,11 +167,14 @@ describe("RouterView", () => {
   afterEach(() => {
     container.remove();
     vi.useRealTimers();
+    Object.defineProperty(window, "location", {
+      value: savedLocation,
+      writable: true,
+      configurable: true,
+    });
   });
 
   it("renders matched route component", () => {
-    updateRoute("/");
-
     const HomePage: Component = () => p(() => [text("Home Page")]);
     const AboutPage: Component = () => p(() => [text("About Page")]);
 
@@ -164,8 +196,6 @@ describe("RouterView", () => {
   });
 
   it("renders correct route after navigate", () => {
-    updateRoute("/");
-
     const HomePage: Component = () => p(() => [text("Home Page")]);
     const AboutPage: Component = () => p(() => [text("About Page")]);
 
@@ -185,19 +215,20 @@ describe("RouterView", () => {
 
     vi.advanceTimersToNextFrame();
 
-    // Navigate to about
+    // Navigate to about (pushState is mocked, so manually set pathname)
+    setLocationPathname("/about");
     navigate("/about");
 
     expect(container.textContent).toContain("About Page");
   });
 
-  it("extracts route parameters", () => {
-    updateRoute("/users/42");
+  it("passes route parameters as props to component", () => {
+    setLocationPathname("/users/42");
 
-    let capturedId = "";
-    const UserPage: Component = () => {
-      capturedId = currentRoute.params.id;
-      return p(() => [text(`User: ${capturedId}`)]);
+    let capturedParams: Record<string, string> = {};
+    const UserPage: Component<RouteComponentProps> = ({ params }) => {
+      capturedParams = params;
+      return p(() => [text(`User: ${params.id}`)]);
     };
 
     mount(
@@ -211,12 +242,12 @@ describe("RouterView", () => {
       { plugins: [createBasePlugin()] },
     );
 
-    expect(capturedId).toBe("42");
+    expect(capturedParams.id).toBe("42");
     expect(container.textContent).toContain("User: 42");
   });
 
   it("renders nothing when no route matches", () => {
-    updateRoute("/nonexistent");
+    setLocationPathname("/nonexistent");
 
     const HomePage: Component = () => p(() => [text("Home")]);
 
@@ -236,7 +267,7 @@ describe("RouterView", () => {
   });
 
   it("matches wildcard route", () => {
-    updateRoute("/any/path/here");
+    setLocationPathname("/any/path/here");
 
     const NotFound: Component = () => p(() => [text("404 Not Found")]);
 
@@ -255,7 +286,7 @@ describe("RouterView", () => {
   });
 
   it("handles base path correctly", () => {
-    updateRoute("/app/users");
+    setLocationPathname("/app/users");
 
     const UsersPage: Component = () => p(() => [text("Users List")]);
 
@@ -275,7 +306,7 @@ describe("RouterView", () => {
   });
 
   it("handles base path with root route", () => {
-    updateRoute("/app");
+    setLocationPathname("/app");
 
     const HomePage: Component = () => p(() => [text("App Home")]);
 
@@ -295,7 +326,7 @@ describe("RouterView", () => {
   });
 
   it("route guard allows access when returning true", () => {
-    updateRoute("/protected");
+    setLocationPathname("/protected");
 
     const ProtectedPage: Component = () => p(() => [text("Protected Content")]);
 
@@ -320,7 +351,7 @@ describe("RouterView", () => {
   });
 
   it("route guard blocks access when returning false", () => {
-    updateRoute("/protected");
+    setLocationPathname("/protected");
 
     const ProtectedPage: Component = () => p(() => [text("Protected Content")]);
 
@@ -345,7 +376,7 @@ describe("RouterView", () => {
   });
 
   it("async route guard allows access when resolving true", async () => {
-    updateRoute("/async-protected");
+    setLocationPathname("/async-protected");
 
     const ProtectedPage: Component = () => p(() => [text("Async Protected Content")]);
 
@@ -375,7 +406,7 @@ describe("RouterView", () => {
   });
 
   it("async route guard blocks access when resolving false", async () => {
-    updateRoute("/async-blocked");
+    setLocationPathname("/async-blocked");
 
     const BlockedPage: Component = () => p(() => [text("Should Not See This")]);
 
@@ -403,26 +434,6 @@ describe("RouterView", () => {
   });
 
   it("responds to popstate event", () => {
-    // Save original location
-    const originalLocation = window.location;
-
-    // Mock window.location with full URL properties
-    const mockLocation = {
-      pathname: "/",
-      origin: "http://localhost",
-      href: "http://localhost/",
-      search: "",
-      hash: "",
-    };
-
-    Object.defineProperty(window, "location", {
-      value: mockLocation,
-      writable: true,
-      configurable: true,
-    });
-
-    updateRoute("/");
-
     const HomePage: Component = () => p(() => [text("Home")]);
     const AboutPage: Component = () => p(() => [text("About")]);
 
@@ -445,20 +456,13 @@ describe("RouterView", () => {
     expect(container.textContent).toContain("Home");
 
     // Simulate popstate (browser back/forward)
-    mockLocation.pathname = "/about";
+    setLocationPathname("/about");
     window.dispatchEvent(new PopStateEvent("popstate"));
 
     expect(container.textContent).toContain("About");
-
-    // Restore original location
-    Object.defineProperty(window, "location", {
-      value: originalLocation,
-      writable: true,
-      configurable: true,
-    });
   });
 
-  it("cleans up popstate listener on unmount", () => {
+  it("cleans up event listeners on unmount", () => {
     const HomePage: Component = () => p(() => [text("Home")]);
 
     // Create a parent slot to control unmounting

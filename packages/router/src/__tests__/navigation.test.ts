@@ -1,10 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { navigate, goBack, goForward, getRoute } from "../navigation";
-import { currentRoute, updateRoute, __resetForTesting__ } from "../state";
+import { ROUTE_CHANGE_EVENT } from "../state";
+
+describe("getRoute", () => {
+  it("returns route info derived from window.location", () => {
+    const route = getRoute();
+
+    expect(route.path).toBe(window.location.pathname);
+    expect(route.hash).toBe(window.location.hash);
+    expect(typeof route.query).toBe("object");
+  });
+
+  it("does not include params property", () => {
+    const route = getRoute();
+
+    expect(route).not.toHaveProperty("params");
+  });
+});
 
 describe("navigate", () => {
   beforeEach(() => {
-    __resetForTesting__();
     vi.restoreAllMocks();
     vi.spyOn(window.history, "pushState").mockImplementation(() => {});
     vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
@@ -23,10 +38,15 @@ describe("navigate", () => {
     expect(window.history.pushState).not.toHaveBeenCalled();
   });
 
-  it("updates route state", () => {
-    navigate("/updated");
+  it("dispatches ydant:route-change event", () => {
+    const listener = vi.fn();
+    window.addEventListener(ROUTE_CHANGE_EVENT, listener);
 
-    expect(currentRoute.path).toBe("/updated");
+    navigate("/trigger-event");
+
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    window.removeEventListener(ROUTE_CHANGE_EVENT, listener);
   });
 });
 
@@ -47,21 +67,5 @@ describe("goForward", () => {
     goForward();
 
     expect(window.history.forward).toHaveBeenCalled();
-  });
-});
-
-describe("getRoute", () => {
-  beforeEach(() => {
-    __resetForTesting__();
-  });
-
-  it("returns current route info", () => {
-    updateRoute("/test-path?foo=bar#section");
-
-    const route = getRoute();
-
-    expect(route.path).toBe("/test-path");
-    expect(route.query).toEqual({ foo: "bar" });
-    expect(route.hash).toBe("#section");
   });
 });

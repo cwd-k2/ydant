@@ -32,6 +32,7 @@ export type { Subscriber, Readable } from "./types";
 export type { Signal } from "./signal";
 export type { Computed } from "./computed";
 export type { Reactive } from "./reactive";
+export type { ReactiveScope } from "./scope";
 
 // ─── Runtime ───
 export { signal } from "./signal";
@@ -39,6 +40,7 @@ export { computed } from "./computed";
 export { effect } from "./effect";
 export { batch, scheduleEffect } from "./batch";
 export { reactive } from "./reactive";
+export { createReactiveScope } from "./scope";
 
 // ─── Plugin ───
 export { createReactivePlugin } from "./plugin";

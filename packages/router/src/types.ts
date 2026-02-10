@@ -4,12 +4,18 @@
 
 import type { Component, Render } from "@ydant/core";
 
+/** Props passed to route components, containing extracted path parameters */
+export interface RouteComponentProps {
+  /** Dynamic path parameters extracted from the URL (e.g. { id: "123" }) */
+  params: Record<string, string>;
+}
+
 /** A single route entry that maps a URL pattern to a component */
 export interface RouteDefinition {
   /** URL path pattern, supporting dynamic segments (e.g. "/users/:id") */
   path: string;
   /** Component to render when the path pattern matches the current URL */
-  component: Component;
+  component: Component<RouteComponentProps>;
   /** Optional navigation guard; returning false cancels the navigation */
   guard?: () => boolean | Promise<boolean>;
 }
@@ -18,8 +24,6 @@ export interface RouteDefinition {
 export interface RouteInfo {
   /** Current URL pathname */
   path: string;
-  /** Dynamic path parameters extracted from the URL (e.g. { id: "123" }) */
-  params: Record<string, string>;
   /** Parsed query string parameters */
   query: Record<string, string>;
   /** URL hash fragment */

@@ -1,3 +1,4 @@
+/// <reference path="./global.d.ts" />
 /**
  * @ydant/reactive - Reactive plugin
  *
@@ -20,6 +21,7 @@ import { isTagged } from "@ydant/core";
 // Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
 import { runWithSubscriber } from "./tracking";
+import { createReactiveScope, runInScope } from "./scope";
 
 /** Creates the reactive plugin. Depends on the base plugin. */
 export function createReactivePlugin(): Plugin {
@@ -28,9 +30,14 @@ export function createReactivePlugin(): Plugin {
     types: ["reactive"],
     dependencies: ["base"],
 
+    initContext(ctx: RenderContext, parentCtx?: RenderContext) {
+      ctx.reactiveScope = parentCtx?.reactiveScope ?? createReactiveScope();
+    },
+
     process(request: Request, ctx: RenderContext): Response {
       if (!isTagged(request, "reactive")) return;
       const builder = request.builder;
+      const scope = ctx.reactiveScope;
 
       // Create a container element for the reactive block
       const container = document.createElement("span");
@@ -51,9 +58,11 @@ export function createReactivePlugin(): Plugin {
         // Clear DOM and rebuild
         container.innerHTML = "";
 
-        // Process children while tracking Signal dependencies
-        runWithSubscriber(update, () => {
-          ctx.processChildren(builder, { parent: container });
+        // Process children while tracking Signal dependencies, within the mount's scope
+        runInScope(scope, () => {
+          runWithSubscriber(update, () => {
+            ctx.processChildren(builder, { parent: container });
+          });
         });
       };
 

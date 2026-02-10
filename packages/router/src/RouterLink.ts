@@ -17,7 +17,6 @@
 import type { Render } from "@ydant/core";
 import { a, on, attr } from "@ydant/base";
 import type { RouterLinkProps } from "./types";
-import { currentRoute } from "./state";
 import { navigate } from "./navigation";
 
 /**
@@ -39,7 +38,7 @@ export function RouterLink(props: RouterLinkProps): Render {
     yield* attr("href", href);
 
     // Apply the active class when the current route matches this link's href
-    if (activeClass && currentRoute.path === href) {
+    if (activeClass && window.location.pathname === href) {
       yield* attr("class", activeClass);
     }
 

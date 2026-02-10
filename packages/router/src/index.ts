@@ -31,9 +31,18 @@
 import "@ydant/base";
 
 // ─── Types ───
-export type { RouteDefinition, RouteInfo, RouterViewProps, RouterLinkProps } from "./types";
+export type {
+  RouteDefinition,
+  RouteInfo,
+  RouteComponentProps,
+  RouterViewProps,
+  RouterLinkProps,
+} from "./types";
 
 // ─── Runtime ───
 export { getRoute, navigate, goBack, goForward } from "./navigation";
 export { RouterView } from "./RouterView";
 export { RouterLink } from "./RouterLink";
+
+// ─── Plugin ───
+export { createRouterPlugin } from "./plugin";
