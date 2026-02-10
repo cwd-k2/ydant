@@ -10,10 +10,10 @@
 
 export type {
   Tagged,
-  DSLSchema,
-  DSL,
-  Instruction,
-  Feedback,
+  SpellSchema,
+  Spell,
+  Request,
+  Response,
   Builder,
   Render,
   Component,

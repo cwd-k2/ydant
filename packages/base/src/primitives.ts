@@ -2,16 +2,16 @@
  * @ydant/base - DSL primitives
  */
 
-import type { DSL, Render } from "@ydant/core";
+import type { Spell, Render } from "@ydant/core";
 import type { Slot } from "./types";
 
 /** Sets an HTML attribute on the current element. Use with `yield*`. */
-export function* attr(key: string, value: string): DSL<"attribute"> {
+export function* attr(key: string, value: string): Spell<"attribute"> {
   yield { type: "attribute", key, value };
 }
 
 /** Sets the `class` attribute by joining all arguments. */
-export function* classes(...classNames: string[]): DSL<"attribute"> {
+export function* classes(...classNames: string[]): Spell<"attribute"> {
   const value = classNames.join(" ");
   yield { type: "attribute", key: "class", value };
 }
@@ -20,17 +20,17 @@ export function* classes(...classNames: string[]): DSL<"attribute"> {
 export function on<K extends keyof HTMLElementEventMap>(
   key: K,
   handler: (e: HTMLElementEventMap[K]) => void,
-): DSL<"listener">;
+): Spell<"listener">;
 /** Attaches a DOM event listener for custom event names. */
-export function on(key: string, handler: (e: Event) => void): DSL<"listener">;
-export function on(key: string, handler: (e: Event) => void): DSL<"listener"> {
+export function on(key: string, handler: (e: Event) => void): Spell<"listener">;
+export function on(key: string, handler: (e: Event) => void): Spell<"listener"> {
   return (function* () {
     yield { type: "listener" as const, key, value: handler };
   })();
 }
 
 /** Creates a text node and appends it to the current parent. Use with `yield*`. */
-export function* text(content: string): DSL<"text"> {
+export function* text(content: string): Spell<"text"> {
   yield { type: "text", content };
 }
 
@@ -47,7 +47,7 @@ export function* text(content: string): DSL<"text"> {
  * });
  * ```
  */
-export function* onMount(callback: () => void | (() => void)): DSL<"lifecycle"> {
+export function* onMount(callback: () => void | (() => void)): Spell<"lifecycle"> {
   yield { type: "lifecycle", event: "mount", callback };
 }
 
@@ -61,7 +61,7 @@ export function* onMount(callback: () => void | (() => void)): DSL<"lifecycle"> 
  * });
  * ```
  */
-export function* onUnmount(callback: () => void): DSL<"lifecycle"> {
+export function* onUnmount(callback: () => void): Spell<"lifecycle"> {
   yield { type: "lifecycle", event: "unmount", callback };
 }
 
@@ -81,7 +81,7 @@ export function* onUnmount(callback: () => void): DSL<"lifecycle"> {
  */
 export function* style(
   properties: Partial<CSSStyleDeclaration> & Record<`--${string}`, string>,
-): DSL<"attribute"> {
+): Spell<"attribute"> {
   const styleValue = Object.entries(properties as Record<string, string>)
     .map(([k, v]) => {
       // Convert camelCase to kebab-case (skip CSS custom properties)
@@ -111,16 +111,16 @@ export function* style(
 export function keyed<Args extends unknown[]>(
   key: string | number,
   factory: (...args: Args) => Render,
-): (...args: Args) => DSL<"element"> {
+): (...args: Args) => Spell<"element"> {
   return (...args: Args) => {
-    return (function* (): DSL<"element"> {
-      const inner = factory(...args) as DSL<"element">;
+    return (function* (): Spell<"element"> {
+      const inner = factory(...args) as Spell<"element">;
       const first = inner.next();
       if (first.done) return first.value;
       const element = first.value;
       const slot = (yield { ...element, key }) as Slot;
       inner.next(slot);
       return slot;
-    })() as DSL<"element">;
+    })() as Spell<"element">;
   };
 }

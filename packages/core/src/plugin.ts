@@ -2,10 +2,10 @@
  * @ydant/core - Plugin system
  */
 
-import type { Instruction, Feedback } from "./types";
+import type { Request, Response } from "./types";
 import type { RenderContext } from "./render/types";
 
-/** A plugin that teaches the core runtime how to handle specific DSL operations. */
+/** A plugin that teaches the core runtime how to handle specific spell operations. */
 export interface Plugin {
   /** Unique identifier for this plugin. */
   readonly name: string;
@@ -26,13 +26,13 @@ export interface Plugin {
   /**
    * Propagates state from a child context back to its parent.
    *
-   * Called after `processChildren` finishes iterating a child's instructions.
+   * Called after `processChildren` finishes iterating a child's requests.
    * Use this to merge cleanup callbacks, keyed nodes, or other accumulated state.
    *
    * @param parentCtx - The parent context.
    * @param childCtx - The child context that was just processed.
    */
   mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
-  /** Processes a single {@link Instruction} and returns feedback for the generator. */
-  process(instruction: Instruction, ctx: RenderContext): Feedback;
+  /** Processes a single {@link Request} and returns a response for the generator. */
+  process(request: Request, ctx: RenderContext): Response;
 }

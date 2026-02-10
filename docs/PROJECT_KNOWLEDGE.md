@@ -66,10 +66,10 @@ function* () {
 
 プラグインは以下の型を拡張できる：
 
-| 拡張ポイント    | 用途                                        |
-| --------------- | ------------------------------------------- |
-| `DSLSchema`     | DSL 操作定義（instruction/feedback/return） |
-| `RenderContext` | コンテキストのプロパティ・メソッド          |
+| 拡張ポイント    | 用途                                      |
+| --------------- | ----------------------------------------- |
+| `SpellSchema`   | spell 操作定義（request/response/return） |
+| `RenderContext` | コンテキストのプロパティ・メソッド        |
 
 ### Slot パターン
 
@@ -122,8 +122,8 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 
 ### Phase 6: 型システム統合
 
-- 7 つのジェネレーター型を `DSL<Key>`, `Render`, `Builder` の 3 つに統合
-- `Child` → `Instruction`, `ChildNext` → `Feedback` にリネーム（DSL 用語に統一）
+- 7 つのジェネレーター型を `Spell<Key>`, `Render`, `Builder` の 3 つに統合
+- `Child` → `Instruction` → `Request`, `ChildNext` → `Feedback` → `Response` にリネーム
 - `ProcessResult`, `CleanupFn`, `MountOptions`, `ChildOfType` 等の薄いラッパーを廃止
 - Props 命名: `children` を DOM 子要素に限定、抽象的描画関数は `content` に統一
 - `toChildren` → `toRender` リネーム
@@ -135,7 +135,7 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - `Plugin.process` の引数を `RenderAPI` → `RenderContext` に変更
 - `processChildren` と `createChildContext` をコア定義の `RenderContext` メソッドに移動
 - module augmentation が `RenderContext` の 1 箇所に集約
-- 拡張ポイント: `DSLSchema` + `RenderContext` の 2 つに整理
+- 拡張ポイント: `SpellSchema` + `RenderContext` の 2 つに整理
 
 ---
 
@@ -153,11 +153,11 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 3. **paths から customConditions へ**
    - 型解決を pnpm workspace と整合させる
 
-4. **DSL<Key> による型の統合**
+4. **Spell<Key> による型の統合**
    - 以前は `Primitive<T>`, `Instruction`, `ChildContent`, `ElementRender` など用途別の型が乱立していた
-   - `DSLSchema` の `instruction` / `feedback` / `return` 3 フィールドから全てを導出する設計に統合
-   - `DSL<Key>` が個別操作の型、`Render` が汎用ジェネレーター型として機能
-   - 中間ラッパー（`ProcessResult` 等）も不要になり、プラグインは `Feedback` を直接返却
+   - `SpellSchema` の `request` / `response` / `return` 3 フィールドから全てを導出する設計に統合
+   - `Spell<Key>` が個別操作の型、`Render` が汎用ジェネレーター型として機能
+   - 中間ラッパー（`ProcessResult` 等）も不要になり、プラグインは `Response` を直接返却
 
 ### 設計関連
 

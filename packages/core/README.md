@@ -59,8 +59,8 @@ interface Plugin {
   initContext?(ctx: RenderContext, parentCtx?: RenderContext): void;
   /** Merge child context state into parent context (called after processChildren) */
   mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
-  /** Process an instruction and return feedback for the generator */
-  process(instruction: Instruction, ctx: RenderContext): Feedback;
+  /** Process a request and return a response for the generator */
+  process(request: Request, ctx: RenderContext): Response;
 }
 ```
 
@@ -69,10 +69,10 @@ interface Plugin {
 | Type            | Description                                                     |
 | --------------- | --------------------------------------------------------------- |
 | `Tagged<T,P>`   | Helper type for tagged unions: `{ type: T } & P`                |
-| `DSLSchema`     | Co-locates instruction and feedback types per DSL operation     |
-| `DSL<Key>`      | Typed generator for a specific DSL operation key                |
-| `Instruction`   | Union of all yieldable types (derived from `DSLSchema`)         |
-| `Feedback`      | Union of all feedback types returned by `process()`             |
+| `SpellSchema`   | Co-locates request and response types per spell operation       |
+| `Spell<Key>`    | Typed generator for a specific spell operation key              |
+| `Request`       | Union of all yieldable types (derived from `SpellSchema`)       |
+| `Response`      | Union of all response types returned by `process()`             |
 | `Render`        | Generator for rendering — components, elements, and children    |
 | `Builder`       | `() => Render \| Render[]` - Element children factory           |
 | `Component<P?>` | `() => Render` (no args) or `(props: P) => Render` (with props) |
@@ -88,20 +88,20 @@ declare module "@ydant/core" {
     myProperty: MyType;
   }
 
-  // Co-locate instruction, feedback, and return types per DSL operation
-  interface DSLSchema {
-    mytype: { instruction: Tagged<"mytype", { value: string }>; feedback: MyResultType };
-    // return omitted → falls back to feedback (MyResultType)
-    // Use explicit `return` when it differs from feedback:
-    // "other": { instruction: OtherType; feedback: Bar; return: Baz };
-    // Or for return-only entries (no instruction):
+  // Co-locate request, response, and return types per spell operation
+  interface SpellSchema {
+    mytype: { request: Tagged<"mytype", { value: string }>; response: MyResultType };
+    // return omitted → falls back to response (MyResultType)
+    // Use explicit `return` when it differs from response:
+    // "other": { request: OtherType; response: Bar; return: Baz };
+    // Or for return-only entries (no request):
     // "composite": { return: CompositeHandle };
   }
 }
 
-// Use DSL<Key> for typed generators
-function* myOperation(): DSL<"mytype"> {
-  const result = yield myInstruction; // result is MyResultType
+// Use Spell<Key> for typed generators
+function* myOperation(): Spell<"mytype"> {
+  const result = yield myRequest; // result is MyResultType
   return result;
 }
 ```
@@ -130,7 +130,7 @@ interface RenderContext {
 ## Creating Plugins
 
 ```typescript
-import type { Instruction, Feedback, Plugin, RenderContext } from "@ydant/core";
+import type { Request, Response, Plugin, RenderContext } from "@ydant/core";
 
 // 1. Declare type extensions
 declare module "@ydant/core" {
@@ -158,9 +158,9 @@ export function createMyPlugin(): Plugin {
       }
     },
 
-    // Process instructions — access ctx properties directly
-    process(instruction: Instruction, ctx: RenderContext): Feedback {
-      if ((instruction as { type: string }).type === "mytype") {
+    // Process requests — access ctx properties directly
+    process(request: Request, ctx: RenderContext): Response {
+      if ((request as { type: string }).type === "mytype") {
         // Access context properties directly: ctx.myData.get(key), ctx.myData.set(key, value)
         return result;
       }

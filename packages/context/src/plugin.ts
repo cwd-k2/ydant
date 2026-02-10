@@ -1,7 +1,7 @@
 /**
  * @ydant/context - Context plugin
  *
- * Processes `provide` and `inject` DSL instructions,
+ * Processes `provide` and `inject` spell requests,
  * propagating context values through the rendering tree.
  *
  * @example
@@ -15,7 +15,7 @@
  * ```
  */
 
-import type { Instruction, Feedback, Plugin, RenderContext } from "@ydant/core";
+import type { Request, Response, Plugin, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 // Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
@@ -33,15 +33,15 @@ export function createContextPlugin(): Plugin {
       ctx.contextValues = parentValues ? new Map(parentValues) : new Map();
     },
 
-    process(instruction: Instruction, ctx: RenderContext): Feedback {
-      if (isTagged(instruction, "context-provide")) {
+    process(request: Request, ctx: RenderContext): Response {
+      if (isTagged(request, "context-provide")) {
         // Store the value in the context map
-        ctx.contextValues.set(instruction.context.id, instruction.value);
+        ctx.contextValues.set(request.context.id, request.value);
         return;
       }
-      if (isTagged(instruction, "context-inject")) {
+      if (isTagged(request, "context-inject")) {
         // Look up the value, falling back to defaultValue
-        return ctx.contextValues.get(instruction.context.id) ?? instruction.context.defaultValue;
+        return ctx.contextValues.get(request.context.id) ?? request.context.defaultValue;
       }
     },
   };

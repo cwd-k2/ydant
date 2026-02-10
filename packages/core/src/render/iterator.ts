@@ -1,12 +1,12 @@
 /**
- * @ydant/core - Instruction iterator processing
+ * @ydant/core - Spell request iterator processing
  */
 
-import type { Instruction, Render, Feedback } from "../types";
+import type { Request, Render, Response } from "../types";
 import type { RenderContext } from "./types";
 
 /**
- * Walks a {@link Render} generator, dispatching each yielded {@link Instruction}
+ * Walks a {@link Render} generator, dispatching each yielded {@link Request}
  * to the appropriate plugin. Unrecognized types are silently skipped.
  */
 export function processIterator(iter: Render, ctx: RenderContext): void {
@@ -21,8 +21,8 @@ export function processIterator(iter: Render, ctx: RenderContext): void {
       const plugin = ctx.plugins.get(type);
 
       if (plugin) {
-        const feedback = plugin.process(value as Instruction, ctx);
-        result = iter.next(feedback as Feedback);
+        const response = plugin.process(value as Request, ctx);
+        result = iter.next(response as Response);
         continue;
       }
     }

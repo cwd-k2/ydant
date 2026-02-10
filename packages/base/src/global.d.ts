@@ -1,7 +1,7 @@
 /**
  * @ydant/base - Module augmentation
  *
- * Extends core interfaces (RenderContext, DSLSchema) with
+ * Extends core interfaces (RenderContext, SpellSchema) with
  * the properties required by the base plugin.
  */
 
@@ -19,13 +19,13 @@ declare module "@ydant/core" {
     unmountCallbacks: Array<() => void>;
   }
 
-  // Register base DSL types. The "element" entry's feedback (Slot) also
-  // becomes the return type via the feedback fallback in DSLSchema.
-  interface DSLSchema {
-    element: { instruction: Element; feedback: Slot };
-    attribute: { instruction: Attribute };
-    listener: { instruction: Listener };
-    text: { instruction: Text };
-    lifecycle: { instruction: Lifecycle };
+  // Register base spell types. The "element" entry's response (Slot) also
+  // becomes the return type via the response fallback in SpellSchema.
+  interface SpellSchema {
+    element: { request: Element; response: Slot };
+    attribute: { request: Attribute };
+    listener: { request: Listener };
+    text: { request: Text };
+    lifecycle: { request: Lifecycle };
   }
 }

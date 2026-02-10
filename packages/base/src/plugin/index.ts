@@ -2,7 +2,7 @@
  * @ydant/base - Base plugin
  */
 
-import type { Instruction, Feedback, Plugin, RenderContext } from "@ydant/core";
+import type { Request, Response, Plugin, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 import { processElement } from "./element";
 import { processAttribute, processListener, processText, processLifecycle } from "./primitives";
@@ -55,24 +55,24 @@ export function createBasePlugin(): Plugin {
       }
     },
 
-    process(instruction: Instruction, ctx: RenderContext): Feedback {
-      if (isTagged(instruction, "element")) {
-        return processElement(instruction, ctx);
+    process(request: Request, ctx: RenderContext): Response {
+      if (isTagged(request, "element")) {
+        return processElement(request, ctx);
       }
-      if (isTagged(instruction, "text")) {
-        processText(instruction, ctx);
+      if (isTagged(request, "text")) {
+        processText(request, ctx);
         return;
       }
-      if (isTagged(instruction, "attribute")) {
-        processAttribute(instruction, ctx);
+      if (isTagged(request, "attribute")) {
+        processAttribute(request, ctx);
         return;
       }
-      if (isTagged(instruction, "listener")) {
-        processListener(instruction, ctx);
+      if (isTagged(request, "listener")) {
+        processListener(request, ctx);
         return;
       }
-      if (isTagged(instruction, "lifecycle")) {
-        processLifecycle(instruction, ctx);
+      if (isTagged(request, "lifecycle")) {
+        processLifecycle(request, ctx);
         return;
       }
     },

@@ -7,8 +7,8 @@
 import type { TransitionHandle } from "./Transition";
 
 declare module "@ydant/core" {
-  // instruction/feedback を持たず、return のみを追加する DSLSchema エントリ
-  interface DSLSchema {
+  // request/response を持たず、return のみを追加する SpellSchema エントリ
+  interface SpellSchema {
     transition: { return: TransitionHandle };
   }
 }

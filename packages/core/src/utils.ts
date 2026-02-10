@@ -1,13 +1,13 @@
-import type { Tagged, Instruction, Render } from "./types";
+import type { Tagged, Request, Render } from "./types";
 
 /**
  * Checks whether a tagged object matches a given type tag.
- * When called with an {@link Instruction}, narrows to the matching variant.
+ * When called with a {@link Request}, narrows to the matching variant.
  */
-export function isTagged<T extends Instruction["type"]>(
-  value: Instruction,
+export function isTagged<T extends Request["type"]>(
+  value: Request,
   tag: T,
-): value is Extract<Instruction, { type: T }>;
+): value is Extract<Request, { type: T }>;
 export function isTagged<T extends string>(
   value: { type: string },
   tag: T,

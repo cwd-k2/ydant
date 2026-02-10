@@ -18,7 +18,7 @@
  * ```
  */
 
-import type { DSL, Render } from "@ydant/core";
+import type { Spell, Render } from "@ydant/core";
 import { div } from "@ydant/base";
 
 /** Props for the ErrorBoundary component. */
@@ -35,7 +35,7 @@ export interface ErrorBoundaryProps {
  * Note: In JavaScript generators, catching errors thrown at yield points
  * requires special handling. This implementation only catches synchronous errors.
  */
-export function* ErrorBoundary(props: ErrorBoundaryProps): DSL<"element"> {
+export function* ErrorBoundary(props: ErrorBoundaryProps): Spell<"element"> {
   const { fallback, content } = props;
 
   const containerSlot = yield* div(function* () {

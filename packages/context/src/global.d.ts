@@ -1,7 +1,7 @@
 /**
  * @ydant/context - Module augmentation
  *
- * Extends core interfaces with context-related properties and DSL types.
+ * Extends core interfaces with context-related properties and spell types.
  */
 
 import type { ContextProvide, ContextInject } from "./context";
@@ -12,10 +12,10 @@ declare module "@ydant/core" {
     contextValues: Map<symbol, unknown>;
   }
 
-  // The "context-inject" feedback type is `unknown` because the actual type
+  // The "context-inject" response type is `unknown` because the actual type
   // is determined by the Context<T> generic at the call site.
-  interface DSLSchema {
-    "context-provide": { instruction: ContextProvide };
-    "context-inject": { instruction: ContextInject; feedback: unknown };
+  interface SpellSchema {
+    "context-provide": { request: ContextProvide };
+    "context-inject": { request: ContextInject; response: unknown };
   }
 }

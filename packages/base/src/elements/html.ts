@@ -4,7 +4,7 @@
 
 // Required so .d.ts output emits regular import statements instead of import()
 // oxlint-disable-next-line no-unused-vars
-import type { Builder, DSL } from "@ydant/core";
+import type { Builder, Spell } from "@ydant/core";
 import { createHTMLElement } from "./factory";
 
 export const div = createHTMLElement("div");

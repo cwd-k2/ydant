@@ -2,7 +2,7 @@
  * @ydant/core - Top-level rendering
  */
 
-import type { Render, Feedback, Instruction } from "../types";
+import type { Render, Response, Request } from "../types";
 import type { Plugin } from "../plugin";
 import { createRenderContextFactory } from "./context";
 import { processIterator } from "./iterator";
@@ -27,14 +27,14 @@ export function render(gen: Render, parent: HTMLElement, plugins: Map<string, Pl
       const plugin = plugins.get(type);
 
       if (plugin) {
-        const feedback = plugin.process(value as Instruction, ctx);
-        result = gen.next(feedback as Feedback);
+        const response = plugin.process(value as Request, ctx);
+        result = gen.next(response as Response);
         continue;
       }
     }
 
     // No plugin registered for this type — skip
-    result = gen.next(undefined as Feedback);
+    result = gen.next(undefined as Response);
   }
 }
 

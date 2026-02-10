@@ -6,68 +6,68 @@
 export type Tagged<T extends string, P = {}> = { type: T } & P;
 
 // =============================================================================
-// Plugin DSLSchema Types
+// SpellSchema Types
 // =============================================================================
 
 /**
- * Central registry of all DSL operations, extended by plugins via module augmentation.
+ * Central registry of all spell operations, extended by plugins via module augmentation.
  *
- * Each key represents a DSL operation and maps to an object with:
- * - `instruction` — the value yielded to the runtime
- * - `feedback` — the value returned from `yield` (defaults to `void`)
- * - `return` — the generator's return type (falls back to `feedback`, then `void`)
+ * Each key represents a spell operation and maps to an object with:
+ * - `request` — the value yielded to the runtime
+ * - `response` — the value returned from `yield` (defaults to `void`)
+ * - `return` — the generator's return type (falls back to `response`, then `void`)
  *
  * @example
  * ```typescript
  * declare module "@ydant/core" {
- *   interface DSLSchema {
- *     "element": { instruction: Element; feedback: Slot };
- *     "text": { instruction: Text };
+ *   interface SpellSchema {
+ *     "element": { request: Element; response: Slot };
+ *     "text": { request: Text };
  *     "transition": { return: TransitionHandle };
  *   }
  * }
  * ```
  */
-export interface DSLSchema {}
+export interface SpellSchema {}
 
-/** Extracts the `instruction` type from each entry in {@link DSLSchema}. */
-type InstructionOf = {
-  [K in keyof DSLSchema]: DSLSchema[K] extends { instruction: infer I } ? I : never;
+/** Extracts the `request` type from each entry in {@link SpellSchema}. */
+type RequestOf = {
+  [K in keyof SpellSchema]: SpellSchema[K] extends { request: infer I } ? I : never;
 };
 
-/** Extracts the `feedback` type from each entry in {@link DSLSchema}, defaulting to `void`. */
-type FeedbackOf = {
-  [K in keyof DSLSchema]: DSLSchema[K] extends { feedback: infer F } ? F : void;
+/** Extracts the `response` type from each entry in {@link SpellSchema}, defaulting to `void`. */
+type ResponseOf = {
+  [K in keyof SpellSchema]: SpellSchema[K] extends { response: infer F } ? F : void;
 };
 
-/** Extracts the `return` type from each entry in {@link DSLSchema}, falling back to `feedback` then `void`. */
+/** Extracts the `return` type from each entry in {@link SpellSchema}, falling back to `response` then `void`. */
 type ReturnOf = {
-  [K in keyof DSLSchema]: DSLSchema[K] extends { return: infer R }
+  [K in keyof SpellSchema]: SpellSchema[K] extends { return: infer R }
     ? R
-    : DSLSchema[K] extends { feedback: infer F }
+    : SpellSchema[K] extends { response: infer F }
       ? F
       : void;
 };
 
 /**
- * A typed generator for a single DSL operation.
- * Use with `yield*` to perform an operation and receive its feedback/return value.
+ * A typed generator for a single spell operation.
+ * Use with `yield*` to perform an operation and receive its response/return value.
  */
-export type DSL<Key extends keyof DSLSchema> = Generator<
-  InstructionOf[Key],
+export type Spell<Key extends keyof SpellSchema> = Generator<
+  RequestOf[Key],
   ReturnOf[Key],
-  FeedbackOf[Key]
+  ResponseOf[Key]
 >;
 
 // =============================================================================
 // Core Types
 // =============================================================================
 
-/** Union of all yieldable instruction values derived from {@link DSLSchema}. */
-export type Instruction = InstructionOf[keyof DSLSchema];
+/** Union of all yieldable request values derived from {@link SpellSchema}. */
+export type Request = RequestOf[keyof SpellSchema];
 
-/** Union of all feedback values that `next()` can pass back to a generator. */
-export type Feedback = void | FeedbackOf[keyof DSLSchema];
+/** Union of all response values that `next()` can pass back to a generator. */
+export type Response = void | ResponseOf[keyof SpellSchema];
 
 // =============================================================================
 // Render & Component Types
@@ -76,10 +76,10 @@ export type Feedback = void | FeedbackOf[keyof DSLSchema];
 /**
  * The generator type for rendering — used by components, element factories, and content props.
  *
- * Accepts all {@link Instruction} types as yield values, and all
- * {@link Feedback} / return types registered in {@link DSLSchema}.
+ * Accepts all {@link Request} types as yield values, and all
+ * {@link Response} / return types registered in {@link SpellSchema}.
  */
-export type Render = Generator<Instruction, void | ReturnOf[keyof DSLSchema], Feedback>;
+export type Render = Generator<Request, void | ReturnOf[keyof SpellSchema], Response>;
 
 /** A factory function that produces rendering instructions for an element's children. */
 export type Builder = () => Render | Render[];

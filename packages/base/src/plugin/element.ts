@@ -4,12 +4,12 @@
 
 import type { Render, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
-import type { Feedback } from "@ydant/core";
+import type { Response } from "@ydant/core";
 import type { Element, Slot } from "../types";
 import { executeMount } from "./index";
 
-/** Processes an {@link Element} instruction: creates (or reuses) a DOM node, applies decorations, renders children, and returns a {@link Slot}. */
-export function processElement(element: Element, ctx: RenderContext): Feedback {
+/** Processes an {@link Element} request: creates (or reuses) a DOM node, applies decorations, renders children, and returns a {@link Slot}. */
+export function processElement(element: Element, ctx: RenderContext): Response {
   const elementKey = element.key ?? null;
 
   // Reuse existing node if a matching keyed element exists

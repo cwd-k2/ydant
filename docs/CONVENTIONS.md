@@ -27,15 +27,15 @@ Ydant プロジェクトにおける命名規則、型の使い分け、コー�
 
 ## 型の使い分け
 
-| 型             | 用途                                                       | 定義元            |
-| -------------- | ---------------------------------------------------------- | ----------------- |
-| `DSL<Key>`     | 個別 DSL 操作の戻り値型（`DSL<"text">` 等）                | `@ydant/core`     |
-| `Instruction`  | 全 DSL 命令の union 型                                     | `@ydant/core`     |
-| `Feedback`     | `process()` の戻り値型（ジェネレーターへのフィードバック） | `@ydant/core`     |
-| `Render`       | コンポーネント・要素ファクトリの汎用ジェネレーター型       | `@ydant/core`     |
-| `Builder`      | 子要素のファクトリ関数 `() => Render \| Render[]`          | `@ydant/core`     |
-| `Component<P>` | コンポーネント型（Props なし / あり）                      | `@ydant/core`     |
-| `Readable<T>`  | 読み取り可能なリアクティブ値の共通インターフェース         | `@ydant/reactive` |
+| 型             | 用途                                                 | 定義元            |
+| -------------- | ---------------------------------------------------- | ----------------- |
+| `Spell<Key>`   | 個別 spell 操作の戻り値型（`Spell<"text">` 等）      | `@ydant/core`     |
+| `Request`      | 全 spell 要求の union 型                             | `@ydant/core`     |
+| `Response`     | `process()` の戻り値型（ジェネレーターへの応答）     | `@ydant/core`     |
+| `Render`       | コンポーネント・要素ファクトリの汎用ジェネレーター型 | `@ydant/core`     |
+| `Builder`      | 子要素のファクトリ関数 `() => Render \| Render[]`    | `@ydant/core`     |
+| `Component<P>` | コンポーネント型（Props なし / あり）                | `@ydant/core`     |
+| `Readable<T>`  | 読み取り可能なリアクティブ値の共通インターフェース   | `@ydant/reactive` |
 
 ---
 
@@ -186,8 +186,8 @@ export type Text = Tagged<"text", { content: string }>;
 ```ts
 // packages/<name>/src/global.d.ts
 declare module "@ydant/core" {
-  interface DSLSchema {
-    mytype: { instruction: Tagged<"mytype", { ... }> };
+  interface SpellSchema {
+    mytype: { request: Tagged<"mytype", { ... }> };
   }
 
   interface RenderContext {
@@ -200,7 +200,7 @@ declare module "@ydant/core" {
 
 | インターフェース | 用途                                                 |
 | ---------------- | ---------------------------------------------------- |
-| `DSLSchema`      | DSL 操作定義（instruction/feedback/return）          |
+| `SpellSchema`    | spell 操作定義（request/response/return）            |
 | `RenderContext`  | レンダリングコンテキストのプロパティ・メソッドを追加 |
 
 ### 型エイリアスの使い分け
@@ -209,9 +209,9 @@ declare module "@ydant/core" {
 // Render: コンポーネント・要素の戻り値（汎用）
 function MyComponent(): Render { ... }
 
-// DSL<Key>: 個別 DSL 操作の戻り値（操作ごとに型付け）
-function text(content: string): DSL<"text"> { ... }
-function div(builder: Builder): DSL<"element"> { ... }
+// Spell<Key>: 個別 spell 操作の戻り値（操作ごとに型付け）
+function text(content: string): Spell<"text"> { ... }
+function div(builder: Builder): Spell<"element"> { ... }
 ```
 
 ---
@@ -236,10 +236,10 @@ export function createMyPlugin(): Plugin {
       // 必要に応じて親に情報を伝播
     },
 
-    // Instruction の処理（ctx のプロパティに直接アクセス）
-    process(instruction: Instruction, ctx: RenderContext): Feedback {
-      if (isTagged(instruction, "mytype")) {
-        return processMyType(instruction, ctx);
+    // Request の処理（ctx のプロパティに直接アクセス）
+    process(request: Request, ctx: RenderContext): Response {
+      if (isTagged(request, "mytype")) {
+        return processMyType(request, ctx);
       }
     },
   };
@@ -252,14 +252,14 @@ export function createMyPlugin(): Plugin {
 
 ### 基本パターン
 
-プリミティブは `DSL<Key>` を返すジェネレーター関数として定義する:
+プリミティブは `Spell<Key>` を返すジェネレーター関数として定義する:
 
 ```ts
-export function* text(content: string): DSL<"text"> {
+export function* text(content: string): Spell<"text"> {
   yield { type: "text", content };
 }
 
-export function* style(properties: Partial<CSSStyleDeclaration>): DSL<"attribute"> {
+export function* style(properties: Partial<CSSStyleDeclaration>): Spell<"attribute"> {
   const styleValue = Object.entries(properties)
     .map(([k, v]) => `${toKebab(k)}: ${v}`)
     .join("; ");
@@ -352,7 +352,7 @@ export function Transition(props: TransitionProps): Render {
 
 ```ts
 // 1. 型インポート
-import type { Instruction, Feedback } from "@ydant/core";
+import type { Request, Response } from "@ydant/core";
 import type { Slot, Element } from "@ydant/base";
 
 // 2. 外部パッケージ
