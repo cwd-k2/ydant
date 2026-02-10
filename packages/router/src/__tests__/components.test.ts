@@ -462,8 +462,34 @@ describe("RouterView", () => {
     expect(container.textContent).toContain("About");
   });
 
+  it("passes params as props with base path", () => {
+    setLocationPathname("/app/users/99");
+
+    let capturedParams: Record<string, string> = {};
+    const UserPage: Component<RouteComponentProps> = ({ params }) => {
+      capturedParams = params;
+      return p(() => [text(`User: ${params.id}`)]);
+    };
+
+    mount(
+      () =>
+        div(function* () {
+          yield* RouterView({
+            routes: [{ path: "/users/:id", component: UserPage }],
+            base: "/app",
+          });
+        }),
+      container,
+      { plugins: [createBasePlugin()] },
+    );
+
+    expect(capturedParams.id).toBe("99");
+    expect(container.textContent).toContain("User: 99");
+  });
+
   it("cleans up event listeners on unmount", () => {
     const HomePage: Component = () => p(() => [text("Home")]);
+    const AboutPage: Component = () => p(() => [text("About")]);
 
     // Create a parent slot to control unmounting
     let parentSlot: any;
@@ -473,7 +499,10 @@ describe("RouterView", () => {
         div(function* () {
           parentSlot = yield* div(function* () {
             yield* RouterView({
-              routes: [{ path: "/", component: HomePage }],
+              routes: [
+                { path: "/", component: HomePage },
+                { path: "/about", component: AboutPage },
+              ],
             });
           });
         }),
@@ -482,11 +511,19 @@ describe("RouterView", () => {
     );
 
     vi.advanceTimersToNextFrame();
+    expect(container.textContent).toContain("Home");
 
-    // Refresh with different content (unmounts RouterView)
+    // Unmount RouterView by replacing with different content
     parentSlot.refresh(() => [text("Replaced")]);
-
-    // The cleanup should have run (no error thrown)
     expect(container.textContent).toContain("Replaced");
+
+    // After unmount, route change events should not re-render the old RouterView
+    setLocationPathname("/about");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    window.dispatchEvent(new Event("ydant:route-change"));
+
+    // Content should remain "Replaced", not switch to "About"
+    expect(container.textContent).toContain("Replaced");
+    expect(container.textContent).not.toContain("About");
   });
 });

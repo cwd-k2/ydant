@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@ydant/core";
 import { createBasePlugin, div, text } from "@ydant/base";
 import { signal } from "../signal";
@@ -119,5 +119,72 @@ describe("createReactivePlugin", () => {
     count2.set(200);
     expect(container.textContent).toContain("A: 1");
     expect(container.textContent).toContain("B: 200");
+  });
+});
+
+describe("ReactiveScope isolation", () => {
+  let containerA: HTMLElement;
+  let containerB: HTMLElement;
+
+  beforeEach(() => {
+    containerA = document.createElement("div");
+    containerB = document.createElement("div");
+    document.body.appendChild(containerA);
+    document.body.appendChild(containerB);
+  });
+
+  afterEach(() => {
+    containerA.remove();
+    containerB.remove();
+  });
+
+  it("independent mount() instances do not interfere with each other", () => {
+    const countA = signal(0);
+    const countB = signal(100);
+    let renderCountA = 0;
+    let renderCountB = 0;
+
+    mount(
+      () =>
+        div(function* () {
+          yield* reactive(() => {
+            renderCountA++;
+            return [text(`A: ${countA()}`)];
+          });
+        }),
+      containerA,
+      { plugins: [createBasePlugin(), createReactivePlugin()] },
+    );
+
+    mount(
+      () =>
+        div(function* () {
+          yield* reactive(() => {
+            renderCountB++;
+            return [text(`B: ${countB()}`)];
+          });
+        }),
+      containerB,
+      { plugins: [createBasePlugin(), createReactivePlugin()] },
+    );
+
+    expect(containerA.textContent).toContain("A: 0");
+    expect(containerB.textContent).toContain("B: 100");
+    expect(renderCountA).toBe(1);
+    expect(renderCountB).toBe(1);
+
+    // Changing countA should only re-render mount A
+    countA.set(1);
+    expect(containerA.textContent).toContain("A: 1");
+    expect(containerB.textContent).toContain("B: 100");
+    expect(renderCountA).toBe(2);
+    expect(renderCountB).toBe(1);
+
+    // Changing countB should only re-render mount B
+    countB.set(200);
+    expect(containerA.textContent).toContain("A: 1");
+    expect(containerB.textContent).toContain("B: 200");
+    expect(renderCountA).toBe(2);
+    expect(renderCountB).toBe(2);
   });
 });
