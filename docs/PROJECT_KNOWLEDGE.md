@@ -144,6 +144,14 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - SpellSchema フィールド: `instruction` → `request`, `feedback` → `response`
 - 方針: 「ユーザーに近い部分はメタファー、内部は機械的に」で層を分ける
 
+### Phase 9: グローバル状態の排除
+
+- **reactive**: グローバル `current` subscriber を `ReactiveScope` にスコープ化。`initContext` で mount ツリーごとに独立した追跡コンテキストを提供
+- **router**: グローバル `currentRoute`/`routeListeners` を排除。`window.location` から都度導出 + DOM カスタムイベント (`ydant:route-change`) で通知
+- **router**: `RouteInfo.params` を廃止し、route component の props (`RouteComponentProps`) として渡すように変更
+- **router**: `createRouterPlugin()` を導入（プラグインアーキテクチャの採用）
+- バッチ (`batch()`) は横断的関心事としてグローバルに維持
+
 ---
 
 ## 学んだ教訓
@@ -173,17 +181,22 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 
 ### 設計関連
 
-1. **core は最小限に**
+1. **グローバル状態排除の手法は状態の「真の所有者」で選ぶ**
+   - プラグインシステム内部の状態 → `initContext` で RenderContext に保持（例: reactive の subscriber tracking）
+   - ブラウザ API のラッパー → ブラウザネイティブに委譲して都度導出（例: router の route info → `window.location`）
+   - 横断的関心事（同期操作で全インスタンスに影響） → グローバルに維持（例: `batch()`）
+
+2. **core は最小限に**
    - DOM の存在を仮定しない
    - プラグインに具体的処理を委ねる
 
-2. **命名規則の一貫性**
+3. **命名規則の一貫性**
    - `create*`: 設定・構築を伴う生成
    - `get*`: 状態取得
    - PascalCase: 内部構造を持つコンポーネント
    - lowercase: プリミティブ、ファクトリ
 
-3. **暗黙的状態より明示的データを優先する**
+4. **暗黙的状態より明示的データを優先する**
    - 例: `pendingKey`（コンテキスト上の暗黙的な状態）→ `Element.key`（オブジェクトの明示的なフィールド）
    - 暗黙的状態は「先読み」「処理順序への依存」「状態のリセット忘れ」などの問題を招く
    - データが所属すべきオブジェクトに直接持たせることで、処理順序への依存がなくなり実装がシンプルになる

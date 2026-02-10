@@ -136,6 +136,20 @@ function createReactivePlugin(): Plugin;
 
 Creates a plugin that handles `reactive` blocks. Must be passed to `mount()`. Depends on `createBasePlugin()`.
 
+### createReactiveScope
+
+```typescript
+function createReactiveScope(): ReactiveScope;
+```
+
+Creates an isolated tracking scope. Normally created automatically by the plugin's `initContext()` — you only need this when creating a standalone scope outside `mount()`.
+
+## Scoping
+
+Each `mount()` instance gets its own `ReactiveScope` via the plugin's `initContext()`. Signals, effects, and computed values created within a mount tree track dependencies in that scope, preventing interference between independent mount instances.
+
+**Batch operations remain global by design** — `batch()` defers all effects regardless of scope. If batch were scoped, effects from other scopes would fire immediately during a batch, defeating its purpose.
+
 ## Module Structure
 
 - `types.ts` - Subscriber, Readable types
@@ -145,4 +159,5 @@ Creates a plugin that handles `reactive` blocks. Must be passed to `mount()`. De
 - `batch.ts` - Batch functionality
 - `reactive.ts` - reactive primitive
 - `plugin.ts` - DOM plugin
-- `tracking.ts` - Subscription tracking (internal)
+- `scope.ts` - ReactiveScope (per-mount tracking context)
+- `tracking.ts` - Subscription tracking (internal, delegates to scope)

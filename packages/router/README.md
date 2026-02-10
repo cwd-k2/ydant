@@ -15,13 +15,14 @@ import { mount, type Component } from "@ydant/core";
 import { createBasePlugin, div, nav, text } from "@ydant/base";
 import { RouterView, RouterLink, getRoute, navigate } from "@ydant/router";
 
+import type { RouteComponentProps } from "@ydant/router";
+
 // Define pages
 const HomePage: Component = () => div(() => [text("Home Page")]);
 
-const UserPage: Component = () =>
+const UserPage: Component<RouteComponentProps> = ({ params }) =>
   div(function* () {
-    const route = getRoute();
-    yield* text(`User ID: ${route.params.id}`);
+    yield* text(`User ID: ${params.id}`);
   });
 
 const NotFoundPage: Component = () => div(() => [text("404 - Not Found")]);
@@ -62,14 +63,20 @@ interface RouterViewProps {
   base?: string;
 }
 
+interface RouteComponentProps {
+  params: Record<string, string>;
+}
+
 interface RouteDefinition {
   path: string;
-  component: Component;
+  component: Component<RouteComponentProps>;
   guard?: () => boolean | Promise<boolean>;
 }
 ```
 
-Renders the component matching the current path.
+Renders the component matching the current path. The matched route's component receives `{ params }` as props, containing the extracted path parameters.
+
+**Note:** Components that don't use params can still be assigned to `component` without change — TypeScript allows `() => Render` to be assigned to `(props: RouteComponentProps) => Render` (parameter arity compatibility).
 
 #### Route Guards
 
@@ -118,13 +125,12 @@ function getRoute(): RouteInfo;
 
 interface RouteInfo {
   path: string;
-  params: Record<string, string>;
   query: Record<string, string>;
   hash: string;
 }
 ```
 
-Returns current route information including path parameters.
+Returns current route information derived from `window.location`. Path parameters are not included here — they are passed as props to route components via `RouteComponentProps`.
 
 ### navigate
 
@@ -143,18 +149,31 @@ function goForward(): void;
 
 Navigate through browser history.
 
+### createRouterPlugin
+
+```typescript
+function createRouterPlugin(): Plugin;
+```
+
+Creates the router plugin. Depends on `createBasePlugin()`. Currently minimal — serves as the registration point for the router in the plugin system.
+
 ## Path Patterns
 
 - `/users` - Exact match
-- `/users/:id` - Path parameter (captured as `params.id`)
+- `/users/:id` - Path parameter (passed as `params.id` in component props)
 - `/users/*` - Wildcard (matches any suffix)
 - `*` - Catch-all (404 page)
 
+## Architecture
+
+Route state is **not cached** — `getRoute()` derives from `window.location` on each call. Route change notifications use DOM custom events (`ydant:route-change`) instead of module-level listener sets, enabling natural cleanup via `removeEventListener`.
+
 ## Module Structure
 
-- `types.ts` - Type definitions
+- `types.ts` - Type definitions (RouteInfo, RouteDefinition, RouteComponentProps)
 - `matching.ts` - Path matching utilities
-- `state.ts` - Route state management
-- `navigation.ts` - Navigation functions
+- `state.ts` - Event constants
+- `navigation.ts` - Navigation functions (getRoute, navigate, goBack, goForward)
+- `plugin.ts` - Router plugin
 - `RouterView.ts` - RouterView component
 - `RouterLink.ts` - RouterLink component
