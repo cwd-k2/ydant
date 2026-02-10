@@ -166,6 +166,11 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
    - `Spell<Key>` が個別操作の型、`Render` が汎用ジェネレーター型として機能
    - 中間ラッパー（`ProcessResult` 等）も不要になり、プラグインは `Response` を直接返却
 
+5. **循環参照の解消パターン**
+   - 相互参照する型は同じファイルに統合する（例: `Plugin` と `RenderContext` → `plugin.ts`）
+   - 関数は唯一の使用箇所に移動する（例: `executeMount` → `element.ts`）
+   - `import type` のみの循環は安全だが、型の共存関係を示すシグナルとして扱う
+
 ### 設計関連
 
 1. **core は最小限に**
