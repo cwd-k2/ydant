@@ -28,7 +28,7 @@ export function* CounterSection() {
   const counterRef = createSlotRef();
   counterRef.bind(
     yield* p(function* () {
-      yield* classes(COUNTER_CLASSES);
+      yield* classes(...COUNTER_CLASSES);
       yield* text(`Count: ${counter}`);
     }),
   );
@@ -51,7 +51,7 @@ export function* CounterSection() {
       );
       yield* on("click", () => {
         counter++;
-        counterRef.refresh(() => [classes(COUNTER_CLASSES), text(`Count: ${counter}`)]);
+        counterRef.refresh(() => [classes(...COUNTER_CLASSES), text(`Count: ${counter}`)]);
       });
       yield* text("Increment");
     });
@@ -70,7 +70,7 @@ export function* CounterSection() {
       yield* on("click", () => {
         counter = 0;
         counterRef.refresh(() => [
-          classes(COUNTER_CLASSES),
+          classes(...COUNTER_CLASSES),
           span(() => [classes("text-red-500"), text("RESET: ")]),
           text(`${counter}`),
         ]);
