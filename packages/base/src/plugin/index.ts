@@ -1,56 +1,31 @@
 /**
- * @ydant/base - ベースプラグイン
+ * @ydant/base - Base plugin
  */
 
-import type {
-  Child,
-  Plugin,
-  PluginAPI,
-  PluginAPIExtensions,
-  PluginResult,
-  RenderContext,
-  RenderContextCore,
-  RenderContextExtensions,
-} from "@ydant/core";
+import type { Request, Response, Plugin, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 import { processElement } from "./element";
 import { processAttribute, processListener, processText, processLifecycle } from "./primitives";
-import type { KeyedNode } from "../types";
 
 /**
- * マウントコールバックを実行
- *
- * DOM 更新完了後（requestAnimationFrame のタイミング）に実行し、
- * クリーンアップ関数が返された場合は unmountCallbacks に追加する
- */
-function executeMount(ctx: RenderContext): void {
-  const mountCallbacks = ctx.mountCallbacks;
-  const unmountCallbacks = ctx.unmountCallbacks;
-
-  requestAnimationFrame(() => {
-    for (const callback of mountCallbacks) {
-      const cleanup = callback();
-      if (typeof cleanup === "function") {
-        unmountCallbacks.push(cleanup);
-      }
-    }
-    ctx.mountCallbacks = [];
-  });
-}
-
-/**
- * ベースプラグインを作成
- *
- * element, text, attribute, listener, key, lifecycle を処理するプラグイン
+ * Creates the base plugin that handles core DOM operations:
+ * element creation, text nodes, attributes, event listeners, and lifecycle hooks.
  */
 export function createBasePlugin(): Plugin {
   return {
     name: "base",
     types: ["element", "text", "attribute", "listener", "lifecycle"],
 
-    initContext(ctx: RenderContextCore & Partial<RenderContextExtensions>) {
-      ctx.isCurrentElementReused = false;
-      ctx.keyedNodes = new Map();
+    initContext(ctx: RenderContext, parentCtx?: RenderContext) {
+      if (parentCtx && ctx.parent === parentCtx.parent) {
+        // processChildren path: same scope, inherit keyed nodes for reuse
+        ctx.isCurrentElementReused = parentCtx.isCurrentElementReused;
+        ctx.keyedNodes = parentCtx.keyedNodes;
+      } else {
+        // createChildContext path or root: new scope
+        ctx.isCurrentElementReused = false;
+        ctx.keyedNodes = new Map();
+      }
       ctx.mountCallbacks = [];
       ctx.unmountCallbacks = [];
     },
@@ -68,73 +43,26 @@ export function createBasePlugin(): Plugin {
       }
     },
 
-    extendAPI(api: Partial<PluginAPIExtensions>, ctx: RenderContext) {
-      // DOM 操作関連
-      Object.defineProperty(api, "isCurrentElementReused", {
-        get() {
-          return ctx.isCurrentElementReused;
-        },
-        enumerable: true,
-      });
-      api.appendChild = (node: Node) => {
-        (ctx.parent as Node).appendChild(node);
-      };
-      api.setCurrentElement = (element: globalThis.Element | null) => {
-        ctx.currentElement = element;
-      };
-      api.setParent = (parent: Node) => {
-        ctx.parent = parent;
-      };
-      api.setCurrentElementReused = (reused: boolean) => {
-        ctx.isCurrentElementReused = reused;
-      };
-
-      // keyedNodes 関連
-      const keyedNodes = ctx.keyedNodes;
-      api.getKeyedNode = (key: string | number) => keyedNodes.get(key);
-      api.setKeyedNode = (key: string | number, node: KeyedNode) => {
-        keyedNodes.set(key, node);
-      };
-      api.deleteKeyedNode = (key: string | number) => {
-        keyedNodes.delete(key);
-      };
-
-      // lifecycle 関連
-      const mountCallbacks = ctx.mountCallbacks;
-      const unmountCallbacks = ctx.unmountCallbacks;
-
-      api.onMount = (callback: () => void | (() => void)) => {
-        mountCallbacks.push(callback);
-      };
-      api.onUnmount = (callback: () => void) => {
-        unmountCallbacks.push(callback);
-      };
-      api.addUnmountCallbacks = (...callbacks: Array<() => void>) => {
-        unmountCallbacks.push(...callbacks);
-      };
-      api.executeMount = () => {
-        executeMount(ctx);
-      };
-      api.getUnmountCallbacks = () => unmountCallbacks;
-    },
-
-    process(child: Child, api: PluginAPI): PluginResult {
-      if (isTagged(child, "element")) {
-        return processElement(child, api);
+    process(request: Request, ctx: RenderContext): Response {
+      if (isTagged(request, "element")) {
+        return processElement(request, ctx);
       }
-      if (isTagged(child, "text")) {
-        return processText(child, api);
+      if (isTagged(request, "text")) {
+        processText(request, ctx);
+        return;
       }
-      if (isTagged(child, "attribute")) {
-        return processAttribute(child, api);
+      if (isTagged(request, "attribute")) {
+        processAttribute(request, ctx);
+        return;
       }
-      if (isTagged(child, "listener")) {
-        return processListener(child, api);
+      if (isTagged(request, "listener")) {
+        processListener(request, ctx);
+        return;
       }
-      if (isTagged(child, "lifecycle")) {
-        return processLifecycle(child, api);
+      if (isTagged(request, "lifecycle")) {
+        processLifecycle(request, ctx);
+        return;
       }
-      return {};
     },
   };
 }

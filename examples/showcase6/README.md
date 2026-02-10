@@ -38,10 +38,10 @@ import { Suspense, ErrorBoundary } from "@ydant/async";
 yield *
   ErrorBoundary({
     fallback: (error) => ErrorDisplay({ error }),
-    children: () =>
+    content: () =>
       Suspense({
         fallback: () => LoadingSpinner(),
-        children: () => AsyncContent(),
+        content: () => AsyncContent(),
       }),
   });
 ```

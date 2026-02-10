@@ -1,17 +1,13 @@
 /**
- * Reactive プリミティブ: Signal を追跡して自動更新
+ * Reactive primitive — a DSL block that tracks Signal dependencies and
+ * automatically re-renders when they change.
  *
  * @example
  * ```typescript
- * import { signal } from "@ydant/reactive";
- * import { reactive } from "@ydant/reactive";
- *
  * const count = signal(0);
  *
  * const Counter: Component = () =>
  *   div(function* () {
- *     // reactive 内の Signal アクセスを追跡
- *     // count が変わると自動で再レンダリング
  *     yield* reactive(() => [
  *       text(`Count: ${count()}`),
  *     ]);
@@ -24,26 +20,24 @@
  * ```
  */
 
-import type { Tagged, Builder, Primitive } from "@ydant/core";
+import type { Tagged, Builder, Spell } from "@ydant/core";
 
-/** リアクティブブロック - Signal の変更を追跡して自動更新 */
+/** A DSL instruction representing a reactive block that auto-updates when its Signal dependencies change. */
 export type Reactive = Tagged<"reactive", { builder: Builder }>;
 
 /**
- * Signal を追跡して自動的に再レンダリングするリアクティブブロックを作成
+ * Creates a reactive rendering block. Any Signals read inside the builder
+ * are tracked; when they change, the block's DOM is re-rendered automatically.
  *
- * @param builder - 子要素を生成する関数
+ * @param builder - A function that returns rendering instructions.
  *
  * @example
  * ```typescript
- * const count = signal(0);
- * const doubled = computed(() => count() * 2);
- *
  * yield* reactive(() => [
  *   text(`Count: ${count()}, Doubled: ${doubled()}`),
  * ]);
  * ```
  */
-export function* reactive(builder: Builder): Primitive<Reactive> {
+export function* reactive(builder: Builder): Spell<"reactive"> {
   yield { type: "reactive", builder };
 }

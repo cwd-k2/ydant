@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { isTagged, toChildren } from "../utils";
-import type { Instruction, Tagged } from "../types";
+import { isTagged, toRender } from "../utils";
+import type { Render, Tagged } from "../types";
 
 // テスト用の型定義
 type TestText = Tagged<"text", { content: string }>;
@@ -44,25 +44,25 @@ describe("isTagged", () => {
   });
 });
 
-describe("toChildren", () => {
-  it("returns iterator as-is when passed an iterator", () => {
+describe("toRender", () => {
+  it("returns generator as-is when passed a single generator", () => {
     const items: TestText[] = [
       { type: "text", content: "hello" },
       { type: "text", content: "world" },
     ];
-    // Create a proper iterator that matches the Instructor type signature
-    // Note: In actual usage, Child type is extended by plugins (e.g., @ydant/base)
-    const iterator = (function* () {
+    // Create a proper generator that matches the Render type signature
+    // Note: In actual usage, Request type is extended by plugins (e.g., @ydant/base)
+    const gen = (function* () {
       for (const item of items) {
         yield item;
       }
-    })() as unknown as Iterator<never, void, void>;
+    })() as unknown as Render;
 
-    const result = toChildren(iterator);
-    expect(result).toBe(iterator);
+    const result = toRender(gen);
+    expect(result).toBe(gen);
   });
 
-  it("converts array of generators to a single iterator", () => {
+  it("converts array of generators to a single generator", () => {
     function* gen1() {
       yield { type: "text", content: "hello" } as const;
     }
@@ -70,7 +70,7 @@ describe("toChildren", () => {
       yield { type: "text", content: "world" } as const;
     }
 
-    const result = toChildren([gen1(), gen2()] as Instruction[]);
+    const result = toRender([gen1(), gen2()] as Render[]);
     const items: unknown[] = [];
     let next = result.next();
     while (!next.done) {
@@ -84,7 +84,7 @@ describe("toChildren", () => {
   });
 
   it("handles empty array", () => {
-    const result = toChildren([]);
+    const result = toRender([]);
     const items: unknown[] = [];
     let next = result.next();
     while (!next.done) {
@@ -101,7 +101,7 @@ describe("toChildren", () => {
       yield { type: "text", content: "b" } as const;
     }
 
-    const result = toChildren([gen()] as Instruction[]);
+    const result = toRender([gen()] as Render[]);
     const items: unknown[] = [];
     let next = result.next();
     while (!next.done) {

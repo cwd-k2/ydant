@@ -1,99 +1,74 @@
 /**
- * @ydant/core - プラグインシステム
+ * @ydant/core - Plugin system
  */
 
-import type { Child, ChildNext } from "./types";
-import type { RenderContext, RenderContextCore, RenderContextExtensions } from "./render/types";
+import type { Request, Response, Builder } from "./types";
 
 // =============================================================================
-// Plugin API Extension Types
-// -----------------------------------------------------------------------------
-// プラグインは declare module "@ydant/core" を使って以下のインターフェースを
-// 拡張することで、PluginAPI に独自のメソッドを追加できる。
-//
-// @ydant/base が BasePluginAPI を追加し、DOM 操作に必要なメソッドを提供する。
+// RenderContext
 // =============================================================================
 
 /**
- * プラグインが PluginAPI を拡張するためのインターフェース
+ * Per-scope state carried through the rendering tree.
+ *
+ * Core fields are defined here; plugins add their own properties
+ * via module augmentation (e.g., `@ydant/base` adds `keyedNodes`,
+ * `@ydant/context` adds `contextValues`).
  *
  * @example
  * ```typescript
- * // @ydant/base で DOM 操作用のメソッドを追加
  * declare module "@ydant/core" {
- *   interface PluginAPIExtensions extends BasePluginAPI {}
+ *   interface RenderContext {
+ *     keyedNodes: Map<string | number, unknown>;
+ *   }
  * }
  * ```
  */
-export interface PluginAPIExtensions {}
-
-/**
- * プラグインが使用できる API
- *
- * 実際のメソッドは @ydant/base の PluginAPIExtensions 拡張で定義される
- */
-export type PluginAPI = PluginAPIExtensions;
-
-/**
- * プラグインの処理結果
- */
-export interface PluginResult {
-  /** ジェネレータに返す値 */
-  value?: ChildNext | undefined;
+export interface RenderContext {
+  /** The DOM node that children are appended to. */
+  parent: Node;
+  /** The element currently being decorated, or `null` between elements. */
+  currentElement: globalThis.Element | null;
+  /** Registered plugins keyed by their type tags. */
+  plugins: Map<string, Plugin>;
+  /** Processes a {@link Builder}'s instructions in a new child context. */
+  processChildren(builder: Builder, options?: { parent?: Node }): void;
+  /** Creates a new child-scoped {@link RenderContext} for the given parent node. */
+  createChildContext(parent: Node): RenderContext;
 }
 
-/**
- * DOM レンダラープラグイン
- */
+// =============================================================================
+// Plugin
+// =============================================================================
+
+/** A plugin that teaches the core runtime how to handle specific spell operations. */
 export interface Plugin {
-  /** プラグイン識別子 */
+  /** Unique identifier for this plugin. */
   readonly name: string;
-  /** このプラグインが処理する type タグの配列 */
+  /** The `type` tags this plugin handles (e.g., `["element", "text"]`). */
   readonly types: readonly string[];
-  /** 依存するプラグインの name 配列 */
+  /** Names of other plugins this one depends on. Checked at mount time. */
   readonly dependencies?: readonly string[];
   /**
-   * RenderContext を初期化する
+   * Initializes plugin-owned properties on a {@link RenderContext}.
    *
-   * mount 時および子コンテキスト作成時に呼び出される。
-   * プラグインは RenderContextExtensions で定義した独自プロパティを
-   * ここで初期化する。
+   * Called at mount time and whenever a child context is created.
+   * Plugins should augment {@link RenderContext} and set their properties here.
    *
-   * @param ctx - 初期化対象のコンテキスト（構築途中のため Partial）
-   * @param parentCtx - 親コンテキスト（ルートの場合は undefined）
+   * @param ctx - The context to initialize (core fields are already set).
+   * @param parentCtx - The parent context, or `undefined` at the root.
    */
-  initContext?(
-    ctx: RenderContextCore & Partial<RenderContextExtensions>,
-    parentCtx?: RenderContext,
-  ): void;
+  initContext?(ctx: RenderContext, parentCtx?: RenderContext): void;
   /**
-   * PluginAPI を拡張する
+   * Propagates state from a child context back to its parent.
    *
-   * プラグイン固有のメソッドを PluginAPI に追加する。
-   * PluginAPIExtensions で定義した独自のメソッドをここで実装する。
+   * Called after `processChildren` finishes iterating a child's requests.
+   * Use this to merge cleanup callbacks, keyed nodes, or other accumulated state.
    *
-   * @param api - 拡張対象の PluginAPI オブジェクト
-   * @param ctx - 現在の RenderContext（initContext 後なので構築済み）
-   */
-  extendAPI?(api: Partial<PluginAPIExtensions>, ctx: RenderContext): void;
-  /**
-   * 子コンテキストの状態を親コンテキストにマージする
-   *
-   * processChildren 内で子イテレータ処理後に呼び出される。
-   * プラグインは子コンテキストから親コンテキストへの状態伝搬をここで実装する。
-   *
-   * @param parentCtx - 親コンテキスト
-   * @param childCtx - 子コンテキスト
+   * @param parentCtx - The parent context.
+   * @param childCtx - The child context that was just processed.
    */
   mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
-  /** Child を処理する */
-  process(child: Child, api: PluginAPI): PluginResult;
-}
-
-/**
- * mount のオプション
- */
-export interface MountOptions {
-  /** 使用するプラグインの配列 */
-  plugins?: Plugin[];
+  /** Processes a single {@link Request} and returns a response for the generator. */
+  process(request: Request, ctx: RenderContext): Response;
 }

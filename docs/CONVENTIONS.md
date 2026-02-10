@@ -27,15 +27,15 @@ Ydant プロジェクトにおける命名規則、型の使い分け、コー�
 
 ## 型の使い分け
 
-| 型              | 用途                                                | 定義元            |
-| --------------- | --------------------------------------------------- | ----------------- |
-| `Render`        | コンポーネント関数の戻り値型                        | `@ydant/core`     |
-| `ElementRender` | 要素ファクトリ (`div()` 等) の戻り値型              | `@ydant/base`     |
-| `Primitive<T>`  | 副作用プリミティブ (`text()`, `on()` 等) の戻り値型 | `@ydant/core`     |
-| `ChildContent`  | `children` プロパティに渡すビルダー関数の戻り値型   | `@ydant/core`     |
-| `CleanupFn`     | ライフサイクル・副作用のクリーンアップ関数          | `@ydant/core`     |
-| `Component<P>`  | コンポーネント型（Props なし / あり）               | `@ydant/core`     |
-| `Readable<T>`   | 読み取り可能なリアクティブ値の共通インターフェース  | `@ydant/reactive` |
+| 型             | 用途                                                 | 定義元            |
+| -------------- | ---------------------------------------------------- | ----------------- |
+| `Spell<Key>`   | 個別 spell 操作の戻り値型（`Spell<"text">` 等）      | `@ydant/core`     |
+| `Request`      | 全 spell 要求の union 型                             | `@ydant/core`     |
+| `Response`     | `process()` の戻り値型（ジェネレーターへの応答）     | `@ydant/core`     |
+| `Render`       | コンポーネント・要素ファクトリの汎用ジェネレーター型 | `@ydant/core`     |
+| `Builder`      | 子要素のファクトリ関数 `() => Render \| Render[]`    | `@ydant/core`     |
+| `Component<P>` | コンポーネント型（Props なし / あり）                | `@ydant/core`     |
+| `Readable<T>`  | 読み取り可能なリアクティブ値の共通インターフェース   | `@ydant/reactive` |
 
 ---
 
@@ -78,6 +78,25 @@ div(function* () {
 
 ```ts
 div(() => [classes("border"), text("simple")]);
+```
+
+### Props の命名: `children` vs `content`
+
+- **`children`**: DOM 要素の実際の子要素に使う（`RouterLink.children`, `Element.children`, `Slot.refresh(children)`）
+- **`content`**: 抽象的な描画関数を受け取る Props に使う（`Suspense.content`, `ErrorBoundary.content`, `Transition.content`, `TransitionGroup.content`）
+
+```ts
+// ✅ children: <a> 要素の DOM 子要素
+interface RouterLinkProps {
+  href: string;
+  children: () => Render;
+}
+
+// ✅ content: 抽象的な描画関数
+interface SuspenseProps {
+  fallback: () => Render;
+  content: () => Render;
+}
 ```
 
 ---
@@ -143,6 +162,14 @@ packages/base/src/
     └── primitives.ts # プリミティブ処理
 ```
 
+### モジュール間の依存
+
+循環参照を防ぎ、依存グラフを一方向に保つための原則:
+
+- **相互参照する型は同居させる** — `Plugin` と `RenderContext` のように互いを参照する型は、ファイルを分けると型レベルの循環が生まれる。同じファイルに定義して自然な単位にまとめる
+- **関数は使用箇所に定義する** — ある関数が単一のモジュールでしか使われていない場合、定義もそのモジュールに置く。別ファイルに定義すると逆方向の import が生まれやすい
+- **side-effect import は型 augmentation に必要な場合のみ** — `import "@ydant/base"` のような副作用 import は、そのファイルが base の module augmentation（`RenderContext` の拡張プロパティ等）を実際に参照する場合にのみ書く
+
 ---
 
 ## 型システム
@@ -167,41 +194,32 @@ export type Text = Tagged<"text", { content: string }>;
 ```ts
 // packages/<name>/src/global.d.ts
 declare module "@ydant/core" {
-  interface PluginChildExtensions {
-    MyType: Tagged<"mytype", { ... }>;
+  interface SpellSchema {
+    mytype: { request: Tagged<"mytype", { ... }> };
   }
 
-  interface RenderContextExtensions {
+  interface RenderContext {
     myProperty: SomeType;
-  }
-
-  interface PluginAPIExtensions {
-    myMethod(): void;
   }
 }
 ```
 
 ### 拡張ポイント一覧
 
-| インターフェース          | 用途                                       |
-| ------------------------- | ------------------------------------------ |
-| `PluginChildExtensions`   | `yield` できる Child 型を追加              |
-| `PluginNextExtensions`    | `next()` で渡す値の型を追加                |
-| `PluginReturnExtensions`  | return で返す値の型を追加                  |
-| `RenderContextExtensions` | レンダリングコンテキストのプロパティを追加 |
-| `PluginAPIExtensions`     | プラグイン API のメソッドを追加            |
+| インターフェース | 用途                                                 |
+| ---------------- | ---------------------------------------------------- |
+| `SpellSchema`    | spell 操作定義（request/response/return）            |
+| `RenderContext`  | レンダリングコンテキストのプロパティ・メソッドを追加 |
 
 ### 型エイリアスの使い分け
 
 ```ts
-// Render: コンポーネント全体の戻り値（汎用）
+// Render: コンポーネント・要素の戻り値（汎用）
 function MyComponent(): Render { ... }
 
-// ElementRender: 要素ファクトリの戻り値（Slot を保証）
-function div(builder: Builder): ElementRender { ... }
-
-// Primitive<T>: プリミティブの戻り値（副作用のみ）
-function text(content: string): Primitive<Text> { ... }
+// Spell<Key>: 個別 spell 操作の戻り値（操作ごとに型付け）
+function text(content: string): Spell<"text"> { ... }
+function div(builder: Builder): Spell<"element"> { ... }
 ```
 
 ---
@@ -214,10 +232,10 @@ function text(content: string): Primitive<Text> { ... }
 export function createMyPlugin(): Plugin {
   return {
     name: "my-plugin",
-    types: ["mytype"],  // 処理する type の配列
+    types: ["mytype"], // 処理する type の配列
 
     // コンテキスト初期化
-    initContext(ctx: RenderContextCore & Partial<RenderContextExtensions>) {
+    initContext(ctx: RenderContext) {
       ctx.myProperty = initialValue;
     },
 
@@ -226,28 +244,13 @@ export function createMyPlugin(): Plugin {
       // 必要に応じて親に情報を伝播
     },
 
-    // API 拡張
-    extendAPI(api: Partial<PluginAPIExtensions>, ctx: RenderContext) {
-      api.myMethod = () => { ... };
-    },
-
-    // 子要素の処理
-    process(child: Child, api: PluginAPI): PluginResult {
-      if (isTagged(child, "mytype")) {
-        return processMyType(child, api);
+    // Request の処理（ctx のプロパティに直接アクセス）
+    process(request: Request, ctx: RenderContext): Response {
+      if (isTagged(request, "mytype")) {
+        return processMyType(request, ctx);
       }
-      return {};
     },
   };
-}
-```
-
-### PluginResult の形式
-
-```ts
-interface PluginResult {
-  next?: ChildNext; // イテレータに渡す値
-  return?: ChildReturn; // 早期終了時の戻り値
 }
 ```
 
@@ -255,26 +258,16 @@ interface PluginResult {
 
 ## プリミティブ実装
 
-### ファクトリ関数パターン
+### 基本パターン
+
+プリミティブは `Spell<Key>` を返すジェネレーター関数として定義する:
 
 ```ts
-// 汎用ファクトリ
-function createPrimitive<T extends SomeChild, Args extends unknown[]>(
-  factory: (...args: Args) => T,
-) {
-  return function* (...args: Args): Primitive<T> {
-    yield factory(...args);
-  };
+export function* text(content: string): Spell<"text"> {
+  yield { type: "text", content };
 }
 
-// 使用
-export const text = createPrimitive((content: string): Text => ({ type: "text", content }));
-```
-
-### 直接定義（複雑なロジックがある場合）
-
-```ts
-export function* style(properties: Partial<CSSStyleDeclaration>): Primitive<Attribute> {
+export function* style(properties: Partial<CSSStyleDeclaration>): Spell<"attribute"> {
   const styleValue = Object.entries(properties)
     .map(([k, v]) => `${toKebab(k)}: ${v}`)
     .join("; ");
@@ -322,8 +315,8 @@ yield * keyed(item.id, li)(() => [text(item.name)]);
 // コンポーネントと組み合わせ
 yield * keyed(item.id, ListItemView)({ item, onDelete });
 
-// 関数と組み合わせ（TransitionGroup 内の children など）
-yield * keyed(itemKey, children)(item, i);
+// 関数と組み合わせ（TransitionGroup 内の content など）
+yield * keyed(itemKey, content)(item, i);
 ```
 
 ---
@@ -338,7 +331,7 @@ export interface TransitionProps {
   enter?: string;
   enterFrom?: string;
   enterTo?: string;
-  children: () => ChildContent;
+  content: () => Render;
 }
 
 export function Transition(props: TransitionProps): Render {
@@ -367,7 +360,7 @@ export function Transition(props: TransitionProps): Render {
 
 ```ts
 // 1. 型インポート
-import type { Tagged, CleanupFn } from "@ydant/core";
+import type { Request, Response } from "@ydant/core";
 import type { Slot, Element } from "@ydant/base";
 
 // 2. 外部パッケージ

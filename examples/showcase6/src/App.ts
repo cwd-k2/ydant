@@ -17,7 +17,7 @@ function PostsSection(): Render {
 
     yield* Suspense({
       fallback: () => LoadingSpinner("Loading posts..."),
-      children: function* () {
+      content: function* () {
         const posts = postsResource();
         yield* ul(function* () {
           yield* classes("space-y-3");
@@ -44,7 +44,7 @@ function UsersSection(): Render {
 
     yield* Suspense({
       fallback: () => LoadingSpinner("Loading users..."),
-      children: function* () {
+      content: function* () {
         const users = usersResource();
         yield* div(function* () {
           yield* classes("grid", "gap-4", "md:grid-cols-3");
@@ -96,7 +96,7 @@ function ErrorDemoSection(): Render {
               errorRef.refresh(renderContent);
             },
           }),
-        children: function* () {
+        content: function* () {
           // This will throw an error
           throw new Error("Simulated error from ErrorBoundary demo!");
         },

@@ -1,12 +1,10 @@
 /**
- * @ydant/base - HTML 要素
+ * @ydant/base - HTML element factories
  */
 
-// .d.ts 出力で import() ではなく通常の import 文を生成するために必要
+// Required so .d.ts output emits regular import statements instead of import()
 // oxlint-disable-next-line no-unused-vars
-import type { Builder } from "@ydant/core";
-// oxlint-disable-next-line no-unused-vars
-import type { ElementRender } from "../types";
+import type { Builder, Spell } from "@ydant/core";
 import { createHTMLElement } from "./factory";
 
 export const div = createHTMLElement("div");

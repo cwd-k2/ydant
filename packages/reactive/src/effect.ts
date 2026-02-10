@@ -1,5 +1,5 @@
 /**
- * Effect: 副作用（依存する Signal が変わると再実行）
+ * Effect — a side effect that re-runs when its reactive dependencies change.
  *
  * @example
  * ```typescript
@@ -8,54 +8,46 @@
  * const dispose = effect(() => {
  *   console.log(`Count is: ${count()}`);
  * });
- * // 出力: "Count is: 0"
+ * // Output: "Count is: 0"
  *
  * count.set(1);
- * // 出力: "Count is: 1"
+ * // Output: "Count is: 1"
  *
- * dispose();  // 購読解除
- * count.set(2);  // 何も出力されない
+ * dispose();  // Unsubscribe
+ * count.set(2);  // No output
  * ```
  */
 
-import type { CleanupFn } from "@ydant/core";
 import { runWithSubscriber } from "./tracking";
 
 /**
- * Effect を作成する
+ * Creates a reactive side effect that automatically re-runs when its dependencies change.
  *
- * @param fn - 副作用を実行する関数。クリーンアップ関数を返すことができる。
- * @returns Effect を破棄するための関数
+ * The callback may return a cleanup function, which is called before each re-execution
+ * and when the effect is disposed.
+ *
+ * @param fn - The effect function. May return a cleanup function.
+ * @returns A dispose function that stops the effect and runs its cleanup.
  *
  * @example
  * ```typescript
  * const count = signal(0);
  *
- * // 基本的な使い方
  * const dispose = effect(() => {
- *   console.log(`Count changed to: ${count()}`);
- * });
- *
- * // クリーンアップ付き
- * const disposeTimer = effect(() => {
  *   const value = count();
- *   const timer = setTimeout(() => {
- *     console.log(`Delayed log: ${value}`);
- *   }, 1000);
- *
- *   // クリーンアップ: 次の実行前、または dispose 時に呼ばれる
- *   return () => clearTimeout(timer);
+ *   const timer = setTimeout(() => console.log(value), 1000);
+ *   return () => clearTimeout(timer); // cleanup
  * });
  * ```
  */
-export function effect(fn: () => void | CleanupFn): CleanupFn {
-  let cleanup: CleanupFn | void;
+export function effect(fn: () => void | (() => void)): () => void {
+  let cleanup: (() => void) | void;
   let isDisposed = false;
 
   const execute = () => {
     if (isDisposed) return;
 
-    // 前回のクリーンアップを実行
+    // Run previous cleanup
     if (cleanup) {
       try {
         cleanup();
@@ -65,14 +57,14 @@ export function effect(fn: () => void | CleanupFn): CleanupFn {
       cleanup = undefined;
     }
 
-    // 依存関係を追跡しながら実行
+    // Execute while tracking dependencies
     cleanup = runWithSubscriber(execute, fn);
   };
 
-  // 初回実行
+  // Initial execution
   execute();
 
-  // dispose 関数を返す
+  // Return dispose function
   return () => {
     if (!isDisposed) {
       isDisposed = true;

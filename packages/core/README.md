@@ -56,40 +56,26 @@ interface Plugin {
   /** Plugin names that must be registered before this plugin */
   readonly dependencies?: readonly string[];
   /** Initialize plugin-specific properties in RenderContext */
-  initContext?(
-    ctx: RenderContextCore & Partial<RenderContextExtensions>,
-    parentCtx?: RenderContext,
-  ): void;
-  /** Extend PluginAPI with plugin-specific methods */
-  extendAPI?(api: Partial<PluginAPIExtensions>, ctx: RenderContext): void;
+  initContext?(ctx: RenderContext, parentCtx?: RenderContext): void;
   /** Merge child context state into parent context (called after processChildren) */
   mergeChildContext?(parentCtx: RenderContext, childCtx: RenderContext): void;
-  /** Process a child element */
-  process(child: Child, api: PluginAPI): PluginResult;
-}
-
-interface PluginResult {
-  value?: ChildNext | undefined;
+  /** Process a request and return a response for the generator */
+  process(request: Request, ctx: RenderContext): Response;
 }
 ```
 
 ### Types
 
-| Type             | Description                                                           |
-| ---------------- | --------------------------------------------------------------------- |
-| `Tagged<T,P>`    | Helper type for tagged unions: `{ type: T } & P`                      |
-| `CleanupFn`      | `() => void` - Lifecycle cleanup function                             |
-| `Child`          | Union of all yieldable types (extended by plugins)                    |
-| `ChildOfType<T>` | Extract a specific type from `Child` by tag                           |
-| `ChildNext`      | Union of values passed via `next()` (extended by plugins)             |
-| `ChildReturn`    | Union of return values (extended by plugins)                          |
-| `Builder`        | `() => Instructor \| Instruction[]` - Element factory argument        |
-| `Instructor`     | `Iterator<Child, ChildReturn, ChildNext>` - Internal iterator         |
-| `Instruction`    | `Generator<Child, ChildReturn, ChildNext>` - Primitive return type    |
-| `Primitive<T>`   | `Generator<T, void, void>` - Side-effect-only primitive return type   |
-| `ChildContent`   | `Generator<Child, unknown, ChildNext>` - Children builder return type |
-| `Render`         | `Generator<Child, ChildReturn, ChildNext>` - Base rendering generator |
-| `Component<P?>`  | `() => Render` (no args) or `(props: P) => Render` (with props)       |
+| Type            | Description                                                     |
+| --------------- | --------------------------------------------------------------- |
+| `Tagged<T,P>`   | Helper type for tagged unions: `{ type: T } & P`                |
+| `SpellSchema`   | Co-locates request and response types per spell operation       |
+| `Spell<Key>`    | Typed generator for a specific spell operation key              |
+| `Request`       | Union of all yieldable types (derived from `SpellSchema`)       |
+| `Response`      | Union of all response types returned by `process()`             |
+| `Render`        | Generator for rendering — components, elements, and children    |
+| `Builder`       | `() => Render \| Render[]` - Element children factory           |
+| `Component<P?>` | `() => Render` (no args) or `(props: P) => Render` (with props) |
 
 ### Plugin Extension Interfaces
 
@@ -98,66 +84,58 @@ Plugins can extend these interfaces via module augmentation:
 ```typescript
 declare module "@ydant/core" {
   // Extend RenderContext with custom properties
-  interface RenderContextExtensions {
+  interface RenderContext {
     myProperty: MyType;
   }
 
-  // Extend PluginAPI with custom methods
-  interface PluginAPIExtensions {
-    myMethod(): void;
+  // Co-locate request, response, and return types per spell operation
+  interface SpellSchema {
+    mytype: { request: Tagged<"mytype", { value: string }>; response: MyResultType };
+    // return omitted → falls back to response (MyResultType)
+    // Use explicit `return` when it differs from response:
+    // "other": { request: OtherType; response: Bar; return: Baz };
+    // Or for return-only entries (no request):
+    // "composite": { return: CompositeHandle };
   }
+}
 
-  // Extend Child types (yieldable values)
-  interface PluginChildExtensions {
-    MyType: Tagged<"mytype", { value: string }>;
-  }
-
-  // Extend values passed via next()
-  interface PluginNextExtensions {
-    MyResult: MyResultType;
-  }
-
-  // Extend return values
-  interface PluginReturnExtensions {
-    MyResult: MyResultType;
-  }
+// Use Spell<Key> for typed generators
+function* myOperation(): Spell<"mytype"> {
+  const result = yield myRequest; // result is MyResultType
+  return result;
 }
 ```
 
 ### RenderContext
 
-The rendering context holds state during rendering. Plugins extend it via `RenderContextExtensions`:
+The rendering context holds state and methods during rendering. Core fields include `parent`, `currentElement`, `plugins`, `processChildren`, and `createChildContext`. Plugins extend it via `declare module`:
 
 ```typescript
-interface RenderContextCore {
+interface RenderContext {
   parent: Node;
   currentElement: Element | null;
   plugins: Map<string, Plugin>;
+  processChildren(builder: Builder, options?: { parent?: Node }): void;
+  createChildContext(parent: Node): RenderContext;
 }
-
-type RenderContext = RenderContextCore & RenderContextExtensions;
 ```
 
 ### Utilities
 
-| Function               | Description                            |
-| ---------------------- | -------------------------------------- |
-| `isTagged(value, tag)` | Type guard for tagged union types      |
-| `toChildren(result)`   | Normalize array/iterator to Instructor |
+| Function               | Description                                       |
+| ---------------------- | ------------------------------------------------- |
+| `isTagged(value, tag)` | Type guard for tagged union types                 |
+| `toRender(result)`     | Normalize `Render \| Render[]` to single `Render` |
 
 ## Creating Plugins
 
 ```typescript
-import type { Plugin, PluginAPI, PluginResult, Child } from "@ydant/core";
+import type { Request, Response, Plugin, RenderContext } from "@ydant/core";
 
 // 1. Declare type extensions
 declare module "@ydant/core" {
-  interface RenderContextExtensions {
+  interface RenderContext {
     myData: Map<string, unknown>;
-  }
-  interface PluginAPIExtensions {
-    getMyData(key: string): unknown;
-    setMyData(key: string, value: unknown): void;
   }
 }
 
@@ -180,19 +158,12 @@ export function createMyPlugin(): Plugin {
       }
     },
 
-    // Extend PluginAPI with methods
-    extendAPI(api, ctx) {
-      api.getMyData = (key: string) => ctx.myData.get(key);
-      api.setMyData = (key: string, value: unknown) => ctx.myData.set(key, value);
-    },
-
-    // Process child elements
-    process(child: Child, api: PluginAPI): PluginResult {
-      if ((child as { type: string }).type === "mytype") {
-        // Process the child using api.getMyData(), api.setMyData()
-        return { value: result };
+    // Process requests — access ctx properties directly
+    process(request: Request, ctx: RenderContext): Response {
+      if ((request as { type: string }).type === "mytype") {
+        // Access context properties directly: ctx.myData.get(key), ctx.myData.set(key, value)
+        return result;
       }
-      return {};
     },
   };
 }

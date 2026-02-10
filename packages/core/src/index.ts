@@ -9,46 +9,30 @@
 // =============================================================================
 
 export type {
-  CleanupFn,
   Tagged,
-  Child,
-  ChildOfType,
-  ChildNext,
-  ChildReturn,
+  SpellSchema,
+  Spell,
+  Request,
+  Response,
   Builder,
-  Instructor,
-  Instruction,
-  Primitive,
-  ChildContent,
   Render,
   Component,
-  // Plugin extension points
-  PluginChildExtensions,
-  PluginNextExtensions,
-  PluginReturnExtensions,
 } from "./types";
 
 // =============================================================================
 // Plugin System
 // =============================================================================
 
-export type { Plugin, PluginAPI, PluginAPIExtensions, PluginResult, MountOptions } from "./plugin";
+export type { Plugin, RenderContext } from "./plugin";
 
 // =============================================================================
 // Utilities
 // =============================================================================
 
-export { isTagged, toChildren } from "./utils";
+export { isTagged, toRender } from "./utils";
 
 // =============================================================================
 // Mount
 // =============================================================================
 
 export { mount } from "./mount";
-
-// =============================================================================
-// Render (internal, for plugin implementations)
-// =============================================================================
-
-export { render, processIterator, createRenderContext, createPluginAPIFactory } from "./render";
-export type { RenderContext, RenderContextCore, RenderContextExtensions } from "./render";

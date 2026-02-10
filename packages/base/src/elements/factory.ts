@@ -1,42 +1,37 @@
 /**
- * @ydant/base - 要素ファクトリ
+ * @ydant/base - Element factories
  */
 
-import type { Builder } from "@ydant/core";
-import { toChildren } from "@ydant/core";
-import type { Element, ElementRender, Slot } from "../types";
+import type { Builder, Spell } from "@ydant/core";
+import { toRender } from "@ydant/core";
+import type { Element, Slot } from "../types";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**
- * HTML 要素ファクトリを作成
+ * Creates an HTML element factory for the given tag name.
  *
- * @returns ElementRender を返すジェネレーター関数
- *          yield* で使用すると Slot を返す
+ * The returned function takes a {@link Builder} and returns a `Spell<"element">`
+ * generator. Using `yield*` on it produces a {@link Slot} handle.
  */
-export function createHTMLElement(tag: string): (builder: Builder) => ElementRender {
-  // 注: ジェネレーターの ChildNext は void | Slot | ... だが、
-  // Element を yield したときは必ず Slot が返される。
-  // この型の精密化はジェネレーターの型システムの制約上困難なため、
-  // 内部実装で処理し、外部には ElementRender として正しい型を公開する。
-  return function* (builder: Builder): ElementRender {
-    const children = toChildren(builder());
-    // Element の yield は必ず Slot を返す（プラグインシステムの契約）
+export function createHTMLElement(tag: string): (builder: Builder) => Spell<"element"> {
+  // TypeScript cannot infer that `yield` returns Slot here because Generator's
+  // TNext is structurally fixed at declaration. The `as Slot` cast is safe —
+  // the base plugin always passes a Slot back when processing an Element.
+  return function* (builder: Builder): Spell<"element"> {
+    const children = toRender(builder());
     return (yield { type: "element", tag, children } as Element) as Slot;
   };
 }
 
 /**
- * SVG 要素ファクトリを作成
+ * Creates an SVG element factory for the given tag name.
  *
- * @returns ElementRender を返すジェネレーター関数
- *          yield* で使用すると Slot を返す
+ * Same as {@link createHTMLElement} but uses the SVG namespace.
  */
-export function createSVGElement(tag: string): (builder: Builder) => ElementRender {
-  // 注: 同上
-  return function* (builder: Builder): ElementRender {
-    const children = toChildren(builder());
-    // Element の yield は必ず Slot を返す（プラグインシステムの契約）
+export function createSVGElement(tag: string): (builder: Builder) => Spell<"element"> {
+  return function* (builder: Builder): Spell<"element"> {
+    const children = toRender(builder());
     return (yield {
       type: "element",
       tag,

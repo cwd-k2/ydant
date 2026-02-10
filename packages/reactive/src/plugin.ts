@@ -1,7 +1,8 @@
 /**
- * Reactive Plugin for DOM Renderer
+ * @ydant/reactive - Reactive plugin
  *
- * Signal の依存関係を追跡し、自動更新を行うプラグイン。
+ * Tracks Signal dependencies during rendering and automatically re-renders
+ * reactive blocks when their dependencies change.
  *
  * @example
  * ```typescript
@@ -14,61 +15,57 @@
  * ```
  */
 
-import type { Child, Plugin, PluginAPI, PluginResult } from "@ydant/core";
+import type { Request, Response, Plugin, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 // Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
 import { runWithSubscriber } from "./tracking";
 
-/**
- * Reactive プラグインを作成する
- */
+/** Creates the reactive plugin. Depends on the base plugin. */
 export function createReactivePlugin(): Plugin {
   return {
     name: "reactive",
     types: ["reactive"],
     dependencies: ["base"],
 
-    process(child: Child, api: PluginAPI): PluginResult {
-      if (!isTagged(child, "reactive")) return {};
-      const builder = child.builder;
+    process(request: Request, ctx: RenderContext): Response {
+      if (!isTagged(request, "reactive")) return;
+      const builder = request.builder;
 
-      // コンテナ要素を作成
+      // Create a container element for the reactive block
       const container = document.createElement("span");
       container.setAttribute("data-reactive", "");
-      api.appendChild(container);
+      ctx.parent.appendChild(container);
 
-      // アンマウントコールバックのリスト
+      // Unmount callbacks accumulated during rendering
       let unmountCallbacks: Array<() => void> = [];
 
-      // 更新関数
+      // Re-render function (called on dependency change)
       const update = () => {
-        // 古いアンマウントコールバックを実行
+        // Run previous unmount callbacks
         for (const callback of unmountCallbacks) {
           callback();
         }
         unmountCallbacks = [];
 
-        // DOM をクリアして再構築
+        // Clear DOM and rebuild
         container.innerHTML = "";
 
-        // Signal 依存関係を追跡しながら子要素を処理
+        // Process children while tracking Signal dependencies
         runWithSubscriber(update, () => {
-          api.processChildren(builder, { parent: container });
+          ctx.processChildren(builder, { parent: container });
         });
       };
 
-      // 初回レンダリング
+      // Initial render
       update();
 
-      // アンマウント時のクリーンアップ
-      api.onUnmount(() => {
+      // Cleanup on unmount
+      ctx.unmountCallbacks.push(() => {
         for (const callback of unmountCallbacks) {
           callback();
         }
       });
-
-      return {};
     },
   };
 }

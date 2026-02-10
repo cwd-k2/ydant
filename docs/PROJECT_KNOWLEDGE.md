@@ -66,13 +66,10 @@ function* () {
 
 プラグインは以下の型を拡張できる：
 
-| 拡張ポイント              | 用途                   |
-| ------------------------- | ---------------------- |
-| `RenderContextExtensions` | コンテキストプロパティ |
-| `PluginAPIExtensions`     | API メソッド           |
-| `PluginChildExtensions`   | yield 可能な型         |
-| `PluginNextExtensions`    | next() で渡す値        |
-| `PluginReturnExtensions`  | 戻り値の型             |
+| 拡張ポイント    | 用途                                      |
+| --------------- | ----------------------------------------- |
+| `SpellSchema`   | spell 操作定義（request/response/return） |
+| `RenderContext` | コンテキストのプロパティ・メソッド        |
 
 ### Slot パターン
 
@@ -111,7 +108,7 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 
 ### Phase 4: API リファクタリング
 
-- RenderContext/PluginAPI を拡張可能に
+- RenderContext を拡張可能に
 - Component<P> 型の統合
 - createSlotRef の導入
 - 型エイリアスの整備
@@ -122,6 +119,30 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - 構造整理と命名統一
 - 型システムの強化
 - module augmentation を global.d.ts に分離
+
+### Phase 6: 型システム統合
+
+- 7 つのジェネレーター型を `Spell<Key>`, `Render`, `Builder` の 3 つに統合
+- `Child` → `Instruction` → `Request`, `ChildNext` → `Feedback` → `Response` にリネーム
+- `ProcessResult`, `CleanupFn`, `MountOptions`, `ChildOfType` 等の薄いラッパーを廃止
+- Props 命名: `children` を DOM 子要素に限定、抽象的描画関数は `content` に統一
+- `toChildren` → `toRender` リネーム
+
+### Phase 7: プラグインインターフェース統合
+
+- `RenderAPI` を廃止し `RenderContext` に一本化
+- `Plugin.extendAPI` フックを削除
+- `Plugin.process` の引数を `RenderAPI` → `RenderContext` に変更
+- `processChildren` と `createChildContext` をコア定義の `RenderContext` メソッドに移動
+- module augmentation が `RenderContext` の 1 箇所に集約
+- 拡張ポイント: `SpellSchema` + `RenderContext` の 2 つに整理
+
+### Phase 8: 命名リファクタリング — Spell / Request / Response
+
+- `DSLSchema` → `SpellSchema`, `DSL<Key>` → `Spell<Key>`（ユーザー向けメタファー層）
+- `Instruction` → `Request`, `Feedback` → `Response`（内部の機械的な層）
+- SpellSchema フィールド: `instruction` → `request`, `feedback` → `response`
+- 方針: 「ユーザーに近い部分はメタファー、内部は機械的に」で層を分ける
 
 ---
 
@@ -139,11 +160,16 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 3. **paths から customConditions へ**
    - 型解決を pnpm workspace と整合させる
 
-4. **Render vs ElementRender の型ギャップ**
-   - `Component<P>` は `Render`（広い型）を返す宣言だが、実際には `div(...)` 等を返すため `ElementRender`（狭い型）が実行時の型
-   - `keyed()` のように「最初の yield が Element である」ことを前提とするユーティリティでは、`Render` を受け入れて内部で `as ElementRender` にキャストする対処が必要
-   - `ElementRender extends Render` なので引数の位置では `Render` を受ければ両方渡せる
-   - 将来的に `Component<P>` の戻り値を `ElementRender` に精密化するか、`ElementComponent<P>` のような型を導入する余地がある
+4. **Spell<Key> による型の統合**
+   - 以前は `Primitive<T>`, `Instruction`, `ChildContent`, `ElementRender` など用途別の型が乱立していた
+   - `SpellSchema` の `request` / `response` / `return` 3 フィールドから全てを導出する設計に統合
+   - `Spell<Key>` が個別操作の型、`Render` が汎用ジェネレーター型として機能
+   - 中間ラッパー（`ProcessResult` 等）も不要になり、プラグインは `Response` を直接返却
+
+5. **循環参照の解消パターン**
+   - 相互参照する型は同じファイルに統合する（例: `Plugin` と `RenderContext` → `plugin.ts`）
+   - 関数は唯一の使用箇所に移動する（例: `executeMount` → `element.ts`）
+   - `import type` のみの循環は安全だが、型の共存関係を示すシグナルとして扱う
 
 ### 設計関連
 

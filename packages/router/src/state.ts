@@ -1,15 +1,15 @@
 /**
- * ルート状態管理
+ * Router state management
  *
- * NOTE: これらはモジュールレベルのグローバル状態。
- * 複数の Router インスタンスを同時に使用する場合は状態が共有される。
- * テスト間での分離には __resetForTesting__() を使用。
+ * NOTE: These are module-level global state variables.
+ * When multiple Router instances are used simultaneously, they share the same state.
+ * Use __resetForTesting__() to isolate state between tests.
  */
 
 import type { RouteInfo } from "./types";
 import { parseQuery } from "./matching";
 
-/** 初期ルート情報を取得 */
+/** Build the initial route info from the current browser URL */
 function getInitialRoute(): RouteInfo {
   return {
     path: typeof window !== "undefined" ? window.location.pathname : "/",
@@ -19,22 +19,22 @@ function getInitialRoute(): RouteInfo {
   };
 }
 
-/** 現在のルート情報 */
+/** The current route information, updated on every navigation */
 export let currentRoute: RouteInfo = getInitialRoute();
 
-/** ルート変更リスナー */
+/** Set of listeners invoked whenever the route changes */
 export const routeListeners: Set<() => void> = new Set();
 
 /**
- * テスト用: 状態をリセット
- * @internal
+ * Reset all router state to initial values.
+ * @internal Intended for test isolation only.
  */
 export function __resetForTesting__(): void {
   currentRoute = getInitialRoute();
   routeListeners.clear();
 }
 
-/** ルート情報を更新 */
+/** Update the current route by parsing the given path and notify all listeners */
 export function updateRoute(path: string): void {
   const url = new URL(path, window.location.origin);
   currentRoute = {
@@ -44,7 +44,7 @@ export function updateRoute(path: string): void {
     hash: url.hash,
   };
 
-  // リスナーに通知
+  // Notify all registered listeners
   for (const listener of routeListeners) {
     listener();
   }

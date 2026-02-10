@@ -104,6 +104,6 @@ pnpm typecheck            # 型チェック
 2. **showcase2** - ToDo アプリ（CRUD、localStorage）
 3. **showcase3** - ポモドーロタイマー（SVG、lifecycle）
 4. **showcase4** - SPA デモ（Router、Context、Reactive）
-5. **showcase5** - ソート可能リスト（key() による効率的更新）
+5. **showcase5** - ソート可能リスト（keyed() による効率的更新）
 6. **showcase6** - 非同期コンポーネント（Suspense、ErrorBoundary）
 7. **showcase7** - トランジション（enter/leave アニメーション）

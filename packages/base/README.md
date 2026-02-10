@@ -43,49 +43,22 @@ mount(Greeting, document.getElementById("app")!, {
 
 ### Plugin
 
-| Function             | Description                                |
-| -------------------- | ------------------------------------------ |
-| `createBasePlugin()` | Create plugin to process base DSL elements |
+| Function             | Description                                           |
+| -------------------- | ----------------------------------------------------- |
+| `createBasePlugin()` | Create plugin to process base elements and primitives |
 
-The base plugin extends `RenderContext` and `PluginAPI`:
+The base plugin extends `RenderContext`:
 
 ```typescript
-// RenderContext extensions
-interface RenderContextExtensions {
+interface RenderContext {
   isCurrentElementReused: boolean;
   keyedNodes: Map<string | number, KeyedNode>;
   mountCallbacks: Array<() => void | (() => void)>;
   unmountCallbacks: Array<() => void>;
 }
-
-// PluginAPI extensions
-interface PluginAPIExtensions {
-  // DOM operations
-  readonly parent: Node;
-  readonly currentElement: globalThis.Element | null;
-  setCurrentElement(element: globalThis.Element | null): void;
-  setParent(parent: Node): void;
-  appendChild(node: Node): void;
-
-  // Lifecycle
-  onMount(callback: () => void | (() => void)): void;
-  onUnmount(callback: () => void): void;
-  addUnmountCallbacks(...callbacks: Array<() => void>): void;
-  executeMount(): void;
-  getUnmountCallbacks(): Array<() => void>;
-
-  // Children processing
-  processChildren(builder: Builder, options?: { parent?: Node; inheritContext?: boolean }): void;
-  createChildAPI(parent: Node): PluginAPI;
-
-  // Keyed elements
-  readonly isCurrentElementReused: boolean;
-  setCurrentElementReused(reused: boolean): void;
-  getKeyedNode(key: string | number): KeyedNode | undefined;
-  setKeyedNode(key: string | number, node: KeyedNode): void;
-  deleteKeyedNode(key: string | number): void;
-}
 ```
+
+Plugin process functions access these properties directly on the context (e.g., `ctx.parent.appendChild(node)`, `ctx.mountCallbacks.push(cb)`, `ctx.keyedNodes.get(key)`).
 
 ### Element Factories
 
@@ -139,17 +112,16 @@ yield *
 
 ### Types
 
-| Type            | Description                                                    |
-| --------------- | -------------------------------------------------------------- |
-| `Slot`          | `{ readonly node: HTMLElement, refresh: (children) => void }`  |
-| `SlotRef`       | Reference holder for a `Slot`, created by `createSlotRef()`    |
-| `ElementRender` | `Generator<Element, Slot, ChildNext>` - Element factory return |
-| `Element`       | Tagged type for HTML/SVG elements                              |
-| `Attribute`     | Tagged type for attributes                                     |
-| `Listener`      | Tagged type for event listeners                                |
-| `Text`          | Tagged type for text nodes                                     |
-| `Lifecycle`     | Tagged type for lifecycle hooks                                |
-| `Decoration`    | Union type `Attribute \| Listener`                             |
+| Type         | Description                                                   |
+| ------------ | ------------------------------------------------------------- |
+| `Slot`       | `{ readonly node: HTMLElement, refresh: (children) => void }` |
+| `SlotRef`    | Reference holder for a `Slot`, created by `createSlotRef()`   |
+| `Element`    | Tagged type for HTML/SVG elements                             |
+| `Attribute`  | Tagged type for attributes                                    |
+| `Listener`   | Tagged type for event listeners                               |
+| `Text`       | Tagged type for text nodes                                    |
+| `Lifecycle`  | Tagged type for lifecycle hooks                               |
+| `Decoration` | Union type `Attribute \| Listener`                            |
 
 > `Render`, `Component` types are defined in `@ydant/core`.
 

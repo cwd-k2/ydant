@@ -1,7 +1,7 @@
 /**
  * ErrorBoundary
  *
- * 子コンポーネントのエラーをキャッチしてフォールバック UI を表示する。
+ * Catches errors thrown by child components and displays a fallback UI.
  *
  * @example
  * ```typescript
@@ -11,48 +11,47 @@
  *     yield* p(() => [text(error.message)]);
  *     yield* button(() => [on("click", reset), text("Try again")]);
  *   }),
- *   children: function* () {
+ *   content: function* () {
  *     yield* RiskyComponent();
  *   },
  * });
  * ```
  */
 
-import type { ChildContent, Render } from "@ydant/core";
+import type { Spell, Render } from "@ydant/core";
 import { div } from "@ydant/base";
 
-/** ErrorBoundary コンポーネントの props */
+/** Props for the ErrorBoundary component. */
 export interface ErrorBoundaryProps {
-  /** エラー発生時に表示するコンポーネント */
+  /** Component to display when an error is caught. Receives the error and a reset callback. */
   fallback: (error: Error, reset: () => void) => Render;
-  /** 子コンポーネント */
-  children: () => ChildContent;
+  /** Content that may throw errors during rendering. */
+  content: () => Render;
 }
 
 /**
- * ErrorBoundary コンポーネント
+ * ErrorBoundary component for catching rendering errors.
  *
- * 注意: JavaScript のジェネレータでは、yield で throw されたエラーを
- * キャッチするには特別な対応が必要です。
- * この実装は同期エラーのみをキャッチします。
+ * Note: In JavaScript generators, catching errors thrown at yield points
+ * requires special handling. This implementation only catches synchronous errors.
  */
-export function* ErrorBoundary(props: ErrorBoundaryProps): Render {
-  const { fallback, children } = props;
+export function* ErrorBoundary(props: ErrorBoundaryProps): Spell<"element"> {
+  const { fallback, content } = props;
 
   const containerSlot = yield* div(function* () {
     try {
-      yield* children();
+      yield* content();
     } catch (error) {
-      // Promise（Suspense）は再 throw
+      // Re-throw Promises so Suspense can handle them
       if (error instanceof Promise) {
         throw error;
       }
 
-      // エラーをキャッチしてフォールバックを表示
+      // Error caught — display fallback
       const reset = () => {
         containerSlot.refresh(function* () {
           try {
-            yield* children();
+            yield* content();
           } catch (retryError) {
             if (retryError instanceof Promise) {
               throw retryError;

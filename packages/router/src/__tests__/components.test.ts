@@ -1,18 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount, type Component } from "@ydant/core";
 import { createBasePlugin, div, p, text } from "@ydant/base";
 import { RouterLink } from "../RouterLink";
 import { RouterView } from "../RouterView";
 import { navigate } from "../navigation";
-import { updateRoute, currentRoute } from "../state";
+import { updateRoute, currentRoute, __resetForTesting__ } from "../state";
 
 describe("RouterLink", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
+    __resetForTesting__();
     container = document.createElement("div");
     document.body.appendChild(container);
     vi.spyOn(window.history, "pushState").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    container.remove();
   });
 
   it("renders an anchor element", () => {
@@ -123,10 +128,16 @@ describe("RouterView", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
+    __resetForTesting__();
     container = document.createElement("div");
     document.body.appendChild(container);
     vi.useFakeTimers();
     vi.spyOn(window.history, "pushState").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    container.remove();
+    vi.useRealTimers();
   });
 
   it("renders matched route component", () => {

@@ -92,15 +92,15 @@ mount(App, document.getElementById("root")!, {
 
 ## Examples
 
-| Example                            | Description                                 |
-| ---------------------------------- | ------------------------------------------- |
-| [showcase1](./examples/showcase1/) | Counter, Dialog - basic Slot usage          |
-| [showcase2](./examples/showcase2/) | ToDo App - CRUD, localStorage               |
-| [showcase3](./examples/showcase3/) | Pomodoro Timer - SVG, lifecycle             |
-| [showcase4](./examples/showcase4/) | SPA - Router, Context, plugins              |
-| [showcase5](./examples/showcase5/) | Sortable list - key() for efficient updates |
-| [showcase6](./examples/showcase6/) | Async - Suspense, ErrorBoundary             |
-| [showcase7](./examples/showcase7/) | Transitions - enter/leave animations        |
+| Example                            | Description                                   |
+| ---------------------------------- | --------------------------------------------- |
+| [showcase1](./examples/showcase1/) | Counter, Dialog - basic Slot usage            |
+| [showcase2](./examples/showcase2/) | ToDo App - CRUD, localStorage                 |
+| [showcase3](./examples/showcase3/) | Pomodoro Timer - SVG, lifecycle               |
+| [showcase4](./examples/showcase4/) | SPA - Router, Context, plugins                |
+| [showcase5](./examples/showcase5/) | Sortable list - keyed() for efficient updates |
+| [showcase6](./examples/showcase6/) | Async - Suspense, ErrorBoundary               |
+| [showcase7](./examples/showcase7/) | Transitions - enter/leave animations          |
 
 Each example has a README with implementation tips. Run all examples:
 

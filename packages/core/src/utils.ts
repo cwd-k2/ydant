@@ -1,7 +1,13 @@
-import type { Tagged, Child, ChildOfType, Instruction, Instructor } from "./types";
+import type { Tagged, Request, Render } from "./types";
 
-/** Tagged 型の判定関数（Child に対する型ガード付きオーバーロード） */
-export function isTagged<T extends Child["type"]>(value: Child, tag: T): value is ChildOfType<T>;
+/**
+ * Checks whether a tagged object matches a given type tag.
+ * When called with a {@link Request}, narrows to the matching variant.
+ */
+export function isTagged<T extends Request["type"]>(
+  value: Request,
+  tag: T,
+): value is Extract<Request, { type: T }>;
 export function isTagged<T extends string>(
   value: { type: string },
   tag: T,
@@ -10,14 +16,14 @@ export function isTagged(value: { type: string }, tag: string): boolean {
   return value.type === tag;
 }
 
-/** Builder の結果を Instructor に正規化する */
-export function toChildren(result: Instructor | Instruction[]): Instructor {
+/** Normalizes a {@link Builder}'s return value into a single {@link Render} generator. */
+export function toRender(result: Render | Render[]): Render {
   if (Array.isArray(result)) {
     return (function* () {
-      for (const instruction of result) {
-        yield* instruction;
+      for (const render of result) {
+        yield* render;
       }
-    })() as Instructor;
+    })() as Render;
   }
   return result;
 }

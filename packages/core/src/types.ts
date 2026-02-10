@@ -2,116 +2,93 @@
 // Utility Types
 // =============================================================================
 
-/** Tagged Union を作成するヘルパー型 */
+/** Creates a discriminated union member with a `type` tag and optional payload. */
 export type Tagged<T extends string, P = {}> = { type: T } & P;
 
-/** ライフサイクルや副作用のクリーンアップ関数 */
-export type CleanupFn = () => void;
-
 // =============================================================================
-// Plugin Extension Types
-// -----------------------------------------------------------------------------
-// プラグインは declare module "@ydant/core" を使って以下のインターフェースを
-// 拡張することで、独自の型を追加できる。
+// SpellSchema Types
 // =============================================================================
 
 /**
- * プラグインが Child 型を拡張するためのインターフェース
+ * Central registry of all spell operations, extended by plugins via module augmentation.
+ *
+ * Each key represents a spell operation and maps to an object with:
+ * - `request` — the value yielded to the runtime
+ * - `response` — the value returned from `yield` (defaults to `void`)
+ * - `return` — the generator's return type (falls back to `response`, then `void`)
  *
  * @example
  * ```typescript
- * // @ydant/base で Element 型を追加
  * declare module "@ydant/core" {
- *   interface PluginChildExtensions {
- *     Element: Tagged<"element", { tag: string; children: Instructor }>;
+ *   interface SpellSchema {
+ *     "element": { request: Element; response: Slot };
+ *     "text": { request: Text };
+ *     "transition": { return: TransitionHandle };
  *   }
  * }
  * ```
  */
-export interface PluginChildExtensions {}
+export interface SpellSchema {}
+
+/** Extracts the `request` type from each entry in {@link SpellSchema}. */
+type RequestOf = {
+  [K in keyof SpellSchema]: SpellSchema[K] extends { request: infer I } ? I : never;
+};
+
+/** Extracts the `response` type from each entry in {@link SpellSchema}, defaulting to `void`. */
+type ResponseOf = {
+  [K in keyof SpellSchema]: SpellSchema[K] extends { response: infer F } ? F : void;
+};
+
+/** Extracts the `return` type from each entry in {@link SpellSchema}, falling back to `response` then `void`. */
+type ReturnOf = {
+  [K in keyof SpellSchema]: SpellSchema[K] extends { return: infer R }
+    ? R
+    : SpellSchema[K] extends { response: infer F }
+      ? F
+      : void;
+};
 
 /**
- * プラグインが next() に渡す値の型を拡張するためのインターフェース
- *
- * @example
- * ```typescript
- * // @ydant/base で Slot を追加
- * declare module "@ydant/core" {
- *   interface PluginNextExtensions {
- *     Slot: Slot;
- *   }
- * }
- * ```
+ * A typed generator for a single spell operation.
+ * Use with `yield*` to perform an operation and receive its response/return value.
  */
-export interface PluginNextExtensions {}
+export type Spell<Key extends keyof SpellSchema> = Generator<
+  RequestOf[Key],
+  ReturnOf[Key],
+  ResponseOf[Key]
+>;
+
+// =============================================================================
+// Core Types
+// =============================================================================
+
+/** Union of all yieldable request values derived from {@link SpellSchema}. */
+export type Request = RequestOf[keyof SpellSchema];
+
+/** Union of all response values that `next()` can pass back to a generator. */
+export type Response = void | ResponseOf[keyof SpellSchema];
+
+// =============================================================================
+// Render & Component Types
+// =============================================================================
 
 /**
- * プラグインが return で返す値の型を拡張するためのインターフェース
+ * The generator type for rendering — used by components, element factories, and content props.
  *
- * @example
- * ```typescript
- * // @ydant/base で Slot を追加
- * declare module "@ydant/core" {
- *   interface PluginReturnExtensions {
- *     Slot: Slot;
- *   }
- * }
- * ```
+ * Accepts all {@link Request} types as yield values, and all
+ * {@link Response} / return types registered in {@link SpellSchema}.
  */
-export interface PluginReturnExtensions {}
+export type Render = Generator<Request, void | ReturnOf[keyof SpellSchema], Response>;
 
-// =============================================================================
-// Core Types (基盤型のみ)
-// =============================================================================
-
-/** 子要素として yield できるもの（プラグインによって拡張可能） */
-export type Child = PluginChildExtensions[keyof PluginChildExtensions];
-
-/** Child から特定の type を抽出するヘルパー型 */
-export type ChildOfType<T extends string> = Extract<Child, { type: T }>;
-
-/** next() に渡される値の型（プラグインによって拡張可能） */
-export type ChildNext = void | PluginNextExtensions[keyof PluginNextExtensions];
-
-/** return で返される値の型（プラグインによって拡張可能） */
-export type ChildReturn = void | PluginReturnExtensions[keyof PluginReturnExtensions];
-
-// =============================================================================
-// Generator Types
-// =============================================================================
-
-/** レンダリング命令の Iterator（内部処理用） */
-export type Instructor = Iterator<Child, ChildReturn, ChildNext>;
-
-/** レンダリング命令（text, attr, on 等）の戻り値型 */
-export type Instruction = Generator<Child, ChildReturn, ChildNext>;
-
-/** 要素ファクトリ（div, span 等）の引数型 */
-export type Builder = () => Instructor | Instruction[];
-
-/** 副作用のみを実行する DSL プリミティブの戻り値型 */
-export type Primitive<T extends Child> = Generator<T, void, void>;
-
-/** コンポーネントの children として渡すビルダー関数の戻り値型 */
-export type ChildContent = Generator<Child, unknown, ChildNext>;
-
-// =============================================================================
-// Render & Component Types (基底型)
-// =============================================================================
+/** A factory function that produces rendering instructions for an element's children. */
+export type Builder = () => Render | Render[];
 
 /**
- * Element を yield し、最終的に ChildReturn を返すジェネレーター
+ * A component — a function that returns a {@link Render} generator.
  *
- * base パッケージでは Slot が PluginReturnExtensions に追加されるため、
- * より具体的な型 (Generator<Child, Slot, Slot>) として使用される
- */
-export type Render = Generator<Child, ChildReturn, ChildNext>;
-
-/**
- * コンポーネント型
- *
- * - `Component` — 引数なし `() => Render`
- * - `Component<Props>` — Props を受け取る `(props: Props) => Render`
+ * - `Component` — no-arg component: `() => Render`
+ * - `Component<Props>` — component with props: `(props: Props) => Render`
  *
  * @example
  * ```typescript

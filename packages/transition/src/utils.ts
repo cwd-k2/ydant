@@ -1,18 +1,18 @@
 /**
- * Transition ユーティリティ関数
+ * Transition utility functions
  *
- * Transition, TransitionGroup コンポーネントで共通使用される
- * CSS クラス操作とトランジション待機のヘルパー関数。
+ * Shared helper functions for CSS class manipulation and transition awaiting,
+ * used by both Transition and TransitionGroup components.
  */
 
 /**
- * 要素に CSS クラスを追加する
+ * Add CSS classes to an element
  *
- * スペース区切りのクラス文字列を分割して追加する。
- * 空文字列や undefined は無視される。
+ * Splits a space-separated class string and adds each class individually.
+ * Empty strings and undefined values are silently ignored.
  *
- * @param el - 対象の HTML 要素
- * @param classes - スペース区切りのクラス文字列
+ * @param el - Target HTML element
+ * @param classes - Space-separated class string
  */
 export function addClasses(el: HTMLElement, classes: string | undefined): void {
   if (classes) {
@@ -21,13 +21,13 @@ export function addClasses(el: HTMLElement, classes: string | undefined): void {
 }
 
 /**
- * 要素から CSS クラスを削除する
+ * Remove CSS classes from an element
  *
- * スペース区切りのクラス文字列を分割して削除する。
- * 空文字列や undefined は無視される。
+ * Splits a space-separated class string and removes each class individually.
+ * Empty strings and undefined values are silently ignored.
  *
- * @param el - 対象の HTML 要素
- * @param classes - スペース区切りのクラス文字列
+ * @param el - Target HTML element
+ * @param classes - Space-separated class string
  */
 export function removeClasses(el: HTMLElement, classes: string | undefined): void {
   if (classes) {
@@ -36,14 +36,41 @@ export function removeClasses(el: HTMLElement, classes: string | undefined): voi
 }
 
 /**
- * CSS トランジションの終了を待機する
+ * Core CSS transition animation: applies base+from, swaps to `to`, waits, then cleans up.
  *
- * 要素の transitionDuration を取得し、transitionend イベントを待つ。
- * duration が 0 の場合は即座に resolve する。
- * 安全のため、duration + 50ms でタイムアウトを設定する。
+ * @param el - Target HTML element
+ * @param classes - Transition class names (base, from, to)
+ */
+export async function runTransition(
+  el: HTMLElement,
+  classes: { base?: string; from?: string; to?: string },
+): Promise<void> {
+  addClasses(el, classes.base);
+  addClasses(el, classes.from);
+
+  // Force reflow so the browser registers the initial state
+  void el.offsetHeight;
+
+  requestAnimationFrame(() => {
+    removeClasses(el, classes.from);
+    addClasses(el, classes.to);
+  });
+
+  await waitForTransition(el);
+
+  removeClasses(el, classes.base);
+  removeClasses(el, classes.to);
+}
+
+/**
+ * Wait for a CSS transition to complete on an element
  *
- * @param el - 対象の HTML 要素
- * @returns トランジション終了時に resolve する Promise
+ * Reads the element's computed transitionDuration and listens for the
+ * transitionend event. Resolves immediately if the duration is 0.
+ * A safety timeout of duration + 50ms is set to prevent indefinite hanging.
+ *
+ * @param el - Target HTML element
+ * @returns A Promise that resolves when the transition ends
  */
 export function waitForTransition(el: HTMLElement): Promise<void> {
   return new Promise((resolve) => {
@@ -61,7 +88,7 @@ export function waitForTransition(el: HTMLElement): Promise<void> {
     };
     el.addEventListener("transitionend", handler);
 
-    // タイムアウト（念のため）
+    // Safety timeout in case transitionend never fires
     setTimeout(resolve, duration + 50);
   });
 }

@@ -12,12 +12,12 @@ describe("ErrorBoundary", () => {
     vi.useFakeTimers();
   });
 
-  it("renders children when no error is thrown", () => {
+  it("renders content when no error is thrown", () => {
     mount(
       () =>
         ErrorBoundary({
           fallback: (error) => div(() => [text(`Error: ${error.message}`)]),
-          children: function* () {
+          content: function* () {
             yield* div(() => [text("Content")]);
           },
         }),
@@ -34,7 +34,7 @@ describe("ErrorBoundary", () => {
       () =>
         ErrorBoundary({
           fallback: (error) => div(() => [text(`Error: ${error.message}`)]),
-          children: function* () {
+          content: function* () {
             throw new Error("Something went wrong");
           },
         }),
@@ -53,7 +53,7 @@ describe("ErrorBoundary", () => {
       () =>
         ErrorBoundary({
           fallback: (error) => div(() => [text(`Caught: ${error.name} - ${error.message}`)]),
-          children: function* () {
+          content: function* () {
             throw testError;
           },
         }),
@@ -78,7 +78,7 @@ describe("ErrorBoundary", () => {
               yield* div(() => [text("Retry")]);
             });
           },
-          children: function* () {
+          content: function* () {
             if (shouldError) {
               throw new Error("Failed");
             }
@@ -110,7 +110,7 @@ describe("ErrorBoundary", () => {
         () =>
           ErrorBoundary({
             fallback: (error) => div(() => [text(`Error: ${error.message}`)]),
-            children: function* () {
+            content: function* () {
               throw pendingPromise;
             },
           }),
@@ -138,7 +138,7 @@ describe("ErrorBoundary", () => {
               yield* div(() => [text("Retry")]);
             });
           },
-          children: function* () {
+          content: function* () {
             errorCount++;
             throw new Error(`Failure ${errorCount}`);
           },

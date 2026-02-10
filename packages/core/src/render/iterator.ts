@@ -1,46 +1,33 @@
 /**
- * @ydant/core - Child イテレータの処理
+ * @ydant/core - Spell request iterator processing
  */
 
-import type { Child, Instructor, ChildNext } from "../types";
-import type { PluginAPI } from "../plugin";
-import type { RenderContext } from "./types";
-import { createPluginAPIFactory } from "./context";
-
-// 循環参照を解決するため、PluginAPI ファクトリを遅延初期化
-let createPluginAPI: ((ctx: RenderContext) => PluginAPI) | null = null;
+import type { Request, Render, Response } from "../types";
+import type { RenderContext } from "../plugin";
 
 /**
- * Child イテレータを処理し、DOM に反映する
- *
- * すべての type はプラグインで処理される。
- * 対応するプラグインがない type はスキップされる。
+ * Walks a {@link Render} generator, dispatching each yielded {@link Request}
+ * to the appropriate plugin. Unrecognized types are silently skipped.
  */
-export function processIterator(iter: Instructor, ctx: RenderContext): void {
-  // 初回呼び出し時に PluginAPI ファクトリを初期化
-  if (!createPluginAPI) {
-    createPluginAPI = createPluginAPIFactory(processIterator);
-  }
-
+export function processIterator(iter: Render, ctx: RenderContext): void {
   let result = iter.next();
 
   while (!result.done) {
     const value = result.value;
 
-    // プラグインをチェック
+    // Dispatch to the plugin that handles this type
     if (value && typeof value === "object" && "type" in value) {
       const type = (value as { type: string }).type;
       const plugin = ctx.plugins.get(type);
 
       if (plugin) {
-        const api = createPluginAPI(ctx);
-        const pluginResult = plugin.process(value as Child, api);
-        result = iter.next(pluginResult.value as ChildNext);
+        const response = plugin.process(value as Request, ctx);
+        result = iter.next(response as Response);
         continue;
       }
     }
 
-    // 対応するプラグインがない場合はスキップ
+    // No plugin registered for this type — skip
     result = iter.next();
   }
 }

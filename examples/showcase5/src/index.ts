@@ -1,9 +1,9 @@
 /**
- * Showcase 5 - Sortable List with key()
+ * Showcase 5 - Sortable List with keyed()
  *
- * key() プリミティブを使用した効率的なリスト更新のデモ
+ * keyed() ラッパーを使用した効率的なリスト更新のデモ
  *
- * key() の利点:
+ * keyed() の利点:
  * - DOM ノードの再利用によるパフォーマンス向上
  * - input のフォーカスやスクロール位置の保持
  * - アニメーションの継続

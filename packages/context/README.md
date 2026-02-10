@@ -55,7 +55,7 @@ Creates a context object that can be provided and injected.
 ### provide
 
 ```typescript
-function* provide<T>(context: Context<T>, value: T): Primitive<ContextProvide>;
+function* provide<T>(context: Context<T>, value: T): Spell<"context-provide">;
 ```
 
 Provides a value to all descendant components. Use with `yield*`.
@@ -76,20 +76,15 @@ function createContextPlugin(): Plugin;
 
 Creates a plugin that handles `provide` and `inject`. Must be passed to `mount()`. Depends on `createBasePlugin()`.
 
-The context plugin extends `RenderContext` and `PluginAPI`:
+The context plugin extends `RenderContext`:
 
 ```typescript
-// RenderContext extensions
-interface RenderContextExtensions {
+interface RenderContext {
   contextValues: Map<symbol, unknown>;
 }
-
-// PluginAPI extensions
-interface PluginAPIExtensions {
-  getContext<T>(id: symbol): T | undefined;
-  setContext<T>(id: symbol, value: T): void;
-}
 ```
+
+The process function accesses `ctx.contextValues` directly (e.g., `ctx.contextValues.get(id)`, `ctx.contextValues.set(id, value)`).
 
 ## Module Structure
 

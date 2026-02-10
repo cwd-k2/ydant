@@ -1,67 +1,67 @@
 /**
  * Resource
  *
- * 非同期データフェッチングを管理するリソース。
+ * Manages asynchronous data fetching with built-in loading and error states.
  *
  * @example
  * ```typescript
  * const userResource = createResource(() => fetch("/api/user").then(r => r.json()));
  *
- * // コンポーネント内で使用
+ * // Use inside a component
  * yield* Suspense({
  *   fallback: () => div(() => [text("Loading...")]),
- *   children: function* () {
- *     const user = userResource();  // データが準備できるまで suspend
+ *   content: function* () {
+ *     const user = userResource();  // Suspends until data is ready
  *     yield* h1(() => [text(`Hello, ${user.name}`)]);
  *   },
  * });
  * ```
  */
 
-/** Resource の状態 */
+/** Internal state representation of a Resource. */
 type ResourceState<T> =
   | { status: "pending"; promise: Promise<T> }
   | { status: "resolved"; data: T }
   | { status: "rejected"; error: Error };
 
-/** Resource インターフェース */
+/** A callable resource that provides access to asynchronously fetched data. */
 export interface Resource<T> {
-  /** データを読み取る（ペンディング中は suspend） */
+  /** Reads the data. Suspends (throws a Promise) while pending. */
   (): T;
-  /** 現在の値を取得（購読なし、ペンディング/エラー中は throw） */
+  /** Returns the current value without subscribing. Throws if pending or errored. */
   peek(): T;
-  /** ローディング中かどうか */
+  /** Whether the resource is currently loading. */
   readonly loading: boolean;
-  /** エラーがあれば Error、なければ null */
+  /** The error if the fetch failed, or null otherwise. */
   readonly error: Error | null;
-  /** 再フェッチ */
+  /** Triggers a new fetch, replacing the current state. */
   refetch(): Promise<void>;
-  /** リソースを破棄（自動再フェッチを停止） */
+  /** Disposes the resource and stops any automatic refetching. */
   dispose(): void;
 }
 
 /**
- * 非同期リソースを作成
+ * Creates an asynchronous resource that manages fetch state.
  *
- * @param fetcher - データをフェッチする非同期関数
- * @param options - オプション（初期値、再フェッチ間隔など）
+ * @param fetcher - Async function that fetches the data.
+ * @param options - Configuration options such as initial value and refetch interval.
  */
 export function createResource<T>(
   fetcher: () => Promise<T>,
   options?: {
-    /** 初期値 */
+    /** Initial value to use before the first fetch completes. */
     initialValue?: T;
-    /** 自動再フェッチ間隔（ミリ秒） */
+    /** Automatic refetch interval in milliseconds. */
     refetchInterval?: number;
   },
 ): Resource<T> {
   let state: ResourceState<T>;
 
-  // 初期値がある場合は resolved 状態で開始
+  // Start in resolved state if an initial value is provided
   if (options?.initialValue !== undefined) {
     state = { status: "resolved", data: options.initialValue };
   } else {
-    // フェッチを開始
+    // Start fetching immediately
     const promise = fetcher();
     state = { status: "pending", promise };
 
@@ -77,7 +77,7 @@ export function createResource<T>(
   const resource = (() => {
     switch (state.status) {
       case "pending":
-        // Suspense パターン: Promise を throw
+        // Suspense pattern: throw the pending Promise
         throw state.promise;
       case "rejected":
         throw state.error;
@@ -117,7 +117,7 @@ export function createResource<T>(
     }
   };
 
-  // 自動再フェッチの設定
+  // Set up automatic refetching if configured
   let intervalId: ReturnType<typeof setInterval> | null = null;
   if (options?.refetchInterval) {
     intervalId = setInterval(() => {

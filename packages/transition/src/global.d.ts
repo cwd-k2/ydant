@@ -7,7 +7,8 @@
 import type { TransitionHandle } from "./Transition";
 
 declare module "@ydant/core" {
-  interface PluginReturnExtensions {
-    TransitionHandle: TransitionHandle;
+  // request/response を持たず、return のみを追加する SpellSchema エントリ
+  interface SpellSchema {
+    transition: { return: TransitionHandle };
   }
 }

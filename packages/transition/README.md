@@ -33,7 +33,7 @@ const App: Component = () => {
             enter: "transition-opacity duration-300",
             enterFrom: "opacity-0",
             enterTo: "opacity-100",
-            children: () => div(() => [text("Fade me!")]),
+            content: () => div(() => [text("Fade me!")]),
           }),
         );
       }),
@@ -46,7 +46,7 @@ const App: Component = () => {
         enter: "transition-opacity duration-300",
         enterFrom: "opacity-0",
         enterTo: "opacity-100",
-        children: () => div(() => [text("Fade me!")]),
+        content: () => div(() => [text("Fade me!")]),
       }),
     );
   });
@@ -81,7 +81,7 @@ const App: Component = () => {
       leave: "fade-leave",
       leaveFrom: "fade-leave-from",
       leaveTo: "fade-leave-to",
-      children: () => div(() => [text("Animated content")]),
+      content: () => div(() => [text("Animated content")]),
     });
   });
 };
@@ -150,7 +150,7 @@ const App: Component = () => {
       leave: "transition-opacity duration-300",
       leaveFrom: "opacity-100",
       leaveTo: "opacity-0",
-      children: (item) => div(() => [text(item.text)]),
+      content: (item) => div(() => [text(item.text)]),
     });
 
     // To update with transitions, use createTransitionGroupRefresher
@@ -171,7 +171,7 @@ const refresher = createTransitionGroupRefresher({
   leave: "transition-opacity duration-300",
   leaveFrom: "opacity-100",
   leaveTo: "opacity-0",
-  children: (item) => div(() => [text(item.text)]),
+  content: (item) => div(() => [text(item.text)]),
 });
 
 // Later, update items with transitions:
@@ -193,7 +193,7 @@ interface TransitionProps {
   leave?: string;
   leaveFrom?: string;
   leaveTo?: string;
-  children: () => ChildContent;
+  content: () => Render;
 }
 ```
 
@@ -230,7 +230,7 @@ interface TransitionGroupProps<T> {
   leave?: string;
   leaveFrom?: string;
   leaveTo?: string;
-  children: (item: T, index: number) => ElementRender;
+  content: (item: T, index: number) => ElementRender;
 }
 ```
 

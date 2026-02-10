@@ -1,5 +1,5 @@
 /**
- * Computed: 派生値（依存する Signal が変わると再計算）
+ * Computed — a read-only derived value that recomputes when its dependencies change.
  *
  * @example
  * ```typescript
@@ -14,14 +14,15 @@
 import type { Subscriber, Readable } from "./types";
 import { getCurrentSubscriber, runWithSubscriber } from "./tracking";
 
-/** Computed インターフェース（読み取り専用） */
+/** A read-only reactive derived value. See {@link computed}. */
 export interface Computed<T> extends Readable<T> {}
 
 /**
- * Computed を作成する
+ * Creates a {@link Computed} value derived from other reactive sources.
  *
- * @param fn - 派生値を計算する関数
- * @returns Computed オブジェクト
+ * The computation is lazy — it only re-evaluates when read after a dependency change.
+ *
+ * @param fn - A function that computes the derived value by reading reactive sources.
  *
  * @example
  * ```typescript
@@ -30,7 +31,6 @@ export interface Computed<T> extends Readable<T> {}
  * const fullName = computed(() => `${firstName()} ${lastName()}`);
  *
  * console.log(fullName());  // "John Doe"
- *
  * firstName.set("Jane");
  * console.log(fullName());  // "Jane Doe"
  * ```
@@ -40,24 +40,24 @@ export function computed<T>(fn: () => T): Computed<T> {
   let isDirty = true;
   const subscribers = new Set<Subscriber>();
 
-  // この computed 自身が購読者として依存関係を追跡
+  // This computed subscribes to its dependencies as a subscriber
   const recompute = () => {
     isDirty = true;
-    // 購読者に通知
+    // Notify downstream subscribers
     for (const sub of subscribers) {
       sub();
     }
   };
 
   const read = (() => {
-    // 現在の購読者がいれば登録
+    // Register the current subscriber (if any) as a dependency
     const currentSub = getCurrentSubscriber();
     if (currentSub) {
       subscribers.add(currentSub);
     }
 
     if (isDirty) {
-      // 依存関係を追跡しながら再計算
+      // Recompute while tracking dependencies
       cachedValue = runWithSubscriber(recompute, fn);
       isDirty = false;
     }

@@ -12,12 +12,12 @@ describe("Suspense", () => {
     vi.useFakeTimers();
   });
 
-  it("renders children when no promise is thrown", () => {
+  it("renders content when no promise is thrown", () => {
     mount(
       () =>
         Suspense({
           fallback: () => div(() => [text("Loading...")]),
-          children: function* () {
+          content: function* () {
             yield* div(() => [text("Content")]);
           },
         }),
@@ -36,7 +36,7 @@ describe("Suspense", () => {
       () =>
         Suspense({
           fallback: () => div(() => [text("Loading...")]),
-          children: function* () {
+          content: function* () {
             throw pendingPromise;
           },
         }),
@@ -48,7 +48,7 @@ describe("Suspense", () => {
     expect(container.textContent).not.toContain("Content");
   });
 
-  it("renders children after promise resolves", async () => {
+  it("renders content after promise resolves", async () => {
     let resolvePromise: () => void;
     const promise = new Promise<void>((resolve) => {
       resolvePromise = resolve;
@@ -59,7 +59,7 @@ describe("Suspense", () => {
       () =>
         Suspense({
           fallback: () => div(() => [text("Loading...")]),
-          children: function* () {
+          content: function* () {
             if (!hasResolved) {
               throw promise;
             }
@@ -77,7 +77,7 @@ describe("Suspense", () => {
     resolvePromise!();
     await vi.runAllTimersAsync();
 
-    // After promise resolves, children should re-render
+    // After promise resolves, content should re-render
     expect(container.textContent).toContain("Loaded Content");
   });
 
@@ -89,7 +89,7 @@ describe("Suspense", () => {
         () =>
           Suspense({
             fallback: () => div(() => [text("Loading...")]),
-            children: function* () {
+            content: function* () {
               throw error;
             },
           }),

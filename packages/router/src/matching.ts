@@ -1,36 +1,36 @@
 /**
- * パスマッチングユーティリティ
+ * Path matching utilities
  */
 
-/** パスパターンからパラメータ名を抽出 */
+/** Extract dynamic parameter names from a route pattern (e.g. ":id" -> "id") */
 export function extractParamNames(pattern: string): string[] {
   const matches = pattern.match(/:([^/]+)/g);
   return matches ? matches.map((m) => m.slice(1)) : [];
 }
 
-/** パスパターンを正規表現に変換 */
+/** Convert a route pattern string into a RegExp for path matching */
 export function patternToRegex(pattern: string): RegExp {
   if (pattern === "*") {
     return /.*/;
   }
-  // まず :param を一時的なプレースホルダーに置き換え
-  // その後、正規表現の特殊文字をエスケープ
-  // 最後にプレースホルダーをキャプチャグループに置換
+  // First replace :param segments with a temporary placeholder,
+  // then escape regex special characters,
+  // finally replace placeholders with capture groups.
   const placeholder = "___PARAM___";
 
-  // パラメータをプレースホルダーに置換
+  // Replace parameters with placeholders
   const withPlaceholders = pattern.replace(/:([^/]+)/g, placeholder);
 
-  // 正規表現の特殊文字をエスケープ
+  // Escape regex special characters
   const escaped = withPlaceholders.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  // プレースホルダーをキャプチャグループに置換
+  // Replace placeholders with capture groups
   const regexStr = escaped.replace(new RegExp(placeholder, "g"), "([^/]+)");
 
   return new RegExp(`^${regexStr}$`);
 }
 
-/** クエリ文字列をパース */
+/** Parse a query string (with or without leading "?") into a key-value record */
 export function parseQuery(search: string): Record<string, string> {
   const query: Record<string, string> = {};
   if (search.startsWith("?")) {
@@ -47,7 +47,7 @@ export function parseQuery(search: string): Record<string, string> {
   return query;
 }
 
-/** パスがパターンにマッチするか確認し、パラメータを抽出 */
+/** Match a path against a pattern, returning whether it matched and any extracted parameters */
 export function matchPath(
   path: string,
   pattern: string,

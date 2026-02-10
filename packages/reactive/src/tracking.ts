@@ -1,31 +1,25 @@
 /**
- * 購読者管理
+ * Subscriber tracking — manages the "current subscriber" during effect/computed execution.
  *
- * effect/computed 実行中の購読者を追跡する。
- *
- * NOTE: current はモジュールレベルのグローバル状態。
- * runWithSubscriber で適切にスタック管理されるが、
- * テスト間での分離には __resetForTesting__() を使用。
+ * `current` is module-level global state, properly stack-managed by `runWithSubscriber`.
+ * Use `__resetForTesting__()` to isolate state between tests.
  */
 
 import type { Subscriber } from "./types";
 
 let current: Subscriber | null = null;
 
-/**
- * テスト用: 状態をリセット
- * @internal
- */
+/** @internal Resets tracking state. For use in tests only. */
 export function __resetForTesting__(): void {
   current = null;
 }
 
-/** 現在の購読者を取得 */
+/** Returns the subscriber currently being tracked, or `null` if none. */
 export function getCurrentSubscriber(): Subscriber | null {
   return current;
 }
 
-/** 購読者を設定して関数を実行（終了後に元に戻す） */
+/** Runs `fn` with `subscriber` as the current tracking context, restoring the previous one afterward. */
 export function runWithSubscriber<T>(subscriber: Subscriber, fn: () => T): T {
   const prev = current;
   current = subscriber;

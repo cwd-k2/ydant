@@ -1,7 +1,8 @@
 /**
- * Context Plugin for DOM Renderer
+ * @ydant/context - Context plugin
  *
- * Context API (provide/inject) を DOM レンダラーで処理するプラグイン。
+ * Processes `provide` and `inject` spell requests,
+ * propagating context values through the rendering tree.
  *
  * @example
  * ```typescript
@@ -14,61 +15,32 @@
  * ```
  */
 
-import type {
-  Child,
-  Plugin,
-  PluginAPI,
-  PluginAPIExtensions,
-  PluginResult,
-  RenderContext,
-  RenderContextCore,
-  RenderContextExtensions,
-} from "@ydant/core";
+import type { Request, Response, Plugin, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
-// Ensure module augmentation from @ydant/base is loaded
-import "@ydant/base";
 
-/**
- * Context プラグインを作成する
- */
+/** Creates the context plugin. Depends on the base plugin. */
 export function createContextPlugin(): Plugin {
   return {
     name: "context",
     types: ["context-provide", "context-inject"],
     dependencies: ["base"],
 
-    initContext(
-      ctx: RenderContextCore & Partial<RenderContextExtensions>,
-      parentCtx?: RenderContext,
-    ) {
-      // 親コンテキストがあれば値を継承、なければ新規作成
+    initContext(ctx: RenderContext, parentCtx?: RenderContext) {
+      // Inherit parent's context values, or start fresh
       const parentValues = parentCtx?.contextValues;
       ctx.contextValues = parentValues ? new Map(parentValues) : new Map();
     },
 
-    extendAPI(api: Partial<PluginAPIExtensions>, ctx: RenderContext) {
-      const contextValues = ctx.contextValues;
-      api.getContext = <T>(id: symbol): T | undefined => {
-        return contextValues.get(id) as T | undefined;
-      };
-      api.setContext = <T>(id: symbol, value: T): void => {
-        contextValues.set(id, value);
-      };
-    },
-
-    process(child: Child, api: PluginAPI): PluginResult {
-      if (isTagged(child, "context-provide")) {
-        // Context に値を設定
-        api.setContext(child.context.id, child.value);
-        return {};
+    process(request: Request, ctx: RenderContext): Response {
+      if (isTagged(request, "context-provide")) {
+        // Store the value in the context map
+        ctx.contextValues.set(request.context.id, request.value);
+        return;
       }
-      if (isTagged(child, "context-inject")) {
-        // Context から値を取得
-        const value = api.getContext(child.context.id) ?? child.context.defaultValue;
-        return { value };
+      if (isTagged(request, "context-inject")) {
+        // Look up the value, falling back to defaultValue
+        return ctx.contextValues.get(request.context.id) ?? request.context.defaultValue;
       }
-
-      return {};
     },
   };
 }
