@@ -5,11 +5,11 @@
 import type { RenderContext } from "@ydant/core";
 import type { Attribute, Listener, Text, Lifecycle } from "../types";
 
-/** Applies an {@link Attribute} to the current element via `setAttribute`. */
+/** Applies an {@link Attribute} to the current element via the decorate capability. */
 export function processAttribute(attr: Attribute, ctx: RenderContext): void {
   const element = ctx.currentElement;
   if (element) {
-    element.setAttribute(attr.key, attr.value);
+    ctx.decorate.setAttribute(element, attr.key, attr.value);
   }
 }
 
@@ -22,14 +22,14 @@ export function processListener(listener: Listener, ctx: RenderContext): void {
 
   const element = ctx.currentElement;
   if (element) {
-    element.addEventListener(listener.key, listener.value);
+    ctx.interact.addEventListener(element, listener.key, listener.value as (e: unknown) => void);
   }
 }
 
-/** Creates a DOM text node from a {@link Text} instruction and appends it to the parent. */
+/** Creates a text node from a {@link Text} instruction and appends it to the parent. */
 export function processText(text: Text, ctx: RenderContext): void {
-  const textNode = document.createTextNode(text.content);
-  ctx.parent.appendChild(textNode);
+  const textNode = ctx.tree.createTextNode(text.content);
+  ctx.tree.appendChild(ctx.parent, textNode);
 }
 
 /** Registers a {@link Lifecycle} callback (mount or unmount). Skipped when the element is reused. */

@@ -31,7 +31,12 @@ function Counter(initial: number) {
   });
 }
 
-mount(() => Counter(0), document.getElementById("app")!);
+import { createBasePlugin, createDOMCapabilities } from "@ydant/base";
+
+mount(() => Counter(0), {
+  root: document.getElementById("app")!,
+  plugins: [createDOMCapabilities(), createBasePlugin()],
+});
 ```
 
 ## 特徴
@@ -60,12 +65,20 @@ mount(() => Counter(0), document.getElementById("app")!);
 
 ```typescript
 import { mount } from "@ydant/core";
-import { createBasePlugin, div, text, classes, type Component } from "@ydant/base";
+import {
+  createBasePlugin,
+  createDOMCapabilities,
+  div,
+  text,
+  classes,
+  type Component,
+} from "@ydant/base";
 
 const App: Component = () => div(() => [classes("app"), text("Hello, Ydant!")]);
 
-mount(App, document.getElementById("root")!, {
-  plugins: [createBasePlugin()],
+mount(App, {
+  root: document.getElementById("root")!,
+  plugins: [createDOMCapabilities(), createBasePlugin()],
 });
 ```
 
@@ -73,7 +86,15 @@ mount(App, document.getElementById("root")!, {
 
 ```typescript
 import { mount } from "@ydant/core";
-import { createBasePlugin, div, button, text, on, type Component } from "@ydant/base";
+import {
+  createBasePlugin,
+  createDOMCapabilities,
+  div,
+  button,
+  text,
+  on,
+  type Component,
+} from "@ydant/base";
 import { createReactivePlugin, signal, reactive } from "@ydant/reactive";
 import { createContextPlugin } from "@ydant/context";
 
@@ -85,8 +106,14 @@ const App: Component = () =>
     yield* button(() => [on("click", () => count.update((n) => n + 1)), text("+1")]);
   });
 
-mount(App, document.getElementById("root")!, {
-  plugins: [createBasePlugin(), createReactivePlugin(), createContextPlugin()],
+mount(App, {
+  root: document.getElementById("root")!,
+  plugins: [
+    createDOMCapabilities(),
+    createBasePlugin(),
+    createReactivePlugin(),
+    createContextPlugin(),
+  ],
 });
 ```
 

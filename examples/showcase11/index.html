@@ -1,0 +1,37 @@
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ydant Showcase 11 — Canvas Rendering</title>
+    <script type="module" src="./src/index.ts"></script>
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #1a1a2e;
+        color: #eee;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      h1 {
+        margin-bottom: 8px;
+      }
+      p {
+        color: #aaa;
+        margin-bottom: 16px;
+      }
+      canvas {
+        border: 2px solid #333;
+        border-radius: 8px;
+        background: #16213e;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Canvas Rendering</h1>
+    <p>Same Ydant core + createBasePlugin, different capability provider</p>
+    <canvas id="canvas" width="600" height="400"></canvas>
+  </body>
+</html>

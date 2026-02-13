@@ -223,6 +223,40 @@ pnpm typecheck            # 型チェック
 
 ---
 
+## アーキテクチャ移行パス: 案C (Hexagonal) への展望
+
+### 現在のアーキテクチャ（案B: Layered）
+
+RenderTarget 抽象の導入により core から DOM 依存を排除し、以下の構造を実現:
+
+- **Core**: `RenderTarget` interface + Plugin setup/teardown + MountHandle
+- **Adapter**: `createDOMTarget()` — DOM 固有の実装を base パッケージに集約
+- **Extension**: Plugin が `ctx.target` 経由でバックエンド非依存のノード操作を行う
+
+### 案C への概念対応
+
+| 案B (現在)          | 案C (将来)            | 備考                                 |
+| ------------------- | --------------------- | ------------------------------------ |
+| `RenderTarget`      | `RenderPort` (Port)   | インターフェース名を Port パターンに |
+| `createDOMTarget()` | `DOMRenderAdapter`    | Port の具体実装                      |
+| `Plugin`            | `Extension`           | Service を DI で受け取る形に拡張     |
+| `mount()` options   | `Runtime.configure()` | 設定を Runtime に集約                |
+
+### 移行ステップ（将来）
+
+1. **Service 型定義**: `ServiceKey<T>`, `ServiceRegistry`, `Service` interface を core に追加
+2. **RenderTarget を Service 化**: `RenderTargetKey` を定義、`ctx.services` 経由でアクセス可能に
+3. **Runtime 導入**: `createRuntime()` を `mount()` のラッパーとして追加
+4. **Middleware**: `processIterator` に middleware chain を導入（DevTools, Logger 用）
+
+### B→C で道を塞がないための設計判断
+
+- `RenderTarget` のメソッドシグネチャを `unknown` ベースにした（Port として再利用可能）
+- `Plugin.setup/teardown` の `ctx` パラメータを通じて将来の ServiceRegistry にアクセスできる
+- `MountHandle` を拡張可能にした（現時点は `dispose` のみ）
+
+---
+
 ## 関連リソース
 
 - [CLAUDE.md](../CLAUDE.md) - 開発ガイド

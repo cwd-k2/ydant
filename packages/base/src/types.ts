@@ -9,12 +9,15 @@ import type { Tagged, Render, Builder } from "@ydant/core";
 // =============================================================================
 
 /**
- * A handle to a mounted DOM element, providing access to its node
+ * A handle to a mounted element, providing access to its node
  * and the ability to re-render its children.
+ *
+ * @typeParam TNode - The type of the rendered node. Defaults to `unknown`
+ *   because the base package is render-target agnostic.
  */
-export interface Slot {
-  /** The underlying DOM element. */
-  readonly node: HTMLElement;
+export interface Slot<TNode = unknown> {
+  /** The underlying rendered node. */
+  readonly node: TNode;
   /** Replaces the element's children by running a new {@link Builder}. */
   refresh(children: Builder): void;
 }
@@ -57,10 +60,10 @@ export type Lifecycle = MountLifecycle | UnmountLifecycle;
 // Plugin Types
 // =============================================================================
 
-/** Tracks a keyed element's DOM node and its associated unmount callbacks for reuse. */
+/** Tracks a keyed element's node and its associated unmount callbacks for reuse. */
 export interface KeyedNode {
   key: string | number;
-  node: globalThis.Element;
+  node: unknown;
   unmountCallbacks: Array<() => void>;
 }
 

@@ -29,7 +29,7 @@ function ToggleSection(): Render {
       );
       yield* on("click", async () => {
         // Toggle visibility with animation
-        const isVisible = fadeTransition.slot.node.firstElementChild !== null;
+        const isVisible = (fadeTransition.slot.node as HTMLElement).firstElementChild !== null;
         await fadeTransition.setShow(!isVisible);
       });
       yield* text("Toggle Content");
@@ -79,7 +79,7 @@ function SlideSection(): Render {
         "mb-4",
       );
       yield* on("click", async () => {
-        const isVisible = slideTransition.slot.node.firstElementChild !== null;
+        const isVisible = (slideTransition.slot.node as HTMLElement).firstElementChild !== null;
         await slideTransition.setShow(!isVisible);
       });
       yield* text("Toggle Panel");

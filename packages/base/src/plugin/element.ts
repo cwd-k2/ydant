@@ -15,7 +15,7 @@ export function executeMount(ctx: RenderContext): void {
   const mountCallbacks = ctx.mountCallbacks;
   const unmountCallbacks = ctx.unmountCallbacks;
 
-  requestAnimationFrame(() => {
+  ctx.schedule.scheduleCallback(() => {
     for (const callback of mountCallbacks) {
       const cleanup = callback();
       if (typeof cleanup === "function") {
@@ -26,12 +26,12 @@ export function executeMount(ctx: RenderContext): void {
   });
 }
 
-/** Processes an {@link Element} request: creates (or reuses) a DOM node, applies decorations, renders children, and returns a {@link Slot}. */
+/** Processes an {@link Element} request: creates (or reuses) a node, applies decorations, renders children, and returns a {@link Slot}. */
 export function processElement(element: Element, ctx: RenderContext): Response {
   const elementKey = element.key ?? null;
 
   // Reuse existing node if a matching keyed element exists
-  let node: globalThis.Element;
+  let node: unknown;
   let isReused = false;
 
   if (elementKey !== null && ctx.keyedNodes.get(elementKey)) {
@@ -44,15 +44,15 @@ export function processElement(element: Element, ctx: RenderContext): Response {
     ctx.keyedNodes.delete(elementKey);
   } else {
     node = element.ns
-      ? document.createElementNS(element.ns, element.tag)
-      : document.createElement(element.tag);
+      ? ctx.tree.createElementNS(element.ns, element.tag)
+      : ctx.tree.createElement(element.tag);
   }
 
   // Append to parent (moves the node if reused)
-  ctx.parent.appendChild(node);
+  ctx.tree.appendChild(ctx.parent, node);
 
   // Apply inline decorations (attributes, listeners)
-  applyDecorations(element, node, isReused);
+  applyDecorations(element, node, isReused, ctx);
 
   // Create a child-scoped context for this element
   const childCtx = ctx.createChildContext(node);
@@ -74,7 +74,7 @@ export function processElement(element: Element, ctx: RenderContext): Response {
 
   // Process children (clear first when reusing a keyed element)
   if (isReused) {
-    node.innerHTML = "";
+    ctx.tree.clearChildren(node);
   }
 
   if (element.children) {
@@ -97,35 +97,43 @@ export function processElement(element: Element, ctx: RenderContext): Response {
 }
 
 /**
- * Applies inline decorations to a DOM node.
+ * Applies inline decorations to a node.
  *
  * Attributes are always (re-)applied. Listeners are only added on first render
  * to avoid duplicates — keyed element reuse assumes the same listeners persist.
  */
-function applyDecorations(element: Element, node: globalThis.Element, isReused: boolean): void {
+function applyDecorations(
+  element: Element,
+  node: unknown,
+  isReused: boolean,
+  ctx: RenderContext,
+): void {
   if (!element.decorations) return;
 
   for (const decoration of element.decorations) {
     if (isTagged(decoration, "attribute")) {
-      // Attributes are always applied (overwritten with new value)
-      node.setAttribute(decoration.key as string, decoration.value as string);
+      ctx.decorate.setAttribute(node, decoration.key, decoration.value);
     } else if (isTagged(decoration, "listener")) {
       // Listeners are skipped on reuse to prevent duplicates
       if (!isReused) {
-        node.addEventListener(decoration.key as string, decoration.value as (e: Event) => void);
+        ctx.interact.addEventListener(
+          node,
+          decoration.key,
+          decoration.value as (e: unknown) => void,
+        );
       }
     }
   }
 }
 
 /** Creates a {@link Slot} that can re-render its children and manage unmount callbacks. */
-function createSlot(
-  node: globalThis.Element,
+export function createSlot(
+  node: unknown,
   childCtx: RenderContext,
   unmountCallbacksRef: Array<() => void>,
 ): Slot {
   return {
-    node: node as HTMLElement,
+    node,
     refresh(builder) {
       // Get current unmount callbacks (includes cleanup functions added by executeMount)
       const currentUnmountCallbacks = childCtx.unmountCallbacks;
@@ -138,9 +146,7 @@ function createSlot(
       unmountCallbacksRef.length = 0;
 
       // Remove all child nodes
-      while (node.firstChild) {
-        node.removeChild(node.firstChild);
-      }
+      childCtx.tree.clearChildren(node);
 
       // Render new children
       childCtx.processChildren(builder, { parent: node });

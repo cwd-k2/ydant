@@ -1,0 +1,16 @@
+{
+  "name": "showcase13",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo: SSR + Hydration with @ydant/ssr",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ydant/base": "workspace:*",
+    "@ydant/core": "workspace:*",
+    "@ydant/ssr": "workspace:*"
+  },
+  "packageManager": "pnpm@10.22.0"
+}

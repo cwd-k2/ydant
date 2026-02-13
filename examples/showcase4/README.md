@@ -16,11 +16,18 @@ Router, Context, Reactive プラグインを組み合わせた SPA デモ。
 複数プラグインを mount 時に登録:
 
 ```typescript
+import { createBasePlugin, createDOMCapabilities } from "@ydant/base";
 import { createReactivePlugin } from "@ydant/reactive";
 import { createContextPlugin } from "@ydant/context";
 
-mount(App, root, {
-  plugins: [createBasePlugin(), createReactivePlugin(), createContextPlugin()],
+mount(App, {
+  root,
+  plugins: [
+    createDOMCapabilities(),
+    createBasePlugin(),
+    createReactivePlugin(),
+    createContextPlugin(),
+  ],
 });
 ```
 

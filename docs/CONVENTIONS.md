@@ -420,11 +420,11 @@ TypeScript 5.0+ の `customConditions` と `moduleResolution: "bundler"` を使�
 {
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "@ydant/dev": {
         "types": "./src/index.ts",
         "default": "./src/index.ts"
       },
-      "types": "./dist/index.d.ts",
       "import": "./dist/index.es.js",
       "require": "./dist/index.umd.js"
     }
@@ -446,11 +446,11 @@ TypeScript は `types` 条件を特別扱いし、他の条件より優先的に
 
 // ✅ OK: カスタム条件がマッチしたら、その中の types を使う
 {
+  "types": "./dist/index.d.ts",
   "@ydant/dev": {
     "types": "./src/index.ts",
     "default": "./src/index.ts"
-  },
-  "types": "./dist/index.d.ts"
+  }
 }
 ```
 

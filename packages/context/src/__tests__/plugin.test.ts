@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import type { Builder } from "@ydant/core";
 import { mount } from "@ydant/core";
-import { createBasePlugin, div, p, text } from "@ydant/base";
+import { createBasePlugin, createDOMCapabilities, div, p, text } from "@ydant/base";
 import { createContext, provide, inject } from "../context";
 import { createContextPlugin } from "../plugin";
 
@@ -35,8 +35,10 @@ describe("createContextPlugin", () => {
               yield* text(capturedTheme);
             } as Builder);
           }),
-        container,
-        { plugins: [createBasePlugin(), createContextPlugin()] },
+        {
+          root: container,
+          plugins: [createDOMCapabilities(), createBasePlugin(), createContextPlugin()],
+        },
       );
 
       expect(capturedTheme).toBe("dark");
@@ -66,8 +68,10 @@ describe("createContextPlugin", () => {
               } as Builder);
             });
           }),
-        container,
-        { plugins: [createBasePlugin(), createContextPlugin()] },
+        {
+          root: container,
+          plugins: [createDOMCapabilities(), createBasePlugin(), createContextPlugin()],
+        },
       );
 
       expect(capturedLevels).toEqual([1, 2, 2]);
@@ -83,8 +87,10 @@ describe("createContextPlugin", () => {
             capturedValue = yield* inject(MissingContext);
             yield* text(capturedValue);
           }),
-        container,
-        { plugins: [createBasePlugin(), createContextPlugin()] },
+        {
+          root: container,
+          plugins: [createDOMCapabilities(), createBasePlugin(), createContextPlugin()],
+        },
       );
 
       expect(capturedValue).toBe("default-value");
@@ -99,8 +105,10 @@ describe("createContextPlugin", () => {
           div(function* () {
             capturedValue = yield* inject(NoDefaultContext);
           } as Builder),
-        container,
-        { plugins: [createBasePlugin(), createContextPlugin()] },
+        {
+          root: container,
+          plugins: [createDOMCapabilities(), createBasePlugin(), createContextPlugin()],
+        },
       );
 
       expect(capturedValue).toBeUndefined();
@@ -126,8 +134,10 @@ describe("createContextPlugin", () => {
               user = yield* inject(UserContext);
             } as Builder);
           }),
-        container,
-        { plugins: [createBasePlugin(), createContextPlugin()] },
+        {
+          root: container,
+          plugins: [createDOMCapabilities(), createBasePlugin(), createContextPlugin()],
+        },
       );
 
       expect(theme).toBe("dark");

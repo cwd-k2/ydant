@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "@ydant/core";
-import { createBasePlugin, div, text } from "@ydant/base";
+import { createBasePlugin, createDOMCapabilities, div, text } from "@ydant/base";
 import { ErrorBoundary } from "../ErrorBoundary";
 
 describe("ErrorBoundary", () => {
@@ -21,8 +21,7 @@ describe("ErrorBoundary", () => {
             yield* div(() => [text("Content")]);
           },
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Content");
@@ -38,8 +37,7 @@ describe("ErrorBoundary", () => {
             throw new Error("Something went wrong");
           },
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Error: Something went wrong");
@@ -57,8 +55,7 @@ describe("ErrorBoundary", () => {
             throw testError;
           },
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Caught: Error - Test error message");
@@ -85,8 +82,7 @@ describe("ErrorBoundary", () => {
             yield* div(() => [text("Success!")]);
           },
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Error: Failed");
@@ -114,8 +110,7 @@ describe("ErrorBoundary", () => {
               throw pendingPromise;
             },
           }),
-        container,
-        { plugins: [createBasePlugin()] },
+        { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
       );
     } catch (e) {
       thrownValue = e;
@@ -143,8 +138,7 @@ describe("ErrorBoundary", () => {
             throw new Error(`Failure ${errorCount}`);
           },
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Error #1: Failure 1");

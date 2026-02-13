@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { Builder } from "@ydant/core";
 import { mount } from "@ydant/core";
 import type { Slot } from "@ydant/base";
-import { createBasePlugin, div, text, classes } from "@ydant/base";
+import { createBasePlugin, createDOMCapabilities, div, text, classes } from "@ydant/base";
 import { Transition, createTransition } from "../Transition";
 import { runTransition } from "../utils";
 
@@ -32,8 +32,7 @@ describe("Transition", () => {
           show: true,
           content: () => div(() => [text("Visible Content")]),
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Visible Content");
@@ -46,8 +45,7 @@ describe("Transition", () => {
           show: false,
           content: () => div(() => [text("Hidden Content")]),
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(container.textContent).not.toContain("Hidden Content");
@@ -63,8 +61,7 @@ describe("Transition", () => {
           enterTo: "opacity-100",
           content: () => div(() => [text("Content")]),
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -81,8 +78,7 @@ describe("Transition", () => {
           show: true,
           content: () => div(() => [text("Content")]),
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Content");
@@ -96,8 +92,7 @@ describe("Transition", () => {
           show: true,
           content: () => div(() => [text("Toggle Content")]),
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Toggle Content");
@@ -111,8 +106,7 @@ describe("Transition", () => {
           show: false,
           content: () => div(() => [text("Toggle Content")]),
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(container.textContent).not.toContain("Toggle Content");
@@ -128,8 +122,7 @@ describe("Transition", () => {
           enterTo: "opacity-100 scale-100",
           content: () => div(() => [classes("content-box"), text("Content")]),
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     // Trigger onMount callback (requestAnimationFrame)
@@ -160,8 +153,7 @@ describe("Transition", () => {
           enterTo: "opacity-100",
           content: () => div(() => [classes("fade-target"), text("Fading")]),
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -193,8 +185,7 @@ describe("Transition", () => {
           enterTo: "opacity-100",
           content: () => div(() => [classes("event-target"), text("Content")]),
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -218,8 +209,7 @@ describe("Transition", () => {
           enterTo: "",
           content: () => div(() => [text("No Classes")]),
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -391,8 +381,7 @@ describe("createTransition", () => {
             content: () => div(() => [text("Transition Content")]),
           });
         } as Builder),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
     vi.advanceTimersToNextFrame();
 
@@ -417,8 +406,7 @@ describe("createTransition", () => {
             content: () => div(() => [classes("transition-child"), text("Content")]),
           });
         } as Builder),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
     vi.advanceTimersToNextFrame();
 
@@ -450,8 +438,7 @@ describe("createTransition", () => {
             content: () => div(() => [classes("transition-child"), text("Content")]),
           });
         } as Builder),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
     vi.advanceTimersToNextFrame();
 
@@ -481,8 +468,7 @@ describe("createTransition", () => {
             content: () => div(() => [text("Content")]),
           });
         } as Builder),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
     vi.advanceTimersToNextFrame();
 
@@ -519,8 +505,7 @@ describe("createTransition", () => {
             content: () => div(() => [classes("child"), text("Content")]),
           });
         } as Builder),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
     vi.advanceTimersToNextFrame();
 

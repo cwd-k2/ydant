@@ -26,12 +26,13 @@ pnpm add @ydant/core
 
 ```typescript
 import { mount } from "@ydant/core";
-import { createBasePlugin, div, text, type Component } from "@ydant/base";
+import { createDOMCapabilities, createBasePlugin, div, text, type Component } from "@ydant/base";
 
 const App: Component = () => div(() => [text("Hello!")]);
 
-mount(App, document.getElementById("app")!, {
-  plugins: [createBasePlugin()],
+mount(App, {
+  root: document.getElementById("app")!,
+  plugins: [createDOMCapabilities(), createBasePlugin()],
 });
 ```
 
@@ -40,10 +41,15 @@ mount(App, document.getElementById("app")!, {
 ### Mount
 
 ```typescript
-function mount(app: Component, parent: HTMLElement, options?: MountOptions): void;
+function mount(app: Component, options: MountOptions): MountHandle;
 
 interface MountOptions {
+  root: unknown;
   plugins?: Plugin[];
+}
+
+interface MountHandle {
+  dispose(): void;
 }
 ```
 
@@ -55,6 +61,10 @@ interface Plugin {
   readonly types: readonly string[];
   /** Plugin names that must be registered before this plugin */
   readonly dependencies?: readonly string[];
+  /** Called once after mount rendering completes */
+  setup?(ctx: RenderContext): void;
+  /** Called when MountHandle.dispose() is invoked (reverse order) */
+  teardown?(ctx: RenderContext): void;
   /** Initialize plugin-specific properties in RenderContext */
   initContext?(ctx: RenderContext, parentCtx?: RenderContext): void;
   /** Merge child context state into parent context (called after processChildren) */
@@ -68,6 +78,7 @@ interface Plugin {
 
 | Type            | Description                                                     |
 | --------------- | --------------------------------------------------------------- |
+| `MountHandle`   | Handle returned by `mount()` with `dispose()` for cleanup       |
 | `Tagged<T,P>`   | Helper type for tagged unions: `{ type: T } & P`                |
 | `SpellSchema`   | Co-locates request and response types per spell operation       |
 | `Spell<Key>`    | Typed generator for a specific spell operation key              |
@@ -108,15 +119,15 @@ function* myOperation(): Spell<"mytype"> {
 
 ### RenderContext
 
-The rendering context holds state and methods during rendering. Core fields include `parent`, `currentElement`, `plugins`, `processChildren`, and `createChildContext`. Plugins extend it via `declare module`:
+The rendering context holds state and methods during rendering. Core fields include `parent`, `plugins`, `processChildren`, and `createChildContext`. Capability providers inject backend-specific operations (`tree`, `decorate`, `interact`, `schedule`, `currentElement`) via the same module augmentation mechanism used by other plugins.
 
 ```typescript
 interface RenderContext {
-  parent: Node;
-  currentElement: Element | null;
+  parent: unknown;
   plugins: Map<string, Plugin>;
-  processChildren(builder: Builder, options?: { parent?: Node }): void;
-  createChildContext(parent: Node): RenderContext;
+  allPlugins: readonly Plugin[];
+  processChildren(builder: Builder, options?: { parent?: unknown }): void;
+  createChildContext(parent: unknown): RenderContext;
 }
 ```
 

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { mount } from "@ydant/core";
 import { createBasePlugin, div, text, createSlotRef } from "..";
+import { createDOMCapabilities } from "../capabilities";
 
 describe("createSlotRef", () => {
   let container: HTMLElement;
@@ -27,13 +28,15 @@ describe("createSlotRef", () => {
           });
           ref.bind(slot);
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      {
+        root: container,
+        plugins: [createDOMCapabilities(), createBasePlugin()],
+      },
     );
 
     expect(ref.current).not.toBeNull();
     expect(ref.node).toBeInstanceOf(HTMLElement);
-    expect(ref.node!.textContent).toBe("initial");
+    expect((ref.node as HTMLElement).textContent).toBe("initial");
   });
 
   it("can refresh content through the ref", () => {
@@ -47,14 +50,16 @@ describe("createSlotRef", () => {
           });
           ref.bind(slot);
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      {
+        root: container,
+        plugins: [createDOMCapabilities(), createBasePlugin()],
+      },
     );
 
-    expect(ref.node!.textContent).toBe("before");
+    expect((ref.node as HTMLElement).textContent).toBe("before");
 
     ref.refresh(() => [text("after")]);
-    expect(ref.node!.textContent).toBe("after");
+    expect((ref.node as HTMLElement).textContent).toBe("after");
   });
 
   it("refresh is a no-op when not bound", () => {

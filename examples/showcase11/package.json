@@ -1,0 +1,16 @@
+{
+  "name": "showcase11",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo: Canvas2D rendering with @ydant/canvas",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ydant/base": "workspace:*",
+    "@ydant/canvas": "workspace:*",
+    "@ydant/core": "workspace:*"
+  },
+  "packageManager": "pnpm@10.22.0"
+}

@@ -2,13 +2,34 @@
  * @ydant/base - Module augmentation
  *
  * Extends core interfaces (RenderContext, SpellSchema) with
- * the properties required by the base plugin.
+ * the properties required by the base plugin and capability providers.
  */
 
 import type { Element, Attribute, Listener, Text, Lifecycle, Slot, KeyedNode } from "./types";
+import type {
+  TreeCapability,
+  DecorateCapability,
+  InteractCapability,
+  ScheduleCapability,
+} from "./capabilities";
 
 declare module "@ydant/core" {
   interface RenderContext {
+    // --- Capabilities (injected by capability providers) ---
+
+    /** Tree operations: create nodes and assemble parent-child relationships. */
+    tree: TreeCapability;
+    /** Decoration operations: set attributes on nodes. */
+    decorate: DecorateCapability;
+    /** Interaction operations: attach event listeners to nodes. */
+    interact: InteractCapability;
+    /** Scheduling operations: defer callbacks (e.g., mount hooks). */
+    schedule: ScheduleCapability;
+    /** The element currently being decorated, or `null` between elements. */
+    currentElement: unknown;
+
+    // --- Base plugin state ---
+
     /** Whether the current element was reused via key matching (prevents duplicate listeners/lifecycle). */
     isCurrentElementReused: boolean;
     /** Lookup map of keyed elements available for reuse. */

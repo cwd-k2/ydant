@@ -10,8 +10,9 @@
  * import { createReactivePlugin } from "@ydant/reactive/plugin";
  * import { mount } from "@ydant/core";
  *
- * mount(App, document.getElementById("app")!, {
- *   plugins: [createReactivePlugin()]
+ * mount(App, {
+ *   root: document.getElementById("app")!,
+ *   plugins: [createDOMCapabilities(), createBasePlugin(), createReactivePlugin()]
  * });
  * ```
  */
@@ -40,9 +41,9 @@ export function createReactivePlugin(): Plugin {
       const scope = ctx.reactiveScope;
 
       // Create a container element for the reactive block
-      const container = document.createElement("span");
-      container.setAttribute("data-reactive", "");
-      ctx.parent.appendChild(container);
+      const container = ctx.tree.createElement("span");
+      ctx.decorate.setAttribute(container, "data-reactive", "");
+      ctx.tree.appendChild(ctx.parent, container);
 
       // Unmount callbacks accumulated during rendering
       let unmountCallbacks: Array<() => void> = [];
@@ -55,8 +56,8 @@ export function createReactivePlugin(): Plugin {
         }
         unmountCallbacks = [];
 
-        // Clear DOM and rebuild
-        container.innerHTML = "";
+        // Clear container and rebuild
+        ctx.tree.clearChildren(container);
 
         // Process children while tracking Signal dependencies, within the mount's scope
         runInScope(scope, () => {

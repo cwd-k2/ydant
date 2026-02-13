@@ -21,7 +21,7 @@ export function processIterator(iter: Render, ctx: RenderContext): void {
       const plugin = ctx.plugins.get(type);
 
       if (plugin) {
-        const response = plugin.process(value as Request, ctx);
+        const response = plugin.process?.(value as Request, ctx);
         result = iter.next(response as Response);
         continue;
       }

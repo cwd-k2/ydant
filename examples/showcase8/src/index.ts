@@ -1,7 +1,8 @@
 import { mount } from "@ydant/core";
-import { createBasePlugin } from "@ydant/base";
+import { createBasePlugin, createDOMCapabilities } from "@ydant/base";
 import { App } from "./App";
 
-mount(App, document.getElementById("app")!, {
-  plugins: [createBasePlugin()],
+mount(App, {
+  root: document.getElementById("app")!,
+  plugins: [createDOMCapabilities(), createBasePlugin()],
 });

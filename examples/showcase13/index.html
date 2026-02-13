@@ -1,0 +1,120 @@
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ydant Showcase 13 — SSR + Hydration</title>
+    <script type="module" src="./src/index.ts"></script>
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f3f4f6;
+        color: #1f2937;
+      }
+      .container {
+        max-width: 700px;
+        margin: 0 auto;
+      }
+      .phase {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+      .phase h2 {
+        margin-top: 0;
+        font-size: 1.1em;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75em;
+        font-weight: bold;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+      .badge-ssr {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .badge-hydrated {
+        background: #dcfce7;
+        color: #15803d;
+      }
+      #ssr-output {
+        background: #1e293b;
+        color: #e2e8f0;
+        padding: 16px;
+        border-radius: 8px;
+        font-family: monospace;
+        font-size: 0.85em;
+        white-space: pre-wrap;
+        word-break: break-all;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      #app {
+        border: 2px dashed #d1d5db;
+        border-radius: 8px;
+        padding: 16px;
+        min-height: 60px;
+      }
+      .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        margin-right: 8px;
+      }
+      .btn-primary {
+        background: #4f46e5;
+        color: white;
+      }
+      .btn-secondary {
+        background: #e5e7eb;
+        color: #374151;
+      }
+      #log {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px;
+        font-family: monospace;
+        font-size: 0.8em;
+        max-height: 150px;
+        overflow-y: auto;
+      }
+      #log div {
+        padding: 2px 0;
+        border-bottom: 1px solid #f1f5f9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>SSR + Hydration Demo</h1>
+
+      <div class="phase">
+        <h2>Phase 1: Server-Side Rendering <span class="badge badge-ssr">SSR</span></h2>
+        <p>renderToString() で生成された HTML:</p>
+        <div id="ssr-output">(waiting...)</div>
+      </div>
+
+      <div class="phase">
+        <h2>Phase 2: Injected HTML <span class="badge badge-ssr">Static</span></h2>
+        <p>innerHTML に挿入された HTML（イベントなし）:</p>
+        <div id="app"></div>
+      </div>
+
+      <div class="phase">
+        <h2>Phase 3: Hydration <span class="badge badge-hydrated">Interactive</span></h2>
+        <p id="hydration-status">hydrate() 待ち...</p>
+        <div id="log"></div>
+      </div>
+    </div>
+  </body>
+</html>

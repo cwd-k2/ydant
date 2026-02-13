@@ -35,4 +35,5 @@ export { isTagged, toRender } from "./utils";
 // Mount
 // =============================================================================
 
+export type { MountOptions, MountHandle } from "./mount";
 export { mount } from "./mount";

@@ -12,7 +12,7 @@ pnpm add @ydant/router
 
 ```typescript
 import { mount, type Component } from "@ydant/core";
-import { createBasePlugin, div, nav, text } from "@ydant/base";
+import { createDOMCapabilities, createBasePlugin, div, nav, text } from "@ydant/base";
 import { RouterView, RouterLink, getRoute, navigate } from "@ydant/router";
 
 import type { RouteComponentProps } from "@ydant/router";
@@ -46,8 +46,9 @@ const App: Component = () =>
     });
   });
 
-mount(App, document.getElementById("app")!, {
-  plugins: [createBasePlugin()],
+mount(App, {
+  root: document.getElementById("app")!,
+  plugins: [createDOMCapabilities(), createBasePlugin()],
 });
 ```
 

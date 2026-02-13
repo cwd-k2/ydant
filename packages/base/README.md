@@ -26,7 +26,7 @@ pnpm add @ydant/base
 
 ```typescript
 import { mount, type Component } from "@ydant/core";
-import { createBasePlugin, div, p, text, classes } from "@ydant/base";
+import { createDOMCapabilities, createBasePlugin, div, p, text, classes } from "@ydant/base";
 
 const Greeting: Component = () =>
   div(function* () {
@@ -34,8 +34,9 @@ const Greeting: Component = () =>
     yield* p(() => [text("Hello World!")]);
   });
 
-mount(Greeting, document.getElementById("app")!, {
-  plugins: [createBasePlugin()],
+mount(Greeting, {
+  root: document.getElementById("app")!,
+  plugins: [createDOMCapabilities(), createBasePlugin()],
 });
 ```
 
@@ -43,9 +44,10 @@ mount(Greeting, document.getElementById("app")!, {
 
 ### Plugin
 
-| Function             | Description                                           |
-| -------------------- | ----------------------------------------------------- |
-| `createBasePlugin()` | Create plugin to process base elements and primitives |
+| Function                  | Description                                                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `createBasePlugin()`      | Create plugin to process base elements and primitives                                                                           |
+| `createDOMCapabilities()` | Create a capability provider plugin that injects DOM-backed `tree`, `decorate`, `interact`, and `schedule` into `RenderContext` |
 
 The base plugin extends `RenderContext`:
 

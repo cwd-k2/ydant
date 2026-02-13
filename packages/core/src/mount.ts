@@ -6,35 +6,54 @@ import type { Plugin } from "./plugin";
 import type { Component } from "./types";
 import { render } from "./render";
 
+/** Options for {@link mount}. */
+export interface MountOptions {
+  /** The root node to mount into. */
+  root: unknown;
+  /** Plugins to register for this mount scope. */
+  plugins?: Plugin[];
+}
+
+/** A handle returned by {@link mount}, used to dispose the mount scope. */
+export interface MountHandle {
+  /** Disposes the mount scope, calling plugin teardown in reverse order. */
+  dispose(): void;
+}
+
 /**
- * Mounts a component into the DOM, starting the rendering pipeline.
+ * Mounts a component into the given root node, starting the rendering pipeline.
  *
- * Registers plugins, validates their dependencies, and renders
- * the component's generator into the target element.
+ * Registers plugins, validates their dependencies, calls setup hooks,
+ * and renders the component's generator into the target.
  *
  * @param app - The root component to render.
- * @param parent - The DOM element to render into.
- * @param options - Configuration including plugins to register.
+ * @param options - Configuration including root node and plugins.
+ * @returns A handle to dispose the mount scope.
  *
  * @example
  * ```typescript
  * import { mount } from "@ydant/core";
- * import { createBasePlugin, div, text } from "@ydant/base";
+ * import { createDOMCapabilities, createBasePlugin, div, text } from "@ydant/base";
  *
  * const App = () => div(() => [text("Hello!")]);
  *
- * mount(App, document.getElementById("app")!, {
- *   plugins: [createBasePlugin()],
+ * const handle = mount(App, {
+ *   root: document.getElementById("app")!,
+ *   plugins: [createDOMCapabilities(), createBasePlugin()],
  * });
+ *
+ * // Later: handle.dispose();
  * ```
  */
-export function mount(app: Component, parent: HTMLElement, options?: { plugins?: Plugin[] }): void {
+export function mount(app: Component, options: MountOptions): MountHandle {
+  const { root, plugins: pluginList } = options;
+
   // Build a lookup map: type tag -> plugin
   const plugins = new Map<string, Plugin>();
   const pluginNames = new Set<string>();
 
-  if (options?.plugins) {
-    for (const plugin of options.plugins) {
+  if (pluginList) {
+    for (const plugin of pluginList) {
       pluginNames.add(plugin.name);
       for (const type of plugin.types) {
         plugins.set(type, plugin);
@@ -42,7 +61,7 @@ export function mount(app: Component, parent: HTMLElement, options?: { plugins?:
     }
 
     // Validate plugin dependencies
-    for (const plugin of options.plugins) {
+    for (const plugin of pluginList) {
       if (plugin.dependencies) {
         for (const dep of plugin.dependencies) {
           if (!pluginNames.has(dep)) {
@@ -55,5 +74,30 @@ export function mount(app: Component, parent: HTMLElement, options?: { plugins?:
     }
   }
 
-  render(app(), parent, plugins);
+  // Render, then call setup on each plugin with the root context
+  const rootCtx = render(app(), root, plugins, pluginList ?? []);
+
+  // Call setup on each unique plugin
+  if (pluginList) {
+    const visited = new Set<string>();
+    for (const plugin of pluginList) {
+      if (visited.has(plugin.name)) continue;
+      visited.add(plugin.name);
+      plugin.setup?.(rootCtx);
+    }
+  }
+
+  return {
+    dispose() {
+      if (!pluginList) return;
+      // Teardown in reverse registration order
+      const visited = new Set<string>();
+      for (let i = pluginList.length - 1; i >= 0; i--) {
+        const plugin = pluginList[i];
+        if (visited.has(plugin.name)) continue;
+        visited.add(plugin.name);
+        plugin.teardown?.(rootCtx);
+      }
+    },
+  };
 }

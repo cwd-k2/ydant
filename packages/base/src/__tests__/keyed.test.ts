@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@ydant/core";
 import { createBasePlugin } from "../plugin";
+import { createDOMCapabilities } from "../capabilities";
 import { div, button } from "../elements/html";
 import { on, text, keyed, onMount } from "../primitives";
 import type { Slot } from "../types";
@@ -29,18 +30,20 @@ describe("keyed element reuse", () => {
             yield* keyed("stable", div)(() => [text("hello")]);
           });
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      {
+        root: container,
+        plugins: [createDOMCapabilities(), createBasePlugin()],
+      },
     );
 
-    const nodeBefore = slot!.node.firstElementChild;
+    const nodeBefore = (slot!.node as HTMLElement).firstElementChild;
     expect(nodeBefore).not.toBeNull();
 
     slot!.refresh(function* () {
       yield* keyed("stable", div)(() => [text("updated")]);
     });
 
-    const nodeAfter = slot!.node.firstElementChild;
+    const nodeAfter = (slot!.node as HTMLElement).firstElementChild;
     expect(nodeAfter).toBe(nodeBefore);
     expect(nodeAfter!.textContent).toBe("updated");
   });
@@ -56,8 +59,10 @@ describe("keyed element reuse", () => {
             yield* keyed("btn", button)(() => [on("click", handler), text("Click")]);
           });
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      {
+        root: container,
+        plugins: [createDOMCapabilities(), createBasePlugin()],
+      },
     );
 
     slot!.refresh(function* () {
@@ -81,8 +86,10 @@ describe("keyed element reuse", () => {
             yield* keyed("item", div)(() => [onMount(mountCallback), text("content")]);
           });
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      {
+        root: container,
+        plugins: [createDOMCapabilities(), createBasePlugin()],
+      },
     );
 
     vi.advanceTimersToNextFrame();

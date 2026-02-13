@@ -2,12 +2,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "../mount";
 import type { Plugin } from "../plugin";
 
+function createMockCapabilities(): Plugin {
+  return {
+    name: "mock-capabilities",
+    types: [],
+  };
+}
+
 describe("Plugin dependencies", () => {
-  let container: HTMLElement;
+  let root: object;
 
   beforeEach(() => {
-    container = document.createElement("div");
-    document.body.appendChild(container);
+    root = {};
   });
 
   it("warns when a dependency is missing", () => {
@@ -16,22 +22,19 @@ describe("Plugin dependencies", () => {
     const basePlugin: Plugin = {
       name: "base",
       types: [],
-      process: () => ({}),
     };
 
     const depPlugin: Plugin = {
       name: "dependent",
       types: [],
       dependencies: ["nonexistent"],
-      process: () => ({}),
     };
 
     mount(
       function* () {
         // empty render
       },
-      container,
-      { plugins: [basePlugin, depPlugin] },
+      { root, plugins: [createMockCapabilities(), basePlugin, depPlugin] },
     );
 
     expect(warn).toHaveBeenCalledWith(
@@ -47,22 +50,19 @@ describe("Plugin dependencies", () => {
     const basePlugin: Plugin = {
       name: "base",
       types: [],
-      process: () => ({}),
     };
 
     const depPlugin: Plugin = {
       name: "dependent",
       types: [],
       dependencies: ["base"],
-      process: () => ({}),
     };
 
     mount(
       function* () {
         // empty render
       },
-      container,
-      { plugins: [basePlugin, depPlugin] },
+      { root, plugins: [createMockCapabilities(), basePlugin, depPlugin] },
     );
 
     expect(warn).not.toHaveBeenCalled();
@@ -76,15 +76,13 @@ describe("Plugin dependencies", () => {
     const basePlugin: Plugin = {
       name: "base",
       types: [],
-      process: () => ({}),
     };
 
     mount(
       function* () {
         // empty render
       },
-      container,
-      { plugins: [basePlugin] },
+      { root, plugins: [createMockCapabilities(), basePlugin] },
     );
 
     expect(warn).not.toHaveBeenCalled();
@@ -98,7 +96,6 @@ describe("Plugin mergeChildContext", () => {
     const plugin: Plugin = {
       name: "test",
       types: [],
-      process: () => ({}),
     };
     expect(plugin.mergeChildContext).toBeUndefined();
   });
@@ -108,9 +105,71 @@ describe("Plugin mergeChildContext", () => {
     const plugin: Plugin = {
       name: "test",
       types: [],
-      process: () => ({}),
       mergeChildContext,
     };
     expect(plugin.mergeChildContext).toBe(mergeChildContext);
+  });
+});
+
+describe("Plugin setup/teardown", () => {
+  let root: object;
+
+  beforeEach(() => {
+    root = {};
+  });
+
+  it("calls setup after rendering", () => {
+    const setup = vi.fn();
+    const plugin: Plugin = {
+      name: "test",
+      types: [],
+      setup,
+    };
+
+    mount(function* () {}, { root, plugins: [createMockCapabilities(), plugin] });
+
+    expect(setup).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls teardown on dispose in reverse order", () => {
+    const order: string[] = [];
+    const pluginA: Plugin = {
+      name: "a",
+      types: [],
+      teardown: () => order.push("a"),
+    };
+    const pluginB: Plugin = {
+      name: "b",
+      types: [],
+      teardown: () => order.push("b"),
+    };
+
+    const handle = mount(function* () {}, {
+      root,
+      plugins: [createMockCapabilities(), pluginA, pluginB],
+    });
+    handle.dispose();
+
+    expect(order).toEqual(["b", "a"]);
+  });
+
+  it("setup and teardown are optional", () => {
+    const plugin: Plugin = {
+      name: "test",
+      types: [],
+    };
+
+    const handle = mount(function* () {}, { root, plugins: [createMockCapabilities(), plugin] });
+    expect(() => handle.dispose()).not.toThrow();
+  });
+});
+
+describe("MountHandle", () => {
+  it("mount returns a MountHandle with dispose", () => {
+    const root = {};
+    const handle = mount(function* () {}, { root, plugins: [createMockCapabilities()] });
+
+    expect(handle).toHaveProperty("dispose");
+    expect(typeof handle.dispose).toBe("function");
   });
 });

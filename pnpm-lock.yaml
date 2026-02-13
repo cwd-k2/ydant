@@ -90,6 +90,42 @@ importers:
         specifier: workspace:*
         version: link:../../packages/core
 
+  examples/showcase11:
+    dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
+      '@ydant/canvas':
+        specifier: workspace:*
+        version: link:../../packages/canvas
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+
+  examples/showcase12:
+    dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@ydant/portal':
+        specifier: workspace:*
+        version: link:../../packages/portal
+
+  examples/showcase13:
+    dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@ydant/ssr':
+        specifier: workspace:*
+        version: link:../../packages/ssr
+
   examples/showcase2:
     dependencies:
       '@ydant/base':
@@ -201,6 +237,15 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/canvas:
+    dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../base
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/context:
     dependencies:
       '@ydant/base':
@@ -212,6 +257,15 @@ importers:
 
   packages/core: {}
 
+  packages/portal:
+    dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../base
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/reactive:
     dependencies:
       '@ydant/base':
@@ -222,6 +276,15 @@ importers:
         version: link:../core
 
   packages/router:
+    dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../base
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/ssr:
     dependencies:
       '@ydant/base':
         specifier: workspace:*

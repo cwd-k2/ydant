@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "@ydant/core";
 import type { Slot } from "@ydant/base";
-import { createBasePlugin, div, text } from "@ydant/base";
+import { createBasePlugin, createDOMCapabilities, div, text } from "@ydant/base";
 import { TransitionGroup, createTransitionGroupRefresher } from "../TransitionGroup";
 
 interface Item {
@@ -39,8 +39,7 @@ describe("TransitionGroup", () => {
             content: (item) => div(() => [text(item.name)]),
           });
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Item 1");
@@ -58,8 +57,7 @@ describe("TransitionGroup", () => {
             content: (item) => div(() => [text(item.name)]),
           });
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     // The container has a wrapper div from TransitionGroup, but no item divs
@@ -82,8 +80,7 @@ describe("TransitionGroup", () => {
             content: (item) => div(() => [text(item.name)]),
           });
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -111,8 +108,7 @@ describe("TransitionGroup", () => {
             },
           });
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(capturedIndices).toEqual([0, 1]);
@@ -142,8 +138,7 @@ describe("TransitionGroup", () => {
             content: (item) => div(() => [text(item.name)]),
           });
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(capturedKeys).toContain(100);
@@ -193,8 +188,7 @@ describe("createTransitionGroupRefresher", () => {
             }
           });
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Initial");
@@ -234,8 +228,7 @@ describe("createTransitionGroupRefresher", () => {
             content: (item) => div(() => [text(item.name)]),
           });
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -285,8 +278,7 @@ describe("createTransitionGroupRefresher", () => {
             content: (item) => div(() => [text(item.name)]),
           });
         }),
-      container,
-      { plugins: [createBasePlugin()] },
+      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();

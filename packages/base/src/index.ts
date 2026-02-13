@@ -74,5 +74,18 @@ export type { SlotRef } from "./slot-ref";
 // Factory helpers
 export { createHTMLElement, createSVGElement } from "./elements/factory";
 
+// Capabilities
+export type {
+  TreeCapability,
+  DecorateCapability,
+  InteractCapability,
+  ScheduleCapability,
+  DOMCapabilitiesOptions,
+} from "./capabilities";
+export { createDOMCapabilities } from "./capabilities";
+
 // Plugin
-export { createBasePlugin } from "./plugin";
+export { createBasePlugin } from "./plugin/index";
+
+// Building blocks (for extension plugins like @ydant/ssr hydration)
+export { createSlot, executeMount } from "./plugin/element";

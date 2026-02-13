@@ -58,7 +58,7 @@ const transitionStates = new WeakMap<
   {
     isShowing: boolean;
     isAnimating: boolean;
-    childSlot: Slot | null;
+    childSlot: Slot<HTMLElement> | null;
   }
 >();
 
@@ -85,7 +85,7 @@ export function Transition(props: TransitionProps): Render {
     });
 
     yield* onMount(() => {
-      const container = containerSlot.node;
+      const container = containerSlot.node as HTMLElement;
 
       // Retrieve or initialize transition state
       let state = transitionStates.get(container);
@@ -130,7 +130,7 @@ export function Transition(props: TransitionProps): Render {
  */
 export interface TransitionHandle {
   /** The Slot representing the transition container */
-  slot: Slot;
+  slot: Slot<HTMLElement>;
   /** Update the show state with an animated transition */
   setShow: (show: boolean) => Promise<void>;
 }
@@ -172,7 +172,7 @@ export function* createTransition(props: Omit<TransitionProps, "show">): Transit
     }
   };
 
-  const containerSlot: Slot = yield* div(renderContent);
+  const containerSlot = (yield* div(renderContent)) as Slot<HTMLElement>;
 
   const setShow = async (show: boolean): Promise<void> => {
     if (show === isShowing || isAnimating) {

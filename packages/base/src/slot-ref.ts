@@ -10,20 +10,25 @@ import type { Slot } from "./types";
  * from event handlers and other callbacks.
  *
  * Bind a Slot with `bind()`, then call `refresh()` to re-render its children.
+ *
+ * @typeParam TNode - The type of the rendered node. Use `createSlotRef<HTMLElement>()`
+ *   for typed DOM access.
  */
-export interface SlotRef {
+export interface SlotRef<TNode = unknown> {
   /** The currently bound {@link Slot}, or `null` if not yet bound. */
-  readonly current: Slot | null;
+  readonly current: Slot<TNode> | null;
   /** Associates this ref with a {@link Slot}. */
   bind(slot: Slot): void;
   /** Re-renders the bound Slot's children. No-op if unbound. */
   refresh(children: Builder): void;
-  /** The DOM element of the bound Slot, or `null` if unbound. */
-  readonly node: HTMLElement | null;
+  /** The rendered node of the bound Slot, or `null` if unbound. */
+  readonly node: TNode | null;
 }
 
 /**
  * Creates a {@link SlotRef} for imperative Slot access.
+ *
+ * @typeParam TNode - The type of the rendered node.
  *
  * @example
  * ```typescript
@@ -42,15 +47,15 @@ export interface SlotRef {
  * }));
  * ```
  */
-export function createSlotRef(): SlotRef {
-  let _current: Slot | null = null;
+export function createSlotRef<TNode = unknown>(): SlotRef<TNode> {
+  let _current: Slot<TNode> | null = null;
 
   return {
     get current() {
       return _current;
     },
     bind(slot: Slot) {
-      _current = slot;
+      _current = slot as Slot<TNode>;
     },
     refresh(children: Builder) {
       if (_current) {

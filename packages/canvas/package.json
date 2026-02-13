@@ -1,0 +1,51 @@
+{
+  "name": "@ydant/canvas",
+  "version": "0.2.0",
+  "description": "Canvas2D rendering target for Ydant",
+  "keywords": [
+    "canvas",
+    "rendering",
+    "ydant"
+  ],
+  "homepage": "https://github.com/cwd-k2/ydant#readme",
+  "bugs": {
+    "url": "https://github.com/cwd-k2/ydant/issues"
+  },
+  "license": "MIT",
+  "author": "cwd-k2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cwd-k2/ydant.git",
+    "directory": "packages/canvas"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "@ydant/dev": {
+        "types": "./src/index.ts",
+        "default": "./src/index.ts"
+      },
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ydant/base": "workspace:*"
+  },
+  "peerDependencies": {
+    "@ydant/core": "workspace:*"
+  },
+  "packageManager": "pnpm@10.22.0"
+}

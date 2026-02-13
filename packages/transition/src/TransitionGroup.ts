@@ -94,7 +94,7 @@ export function* TransitionGroup<T>(props: TransitionGroupProps<T>): Spell<"elem
 
       // Apply enter transition
       yield* onMount(() => {
-        enterTransition(itemSlot.node, props);
+        enterTransition(itemSlot.node as HTMLElement, props);
       });
     }
   });
@@ -159,12 +159,12 @@ export function createTransitionGroupRefresher<T>(
         const itemSlot = yield* keyed(itemKey, content)(item, i);
 
         // Record the element reference
-        state.elementsByKey.set(itemKey, itemSlot.node);
+        state.elementsByKey.set(itemKey, itemSlot.node as HTMLElement);
 
         // Apply enter transition only to newly added elements
         if (isNew) {
           yield* onMount(() => {
-            enterTransition(itemSlot.node, props as TransitionGroupProps<T>);
+            enterTransition(itemSlot.node as HTMLElement, props as TransitionGroupProps<T>);
           });
         }
       }
