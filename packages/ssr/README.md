@@ -59,8 +59,6 @@ const html = ssrCaps.toHTML();
 handle.dispose();
 ```
 
-> `createStringTarget` is available as an alias for `createSSRCapabilities` for backward compatibility.
-
 ## Hydration
 
 ### hydrate
@@ -117,8 +115,6 @@ interface SSRCapabilities extends Plugin {
 
 Creates a capability provider plugin for SSR that builds a virtual node tree. Register it in the `plugins` array and use its `root` property as the mount root. Call `toHTML()` after mounting to get the HTML string.
 
-> `createStringTarget` / `StringTarget` are available as aliases for backward compatibility.
-
 ### hydrate
 
 ```typescript
@@ -145,15 +141,15 @@ Hydration works by **reinterpreting** the same DSL requests differently:
 | Listener (`yield* on(...)`)       | `addEventListener`               | `addEventListener`          |
 | Lifecycle (`yield* onMount(...)`) | Register callback                | Register callback           |
 
-### NodeResolver Layer
+### ResolveCapability Layer
 
-The ability to find existing DOM nodes is provided by a **NodeResolver** — a capability layer separate from capability providers and plugins:
+The ability to find existing DOM nodes is provided by the **ResolveCapability** — a capability injected only during hydration:
 
 - **Capability Provider** (e.g., `createDOMCapabilities`, `createSSRCapabilities`): injects `tree`, `decorate`, `interact`, `schedule` into `RenderContext`
 - **Plugin**: "how to interpret DSL requests" (processing strategy)
-- **NodeResolver**: "how to find existing nodes" (cursor-based traversal)
+- **ResolveCapability**: "how to find existing nodes" (cursor-based traversal, via `ctx.resolve`)
 
-The plugin decides _whether_ to create or find nodes. The resolver provides the _ability_ to find them.
+The hydration plugin decides _whether_ to create or find nodes. The resolve capability provides the _ability_ to find them.
 
 ### Post-Hydration Updates
 
@@ -203,5 +199,5 @@ type VContainer = VElement | VRoot;
 - `serialize.ts` - VNode tree to HTML string conversion
 - `target.ts` - `createSSRCapabilities()` capability provider implementation
 - `render.ts` - `renderToString()` high-level API
-- `resolver.ts` - `NodeResolver` capability layer for hydration
+- `resolver.ts` - `ResolveCapability` implementation for DOM hydration
 - `hydrate.ts` - `hydrate()` and hydration plugin

@@ -15,7 +15,7 @@ declare module "@ydant/core" {
   // The "context-inject" response type is `unknown` because the actual type
   // is determined by the Context<T> generic at the call site.
   interface SpellSchema {
-    "context-provide": { request: ContextProvide };
-    "context-inject": { request: ContextInject; response: unknown };
+    "context-provide": { request: ContextProvide; capabilities: never };
+    "context-inject": { request: ContextInject; response: unknown; capabilities: never };
   }
 }

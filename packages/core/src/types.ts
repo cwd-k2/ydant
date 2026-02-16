@@ -21,12 +21,19 @@ export type Tagged<T extends string, P = {}> = { type: T } & P;
  * ```typescript
  * declare module "@ydant/core" {
  *   interface SpellSchema {
- *     "element": { request: Element; response: Slot };
- *     "text": { request: Text };
+ *     "element": { request: Element; response: Slot; capabilities: "tree" | "decorate" };
+ *     "text": { request: Text; capabilities: "tree" };
+ *     "context-inject": { request: ContextInject; response: unknown; capabilities: never };
  *     "transition": { return: TransitionHandle };
  *   }
  * }
  * ```
+ *
+ * The optional `capabilities` field declares which rendering capabilities
+ * are required to process this spell. This enables compile-time checking
+ * in {@link mount} via {@link CapabilityCheck}. Spells with no capability
+ * requirement should use `capabilities: never`. Return-only entries
+ * (no `request` field) do not need `capabilities`.
  */
 export interface SpellSchema {}
 
