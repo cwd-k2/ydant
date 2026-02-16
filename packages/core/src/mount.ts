@@ -93,9 +93,12 @@ export function mount<G extends Render, const Plugins extends readonly Plugin[]>
     }
   }
 
+  let disposed = false;
+
   return {
     dispose() {
-      if (!pluginList) return;
+      if (disposed || !pluginList) return;
+      disposed = true;
       // Teardown in reverse registration order
       const visited = new Set<string>();
       for (let i = pluginList.length - 1; i >= 0; i--) {

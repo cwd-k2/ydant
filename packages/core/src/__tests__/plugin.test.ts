@@ -172,4 +172,24 @@ describe("MountHandle", () => {
     expect(handle).toHaveProperty("dispose");
     expect(typeof handle.dispose).toBe("function");
   });
+
+  it("allows calling dispose() multiple times safely", () => {
+    const teardown = vi.fn();
+    const plugin: Plugin = { name: "test", types: [], teardown };
+
+    const handle = mount(function* () {}, {
+      root: {},
+      plugins: [createMockCapabilities(), plugin],
+    });
+
+    handle.dispose();
+    handle.dispose();
+
+    expect(teardown).toHaveBeenCalledTimes(1);
+  });
+
+  it("dispose works when no plugins are provided", () => {
+    const handle = mount(function* () {}, { root: {} });
+    expect(() => handle.dispose()).not.toThrow();
+  });
 });
