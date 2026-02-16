@@ -31,11 +31,11 @@ function Counter(initial: number) {
   });
 }
 
-import { createBasePlugin, createDOMCapabilities } from "@ydant/base";
+import { createBasePlugin, createDOMBackend } from "@ydant/base";
 
 mount(() => Counter(0), {
-  root: document.getElementById("app")!,
-  plugins: [createDOMCapabilities(), createBasePlugin()],
+  backend: createDOMBackend(document.getElementById("app")!),
+  plugins: [createBasePlugin()],
 });
 ```
 
@@ -70,7 +70,7 @@ mount(() => Counter(0), {
 import { mount } from "@ydant/core";
 import {
   createBasePlugin,
-  createDOMCapabilities,
+  createDOMBackend,
   div,
   text,
   classes,
@@ -80,8 +80,8 @@ import {
 const App: Component = () => div(() => [classes("app"), text("Hello, Ydant!")]);
 
 mount(App, {
-  root: document.getElementById("root")!,
-  plugins: [createDOMCapabilities(), createBasePlugin()],
+  backend: createDOMBackend(document.getElementById("root")!),
+  plugins: [createBasePlugin()],
 });
 ```
 
@@ -91,7 +91,7 @@ mount(App, {
 import { mount } from "@ydant/core";
 import {
   createBasePlugin,
-  createDOMCapabilities,
+  createDOMBackend,
   div,
   button,
   text,
@@ -110,13 +110,8 @@ const App: Component = () =>
   });
 
 mount(App, {
-  root: document.getElementById("root")!,
-  plugins: [
-    createDOMCapabilities(),
-    createBasePlugin(),
-    createReactivePlugin(),
-    createContextPlugin(),
-  ],
+  backend: createDOMBackend(document.getElementById("root")!),
+  plugins: [createBasePlugin(), createReactivePlugin(), createContextPlugin()],
 });
 ```
 

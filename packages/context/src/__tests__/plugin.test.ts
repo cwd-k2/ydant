@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import type { Builder } from "@ydant/core";
 import { mount } from "@ydant/core";
-import { createBasePlugin, createDOMCapabilities, div, p, text } from "@ydant/base";
+import { createBasePlugin, createDOMBackend, div, p, text } from "@ydant/base";
 import { createContext, provide, inject } from "../context";
 import { createContextPlugin } from "../plugin";
 
@@ -36,8 +36,8 @@ describe("createContextPlugin", () => {
             } as Builder);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin(), createContextPlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin(), createContextPlugin()],
         },
       );
 
@@ -69,8 +69,8 @@ describe("createContextPlugin", () => {
             });
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin(), createContextPlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin(), createContextPlugin()],
         },
       );
 
@@ -88,8 +88,8 @@ describe("createContextPlugin", () => {
             yield* text(capturedValue);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin(), createContextPlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin(), createContextPlugin()],
         },
       );
 
@@ -106,8 +106,8 @@ describe("createContextPlugin", () => {
             capturedValue = yield* inject(NoDefaultContext);
           } as Builder),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin(), createContextPlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin(), createContextPlugin()],
         },
       );
 
@@ -135,8 +135,8 @@ describe("createContextPlugin", () => {
             } as Builder);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin(), createContextPlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin(), createContextPlugin()],
         },
       );
 

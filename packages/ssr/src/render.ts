@@ -7,7 +7,7 @@
 import type { Component, Plugin } from "@ydant/core";
 import { mount } from "@ydant/core";
 import { createBasePlugin } from "@ydant/base";
-import { createSSRCapabilities } from "./target";
+import { createSSRBackend } from "./target";
 
 export interface RenderToStringOptions {
   plugins?: Plugin[];
@@ -16,7 +16,7 @@ export interface RenderToStringOptions {
 /**
  * Renders a component to an HTML string.
  *
- * Internally creates SSR capabilities, mounts the component, serializes
+ * Internally creates an SSR backend, mounts the component, serializes
  * the resulting VNode tree, and disposes the mount scope.
  *
  * @param app - The root component to render.
@@ -24,13 +24,13 @@ export interface RenderToStringOptions {
  * @returns The rendered HTML string.
  */
 export function renderToString(app: Component, options?: RenderToStringOptions): string {
-  const ssrCaps = createSSRCapabilities();
+  const backend = createSSRBackend();
   const userPlugins = options?.plugins ?? [createBasePlugin()];
   const handle = mount(app, {
-    root: ssrCaps.root,
-    plugins: [ssrCaps, ...userPlugins],
+    backend,
+    plugins: userPlugins,
   });
-  const html = ssrCaps.toHTML();
+  const html = backend.toHTML();
   handle.dispose();
   return html;
 }

@@ -10,17 +10,12 @@
  */
 
 import { mount } from "@ydant/core";
-import { createBasePlugin, createDOMCapabilities } from "@ydant/base";
+import { createBasePlugin, createDOMBackend } from "@ydant/base";
 import { createReactivePlugin } from "@ydant/reactive";
 import { createContextPlugin } from "@ydant/context";
 import { App } from "./App";
 
 mount(App, {
-  root: document.getElementById("app")!,
-  plugins: [
-    createDOMCapabilities(),
-    createBasePlugin(),
-    createReactivePlugin(),
-    createContextPlugin(),
-  ],
+  backend: createDOMBackend(document.getElementById("app")!),
+  plugins: [createBasePlugin(), createReactivePlugin(), createContextPlugin()],
 });

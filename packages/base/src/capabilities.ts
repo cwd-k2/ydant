@@ -1,12 +1,12 @@
 /**
- * @ydant/base - DOM Capability Provider
+ * @ydant/base - DOM Backend
  *
  * Provides DOM-based implementations of the capability interfaces
  * defined in @ydant/core.
  */
 
 import type {
-  Plugin,
+  Backend,
   RenderContext,
   TreeCapability,
   DecorateCapability,
@@ -14,23 +14,27 @@ import type {
   ScheduleCapability,
 } from "@ydant/core";
 
-/** The capabilities provided by the DOM capability provider. */
+/** The capabilities provided by the DOM backend. */
 type DOMCapabilityNames = "tree" | "decorate" | "interact" | "schedule";
 
-export interface DOMCapabilitiesOptions {
+export interface DOMBackendOptions {
   /** Skip clearing root content in beforeRender. Used by hydration to preserve SSR content. */
   skipPrepare?: boolean;
 }
 
 /**
- * Creates a plugin that provides DOM-based capabilities.
+ * Creates a backend that provides DOM-based capabilities.
  *
  * Injects `tree`, `decorate`, `interact`, `schedule`, and `currentElement`
  * into every {@link RenderContext} created during rendering.
+ *
+ * @param root - The DOM element to mount into.
+ * @param options - Optional configuration.
  */
-export function createDOMCapabilities(
-  options?: DOMCapabilitiesOptions,
-): Plugin<DOMCapabilityNames> {
+export function createDOMBackend(
+  root: unknown,
+  options?: DOMBackendOptions,
+): Backend<DOMCapabilityNames> {
   const tree: TreeCapability = {
     createElement: (tag) => document.createElement(tag),
     createElementNS: (ns, tag) => document.createElementNS(ns, tag),
@@ -58,8 +62,8 @@ export function createDOMCapabilities(
   const isElement = (node: unknown) => node instanceof globalThis.Element;
 
   return {
-    name: "dom-capabilities",
-    types: [],
+    name: "dom-backend",
+    root,
 
     initContext(ctx: RenderContext) {
       ctx.tree = tree;

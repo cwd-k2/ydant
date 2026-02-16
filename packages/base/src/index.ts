@@ -74,9 +74,9 @@ export type { SlotRef } from "./slot-ref";
 // Factory helpers
 export { createHTMLElement, createSVGElement } from "./elements/factory";
 
-// Capabilities
-export type { DOMCapabilitiesOptions } from "./capabilities";
-export { createDOMCapabilities } from "./capabilities";
+// Backend
+export type { DOMBackendOptions } from "./capabilities";
+export { createDOMBackend } from "./capabilities";
 
 // Plugin
 export { createBasePlugin } from "./plugin/index";

@@ -39,7 +39,7 @@ export type {
 // Plugin System
 // =============================================================================
 
-export type { Plugin, RenderContext } from "./plugin";
+export type { Backend, Plugin, RenderContext } from "./plugin";
 
 // =============================================================================
 // Utilities

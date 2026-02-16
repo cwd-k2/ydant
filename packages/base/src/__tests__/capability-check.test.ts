@@ -7,7 +7,7 @@
 
 import { describe, it, expectTypeOf } from "vitest";
 import type {
-  Plugin,
+  Backend,
   Render,
   RequiredCapabilities,
   ProvidedCapabilities,
@@ -21,28 +21,18 @@ import { createHTMLElement } from "../elements/factory";
 // ---------------------------------------------------------------------------
 
 describe("ProvidedCapabilities", () => {
-  it("extracts from a parameterized plugin", () => {
-    expectTypeOf<ProvidedCapabilities<[Plugin<"tree" | "decorate">]>>().toEqualTypeOf<
+  it("extracts from a parameterized backend", () => {
+    expectTypeOf<ProvidedCapabilities<Backend<"tree" | "decorate">>>().toEqualTypeOf<
       "tree" | "decorate"
     >();
   });
 
-  it("merges capabilities from multiple plugins", () => {
-    expectTypeOf<
-      ProvidedCapabilities<[Plugin<"tree">, Plugin<"interact" | "schedule">]>
-    >().toEqualTypeOf<"tree" | "interact" | "schedule">();
+  it("filters out wide string from unparameterized Backend", () => {
+    expectTypeOf<ProvidedCapabilities<Backend>>().toEqualTypeOf<never>();
   });
 
-  it("filters out wide string from unparameterized Plugin", () => {
-    expectTypeOf<ProvidedCapabilities<[Plugin]>>().toEqualTypeOf<never>();
-  });
-
-  it("filters out wide string when mixed with specific capabilities", () => {
-    expectTypeOf<ProvidedCapabilities<[Plugin, Plugin<"tree">]>>().toEqualTypeOf<"tree">();
-  });
-
-  it("returns never for empty plugin tuple", () => {
-    expectTypeOf<ProvidedCapabilities<[]>>().toEqualTypeOf<never>();
+  it("returns never for Backend<never>", () => {
+    expectTypeOf<ProvidedCapabilities<Backend<never>>>().toEqualTypeOf<never>();
   });
 });
 
@@ -114,7 +104,7 @@ describe("CapabilityCheck", () => {
       yield* el(() => [text("hello")]);
     }
 
-    type Result = CapabilityCheck<ReturnType<typeof app>, [Plugin<"tree" | "decorate">]>;
+    type Result = CapabilityCheck<ReturnType<typeof app>, Backend<"tree" | "decorate">>;
     expectTypeOf<Result>().toEqualTypeOf<{}>();
   });
 
@@ -126,16 +116,16 @@ describe("CapabilityCheck", () => {
     }
 
     // Only tree | decorate provided, but interact is also required
-    type Result = CapabilityCheck<ReturnType<typeof app>, [Plugin<"tree" | "decorate">]>;
+    type Result = CapabilityCheck<ReturnType<typeof app>, Backend<"tree" | "decorate">>;
     expectTypeOf<Result>().toHaveProperty("__capabilityError");
   });
 
   it("produces {} for wide Render (Component annotation bypass)", () => {
-    expectTypeOf<CapabilityCheck<Render, []>>().toEqualTypeOf<{}>();
+    expectTypeOf<CapabilityCheck<Render, Backend>>().toEqualTypeOf<{}>();
   });
 
-  it("produces {} for wide Render even with unparameterized plugins", () => {
-    expectTypeOf<CapabilityCheck<Render, [Plugin]>>().toEqualTypeOf<{}>();
+  it("produces {} for wide Render even with unparameterized Backend", () => {
+    expectTypeOf<CapabilityCheck<Render, Backend>>().toEqualTypeOf<{}>();
   });
 
   it("produces {} when superset of capabilities is provided", () => {
@@ -146,22 +136,7 @@ describe("CapabilityCheck", () => {
     // text requires only "tree", but all 4 are provided
     type Result = CapabilityCheck<
       ReturnType<typeof app>,
-      [Plugin<"tree" | "decorate" | "interact" | "schedule">]
-    >;
-    expectTypeOf<Result>().toEqualTypeOf<{}>();
-  });
-
-  it("produces {} with multiple plugins covering all requirements", () => {
-    const el = createHTMLElement("div");
-    function* app() {
-      yield* el(() => []);
-      yield* on("click", () => {});
-    }
-
-    // tree | decorate from first plugin, interact from second
-    type Result = CapabilityCheck<
-      ReturnType<typeof app>,
-      [Plugin<"tree" | "decorate">, Plugin<"interact">]
+      Backend<"tree" | "decorate" | "interact" | "schedule">
     >;
     expectTypeOf<Result>().toEqualTypeOf<{}>();
   });

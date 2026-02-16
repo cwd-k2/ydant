@@ -9,9 +9,9 @@
 // VNode types
 export type { VElement, VText, VRoot, VNode, VContainer } from "./vnode";
 
-// SSR capability provider
-export type { SSRCapabilities } from "./target";
-export { createSSRCapabilities } from "./target";
+// SSR backend
+export type { SSRBackend } from "./target";
+export { createSSRBackend } from "./target";
 
 // SSR high-level API
 export type { RenderToStringOptions } from "./render";

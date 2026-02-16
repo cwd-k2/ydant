@@ -8,9 +8,9 @@
 // VShape types
 export type { VShape, VShapeRoot, VShapeContainer } from "./vshape";
 
-// Capability provider
-export type { CanvasCapabilities } from "./capabilities";
-export { createCanvasCapabilities } from "./capabilities";
+// Backend
+export type { CanvasBackend } from "./capabilities";
+export { createCanvasBackend } from "./capabilities";
 
 // Shape element factories
 export { group, rect, circle, ellipse, line, canvasPath, canvasText } from "./elements";

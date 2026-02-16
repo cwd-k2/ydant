@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@ydant/core";
-import { createBasePlugin, createDOMCapabilities, div, text } from "@ydant/base";
+import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
 import { signal } from "../signal";
 import { reactive } from "../reactive";
 import { createReactivePlugin } from "../plugin";
@@ -30,8 +30,8 @@ describe("createReactivePlugin", () => {
           yield* reactive(() => [text(`Count: ${count()}`)]);
         }),
       {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin(), createReactivePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin(), createReactivePlugin()],
       },
     );
 
@@ -47,8 +47,8 @@ describe("createReactivePlugin", () => {
           yield* reactive(() => [text(`Count: ${count()}`)]);
         }),
       {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin(), createReactivePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin(), createReactivePlugin()],
       },
     );
 
@@ -67,8 +67,8 @@ describe("createReactivePlugin", () => {
           yield* reactive(() => [text("Content")]);
         }),
       {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin(), createReactivePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin(), createReactivePlugin()],
       },
     );
 
@@ -86,8 +86,8 @@ describe("createReactivePlugin", () => {
           yield* reactive(() => items().map((n) => text(`Item ${n} `)));
         }),
       {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin(), createReactivePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin(), createReactivePlugin()],
       },
     );
 
@@ -114,8 +114,8 @@ describe("createReactivePlugin", () => {
           yield* reactive(() => [text(`B: ${count2()}`)]);
         }),
       {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin(), createReactivePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin(), createReactivePlugin()],
       },
     );
 
@@ -163,8 +163,8 @@ describe("ReactiveScope isolation", () => {
           });
         }),
       {
-        root: containerA,
-        plugins: [createDOMCapabilities(), createBasePlugin(), createReactivePlugin()],
+        backend: createDOMBackend(containerA),
+        plugins: [createBasePlugin(), createReactivePlugin()],
       },
     );
 
@@ -177,8 +177,8 @@ describe("ReactiveScope isolation", () => {
           });
         }),
       {
-        root: containerB,
-        plugins: [createDOMCapabilities(), createBasePlugin(), createReactivePlugin()],
+        backend: createDOMBackend(containerB),
+        plugins: [createBasePlugin(), createReactivePlugin()],
       },
     );
 

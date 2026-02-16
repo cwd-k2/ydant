@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { mount } from "@ydant/core";
 import { createBasePlugin, div, text, createSlotRef } from "..";
-import { createDOMCapabilities } from "../capabilities";
+import { createDOMBackend } from "../capabilities";
 
 describe("createSlotRef", () => {
   let container: HTMLElement;
@@ -29,8 +29,8 @@ describe("createSlotRef", () => {
           ref.bind(slot);
         }),
       {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       },
     );
 
@@ -51,8 +51,8 @@ describe("createSlotRef", () => {
           ref.bind(slot);
         }),
       {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       },
     );
 

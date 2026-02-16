@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "@ydant/core";
 import {
   createBasePlugin,
-  createDOMCapabilities,
+  createDOMBackend,
   createSlotRef,
   div,
   attr,
@@ -25,8 +25,8 @@ describe("Portal plugin", () => {
     }
 
     mount(App, {
-      root,
-      plugins: [createDOMCapabilities(), createBasePlugin(), createPortalPlugin()],
+      backend: createDOMBackend(root),
+      plugins: [createBasePlugin(), createPortalPlugin()],
     });
 
     expect(root.textContent).toContain("Main content");
@@ -46,8 +46,8 @@ describe("Portal plugin", () => {
     }
 
     mount(App, {
-      root,
-      plugins: [createDOMCapabilities(), createBasePlugin(), createPortalPlugin()],
+      backend: createDOMBackend(root),
+      plugins: [createBasePlugin(), createPortalPlugin()],
     });
 
     expect(target1.textContent).toBe("Portal 1");
@@ -63,8 +63,8 @@ describe("Portal plugin", () => {
     }
 
     mount(App, {
-      root,
-      plugins: [createDOMCapabilities(), createBasePlugin(), createPortalPlugin()],
+      backend: createDOMBackend(root),
+      plugins: [createBasePlugin(), createPortalPlugin()],
     });
 
     expect(target.querySelector("div > div")?.textContent).toBe("Deeply nested");
@@ -84,8 +84,8 @@ describe("Portal plugin", () => {
     }
 
     mount(App, {
-      root,
-      plugins: [createDOMCapabilities(), createBasePlugin(), createPortalPlugin()],
+      backend: createDOMBackend(root),
+      plugins: [createBasePlugin(), createPortalPlugin()],
     });
 
     expect(portalTarget.textContent).toBe("Portal content");
@@ -111,8 +111,8 @@ describe("Portal plugin", () => {
     }
 
     mount(App, {
-      root,
-      plugins: [createDOMCapabilities(), createBasePlugin(), createPortalPlugin()],
+      backend: createDOMBackend(root),
+      plugins: [createBasePlugin(), createPortalPlugin()],
     });
 
     expect(sharedTarget.textContent).toContain("Portal A");
@@ -148,8 +148,8 @@ describe("Portal plugin", () => {
       }
 
       mount(App, {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin(), createPortalPlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin(), createPortalPlugin()],
       });
 
       expect(mountCallback).not.toHaveBeenCalled();
@@ -173,8 +173,8 @@ describe("Portal plugin", () => {
       }
 
       mount(App, {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin(), createPortalPlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin(), createPortalPlugin()],
       });
 
       expect(unmountCallback).not.toHaveBeenCalled();

@@ -42,7 +42,7 @@ dispose(); // Stop tracking
 
 ```typescript
 import { mount, type Component } from "@ydant/core";
-import { createDOMCapabilities, createBasePlugin, div, button, text, on } from "@ydant/base";
+import { createDOMBackend, createBasePlugin, div, button, text, on } from "@ydant/base";
 import { signal, reactive, createReactivePlugin } from "@ydant/reactive";
 
 const count = signal(0);
@@ -56,8 +56,8 @@ const Counter: Component = () =>
   });
 
 mount(Counter, {
-  root: document.getElementById("app")!,
-  plugins: [createDOMCapabilities(), createBasePlugin(), createReactivePlugin()],
+  backend: createDOMBackend(document.getElementById("app")!),
+  plugins: [createBasePlugin(), createReactivePlugin()],
 });
 ```
 

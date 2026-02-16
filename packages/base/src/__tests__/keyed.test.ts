@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@ydant/core";
 import { createBasePlugin } from "../plugin";
-import { createDOMCapabilities } from "../capabilities";
+import { createDOMBackend } from "../capabilities";
 import { div, button } from "../elements/html";
 import { on, text, keyed, onMount } from "../primitives";
 import type { Slot } from "../types";
@@ -31,8 +31,8 @@ describe("keyed element reuse", () => {
           });
         }),
       {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       },
     );
 
@@ -60,8 +60,8 @@ describe("keyed element reuse", () => {
           });
         }),
       {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       },
     );
 
@@ -87,8 +87,8 @@ describe("keyed element reuse", () => {
           });
         }),
       {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       },
     );
 

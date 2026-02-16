@@ -14,7 +14,7 @@ pnpm add @ydant/context
 
 ```typescript
 import { mount, type Component } from "@ydant/core";
-import { createDOMCapabilities, createBasePlugin, div, text } from "@ydant/base";
+import { createDOMBackend, createBasePlugin, div, text } from "@ydant/base";
 import { createContext, provide, inject, createContextPlugin } from "@ydant/context";
 
 // Create context with optional default value
@@ -34,10 +34,10 @@ const ChildComponent: Component = () =>
     yield* text(`Theme: ${theme}`); // "dark"
   });
 
-// Mount with capabilities, base, and context plugins
+// Mount with backend and plugins
 mount(App, {
-  root: document.getElementById("app")!,
-  plugins: [createDOMCapabilities(), createBasePlugin(), createContextPlugin()],
+  backend: createDOMBackend(document.getElementById("app")!),
+  plugins: [createBasePlugin(), createContextPlugin()],
 });
 ```
 

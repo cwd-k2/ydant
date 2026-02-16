@@ -5,6 +5,46 @@
 import type { Request, Response, Builder } from "./types";
 
 // =============================================================================
+// Backend
+// =============================================================================
+
+/**
+ * A rendering backend that provides platform-specific capabilities.
+ *
+ * Backends are conceptually distinct from plugins: a backend defines
+ * *where* rendering happens (DOM, Canvas, SSR), while plugins define
+ * *how* spell operations are processed.
+ *
+ * @example
+ * ```typescript
+ * const backend = createDOMBackend(document.getElementById("app")!);
+ * mount(App, { backend, plugins: [createBasePlugin()] });
+ * ```
+ */
+export interface Backend<Capabilities extends string = string> {
+  /** Phantom field for compile-time capability tracking. Do not set at runtime. */
+  readonly __capabilities?: Capabilities;
+  /** Unique identifier for this backend. */
+  readonly name: string;
+  /** The root node to mount into. */
+  readonly root: unknown;
+  /**
+   * Initializes capability properties on a {@link RenderContext}.
+   *
+   * Called at mount time and whenever a child context is created,
+   * before plugin initContext hooks.
+   */
+  initContext(ctx: RenderContext): void;
+  /**
+   * Called after context initialization but before the first iterator step.
+   *
+   * Use this to prepare the rendering root (e.g., clearing previous content).
+   * Only called on the root context, not on child contexts.
+   */
+  beforeRender?(ctx: RenderContext): void;
+}
+
+// =============================================================================
 // RenderContext
 // =============================================================================
 
@@ -45,9 +85,7 @@ export interface RenderContext {
 // =============================================================================
 
 /** A plugin that teaches the core runtime how to handle specific spell operations. */
-export interface Plugin<Capabilities extends string = string> {
-  /** Phantom field for compile-time capability tracking. Do not set at runtime. */
-  readonly __capabilities?: Capabilities;
+export interface Plugin {
   /** Unique identifier for this plugin. */
   readonly name: string;
   /** The `type` tags this plugin handles (e.g., `["element", "text"]`). */
@@ -68,13 +106,6 @@ export interface Plugin<Capabilities extends string = string> {
    * Teardown is called in reverse plugin registration order.
    */
   teardown?(ctx: RenderContext): void;
-  /**
-   * Called after context initialization but before the first iterator step.
-   *
-   * Use this to prepare the rendering root (e.g., clearing previous content).
-   * Only called on the root context, not on child contexts.
-   */
-  beforeRender?(ctx: RenderContext): void;
   /**
    * Initializes plugin-owned properties on a {@link RenderContext}.
    *

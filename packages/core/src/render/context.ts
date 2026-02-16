@@ -4,7 +4,7 @@
 
 import type { Builder, Render } from "../types";
 import { toRender } from "../utils";
-import type { Plugin, RenderContext } from "../plugin";
+import type { Backend, Plugin, RenderContext } from "../plugin";
 
 /**
  * Iterates over registered plugins, calling each one exactly once.
@@ -29,13 +29,13 @@ export function createRenderContextFactory(
   processIterator: (iter: Render, ctx: RenderContext) => void,
 ) {
   function createRenderContext(
-    root: unknown,
+    backend: Backend,
     plugins: Map<string, Plugin>,
     allPlugins: readonly Plugin[],
     parent?: unknown,
     parentCtx?: RenderContext,
   ): RenderContext {
-    const actualParent = parent ?? root;
+    const actualParent = parent ?? backend.root;
 
     const ctx = {
       parent: actualParent,
@@ -43,11 +43,11 @@ export function createRenderContextFactory(
       allPlugins,
     } as RenderContext;
 
-    // Core-provided methods (capture root via closure)
+    // Core-provided methods (capture backend via closure)
     ctx.processChildren = (builder: Builder, options?: { parent?: unknown }): void => {
       const targetParent = options?.parent ?? ctx.parent;
 
-      const childCtx = createRenderContext(root, ctx.plugins, ctx.allPlugins, targetParent, ctx);
+      const childCtx = createRenderContext(backend, ctx.plugins, ctx.allPlugins, targetParent, ctx);
 
       const children = toRender(builder());
       processIterator(children, childCtx);
@@ -59,10 +59,13 @@ export function createRenderContextFactory(
     };
 
     ctx.createChildContext = (parent: unknown): RenderContext => {
-      return createRenderContext(root, ctx.plugins, ctx.allPlugins, parent, ctx);
+      return createRenderContext(backend, ctx.plugins, ctx.allPlugins, parent, ctx);
     };
 
-    // Let each plugin initialize its properties on the context
+    // Let the backend initialize capability properties first
+    backend.initContext(ctx);
+
+    // Then let each plugin initialize its properties on the context
     forEachUniquePlugin(allPlugins, (plugin) => {
       plugin.initContext?.(ctx, parentCtx);
     });

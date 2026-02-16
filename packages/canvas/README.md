@@ -13,9 +13,9 @@ pnpm add @ydant/canvas
 ```typescript
 import { mount } from "@ydant/core";
 import { createBasePlugin, attr } from "@ydant/base";
-import { createCanvasCapabilities, group, rect, circle } from "@ydant/canvas";
+import { createCanvasBackend, group, rect, circle } from "@ydant/canvas";
 
-const cap = createCanvasCapabilities();
+const canvas = createCanvasBackend();
 
 mount(
   () =>
@@ -34,32 +34,32 @@ mount(
         attr("fill", "#0000ff"),
       ]),
     ]),
-  { root: cap.root, plugins: [cap, createBasePlugin()] },
+  { backend: canvas, plugins: [createBasePlugin()] },
 );
 
 // Paint to a canvas element
-const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-cap.paint(canvas.getContext("2d")!);
+const canvasEl = document.getElementById("canvas") as HTMLCanvasElement;
+canvas.paint(canvasEl.getContext("2d")!);
 ```
 
 The typical pattern is: **mount** (builds the virtual shape tree) then **paint** (draws to Canvas2D).
 
 ## API
 
-### `createCanvasCapabilities()`
+### `createCanvasBackend()`
 
 ```typescript
-function createCanvasCapabilities(): CanvasCapabilities;
+function createCanvasBackend(): CanvasBackend;
 
-interface CanvasCapabilities extends Plugin<"tree" | "decorate" | "schedule"> {
+interface CanvasBackend extends Backend<"tree" | "decorate" | "schedule"> {
   readonly root: VShapeRoot;
   paint(ctx: CanvasRenderingContext2D): void;
 }
 ```
 
-Creates a capability provider for Canvas2D rendering.
+Creates a rendering backend for Canvas2D.
 
-- `root` — The virtual root node. Pass this as the `root` option to `mount()`.
+- `root` — The virtual root node (managed internally by the backend).
 - `paint(ctx)` — Clears the canvas and draws all shapes. Call this after `mount()` or on each animation frame.
 
 ### Shape Factories
@@ -82,7 +82,7 @@ All shape factories take a `Builder` and return a `Spell<"element">`. Use `attr(
 function paintShape(ctx: CanvasRenderingContext2D, shape: VShape): void;
 ```
 
-Low-level function that paints a single `VShape` (and its children) to a Canvas2D context. Used internally by `CanvasCapabilities.paint()`, but exported for advanced use cases.
+Low-level function that paints a single `VShape` (and its children) to a Canvas2D context. Used internally by `CanvasBackend.paint()`, but exported for advanced use cases.
 
 ### VShape Types
 

@@ -1,12 +1,12 @@
 /**
- * @ydant/canvas - Canvas Capability Provider
+ * @ydant/canvas - Canvas Backend
  *
  * Builds a virtual shape tree using the same capability interfaces as DOM and SSR.
  * The tree can then be painted to a Canvas2D context via paint().
  */
 
 import type {
-  Plugin,
+  Backend,
   RenderContext,
   TreeCapability,
   DecorateCapability,
@@ -15,19 +15,19 @@ import type {
 import type { VShape, VShapeContainer, VShapeRoot } from "./vshape";
 import { paintShape } from "./paint";
 
-/** The capabilities provided by the Canvas capability provider. */
+/** The capabilities provided by the Canvas backend. */
 type CanvasCapabilityNames = "tree" | "decorate" | "schedule";
 
-/** A capability provider plugin for Canvas2D rendering. */
-export interface CanvasCapabilities extends Plugin<CanvasCapabilityNames> {
+/** A rendering backend for Canvas2D. */
+export interface CanvasBackend extends Backend<CanvasCapabilityNames> {
   /** The virtual root node used as the mount point. */
   readonly root: VShapeRoot;
   /** Paints the rendered shape tree to a Canvas2D context. */
   paint(ctx: CanvasRenderingContext2D): void;
 }
 
-/** Creates a capability provider for Canvas2D rendering. */
-export function createCanvasCapabilities(): CanvasCapabilities {
+/** Creates a backend for Canvas2D rendering. */
+export function createCanvasBackend(): CanvasBackend {
   const root: VShapeRoot = { kind: "root", children: [] };
 
   const tree: TreeCapability = {
@@ -66,8 +66,8 @@ export function createCanvasCapabilities(): CanvasCapabilities {
   const isElement = (node: unknown): boolean => (node as VShape).kind === "shape";
 
   return {
-    name: "canvas-capabilities",
-    types: [],
+    name: "canvas-backend",
+    root,
 
     initContext(ctx: RenderContext) {
       ctx.tree = tree;
@@ -86,9 +86,5 @@ export function createCanvasCapabilities(): CanvasCapabilities {
         paintShape(renderingCtx, shape);
       }
     },
-
-    get root() {
-      return root;
-    },
-  } as CanvasCapabilities;
+  };
 }

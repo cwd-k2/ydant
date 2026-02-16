@@ -10,16 +10,16 @@
 
 ## 実装のポイント
 
-### createCanvasCapabilities() と仮想ルート
+### createCanvasBackend() と仮想ルート
 
-Canvas にはDOM のような親子関係がないため、`createCanvasCapabilities()` が仮想的なツリー構造を提供する。`capabilities.root` を `mount()` の `root` に渡す:
+Canvas にはDOM のような親子関係がないため、`createCanvasBackend()` が仮想的なツリー構造を提供する。Backend が root を内部管理するため、別途渡す必要はない:
 
 ```typescript
-const capabilities = createCanvasCapabilities();
+const canvas = createCanvasBackend();
 
 mount(Scene, {
-  root: capabilities.root,
-  plugins: [capabilities, createBasePlugin()],
+  backend: canvas,
+  plugins: [createBasePlugin()],
 });
 ```
 
@@ -37,11 +37,11 @@ const Scene: Component = () =>
 
 ### paint() で描画実行
 
-`mount()` で仮想ツリーを構築した後、`capabilities.paint(ctx2d)` で Canvas2D に実際に描画する:
+`mount()` で仮想ツリーを構築した後、`canvas.paint(ctx2d)` で Canvas2D に実際に描画する:
 
 ```typescript
 const ctx2d = canvasEl.getContext("2d")!;
-capabilities.paint(ctx2d);
+canvas.paint(ctx2d);
 ```
 
 ## 実行

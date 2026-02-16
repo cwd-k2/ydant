@@ -7,7 +7,7 @@
 
 import { mount, type Component } from "@ydant/core";
 import { createBasePlugin, attr } from "@ydant/base";
-import { createCanvasCapabilities, group, rect, circle, canvasText, line } from "@ydant/canvas";
+import { createCanvasBackend, group, rect, circle, canvasText, line } from "@ydant/canvas";
 
 // --- Scene description using Ydant generators ---
 
@@ -129,11 +129,11 @@ function tree(x: number, y: number) {
 const canvasEl = document.getElementById("canvas") as HTMLCanvasElement;
 const ctx2d = canvasEl.getContext("2d")!;
 
-const capabilities = createCanvasCapabilities();
+const canvas = createCanvasBackend();
 
 mount(Scene, {
-  root: capabilities.root,
-  plugins: [capabilities, createBasePlugin()],
+  backend: canvas,
+  plugins: [createBasePlugin()],
 });
 
-capabilities.paint(ctx2d);
+canvas.paint(ctx2d);

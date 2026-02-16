@@ -2,20 +2,20 @@ import { describe, expect, test } from "vitest";
 import type { Component } from "@ydant/core";
 import { mount } from "@ydant/core";
 import { attr, classes, createBasePlugin, div, on, p, span, text } from "@ydant/base";
-import { createSSRCapabilities } from "../target";
+import { createSSRBackend } from "../target";
 
 function renderHTML(app: Component): string {
-  const ssrCaps = createSSRCapabilities();
+  const backend = createSSRBackend();
   const handle = mount(app, {
-    root: (ssrCaps as unknown as { root: unknown }).root,
-    plugins: [ssrCaps, createBasePlugin()],
+    backend,
+    plugins: [createBasePlugin()],
   });
-  const html = ssrCaps.toHTML();
+  const html = backend.toHTML();
   handle.dispose();
   return html;
 }
 
-describe("createSSRCapabilities", () => {
+describe("createSSRBackend", () => {
   test("text node", () => {
     const App: Component = () => text("Hello");
     expect(renderHTML(App)).toBe("Hello");

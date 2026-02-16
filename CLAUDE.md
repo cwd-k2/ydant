@@ -12,7 +12,7 @@ Ydant は **core** と **base** の明確な分離を設計の中心に置いて
 
 **@ydant/core** は「何をレンダリングするか」を知らない純粋な基幹システム。
 ジェネレーターの処理、プラグインの呼び出し、コンテキストの管理のみを行う。
-DOM の存在すら仮定せず、プラグインが全ての具体的な処理を担う。
+DOM の存在すら仮定せず、Backend とプラグインが全ての具体的な処理を担う。
 
 **@ydant/base** は「どのようにレンダリングするか」を知る利用者向け基本 API。
 要素ファクトリ、プリミティブ、lifecycle、DOM 操作を提供する。
@@ -28,8 +28,14 @@ DOM の存在すら仮定せず、プラグインが全ての具体的な処理�
 
 **基盤:**
 
-- `@ydant/core` - 処理系、プラグインシステム、mount()
-- `@ydant/base` - 要素ファクトリ、プリミティブ、Slot、ベースプラグイン
+- `@ydant/core` - 処理系、Backend/Plugin インターフェース、mount()
+- `@ydant/base` - 要素ファクトリ、プリミティブ、Slot、ベースプラグイン、DOM Backend
+
+**レンダリングバックエンド:**
+
+- `@ydant/base` - `createDOMBackend()` — DOM レンダリング
+- `@ydant/canvas` - `createCanvasBackend()` — Canvas2D レンダリング
+- `@ydant/ssr` - `createSSRBackend()` — サーバーサイドレンダリング
 
 **拡張（プラグイン）:**
 
@@ -42,7 +48,8 @@ DOM の存在すら仮定せず、プラグインが全ての具体的な処理�
 - `@ydant/async` - Suspense、ErrorBoundary
 - `@ydant/transition` - CSS トランジション
 
-プラグインは `mount()` 時に登録し、DSL は `yield*` で使用する。
+Backend は「どこに」レンダリングするかを定義し、Plugin は「どのように」spell を処理するかを定義する。
+`mount()` 時に Backend 1 つと任意数の Plugin を登録する。
 `createBasePlugin()` は要素やプリミティブを処理するために必須。
 
 ## Commands

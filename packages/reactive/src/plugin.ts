@@ -11,8 +11,8 @@
  * import { mount } from "@ydant/core";
  *
  * mount(App, {
- *   root: document.getElementById("app")!,
- *   plugins: [createDOMCapabilities(), createBasePlugin(), createReactivePlugin()]
+ *   backend: createDOMBackend(document.getElementById("app")!),
+ *   plugins: [createBasePlugin(), createReactivePlugin()]
  * });
  * ```
  */

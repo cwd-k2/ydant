@@ -1,21 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "../mount";
+import type { Backend } from "../plugin";
 import type { Plugin } from "../plugin";
 
-function createMockCapabilities(): Plugin {
+function createMockBackend(): Backend {
   return {
-    name: "mock-capabilities",
-    types: [],
+    name: "mock-backend",
+    root: {},
+    initContext() {},
   };
 }
 
 describe("Plugin dependencies", () => {
-  let root: object;
-
-  beforeEach(() => {
-    root = {};
-  });
-
   it("warns when a dependency is missing", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
@@ -34,7 +30,7 @@ describe("Plugin dependencies", () => {
       function* () {
         // empty render
       },
-      { root, plugins: [createMockCapabilities(), basePlugin, depPlugin] },
+      { backend: createMockBackend(), plugins: [basePlugin, depPlugin] },
     );
 
     expect(warn).toHaveBeenCalledWith(
@@ -62,7 +58,7 @@ describe("Plugin dependencies", () => {
       function* () {
         // empty render
       },
-      { root, plugins: [createMockCapabilities(), basePlugin, depPlugin] },
+      { backend: createMockBackend(), plugins: [basePlugin, depPlugin] },
     );
 
     expect(warn).not.toHaveBeenCalled();
@@ -82,7 +78,7 @@ describe("Plugin dependencies", () => {
       function* () {
         // empty render
       },
-      { root, plugins: [createMockCapabilities(), basePlugin] },
+      { backend: createMockBackend(), plugins: [basePlugin] },
     );
 
     expect(warn).not.toHaveBeenCalled();
@@ -112,12 +108,6 @@ describe("Plugin mergeChildContext", () => {
 });
 
 describe("Plugin setup/teardown", () => {
-  let root: object;
-
-  beforeEach(() => {
-    root = {};
-  });
-
   it("calls setup after rendering", () => {
     const setup = vi.fn();
     const plugin: Plugin = {
@@ -126,7 +116,7 @@ describe("Plugin setup/teardown", () => {
       setup,
     };
 
-    mount(function* () {}, { root, plugins: [createMockCapabilities(), plugin] });
+    mount(function* () {}, { backend: createMockBackend(), plugins: [plugin] });
 
     expect(setup).toHaveBeenCalledTimes(1);
   });
@@ -145,8 +135,8 @@ describe("Plugin setup/teardown", () => {
     };
 
     const handle = mount(function* () {}, {
-      root,
-      plugins: [createMockCapabilities(), pluginA, pluginB],
+      backend: createMockBackend(),
+      plugins: [pluginA, pluginB],
     });
     handle.dispose();
 
@@ -159,15 +149,14 @@ describe("Plugin setup/teardown", () => {
       types: [],
     };
 
-    const handle = mount(function* () {}, { root, plugins: [createMockCapabilities(), plugin] });
+    const handle = mount(function* () {}, { backend: createMockBackend(), plugins: [plugin] });
     expect(() => handle.dispose()).not.toThrow();
   });
 });
 
 describe("MountHandle", () => {
   it("mount returns a MountHandle with dispose", () => {
-    const root = {};
-    const handle = mount(function* () {}, { root, plugins: [createMockCapabilities()] });
+    const handle = mount(function* () {}, { backend: createMockBackend() });
 
     expect(handle).toHaveProperty("dispose");
     expect(typeof handle.dispose).toBe("function");
@@ -178,8 +167,8 @@ describe("MountHandle", () => {
     const plugin: Plugin = { name: "test", types: [], teardown };
 
     const handle = mount(function* () {}, {
-      root: {},
-      plugins: [createMockCapabilities(), plugin],
+      backend: createMockBackend(),
+      plugins: [plugin],
     });
 
     handle.dispose();
@@ -189,7 +178,7 @@ describe("MountHandle", () => {
   });
 
   it("dispose works when no plugins are provided", () => {
-    const handle = mount(function* () {}, { root: {} });
+    const handle = mount(function* () {}, { backend: createMockBackend() });
     expect(() => handle.dispose()).not.toThrow();
   });
 });

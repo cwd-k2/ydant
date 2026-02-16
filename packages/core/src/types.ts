@@ -114,7 +114,7 @@ export type Component<P = void> = [P] extends [void] ? () => Render : (props: P)
 // Capability Tracking Types
 // =============================================================================
 
-import type { Plugin } from "./plugin";
+import type { Backend } from "./plugin";
 
 /** Extracts the `capabilities` literal union from each {@link SpellSchema} entry. */
 type CapabilitiesOf = {
@@ -135,32 +135,27 @@ export type RequiredCapabilities<G> =
   G extends Generator<infer Y, unknown, unknown> ? CapabilitiesOfRequest<Y> : never;
 
 /**
- * Extracts the union of capabilities provided by a tuple of plugins.
+ * Extracts the union of capabilities provided by a {@link Backend}.
  * Filters out `string` (the wide default) — only specific capability literals count.
  */
-export type ProvidedCapabilities<Ps extends readonly Plugin[]> = Ps[number] extends infer U
-  ? U extends Plugin<infer C>
-    ? string extends C
-      ? never
-      : C
-    : never
-  : never;
+export type ProvidedCapabilities<B extends Backend> =
+  B extends Backend<infer C> ? (string extends C ? never : C) : never;
 
 /** True if `G` is the wide {@link Render} type (i.e., from a `Component` annotation). */
 type IsWideRender<G> = Render extends G ? true : false;
 
 /**
  * Compile-time check that a generator's required capabilities
- * are satisfied by the provided plugins.
+ * are satisfied by the provided backend.
  *
  * - Wide `Render` (from `Component` annotations) → check skipped.
  * - Narrow generator → `RequiredCapabilities ⊆ ProvidedCapabilities` must hold.
  */
-export type CapabilityCheck<G extends Render, Ps extends readonly Plugin[]> =
+export type CapabilityCheck<G extends Render, B extends Backend> =
   IsWideRender<G> extends true
     ? {}
-    : Exclude<RequiredCapabilities<G>, ProvidedCapabilities<Ps>> extends never
+    : Exclude<RequiredCapabilities<G>, ProvidedCapabilities<B>> extends never
       ? {}
       : {
-          __capabilityError: `Missing capabilities: ${Exclude<RequiredCapabilities<G>, ProvidedCapabilities<Ps>> & string}`;
+          __capabilityError: `Missing capabilities: ${Exclude<RequiredCapabilities<G>, ProvidedCapabilities<B>> & string}`;
         };

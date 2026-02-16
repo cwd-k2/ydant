@@ -21,7 +21,7 @@ import type {
   Request,
 } from "@ydant/core";
 import { mount, isTagged } from "@ydant/core";
-import { createDOMCapabilities, createBasePlugin, executeMount, createSlot } from "@ydant/base";
+import { createDOMBackend, createBasePlugin, executeMount, createSlot } from "@ydant/base";
 import type { Element } from "@ydant/base";
 import { createDOMNodeResolver } from "./resolver";
 
@@ -51,8 +51,8 @@ export function hydrate(app: Component, root: HTMLElement, options?: HydrateOpti
   const extraPlugins = options?.plugins ?? [];
 
   return mount(app, {
-    root,
-    plugins: [createDOMCapabilities({ skipPrepare: true }), hydrationPlugin, ...extraPlugins],
+    backend: createDOMBackend(root, { skipPrepare: true }),
+    plugins: [hydrationPlugin, ...extraPlugins],
   });
 }
 

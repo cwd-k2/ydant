@@ -42,20 +42,20 @@ const html = renderToString(App, {
 });
 ```
 
-### createSSRCapabilities (low-level)
+### createSSRBackend (low-level)
 
 ```typescript
 import { mount } from "@ydant/core";
 import { createBasePlugin } from "@ydant/base";
-import { createSSRCapabilities } from "@ydant/ssr";
+import { createSSRBackend } from "@ydant/ssr";
 
-const ssrCaps = createSSRCapabilities();
+const ssr = createSSRBackend();
 const handle = mount(App, {
-  root: ssrCaps.root,
-  plugins: [ssrCaps, createBasePlugin()],
+  backend: ssr,
+  plugins: [createBasePlugin()],
 });
 
-const html = ssrCaps.toHTML();
+const html = ssr.toHTML();
 handle.dispose();
 ```
 
@@ -103,17 +103,18 @@ interface RenderToStringOptions {
 
 One-shot rendering: creates a target, mounts the component, serializes to HTML, and disposes.
 
-### createSSRCapabilities
+### createSSRBackend
 
 ```typescript
-function createSSRCapabilities(): SSRCapabilities;
+function createSSRBackend(): SSRBackend;
 
-interface SSRCapabilities extends Plugin {
+interface SSRBackend extends Backend<"tree" | "decorate" | "interact" | "schedule"> {
+  readonly root: VRoot;
   toHTML(): string;
 }
 ```
 
-Creates a capability provider plugin for SSR that builds a virtual node tree. Register it in the `plugins` array and use its `root` property as the mount root. Call `toHTML()` after mounting to get the HTML string.
+Creates a rendering backend for SSR that builds a virtual node tree. Pass it as the `backend` option to `mount()`. Call `toHTML()` after mounting to get the HTML string.
 
 ### hydrate
 
@@ -145,7 +146,7 @@ Hydration works by **reinterpreting** the same DSL requests differently:
 
 The ability to find existing DOM nodes is provided by the **ResolveCapability** — a capability injected only during hydration:
 
-- **Capability Provider** (e.g., `createDOMCapabilities`, `createSSRCapabilities`): injects `tree`, `decorate`, `interact`, `schedule` into `RenderContext`
+- **Backend** (e.g., `createDOMBackend`, `createSSRBackend`): injects `tree`, `decorate`, `interact`, `schedule` into `RenderContext`
 - **Plugin**: "how to interpret DSL requests" (processing strategy)
 - **ResolveCapability**: "how to find existing nodes" (cursor-based traversal, via `ctx.resolve`)
 
@@ -197,7 +198,7 @@ type VContainer = VElement | VRoot;
 
 - `vnode.ts` - VNode type definitions
 - `serialize.ts` - VNode tree to HTML string conversion
-- `target.ts` - `createSSRCapabilities()` capability provider implementation
+- `target.ts` - `createSSRBackend()` backend implementation
 - `render.ts` - `renderToString()` high-level API
 - `resolver.ts` - `ResolveCapability` implementation for DOM hydration
 - `hydrate.ts` - `hydrate()` and hydration plugin

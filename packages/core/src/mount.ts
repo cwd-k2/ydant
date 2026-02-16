@@ -2,7 +2,7 @@
  * @ydant/core - Mount function
  */
 
-import type { Plugin } from "./plugin";
+import type { Backend, Plugin } from "./plugin";
 import type { Render, CapabilityCheck } from "./types";
 import { render } from "./render";
 
@@ -13,15 +13,12 @@ export interface MountHandle {
 }
 
 /** Options for {@link mount}. */
-export type MountOptions<
-  G extends Render = Render,
-  Plugins extends readonly Plugin[] = Plugin[],
-> = {
-  /** The root node to mount into. */
-  root: unknown;
+export type MountOptions<G extends Render = Render, B extends Backend = Backend> = {
+  /** The rendering backend that provides platform-specific capabilities. */
+  backend: B;
   /** Plugins to register for this mount scope. */
-  plugins?: Plugins;
-} & CapabilityCheck<G, Plugins>;
+  plugins?: Plugin[];
+} & CapabilityCheck<G, B>;
 
 /**
  * Mounts a component into the given root node, starting the rendering pipeline.
@@ -30,29 +27,29 @@ export type MountOptions<
  * and renders the component's generator into the target.
  *
  * @param app - The root component to render.
- * @param options - Configuration including root node and plugins.
+ * @param options - Configuration including backend and plugins.
  * @returns A handle to dispose the mount scope.
  *
  * @example
  * ```typescript
  * import { mount } from "@ydant/core";
- * import { createDOMCapabilities, createBasePlugin, div, text } from "@ydant/base";
+ * import { createDOMBackend, createBasePlugin, div, text } from "@ydant/base";
  *
  * const App = () => div(() => [text("Hello!")]);
  *
  * const handle = mount(App, {
- *   root: document.getElementById("app")!,
- *   plugins: [createDOMCapabilities(), createBasePlugin()],
+ *   backend: createDOMBackend(document.getElementById("app")!),
+ *   plugins: [createBasePlugin()],
  * });
  *
  * // Later: handle.dispose();
  * ```
  */
-export function mount<G extends Render, const Plugins extends readonly Plugin[]>(
+export function mount<G extends Render, B extends Backend>(
   app: () => G,
-  options: MountOptions<G, Plugins>,
+  options: MountOptions<G, B>,
 ): MountHandle {
-  const { root, plugins: pluginList } = options;
+  const { backend, plugins: pluginList } = options;
 
   // Build a lookup map: type tag -> plugin
   const plugins = new Map<string, Plugin>();
@@ -81,7 +78,7 @@ export function mount<G extends Render, const Plugins extends readonly Plugin[]>
   }
 
   // Render, then call setup on each plugin with the root context
-  const rootCtx = render(app(), root, plugins, pluginList ?? []);
+  const rootCtx = render(app(), backend, plugins, pluginList ?? []);
 
   // Call setup on each unique plugin
   if (pluginList) {

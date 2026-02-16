@@ -1,5 +1,5 @@
 /**
- * @ydant/ssr - SSR Capability Provider
+ * @ydant/ssr - SSR Backend
  *
  * VNode ツリーを構築する能力を提供し、toHTML() で HTML 文字列に変換する。
  * DOM の代わりに VNode を構築するため、ブラウザ環境を必要としない。
@@ -8,7 +8,7 @@
  */
 
 import type {
-  Plugin,
+  Backend,
   RenderContext,
   TreeCapability,
   DecorateCapability,
@@ -18,19 +18,19 @@ import type {
 import { toHTML } from "./serialize";
 import type { VContainer, VElement, VNode, VRoot, VText } from "./vnode";
 
-/** The capabilities provided by the SSR capability provider. */
+/** The capabilities provided by the SSR backend. */
 type SSRCapabilityNames = "tree" | "decorate" | "interact" | "schedule";
 
-/** A capability provider plugin for SSR with HTML serialization. */
-export interface SSRCapabilities extends Plugin<SSRCapabilityNames> {
+/** A rendering backend for SSR with HTML serialization. */
+export interface SSRBackend extends Backend<SSRCapabilityNames> {
   /** The virtual root node used as the mount point. */
-  readonly root: unknown;
+  readonly root: VRoot;
   /** Serializes the rendered VNode tree to an HTML string. */
   toHTML(): string;
 }
 
-/** Creates a capability provider for server-side rendering. */
-export function createSSRCapabilities(): SSRCapabilities {
+/** Creates a backend for server-side rendering. */
+export function createSSRBackend(): SSRBackend {
   const root: VRoot = { kind: "root", children: [] };
 
   const tree: TreeCapability = {
@@ -74,8 +74,8 @@ export function createSSRCapabilities(): SSRCapabilities {
   const isElement = (node: unknown): boolean => (node as VNode).kind === "element";
 
   return {
-    name: "ssr-capabilities",
-    types: [],
+    name: "ssr-backend",
+    root,
 
     initContext(ctx: RenderContext) {
       ctx.tree = tree;
@@ -92,10 +92,5 @@ export function createSSRCapabilities(): SSRCapabilities {
     toHTML(): string {
       return toHTML(root);
     },
-
-    // Expose root for mount
-    get root() {
-      return root;
-    },
-  } as SSRCapabilities;
+  };
 }

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@ydant/core";
-import type { Plugin, RenderContext } from "@ydant/core";
+import type { RenderContext } from "@ydant/core";
 import { createBasePlugin } from "../plugin";
-import { createDOMCapabilities } from "../capabilities";
+import { createDOMBackend } from "../capabilities";
 import { div, span, button } from "../elements/html";
 import { attr, on, text, keyed, onMount, onUnmount } from "../primitives";
 import type { Slot } from "../types";
@@ -33,8 +33,8 @@ describe("createBasePlugin", () => {
   describe("processText", () => {
     it("creates text node and appends to parent", () => {
       mount(() => div(() => [text("Hello, World!")]), {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       });
 
       const divEl = container.querySelector("div");
@@ -43,8 +43,8 @@ describe("createBasePlugin", () => {
 
     it("handles empty text", () => {
       mount(() => div(() => [text("")]), {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       });
 
       const divEl = container.querySelector("div");
@@ -53,8 +53,8 @@ describe("createBasePlugin", () => {
 
     it("handles special characters", () => {
       mount(() => div(() => [text('<script>alert("xss")</script>')]), {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       });
 
       const divEl = container.querySelector("div");
@@ -67,8 +67,8 @@ describe("createBasePlugin", () => {
   describe("processAttribute", () => {
     it("sets attribute on element", () => {
       mount(() => div(() => [attr("id", "my-div"), attr("data-test", "value")]), {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       });
 
       const divEl = container.querySelector("div");
@@ -78,8 +78,8 @@ describe("createBasePlugin", () => {
 
     it("handles class attribute", () => {
       mount(() => div(() => [attr("class", "container flex")]), {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       });
 
       const divEl = container.querySelector("div");
@@ -92,8 +92,8 @@ describe("createBasePlugin", () => {
       const handler = vi.fn();
 
       mount(() => button(() => [on("click", handler), text("Click me")]), {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       });
 
       const btn = container.querySelector("button");
@@ -106,8 +106,8 @@ describe("createBasePlugin", () => {
       const handler = vi.fn();
 
       mount(() => button(() => [on("click", handler)]), {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       });
 
       const btn = container.querySelector("button");
@@ -129,8 +129,8 @@ describe("createBasePlugin", () => {
             }),
           ]),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -155,8 +155,8 @@ describe("createBasePlugin", () => {
             }),
           ]),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -176,8 +176,8 @@ describe("createBasePlugin", () => {
             }),
           ]),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -205,8 +205,8 @@ describe("createBasePlugin", () => {
             ]);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -233,8 +233,8 @@ describe("createBasePlugin", () => {
             }),
           ]),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -268,8 +268,8 @@ describe("createBasePlugin", () => {
             ]);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -299,8 +299,8 @@ describe("createBasePlugin", () => {
             ]);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -324,8 +324,8 @@ describe("createBasePlugin", () => {
             slot = yield* keyed("my-key", div)(() => [text("Content")]);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -342,8 +342,8 @@ describe("createBasePlugin", () => {
             slot = yield* keyed(42, div)(() => [text("Numeric key")]);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -360,8 +360,8 @@ describe("createBasePlugin", () => {
             slot = yield* keyed(0, div)(() => [text("Zero key")]);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -373,8 +373,8 @@ describe("createBasePlugin", () => {
   describe("processElement", () => {
     it("creates HTML element", () => {
       mount(() => div(() => [text("Content")]), {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       });
 
       const divEl = container.querySelector("div");
@@ -384,8 +384,8 @@ describe("createBasePlugin", () => {
 
     it("nests elements correctly", () => {
       mount(() => div(() => [span(() => [text("Child 1")]), span(() => [text("Child 2")])]), {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       });
 
       const divEl = container.querySelector("div");
@@ -405,8 +405,8 @@ describe("createBasePlugin", () => {
             slot = yield* span(() => [text("Content")]);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -427,8 +427,8 @@ describe("createBasePlugin", () => {
             slot = yield* div(() => [text("Original")]);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -448,8 +448,8 @@ describe("createBasePlugin", () => {
             slot = yield* div(() => [span(() => [text("Child")])]);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -472,8 +472,8 @@ describe("createBasePlugin", () => {
             slot = yield* div(() => [span(() => [text("Child 1")]), span(() => [text("Child 2")])]);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -496,8 +496,8 @@ describe("createBasePlugin", () => {
             slot = yield* div(() => []);
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -532,8 +532,8 @@ describe("createBasePlugin", () => {
             });
           }),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -551,11 +551,13 @@ describe("createBasePlugin", () => {
   });
 
   describe("optional interact capability", () => {
-    /** DOM capabilities without interact — simulates Canvas-like environment. */
-    function createDOMCapabilitiesWithoutInteract(): Plugin<"tree" | "decorate" | "schedule"> {
+    /** DOM backend without interact — simulates Canvas-like environment. */
+    function createDOMBackendWithoutInteract(
+      root: unknown,
+    ): import("@ydant/core").Backend<"tree" | "decorate" | "schedule"> {
       return {
         name: "dom-no-interact",
-        types: [],
+        root,
         initContext(ctx: RenderContext) {
           ctx.tree = {
             createElement: (tag: string) => document.createElement(tag),
@@ -578,7 +580,7 @@ describe("createBasePlugin", () => {
           };
           ctx.currentElement = ctx.parent instanceof Element ? ctx.parent : null;
         },
-      } as Plugin<"tree" | "decorate" | "schedule">;
+      };
     }
 
     it("silently ignores inline listeners when interact is not provided", () => {
@@ -591,8 +593,8 @@ describe("createBasePlugin", () => {
               yield* button(() => [on("click", handler), text("Click")]);
             }),
           {
-            root: container,
-            plugins: [createDOMCapabilitiesWithoutInteract(), createBasePlugin()],
+            backend: createDOMBackendWithoutInteract(container),
+            plugins: [createBasePlugin()],
           },
         );
       }).not.toThrow();
@@ -616,8 +618,8 @@ describe("createBasePlugin", () => {
               yield* text("Content");
             }),
           {
-            root: container,
-            plugins: [createDOMCapabilitiesWithoutInteract(), createBasePlugin()],
+            backend: createDOMBackendWithoutInteract(container),
+            plugins: [createBasePlugin()],
           },
         );
       }).not.toThrow();
@@ -634,8 +636,8 @@ describe("createBasePlugin", () => {
             span(() => [text("Third")]),
           ]),
         {
-          root: container,
-          plugins: [createDOMCapabilities(), createBasePlugin()],
+          backend: createDOMBackend(container),
+          plugins: [createBasePlugin()],
         },
       );
 
@@ -648,8 +650,8 @@ describe("createBasePlugin", () => {
 
     it("handles multiple levels of nesting", () => {
       mount(() => div(() => [div(() => [div(() => [text("Deep")])])]), {
-        root: container,
-        plugins: [createDOMCapabilities(), createBasePlugin()],
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin()],
       });
 
       const divs = container.querySelectorAll("div");

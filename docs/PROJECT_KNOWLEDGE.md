@@ -152,6 +152,15 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - **router**: プラグインレスの設計を維持（base プリミティブ上のコンポーネント集）
 - バッチ (`batch()`) は横断的関心事としてグローバルに維持
 
+### Phase 10: Backend / Plugin 分離
+
+- `Plugin` interface が Capability Provider と Processing Plugin の 2 役を兼務していた問題を解消
+- 新設の `Backend` interface に Capability Provider の責務（`initContext` での能力注入、`beforeRender`、`root` 保持、phantom `__capabilities`）を移管
+- `Plugin` からは `__capabilities` phantom 型パラメータと `beforeRender` フックを削除
+- `mount()` シグネチャ: `{ root, plugins }` → `{ backend, plugins }` に変更
+- API リネーム: `createDOMCapabilities()` → `createDOMBackend(root)`, `createCanvasCapabilities()` → `createCanvasBackend()`, `createSSRCapabilities()` → `createSSRBackend()`
+- Canvas/SSR で `root` を外部から渡す必要がなくなり、参照の二重化が解消
+
 ---
 
 ## 学んだ教訓
@@ -245,8 +254,8 @@ pnpm typecheck            # 型チェック
 | Hydration    |      |          | ✓        | ✓        | ✓       |
 | Canvas       | ✓    | ✓        | no-op    | no-op    |         |
 
-`mount()` はコンパイル時に「Generator が必要とする能力 ⊆ Plugin が提供する能力」を検証する
-（`CapabilityCheck` 型、`SpellSchema` の `capabilities` フィールド、`Plugin<Capabilities>` phantom 型）。
+`mount()` はコンパイル時に「Generator が必要とする能力 ⊆ Backend が提供する能力」を検証する
+（`CapabilityCheck` 型、`SpellSchema` の `capabilities` フィールド、`Backend<Capabilities>` phantom 型）。
 
 ### 将来の拡張方向
 

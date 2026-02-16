@@ -26,13 +26,13 @@ pnpm add @ydant/core
 
 ```typescript
 import { mount } from "@ydant/core";
-import { createDOMCapabilities, createBasePlugin, div, text, type Component } from "@ydant/base";
+import { createDOMBackend, createBasePlugin, div, text, type Component } from "@ydant/base";
 
 const App: Component = () => div(() => [text("Hello!")]);
 
 mount(App, {
-  root: document.getElementById("app")!,
-  plugins: [createDOMCapabilities(), createBasePlugin()],
+  backend: createDOMBackend(document.getElementById("app")!),
+  plugins: [createBasePlugin()],
 });
 ```
 
@@ -44,7 +44,7 @@ mount(App, {
 function mount(app: Component, options: MountOptions): MountHandle;
 
 interface MountOptions {
-  root: unknown;
+  backend: Backend;
   plugins?: Plugin[];
 }
 
@@ -52,6 +52,20 @@ interface MountHandle {
   dispose(): void;
 }
 ```
+
+### Backend
+
+```typescript
+interface Backend<Capabilities extends string = string> {
+  readonly __capabilities?: Capabilities; // phantom — compile-time only
+  readonly name: string;
+  readonly root: unknown;
+  initContext(ctx: RenderContext): void;
+  beforeRender?(ctx: RenderContext): void;
+}
+```
+
+Backends define _where_ rendering happens (DOM, Canvas, SSR). They provide platform-specific capabilities (`tree`, `decorate`, `interact`, `schedule`) via `initContext`. See `@ydant/base` for `createDOMBackend`, `@ydant/canvas` for `createCanvasBackend`, `@ydant/ssr` for `createSSRBackend`.
 
 ### Plugin System
 

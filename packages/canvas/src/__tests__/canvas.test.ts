@@ -3,7 +3,7 @@ import { mount } from "@ydant/core";
 import type { CapabilityCheck, ProvidedCapabilities } from "@ydant/core";
 import { createBasePlugin, attr, on } from "@ydant/base";
 import {
-  createCanvasCapabilities,
+  createCanvasBackend,
   rect,
   circle,
   group,
@@ -13,9 +13,9 @@ import {
   canvasPath,
 } from "../index";
 
-describe("Canvas capabilities", () => {
+describe("Canvas backend", () => {
   it("creates a VShape tree from generators", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(
       () =>
@@ -34,11 +34,11 @@ describe("Canvas capabilities", () => {
             attr("fill", "#0000ff"),
           ]),
         ]),
-      { root: cap.root, plugins: [cap, createBasePlugin()] },
+      { backend: canvas, plugins: [createBasePlugin()] },
     );
 
-    expect(cap.root.children).toHaveLength(1);
-    const groupShape = cap.root.children[0];
+    expect(canvas.root.children).toHaveLength(1);
+    const groupShape = canvas.root.children[0];
     expect(groupShape.tag).toBe("group");
     expect(groupShape.children).toHaveLength(2);
 
@@ -55,7 +55,7 @@ describe("Canvas capabilities", () => {
   });
 
   it("creates text shapes", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(
       () =>
@@ -66,18 +66,18 @@ describe("Canvas capabilities", () => {
           attr("font", "24px sans-serif"),
           attr("fill", "#000"),
         ]),
-      { root: cap.root, plugins: [cap, createBasePlugin()] },
+      { backend: canvas, plugins: [createBasePlugin()] },
     );
 
-    expect(cap.root.children).toHaveLength(1);
-    const textShape = cap.root.children[0];
+    expect(canvas.root.children).toHaveLength(1);
+    const textShape = canvas.root.children[0];
     expect(textShape.tag).toBe("text");
     expect(textShape.props.get("content")).toBe("Hello Canvas");
     expect(textShape.props.get("font")).toBe("24px sans-serif");
   });
 
   it("creates line shapes", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(
       () =>
@@ -88,16 +88,16 @@ describe("Canvas capabilities", () => {
           attr("y2", "100"),
           attr("stroke", "#000"),
         ]),
-      { root: cap.root, plugins: [cap, createBasePlugin()] },
+      { backend: canvas, plugins: [createBasePlugin()] },
     );
 
-    const lineShape = cap.root.children[0];
+    const lineShape = canvas.root.children[0];
     expect(lineShape.tag).toBe("line");
     expect(lineShape.props.get("x2")).toBe("100");
   });
 
   it("creates ellipse shapes", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(
       () =>
@@ -108,30 +108,30 @@ describe("Canvas capabilities", () => {
           attr("ry", "30"),
           attr("fill", "green"),
         ]),
-      { root: cap.root, plugins: [cap, createBasePlugin()] },
+      { backend: canvas, plugins: [createBasePlugin()] },
     );
 
-    const shape = cap.root.children[0];
+    const shape = canvas.root.children[0];
     expect(shape.tag).toBe("ellipse");
     expect(shape.props.get("rx")).toBe("50");
     expect(shape.props.get("ry")).toBe("30");
   });
 
   it("creates canvasPath shapes", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(() => canvasPath(() => [attr("d", "M 10 10 L 90 90"), attr("stroke", "#000")]), {
-      root: cap.root,
-      plugins: [cap, createBasePlugin()],
+      backend: canvas,
+      plugins: [createBasePlugin()],
     });
 
-    const shape = cap.root.children[0];
+    const shape = canvas.root.children[0];
     expect(shape.tag).toBe("path");
     expect(shape.props.get("d")).toBe("M 10 10 L 90 90");
   });
 
   it("does not provide interact capability", () => {
-    type Canvas = [ReturnType<typeof createCanvasCapabilities>];
+    type Canvas = ReturnType<typeof createCanvasBackend>;
     expectTypeOf<ProvidedCapabilities<Canvas>>().toEqualTypeOf<"tree" | "decorate" | "schedule">();
   });
 
@@ -141,35 +141,32 @@ describe("Canvas capabilities", () => {
       yield* on("click", () => {});
     }
 
-    type Result = CapabilityCheck<
-      ReturnType<typeof app>,
-      [ReturnType<typeof createCanvasCapabilities>]
-    >;
+    type Result = CapabilityCheck<ReturnType<typeof app>, ReturnType<typeof createCanvasBackend>>;
     expectTypeOf<Result>().toHaveProperty("__capabilityError");
   });
 
   it("silently ignores listeners in children (interact not provided)", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     expect(() => {
       mount(() => rect(() => [attr("fill", "red"), on("click", () => {})]), {
-        root: cap.root,
-        plugins: [cap, createBasePlugin()],
+        backend: canvas,
+        plugins: [createBasePlugin()],
       });
     }).not.toThrow();
 
-    expect(cap.root.children).toHaveLength(1);
+    expect(canvas.root.children).toHaveLength(1);
   });
 
   it("clears root on re-render via beforeRender", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
     const App = () => rect(() => [attr("fill", "red")]);
 
-    mount(App, { root: cap.root, plugins: [cap, createBasePlugin()] });
-    expect(cap.root.children).toHaveLength(1);
+    mount(App, { backend: canvas, plugins: [createBasePlugin()] });
+    expect(canvas.root.children).toHaveLength(1);
 
-    mount(App, { root: cap.root, plugins: [cap, createBasePlugin()] });
-    expect(cap.root.children).toHaveLength(1);
+    mount(App, { backend: canvas, plugins: [createBasePlugin()] });
+    expect(canvas.root.children).toHaveLength(1);
   });
 });
 
@@ -203,7 +200,7 @@ describe("Canvas paint", () => {
   }
 
   it("paints shapes to a Canvas2D context", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(
       () =>
@@ -223,11 +220,11 @@ describe("Canvas paint", () => {
             attr("stroke", "#000"),
           ]),
         ]),
-      { root: cap.root, plugins: [cap, createBasePlugin()] },
+      { backend: canvas, plugins: [createBasePlugin()] },
     );
 
     const mockCtx = createMockCanvas();
-    cap.paint(mockCtx);
+    canvas.paint(mockCtx);
 
     expect(mockCtx.clearRect).toHaveBeenCalledWith(0, 0, 400, 300);
     expect(mockCtx.fillRect).toHaveBeenCalledWith(10, 20, 100, 50);
@@ -237,7 +234,7 @@ describe("Canvas paint", () => {
   });
 
   it("paints text shapes", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(
       () =>
@@ -248,17 +245,17 @@ describe("Canvas paint", () => {
           attr("fill", "#000"),
           attr("font", "16px Arial"),
         ]),
-      { root: cap.root, plugins: [cap, createBasePlugin()] },
+      { backend: canvas, plugins: [createBasePlugin()] },
     );
 
     const mockCtx = createMockCanvas();
-    cap.paint(mockCtx);
+    canvas.paint(mockCtx);
 
     expect(mockCtx.fillText).toHaveBeenCalledWith("Hello", 50, 50);
   });
 
   it("paints nested groups", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(
       () =>
@@ -271,17 +268,17 @@ describe("Canvas paint", () => {
             attr("fill", "red"),
           ]),
         ]),
-      { root: cap.root, plugins: [cap, createBasePlugin()] },
+      { backend: canvas, plugins: [createBasePlugin()] },
     );
 
     const mockCtx = createMockCanvas();
-    cap.paint(mockCtx);
+    canvas.paint(mockCtx);
 
     expect(mockCtx.fillRect).toHaveBeenCalledWith(0, 0, 50, 50);
   });
 
   it("paints line shapes", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(
       () =>
@@ -292,11 +289,11 @@ describe("Canvas paint", () => {
           attr("y2", "200"),
           attr("stroke", "#000"),
         ]),
-      { root: cap.root, plugins: [cap, createBasePlugin()] },
+      { backend: canvas, plugins: [createBasePlugin()] },
     );
 
     const mockCtx = createMockCanvas();
-    cap.paint(mockCtx);
+    canvas.paint(mockCtx);
 
     expect(mockCtx.moveTo).toHaveBeenCalledWith(10, 20);
     expect(mockCtx.lineTo).toHaveBeenCalledWith(100, 200);
@@ -304,7 +301,7 @@ describe("Canvas paint", () => {
   });
 
   it("paints ellipse shapes", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(
       () =>
@@ -315,11 +312,11 @@ describe("Canvas paint", () => {
           attr("ry", "30"),
           attr("fill", "green"),
         ]),
-      { root: cap.root, plugins: [cap, createBasePlugin()] },
+      { backend: canvas, plugins: [createBasePlugin()] },
     );
 
     const mockCtx = createMockCanvas();
-    cap.paint(mockCtx);
+    canvas.paint(mockCtx);
 
     expect(mockCtx.ellipse).toHaveBeenCalledWith(100, 75, 50, 30, 0, 0, Math.PI * 2);
     expect(mockCtx.fill).toHaveBeenCalled();
@@ -330,7 +327,7 @@ describe("Canvas paint", () => {
     const mockPath2D = vi.fn();
     vi.stubGlobal("Path2D", mockPath2D);
 
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(
       () =>
@@ -339,11 +336,11 @@ describe("Canvas paint", () => {
           attr("fill", "red"),
           attr("stroke", "blue"),
         ]),
-      { root: cap.root, plugins: [cap, createBasePlugin()] },
+      { backend: canvas, plugins: [createBasePlugin()] },
     );
 
     const mockCtx = createMockCanvas();
-    cap.paint(mockCtx);
+    canvas.paint(mockCtx);
 
     expect(mockPath2D).toHaveBeenCalledWith("M 10 10 L 90 90");
     expect(mockCtx.fill).toHaveBeenCalled();
@@ -353,7 +350,7 @@ describe("Canvas paint", () => {
   });
 
   it("paints rect with roundRect when rx is set", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(
       () =>
@@ -365,11 +362,11 @@ describe("Canvas paint", () => {
           attr("rx", "8"),
           attr("fill", "blue"),
         ]),
-      { root: cap.root, plugins: [cap, createBasePlugin()] },
+      { backend: canvas, plugins: [createBasePlugin()] },
     );
 
     const mockCtx = createMockCanvas();
-    cap.paint(mockCtx);
+    canvas.paint(mockCtx);
 
     expect(mockCtx.roundRect).toHaveBeenCalledWith(10, 20, 100, 50, 8);
     expect(mockCtx.fill).toHaveBeenCalled();
@@ -377,7 +374,7 @@ describe("Canvas paint", () => {
   });
 
   it("applies opacity via globalAlpha", () => {
-    const cap = createCanvasCapabilities();
+    const canvas = createCanvasBackend();
 
     mount(
       () =>
@@ -389,11 +386,11 @@ describe("Canvas paint", () => {
           attr("fill", "red"),
           attr("opacity", "0.5"),
         ]),
-      { root: cap.root, plugins: [cap, createBasePlugin()] },
+      { backend: canvas, plugins: [createBasePlugin()] },
     );
 
     const mockCtx = createMockCanvas();
-    cap.paint(mockCtx);
+    canvas.paint(mockCtx);
 
     expect(mockCtx.globalAlpha).toBe(0.5);
   });

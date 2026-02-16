@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "@ydant/core";
-import { createBasePlugin, createDOMCapabilities, div, text } from "@ydant/base";
+import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
 import { Suspense } from "../Suspense";
 
 describe("Suspense", () => {
@@ -21,7 +21,7 @@ describe("Suspense", () => {
             yield* div(() => [text("Content")]);
           },
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Content");
@@ -39,7 +39,7 @@ describe("Suspense", () => {
             throw pendingPromise;
           },
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Loading...");
@@ -64,7 +64,7 @@ describe("Suspense", () => {
             yield* div(() => [text("Loaded Content")]);
           },
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Loading...");
@@ -90,7 +90,7 @@ describe("Suspense", () => {
               throw error;
             },
           }),
-        { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+        { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
       );
     }).toThrow(error);
   });

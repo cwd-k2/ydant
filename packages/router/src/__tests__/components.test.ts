@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount, type Component } from "@ydant/core";
-import { createBasePlugin, createDOMCapabilities, div, p, text } from "@ydant/base";
+import { createBasePlugin, createDOMBackend, div, p, text } from "@ydant/base";
 import type { RouteComponentProps } from "../types";
 import { RouterLink } from "../RouterLink";
 import { RouterView } from "../RouterView";
@@ -56,7 +56,7 @@ describe("RouterLink", () => {
             children: () => text("About"),
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     const link = container.querySelector("a");
@@ -74,7 +74,7 @@ describe("RouterLink", () => {
             children: () => text("Click me"),
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     const link = container.querySelector("a") as HTMLAnchorElement;
@@ -92,7 +92,7 @@ describe("RouterLink", () => {
             children: () => text("Test"),
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     const link = container.querySelector("a") as HTMLAnchorElement;
@@ -119,7 +119,7 @@ describe("RouterLink", () => {
             activeClass: "active",
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     const link = container.querySelector("a");
@@ -138,7 +138,7 @@ describe("RouterLink", () => {
             activeClass: "active",
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     const link = container.querySelector("a");
@@ -183,7 +183,7 @@ describe("RouterView", () => {
             ],
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Home Page");
@@ -203,7 +203,7 @@ describe("RouterView", () => {
             ],
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -231,7 +231,7 @@ describe("RouterView", () => {
             routes: [{ path: "/users/:id", component: UserPage }],
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     expect(capturedParams.id).toBe("42");
@@ -250,7 +250,7 @@ describe("RouterView", () => {
             routes: [{ path: "/", component: HomePage }],
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     // Only the wrapper divs, no home page content
@@ -269,7 +269,7 @@ describe("RouterView", () => {
             routes: [{ path: "*", component: NotFound }],
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("404 Not Found");
@@ -288,7 +288,7 @@ describe("RouterView", () => {
             base: "/app",
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Users List");
@@ -307,7 +307,7 @@ describe("RouterView", () => {
             base: "/app",
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("App Home");
@@ -331,7 +331,7 @@ describe("RouterView", () => {
             ],
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).toContain("Protected Content");
@@ -355,7 +355,7 @@ describe("RouterView", () => {
             ],
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     expect(container.textContent).not.toContain("Protected Content");
@@ -379,7 +379,7 @@ describe("RouterView", () => {
             ],
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     // Initially, content may not be shown (waiting for async guard)
@@ -408,7 +408,7 @@ describe("RouterView", () => {
             ],
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -431,7 +431,7 @@ describe("RouterView", () => {
             ],
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();
@@ -462,7 +462,7 @@ describe("RouterView", () => {
             base: "/app",
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     expect(capturedParams.id).toBe("99");
@@ -488,7 +488,7 @@ describe("RouterView", () => {
             });
           });
         }),
-      { root: container, plugins: [createDOMCapabilities(), createBasePlugin()] },
+      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
     );
 
     vi.advanceTimersToNextFrame();

@@ -12,7 +12,7 @@ pnpm add @ydant/portal
 
 ```typescript
 import { mount } from "@ydant/core";
-import { createDOMCapabilities, createBasePlugin, div, attr, text } from "@ydant/base";
+import { createDOMBackend, createBasePlugin, div, attr, text } from "@ydant/base";
 import { createPortalPlugin, portal } from "@ydant/portal";
 
 const modalContainer = document.getElementById("modals")!;
@@ -25,8 +25,8 @@ function* App() {
 }
 
 mount(App, {
-  root: document.getElementById("app")!,
-  plugins: [createDOMCapabilities(), createBasePlugin(), createPortalPlugin()],
+  backend: createDOMBackend(document.getElementById("app")!),
+  plugins: [createBasePlugin(), createPortalPlugin()],
 });
 ```
 

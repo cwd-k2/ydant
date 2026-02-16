@@ -8,7 +8,7 @@
 
 import { mount, type Component } from "@ydant/core";
 import {
-  createDOMCapabilities,
+  createDOMBackend,
   createBasePlugin,
   div,
   button,
@@ -98,6 +98,6 @@ const App: Component = () =>
   ]);
 
 mount(App, {
-  root: document.getElementById("app")!,
-  plugins: [createDOMCapabilities(), createBasePlugin(), createPortalPlugin()],
+  backend: createDOMBackend(document.getElementById("app")!),
+  plugins: [createBasePlugin(), createPortalPlugin()],
 });
