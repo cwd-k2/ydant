@@ -223,37 +223,38 @@ pnpm typecheck            # 型チェック
 
 ---
 
-## アーキテクチャ移行パス: 案C (Hexagonal) への展望
+## アーキテクチャの現在地
 
-### 現在のアーキテクチャ（案B: Layered）
+### Capabilities システム
 
-RenderTarget 抽象の導入により core から DOM 依存を排除し、以下の構造を実現:
+`RenderTarget` は廃止され、**Capabilities** システムに置き換えられた。
+レンダリングバックエンドの操作を 5 つの独立した能力インターフェースに分割:
 
-- **Core**: `RenderTarget` interface + Plugin setup/teardown + MountHandle
-- **Adapter**: `createDOMTarget()` — DOM 固有の実装を base パッケージに集約
-- **Extension**: Plugin が `ctx.target` 経由でバックエンド非依存のノード操作を行う
+- **TreeCapability** — ノード生成・ツリー構築
+- **DecorateCapability** — 属性設定
+- **InteractCapability** — イベント接続
+- **ScheduleCapability** — ライフサイクルコールバック
+- **ResolveCapability** — 既存ノード取得（Hydration 専用）
 
-### 案C への概念対応
+各バックエンドは必要な能力だけを実装:
 
-| 案B (現在)          | 案C (将来)            | 備考                                 |
-| ------------------- | --------------------- | ------------------------------------ |
-| `RenderTarget`      | `RenderPort` (Port)   | インターフェース名を Port パターンに |
-| `createDOMTarget()` | `DOMRenderAdapter`    | Port の具体実装                      |
-| `Plugin`            | `Extension`           | Service を DI で受け取る形に拡張     |
-| `mount()` options   | `Runtime.configure()` | 設定を Runtime に集約                |
+| バックエンド | Tree | Decorate | Interact | Schedule | Resolve |
+| ------------ | ---- | -------- | -------- | -------- | ------- |
+| DOM          | ✓    | ✓        | ✓        | ✓        |         |
+| SSR          | ✓    | ✓        | no-op    | no-op    |         |
+| Hydration    |      |          | ✓        | ✓        | ✓       |
+| Canvas       | ✓    | ✓        | no-op    | no-op    |         |
 
-### 移行ステップ（将来）
+`mount()` はコンパイル時に「Generator が必要とする能力 ⊆ Plugin が提供する能力」を検証する
+（`CapabilityCheck` 型、`SpellSchema` の `capabilities` フィールド、`Plugin<Capabilities>` phantom 型）。
 
-1. **Service 型定義**: `ServiceKey<T>`, `ServiceRegistry`, `Service` interface を core に追加
-2. **RenderTarget を Service 化**: `RenderTargetKey` を定義、`ctx.services` 経由でアクセス可能に
-3. **Runtime 導入**: `createRuntime()` を `mount()` のラッパーとして追加
-4. **Middleware**: `processIterator` に middleware chain を導入（DevTools, Logger 用）
+### 将来の拡張方向
 
-### B→C で道を塞がないための設計判断
-
-- `RenderTarget` のメソッドシグネチャを `unknown` ベースにした（Port として再利用可能）
-- `Plugin.setup/teardown` の `ctx` パラメータを通じて将来の ServiceRegistry にアクセスできる
-- `MountHandle` を拡張可能にした（現時点は `dispose` のみ）
+- **Service 型定義**: `ServiceKey<T>`, `ServiceRegistry` を core に追加し、能力を Service 化
+- **Runtime 導入**: `createRuntime()` を `mount()` のラッパーとして追加
+- **Middleware**: `processIterator` に middleware chain を導入（DevTools, Logger 用）
+- `Plugin.setup/teardown` の `ctx` パラメータは将来の ServiceRegistry へのアクセスパスになりうる
+- `MountHandle` は拡張可能（現時点は `dispose` のみ）
 
 ---
 
