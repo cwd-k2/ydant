@@ -3,7 +3,7 @@
  */
 
 import type { Render } from "../types";
-import type { Backend, Plugin, RenderContext } from "../plugin";
+import type { ExecutionScope, RenderContext } from "../plugin";
 import { createRenderContextFactory } from "./context";
 import { processIterator } from "./iterator";
 
@@ -11,16 +11,11 @@ import { processIterator } from "./iterator";
 const createRenderContext = createRenderContextFactory(processIterator);
 
 /** Renders a top-level {@link Render} generator into the given root, returning the root context. */
-export function render(
-  gen: Render,
-  backend: Backend,
-  plugins: Map<string, Plugin>,
-  allPlugins: readonly Plugin[],
-): RenderContext {
-  const ctx = createRenderContext(backend, plugins, allPlugins);
+export function render(gen: Render, scope: ExecutionScope): RenderContext {
+  const ctx = createRenderContext(scope);
 
   // Let the backend prepare (e.g., clear root content)
-  backend.beforeRender?.(ctx);
+  scope.backend.beforeRender?.(ctx);
 
   processIterator(gen, ctx);
   return ctx;

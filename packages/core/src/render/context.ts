@@ -4,7 +4,7 @@
 
 import type { Builder, Render } from "../types";
 import { toRender } from "../utils";
-import type { Backend, Plugin, RenderContext } from "../plugin";
+import type { ExecutionScope, Plugin, RenderContext } from "../plugin";
 
 /**
  * Iterates over registered plugins, calling each one exactly once.
@@ -29,44 +29,45 @@ export function createRenderContextFactory(
   processIterator: (iter: Render, ctx: RenderContext) => void,
 ) {
   function createRenderContext(
-    backend: Backend,
-    plugins: Map<string, Plugin>,
-    allPlugins: readonly Plugin[],
+    scope: ExecutionScope,
     parent?: unknown,
     parentCtx?: RenderContext,
   ): RenderContext {
-    const actualParent = parent ?? backend.root;
+    const actualParent = parent ?? scope.backend.root;
 
     const ctx = {
       parent: actualParent,
-      plugins,
-      allPlugins,
+      scope,
     } as RenderContext;
 
-    // Core-provided methods (capture backend via closure)
-    ctx.processChildren = (builder: Builder, options?: { parent?: unknown }): void => {
+    // Core-provided methods (capture scope via closure)
+    ctx.processChildren = (
+      builder: Builder,
+      options?: { parent?: unknown; scope?: ExecutionScope },
+    ): void => {
       const targetParent = options?.parent ?? ctx.parent;
+      const targetScope = options?.scope ?? ctx.scope;
 
-      const childCtx = createRenderContext(backend, ctx.plugins, ctx.allPlugins, targetParent, ctx);
+      const childCtx = createRenderContext(targetScope, targetParent, ctx);
 
       const children = toRender(builder());
       processIterator(children, childCtx);
 
-      // Propagate child state back to parent
-      forEachUniquePlugin(ctx.allPlugins, (plugin) => {
+      // Propagate child state back to parent using the parent's plugins
+      forEachUniquePlugin(ctx.scope.allPlugins, (plugin) => {
         plugin.mergeChildContext?.(ctx, childCtx);
       });
     };
 
     ctx.createChildContext = (parent: unknown): RenderContext => {
-      return createRenderContext(backend, ctx.plugins, ctx.allPlugins, parent, ctx);
+      return createRenderContext(ctx.scope, parent, ctx);
     };
 
     // Let the backend initialize capability properties first
-    backend.initContext(ctx);
+    scope.backend.initContext(ctx);
 
     // Then let each plugin initialize its properties on the context
-    forEachUniquePlugin(allPlugins, (plugin) => {
+    forEachUniquePlugin(scope.allPlugins, (plugin) => {
       plugin.initContext?.(ctx, parentCtx);
     });
 

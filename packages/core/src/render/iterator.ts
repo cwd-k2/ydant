@@ -18,7 +18,7 @@ export function processIterator(iter: Render, ctx: RenderContext): void {
     // Dispatch to the plugin that handles this type
     if (value && typeof value === "object" && "type" in value) {
       const type = (value as { type: string }).type;
-      const plugin = ctx.plugins.get(type);
+      const plugin = ctx.scope.pluginMap.get(type);
 
       if (plugin) {
         const response = plugin.process?.(value as Request, ctx);

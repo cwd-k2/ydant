@@ -13,8 +13,13 @@ import type {
   ScheduleCapability,
   ResolveCapability,
 } from "./capabilities";
+import type { Embed } from "./embed";
 
 declare module "@ydant/core" {
+  interface SpellSchema {
+    embed: { request: Embed; capabilities: never };
+  }
+
   interface RenderContext {
     /** Tree operations: create nodes and assemble parent-child relationships. */
     tree: TreeCapability;

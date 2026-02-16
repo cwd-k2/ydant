@@ -39,7 +39,7 @@ export type {
 // Plugin System
 // =============================================================================
 
-export type { Backend, Plugin, RenderContext } from "./plugin";
+export type { Backend, ExecutionScope, Plugin, RenderContext } from "./plugin";
 
 // =============================================================================
 // Utilities
@@ -48,8 +48,15 @@ export type { Backend, Plugin, RenderContext } from "./plugin";
 export { isTagged, toRender } from "./utils";
 
 // =============================================================================
+// Embed
+// =============================================================================
+
+export type { Embed } from "./embed";
+export { embed, createEmbedPlugin } from "./embed";
+
+// =============================================================================
 // Mount
 // =============================================================================
 
 export type { MountOptions, MountHandle } from "./mount";
-export { mount } from "./mount";
+export { mount, createExecutionScope } from "./mount";

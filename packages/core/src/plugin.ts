@@ -70,14 +70,33 @@ export interface Backend<Capabilities extends string = string> {
 export interface RenderContext {
   /** The node that children are appended to. */
   parent: unknown;
-  /** Registered plugins keyed by their type tags (used for dispatch). */
-  plugins: Map<string, Plugin>;
-  /** All registered plugins in registration order (used for lifecycle hooks). */
-  allPlugins: readonly Plugin[];
+  /** The execution scope (backend + plugins) for this context. */
+  scope: ExecutionScope;
   /** Processes a {@link Builder}'s instructions in a new child context. */
-  processChildren(builder: Builder, options?: { parent?: unknown }): void;
+  processChildren(builder: Builder, options?: { parent?: unknown; scope?: ExecutionScope }): void;
   /** Creates a new child-scoped {@link RenderContext} for the given parent node. */
   createChildContext(parent: unknown): RenderContext;
+}
+
+// =============================================================================
+// ExecutionScope
+// =============================================================================
+
+/**
+ * Bundles the three values that together define "which execution system
+ * processes requests": a backend, a plugin dispatch map, and the ordered
+ * plugin list for lifecycle hooks.
+ *
+ * Extracted so that `processChildren` can switch execution environments
+ * (e.g., embedding a Canvas scope inside a DOM render).
+ */
+export interface ExecutionScope {
+  /** The rendering backend that provides platform-specific capabilities. */
+  readonly backend: Backend;
+  /** Registered plugins keyed by their type tags (used for dispatch). */
+  readonly pluginMap: ReadonlyMap<string, Plugin>;
+  /** All registered plugins in registration order (used for lifecycle hooks). */
+  readonly allPlugins: readonly Plugin[];
 }
 
 // =============================================================================

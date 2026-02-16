@@ -2,7 +2,7 @@
  * @ydant/core - Mount function
  */
 
-import type { Backend, Plugin } from "./plugin";
+import type { Backend, ExecutionScope, Plugin } from "./plugin";
 import type { Render, CapabilityCheck } from "./types";
 import { render } from "./render";
 
@@ -19,6 +19,44 @@ export type MountOptions<G extends Render = Render, B extends Backend = Backend>
   /** Plugins to register for this mount scope. */
   plugins?: Plugin[];
 } & CapabilityCheck<G, B>;
+
+/**
+ * Builds an {@link ExecutionScope} from a backend and plugin list.
+ *
+ * Constructs the type-tag dispatch map and validates plugin dependencies.
+ *
+ * Use this to create scopes for embedding within a parent render
+ * (e.g., a Canvas scope inside a DOM render via `embed()`).
+ */
+export function createExecutionScope(
+  backend: Backend,
+  pluginList: readonly Plugin[],
+): ExecutionScope {
+  const pluginMap = new Map<string, Plugin>();
+  const pluginNames = new Set<string>();
+
+  for (const plugin of pluginList) {
+    pluginNames.add(plugin.name);
+    for (const type of plugin.types) {
+      pluginMap.set(type, plugin);
+    }
+  }
+
+  // Validate plugin dependencies
+  for (const plugin of pluginList) {
+    if (plugin.dependencies) {
+      for (const dep of plugin.dependencies) {
+        if (!pluginNames.has(dep)) {
+          console.warn(
+            `[ydant] Plugin "${plugin.name}" depends on "${dep}", but "${dep}" is not registered.`,
+          );
+        }
+      }
+    }
+  }
+
+  return { backend, pluginMap, allPlugins: pluginList };
+}
 
 /**
  * Mounts a component into the given root node, starting the rendering pipeline.
@@ -50,56 +88,31 @@ export function mount<G extends Render, B extends Backend>(
   options: MountOptions<G, B>,
 ): MountHandle {
   const { backend, plugins: pluginList } = options;
+  const allPlugins = pluginList ?? [];
 
-  // Build a lookup map: type tag -> plugin
-  const plugins = new Map<string, Plugin>();
-  const pluginNames = new Set<string>();
-
-  if (pluginList) {
-    for (const plugin of pluginList) {
-      pluginNames.add(plugin.name);
-      for (const type of plugin.types) {
-        plugins.set(type, plugin);
-      }
-    }
-
-    // Validate plugin dependencies
-    for (const plugin of pluginList) {
-      if (plugin.dependencies) {
-        for (const dep of plugin.dependencies) {
-          if (!pluginNames.has(dep)) {
-            console.warn(
-              `[ydant] Plugin "${plugin.name}" depends on "${dep}", but "${dep}" is not registered.`,
-            );
-          }
-        }
-      }
-    }
-  }
+  const scope = createExecutionScope(backend, allPlugins);
 
   // Render, then call setup on each plugin with the root context
-  const rootCtx = render(app(), backend, plugins, pluginList ?? []);
+  const rootCtx = render(app(), scope);
 
   // Call setup on each unique plugin
-  if (pluginList) {
-    const visited = new Set<string>();
-    for (const plugin of pluginList) {
-      if (visited.has(plugin.name)) continue;
-      visited.add(plugin.name);
-      plugin.setup?.(rootCtx);
-    }
+  const visited = new Set<string>();
+  for (const plugin of allPlugins) {
+    if (visited.has(plugin.name)) continue;
+    visited.add(plugin.name);
+    plugin.setup?.(rootCtx);
   }
 
   let disposed = false;
 
   return {
     dispose() {
-      if (disposed || !pluginList) return;
+      if (disposed) return;
       disposed = true;
       // Teardown in reverse registration order
       const visited = new Set<string>();
-      for (let i = pluginList.length - 1; i >= 0; i--) {
-        const plugin = pluginList[i];
+      for (let i = allPlugins.length - 1; i >= 0; i--) {
+        const plugin = allPlugins[i];
         if (visited.has(plugin.name)) continue;
         visited.add(plugin.name);
         plugin.teardown?.(rootCtx);
