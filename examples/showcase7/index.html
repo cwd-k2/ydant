@@ -79,6 +79,19 @@
         transform: scale(1);
         opacity: 1;
       }
+      .scale-leave {
+        transition:
+          transform 200ms ease,
+          opacity 200ms ease;
+      }
+      .scale-leave-from {
+        transform: scale(1);
+        opacity: 1;
+      }
+      .scale-leave-to {
+        transform: scale(0.9);
+        opacity: 0;
+      }
     </style>
   </head>
   <body>

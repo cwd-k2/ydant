@@ -1,19 +1,35 @@
 /**
- * Showcase 11 — Canvas2D Rendering
+ * Showcase 11 — Canvas Embed
  *
- * Demonstrates @ydant/canvas: the same core processing system and base plugin
- * drive a completely different rendering target (Canvas2D instead of DOM).
+ * Demonstrates embedding a Canvas2D rendering scope inside a DOM render
+ * using ExecutionScope and the embed() spell.
+ *
+ * DOM elements wrap a <canvas>, and embed() switches to a Canvas backend
+ * for declarative shape rendering — all within a single mount().
  */
 
-import { mount, type Component } from "@ydant/core";
-import { createBasePlugin, attr } from "@ydant/base";
-import { createCanvasBackend, group, rect, circle, canvasText, line } from "@ydant/canvas";
+import { mount, createExecutionScope, embed, createEmbedPlugin } from "@ydant/core";
+import {
+  createDOMBackend,
+  createBasePlugin,
+  createHTMLElement,
+  div,
+  h1,
+  p,
+  text,
+  attr,
+} from "@ydant/base";
+import { createCanvasBackend, group, rect, circle, line, canvasText } from "@ydant/canvas";
 
-// --- Scene description using Ydant generators ---
+const canvas = createHTMLElement("canvas");
 
-const Scene: Component = () =>
+// =============================================================================
+// Canvas scene (runs under Canvas scope)
+// =============================================================================
+
+const NightScene = () =>
   group(() => [
-    // Background gradient rectangles
+    // Sky
     rect(() => [
       attr("x", "0"),
       attr("y", "0"),
@@ -22,7 +38,7 @@ const Scene: Component = () =>
       attr("fill", "#0f3460"),
     ]),
 
-    // Stars (small circles)
+    // Stars
     ...Array.from({ length: 30 }, (_, i) => {
       const x = String(((i * 137 + 50) % 580) + 10);
       const y = String(((i * 97 + 20) % 300) + 10);
@@ -36,7 +52,7 @@ const Scene: Component = () =>
       ]);
     }),
 
-    // Moon
+    // Moon (crescent)
     circle(() => [attr("cx", "480"), attr("cy", "80"), attr("r", "40"), attr("fill", "#f5e6ca")]),
     circle(() => [attr("cx", "500"), attr("cy", "70"), attr("r", "35"), attr("fill", "#0f3460")]),
 
@@ -48,8 +64,6 @@ const Scene: Component = () =>
       attr("height", "120"),
       attr("fill", "#1a1a2e"),
     ]),
-
-    // Mountain peaks (triangles via lines)
     ...mountainPeak(100, 200, 180),
     ...mountainPeak(250, 180, 200),
     ...mountainPeak(420, 220, 160),
@@ -69,11 +83,11 @@ const Scene: Component = () =>
     ...tree(350, 315),
     ...tree(500, 325),
 
-    // Title text
+    // Caption
     canvasText(() => [
       attr("x", "300"),
       attr("y", "380"),
-      attr("content", "Rendered with @ydant/canvas"),
+      attr("content", "Rendered with @ydant/canvas via embed()"),
       attr("font", "14px monospace"),
       attr("fill", "#666"),
       attr("textAlign", "center"),
@@ -106,7 +120,6 @@ function mountainPeak(cx: number, top: number, width: number) {
 
 function tree(x: number, y: number) {
   return [
-    // Trunk
     rect(() => [
       attr("x", String(x - 3)),
       attr("y", String(y - 20)),
@@ -114,7 +127,6 @@ function tree(x: number, y: number) {
       attr("height", "20"),
       attr("fill", "#5c3d2e"),
     ]),
-    // Canopy
     circle(() => [
       attr("cx", String(x)),
       attr("cy", String(y - 30)),
@@ -124,16 +136,46 @@ function tree(x: number, y: number) {
   ];
 }
 
-// --- Mount and paint ---
+// =============================================================================
+// DOM App
+// =============================================================================
 
-const canvasEl = document.getElementById("canvas") as HTMLCanvasElement;
-const ctx2d = canvasEl.getContext("2d")!;
+const App = () =>
+  div(function* () {
+    yield* attr("class", "container");
 
-const canvas = createCanvasBackend();
+    yield* h1(() => [text("Canvas Embed")]);
+    yield* p(() => [
+      attr("class", "subtitle"),
+      text("DOM content above — the canvas below is rendered via embed() with a Canvas backend"),
+    ]);
 
-mount(Scene, {
-  backend: canvas,
-  plugins: [createBasePlugin()],
+    // 1. Create a <canvas> DOM element
+    const canvasBackend = createCanvasBackend();
+    const slot = yield* canvas(function* () {
+      yield* attr("width", "600");
+      yield* attr("height", "400");
+    });
+    const canvasEl = slot.node as HTMLCanvasElement;
+
+    // 2. Embed Canvas scope — builds VShape tree synchronously
+    const canvasScope = createExecutionScope(canvasBackend, [createBasePlugin()]);
+    yield* embed(canvasScope, NightScene);
+
+    // 3. Paint the virtual tree onto the real <canvas>
+    canvasBackend.paint(canvasEl.getContext("2d")!);
+
+    yield* p(() => [
+      attr("class", "subtitle"),
+      text("DOM content below — everything is part of the same mount()"),
+    ]);
+  });
+
+// =============================================================================
+// Mount into DOM
+// =============================================================================
+
+mount(App, {
+  backend: createDOMBackend(document.getElementById("app")!),
+  plugins: [createBasePlugin(), createEmbedPlugin()],
 });
-
-canvas.paint(ctx2d);

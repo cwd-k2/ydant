@@ -2,7 +2,7 @@
   "name": "showcase11",
   "version": "1.0.0",
   "private": true,
-  "description": "Demo: Canvas2D rendering with @ydant/canvas",
+  "description": "Demo: Canvas embed via ExecutionScope",
   "scripts": {
     "dev": "vite",
     "typecheck": "tsc --noEmit"

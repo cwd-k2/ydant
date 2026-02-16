@@ -1,6 +1,10 @@
 import type { Component, Builder, Render } from "@ydant/core";
-import { createSlotRef, div, h1, h2, p, span, button, text, classes, on, keyed } from "@ydant/base";
-import { createTransition, type TransitionHandle } from "@ydant/transition";
+import { createSlotRef, div, h1, h2, p, span, button, text, classes, on } from "@ydant/base";
+import {
+  createTransition,
+  createTransitionGroupRefresher,
+  type TransitionHandle,
+} from "@ydant/transition";
 import type { Toast } from "./types";
 
 const TOAST_COLORS: Record<Toast["type"], string[]> = {
@@ -106,11 +110,45 @@ function SlideSection(): Render {
   });
 }
 
-// Section: Toast notifications with scale animation
+// Section: Toast notifications with TransitionGroup
 function ToastSection(): Render {
   let toasts: Toast[] = [];
   let nextId = 1;
   const toastListRef = createSlotRef();
+
+  // TransitionGroup refresher — handles enter/leave animations per item
+  const refresher = createTransitionGroupRefresher<Toast>({
+    keyFn: (t) => t.id,
+    enter: "scale-enter",
+    enterFrom: "scale-enter-from",
+    enterTo: "scale-enter-to",
+    leave: "scale-leave",
+    leaveFrom: "scale-leave-from",
+    leaveTo: "scale-leave-to",
+    content: (toast) =>
+      div(function* () {
+        yield* classes(
+          "flex",
+          "items-center",
+          "justify-between",
+          "p-3",
+          "rounded-lg",
+          "shadow",
+          ...TOAST_COLORS[toast.type],
+        );
+        yield* span(() => [text(toast.message)]);
+        yield* button(function* () {
+          yield* classes("ml-2", "hover:opacity-75");
+          yield* on("click", () => removeToast(toast.id));
+          yield* text("×");
+        });
+      }),
+  });
+
+  function updateList() {
+    const slot = toastListRef.current;
+    if (slot) refresher(slot, toasts);
+  }
 
   const addToast = (type: Toast["type"]) => {
     const messages: Record<Toast["type"], string> = {
@@ -119,66 +157,27 @@ function ToastSection(): Render {
       info: "Here is some useful information.",
     };
 
-    toasts.push({
-      id: nextId++,
-      message: messages[type],
-      type,
-    });
-
-    toastListRef.refresh(renderToastList);
+    toasts = [{ id: nextId++, message: messages[type], type }, ...toasts];
+    updateList();
 
     // Auto-remove after 3 seconds
     const toastId = nextId - 1;
     setTimeout(() => {
       toasts = toasts.filter((t) => t.id !== toastId);
-      toastListRef.refresh(renderToastList);
+      updateList();
     }, 3000);
   };
 
   const removeToast = (id: number) => {
     toasts = toasts.filter((t) => t.id !== id);
-    toastListRef.refresh(renderToastList);
-  };
-
-  const renderToastList = function* () {
-    yield* classes("space-y-2", "min-h-[120px]");
-
-    if (toasts.length === 0) {
-      yield* div(() => [
-        classes("p-4", "text-center", "text-gray-400", "border", "border-dashed", "rounded-lg"),
-        text("No toasts. Click a button above to add one."),
-      ]);
-    } else {
-      for (const toast of toasts) {
-        // Using keyed for efficient updates
-        yield* keyed(
-          toast.id,
-          div,
-        )(function* () {
-          yield* classes(
-            "flex",
-            "items-center",
-            "justify-between",
-            "p-3",
-            "rounded-lg",
-            "shadow",
-            "scale-enter",
-            "scale-enter-to",
-            ...TOAST_COLORS[toast.type],
-          );
-          yield* span(() => [text(toast.message)]);
-          yield* button(function* () {
-            yield* classes("ml-2", "hover:opacity-75");
-            yield* on("click", () => removeToast(toast.id));
-            yield* text("×");
-          });
-        });
-      }
-    }
+    updateList();
   };
 
   return div(function* () {
-    yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Toast Notifications")]);
+    yield* h2(() => [
+      classes("text-xl", "font-semibold", "mb-4"),
+      text("Toast Notifications (TransitionGroup)"),
+    ]);
 
     yield* div(function* () {
       yield* classes("flex", "gap-2", "mb-4");
@@ -209,7 +208,11 @@ function ToastSection(): Render {
       });
     });
 
-    toastListRef.bind(yield* div(renderToastList));
+    toastListRef.bind(
+      yield* div(function* () {
+        yield* classes("space-y-2", "min-h-[120px]");
+      }),
+    );
   });
 }
 
@@ -225,7 +228,7 @@ export const App: Component = () =>
 
     yield* p(() => [
       classes("text-center", "text-gray-500", "text-sm", "mb-6"),
-      text("Demonstrates createTransition for animated UI elements with enter AND leave support."),
+      text("createTransition for single elements, createTransitionGroupRefresher for lists."),
     ]);
 
     // Toggle section (fade)
@@ -246,11 +249,11 @@ export const App: Component = () =>
     // Info
     yield* div(() => [
       classes("mt-6", "p-4", "bg-blue-50", "rounded-lg", "text-sm"),
-      h2(() => [classes("font-semibold", "mb-2"), text("How createTransition Works:")]),
+      h2(() => [classes("font-semibold", "mb-2"), text("@ydant/transition APIs:")]),
       p(() => [
         text(
-          "The createTransition API returns a handle with setShow(boolean) for programmatic control. " +
-            "It properly supports both enter and leave animations by managing the element lifecycle.",
+          "createTransition — returns a handle with setShow(boolean) for single element enter/leave. " +
+            "createTransitionGroupRefresher — manages a keyed list with automatic enter/leave per item.",
         ),
       ]),
     ]);

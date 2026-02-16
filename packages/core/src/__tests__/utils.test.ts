@@ -70,7 +70,7 @@ describe("toRender", () => {
       yield { type: "text", content: "world" } as const;
     }
 
-    const result = toRender([gen1(), gen2()] as Render[]);
+    const result = toRender([gen1(), gen2()] as unknown as Render[]);
     const items: unknown[] = [];
     let next = result.next();
     while (!next.done) {
@@ -101,7 +101,7 @@ describe("toRender", () => {
       yield { type: "text", content: "b" } as const;
     }
 
-    const result = toRender([gen()] as Render[]);
+    const result = toRender([gen()] as unknown as Render[]);
     const items: unknown[] = [];
     let next = result.next();
     while (!next.done) {

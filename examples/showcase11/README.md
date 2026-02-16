@@ -1,48 +1,65 @@
-# Showcase 11: Canvas2D Rendering
+# Showcase 11: Canvas Embed
 
-`@ydant/canvas` による Canvas2D 描画のデモ。同じ core 処理系と base プラグインで、DOM ではなく Canvas2D をレンダリングターゲットにする。
+DOM レンダリングの中に `embed()` で Canvas scope を埋め込むデモ。`ExecutionScope` による実行環境の切り替えを実演する。
 
 ## 機能
 
-- `@ydant/canvas` の Capability を使った 2D シーン描画
+- DOM 内に `<canvas>` 要素を配置し、`embed()` で Canvas backend に切り替え
+- 同一 `mount()` 内で DOM と Canvas2D が共存
 - `group()`, `rect()`, `circle()`, `line()`, `canvasText()` による宣言的な図形定義
-- `attr()` で図形のプロパティ（座標、色、サイズ）を設定
 
 ## 実装のポイント
 
-### createCanvasBackend() と仮想ルート
+### embed() による scope 切り替え
 
-Canvas にはDOM のような親子関係がないため、`createCanvasBackend()` が仮想的なツリー構造を提供する。Backend が root を内部管理するため、別途渡す必要はない:
+`createExecutionScope` で Canvas backend + plugins を束ね、`embed()` で子の描画を Canvas scope に委譲する:
 
 ```typescript
-const canvas = createCanvasBackend();
+const canvasBackend = createCanvasBackend();
+const canvasScope = createExecutionScope(canvasBackend, [createBasePlugin()]);
 
-mount(Scene, {
-  backend: canvas,
-  plugins: [createBasePlugin()],
+// DOM 要素として <canvas> を配置
+const slot =
+  yield *
+  canvas(function* () {
+    yield* attr("width", "600");
+    yield* attr("height", "400");
+  });
+
+// Canvas scope に切り替え — VShape ツリーを構築
+yield * embed(canvasScope, NightScene);
+
+// 仮想ツリーを実際の canvas に描画
+canvasBackend.paint((slot.node as HTMLCanvasElement).getContext("2d")!);
+```
+
+### DOM と Canvas の共存
+
+`embed()` は同期的に完了するため、前後に DOM 要素を自由に配置できる:
+
+```
+DOM scope:
+  h1 "Canvas Embed"
+  p  "DOM content above..."
+  <canvas>
+    [Canvas scope] ← embed() で切り替え
+    group > rect, circle, line, ...
+  </canvas>
+  p  "DOM content below..."
+```
+
+### createEmbedPlugin の登録
+
+`embed()` spell は **親 scope の plugin** が処理する。DOM 側の mount に `createEmbedPlugin()` を登録:
+
+```typescript
+mount(App, {
+  backend: createDOMBackend(root),
+  plugins: [createBasePlugin(), createEmbedPlugin()],
 });
 ```
 
-### group() ラッパー
-
-`group()` は Canvas 版の「コンテナ要素」。DOM の `div` に相当し、子要素をグループ化する:
-
-```typescript
-const Scene: Component = () =>
-  group(() => [
-    rect(() => [attr("x", "0"), attr("y", "0"), attr("fill", "#0f3460")]),
-    circle(() => [attr("cx", "480"), attr("cy", "80"), attr("r", "40")]),
-  ]);
-```
-
-### paint() で描画実行
-
-`mount()` で仮想ツリーを構築した後、`canvas.paint(ctx2d)` で Canvas2D に実際に描画する:
-
-```typescript
-const ctx2d = canvasEl.getContext("2d")!;
-canvas.paint(ctx2d);
-```
+Canvas scope には Canvas 用の `createBasePlugin()` のみ。embed plugin は不要。
 
 ## 実行
 

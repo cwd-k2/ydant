@@ -33,7 +33,7 @@ function createRecordingPlugin(name: string, log: string[]): Plugin {
       log.push(`${name}:mergeChildContext`);
     },
     process(request, _ctx) {
-      const req = request as { type: string; value: string };
+      const req = request as unknown as { type: string; value: string };
       log.push(`${name}:process(${req.value})`);
       return undefined;
     },

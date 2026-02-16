@@ -2,7 +2,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ydant Showcase 11 — Canvas Rendering</title>
+    <title>Ydant Showcase 11 — Canvas Embed</title>
     <script type="module" src="./src/index.ts"></script>
     <style>
       body {
@@ -15,23 +15,27 @@
         flex-direction: column;
         align-items: center;
       }
+      .container {
+        text-align: center;
+      }
       h1 {
         margin-bottom: 8px;
       }
-      p {
+      .subtitle {
         color: #aaa;
         margin-bottom: 16px;
+        font-size: 14px;
       }
       canvas {
         border: 2px solid #333;
         border-radius: 8px;
         background: #16213e;
+        display: block;
+        margin: 0 auto;
       }
     </style>
   </head>
   <body>
-    <h1>Canvas Rendering</h1>
-    <p>Same Ydant core + createBasePlugin, different capability provider</p>
-    <canvas id="canvas" width="600" height="400"></canvas>
+    <div id="app"></div>
   </body>
 </html>

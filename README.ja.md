@@ -126,10 +126,9 @@ mount(App, {
 | [showcase5](./examples/showcase5/)   | ソート可能リスト - keyed() による効率的な更新   |
 | [showcase6](./examples/showcase6/)   | 非同期 - Suspense、ErrorBoundary                |
 | [showcase7](./examples/showcase7/)   | トランジション - enter/leave アニメーション     |
-| [showcase8](./examples/showcase8/)   | 通知フィード - リアクティブパターン             |
 | [showcase9](./examples/showcase9/)   | 管理ダッシュボード - Router、認証、Context      |
 | [showcase10](./examples/showcase10/) | フォームバリデーション - 動的ルール             |
-| [showcase11](./examples/showcase11/) | Canvas2D レンダリング                           |
+| [showcase11](./examples/showcase11/) | Canvas embed - DOM + Canvas2D ハイブリッド      |
 | [showcase12](./examples/showcase12/) | ポータル（モーダルダイアログ）                  |
 | [showcase13](./examples/showcase13/) | SSR + Hydration                                 |
 

@@ -126,10 +126,9 @@ mount(App, {
 | [showcase5](./examples/showcase5/)   | Sortable list - keyed() for efficient updates |
 | [showcase6](./examples/showcase6/)   | Async - Suspense, ErrorBoundary               |
 | [showcase7](./examples/showcase7/)   | Transitions - enter/leave animations          |
-| [showcase8](./examples/showcase8/)   | Notification feed - reactive patterns         |
 | [showcase9](./examples/showcase9/)   | Admin dashboard - router, auth, context       |
 | [showcase10](./examples/showcase10/) | Form validation - dynamic rules               |
-| [showcase11](./examples/showcase11/) | Canvas2D rendering                            |
+| [showcase11](./examples/showcase11/) | Canvas embed - DOM + Canvas2D hybrid          |
 | [showcase12](./examples/showcase12/) | Portal for modal dialogs                      |
 | [showcase13](./examples/showcase13/) | SSR + Hydration                               |
 

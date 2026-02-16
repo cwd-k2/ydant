@@ -195,18 +195,6 @@ importers:
         specifier: workspace:*
         version: link:../../packages/transition
 
-  examples/showcase8:
-    dependencies:
-      '@ydant/base':
-        specifier: workspace:*
-        version: link:../../packages/base
-      '@ydant/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@ydant/transition':
-        specifier: workspace:*
-        version: link:../../packages/transition
-
   examples/showcase9:
     dependencies:
       '@ydant/async':

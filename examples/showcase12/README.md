@@ -35,6 +35,19 @@ function openModal() {
 }
 ```
 
+### Portal と embed の違い
+
+Portal と `embed()` はどちらも「別の場所にレンダリングする」機能だが、抽象化のレベルが異なる:
+
+|                | Portal                                            | embed                                          |
+| -------------- | ------------------------------------------------- | ---------------------------------------------- |
+| **変わるもの** | parent（DOM ノード）                              | scope（実行環境全体）                          |
+| **Backend**    | 同じ DOM Backend                                  | 別の Backend に切り替え可能                    |
+| **用途**       | モーダル、ツールチップなど同一 DOM 内の別ノードへ | Canvas、SVG など異なるレンダリングターゲットへ |
+| **仕組み**     | `processChildren(content, { parent })`            | `processChildren(content, { scope })`          |
+
+Portal は DOM 内の「どこに」描画するかを変える。embed は「何で」描画するかを変える。
+
 ## 実行
 
 ```bash

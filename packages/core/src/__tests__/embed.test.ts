@@ -15,8 +15,9 @@ function createMockBackend(name: string): Backend {
 }
 
 // SpellSchema has embed registered, so we can use embed() spell directly.
-// For custom test types, we still need asApp.
+// For custom test types, we still need asApp/asBuilder.
 const asApp = (fn: () => Generator) => fn as any;
+const asBuilder = (fn: () => Generator) => fn as any;
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -63,9 +64,12 @@ describe("embed spell + plugin", () => {
 
     mount(
       asApp(function* () {
-        yield* embed(childScope, function* () {
-          yield { type: "record" };
-        });
+        yield* embed(
+          childScope,
+          asBuilder(function* () {
+            yield { type: "record" };
+          }),
+        );
       }),
       {
         backend: parentBackend,
