@@ -51,7 +51,7 @@ The typical pattern is: **mount** (builds the virtual shape tree) then **paint**
 ```typescript
 function createCanvasCapabilities(): CanvasCapabilities;
 
-interface CanvasCapabilities extends Plugin<"tree" | "decorate" | "interact" | "schedule"> {
+interface CanvasCapabilities extends Plugin<"tree" | "decorate" | "schedule"> {
   readonly root: VShapeRoot;
   paint(ctx: CanvasRenderingContext2D): void;
 }
@@ -104,6 +104,6 @@ type VShapeContainer = VShape | VShapeRoot;
 
 ## Limitations
 
-- **No event handling** — `interact` capability is a no-op. Canvas elements don't respond to DOM events. Hit-testing could be added in the future.
+- **No event handling** — `interact` capability is not provided. Using `on()` inside a canvas shape has no effect at runtime, and causes a compile-time error when the generator type is narrow enough for `CapabilityCheck` to detect it. Hit-testing could be added in the future.
 - **All props are strings** — Numeric values are passed as strings via `attr()` and parsed internally during paint.
 - **No incremental updates** — Each `paint()` call clears the entire canvas and redraws. For animations, call `paint()` in a `requestAnimationFrame` loop.

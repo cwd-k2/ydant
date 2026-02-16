@@ -10,14 +10,13 @@ import type {
   RenderContext,
   TreeCapability,
   DecorateCapability,
-  InteractCapability,
   ScheduleCapability,
 } from "@ydant/core";
 import type { VShape, VShapeContainer, VShapeRoot } from "./vshape";
 import { paintShape } from "./paint";
 
 /** The capabilities provided by the Canvas capability provider. */
-type CanvasCapabilityNames = "tree" | "decorate" | "interact" | "schedule";
+type CanvasCapabilityNames = "tree" | "decorate" | "schedule";
 
 /** A capability provider plugin for Canvas2D rendering. */
 export interface CanvasCapabilities extends Plugin<CanvasCapabilityNames> {
@@ -60,11 +59,6 @@ export function createCanvasCapabilities(): CanvasCapabilities {
     },
   };
 
-  // Canvas events are no-op for now (hit-testing could be added later)
-  const interact: InteractCapability = {
-    addEventListener: () => {},
-  };
-
   const schedule: ScheduleCapability = {
     scheduleCallback: (cb) => requestAnimationFrame(cb),
   };
@@ -78,7 +72,6 @@ export function createCanvasCapabilities(): CanvasCapabilities {
     initContext(ctx: RenderContext) {
       ctx.tree = tree;
       ctx.decorate = decorate;
-      ctx.interact = interact;
       ctx.schedule = schedule;
       ctx.currentElement = isElement(ctx.parent) ? ctx.parent : null;
     },

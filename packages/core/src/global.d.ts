@@ -20,8 +20,8 @@ declare module "@ydant/core" {
     tree: TreeCapability;
     /** Decoration operations: set attributes on nodes. */
     decorate: DecorateCapability;
-    /** Interaction operations: attach event listeners to nodes. */
-    interact: InteractCapability;
+    /** Interaction operations: attach event listeners to nodes. Optional — not all backends support events. */
+    interact?: InteractCapability;
     /** Scheduling operations: defer callbacks (e.g., mount hooks). */
     schedule: ScheduleCapability;
     /** The element currently being decorated, or `null` between elements. */

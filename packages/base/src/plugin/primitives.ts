@@ -22,7 +22,7 @@ export function processListener(listener: Listener, ctx: RenderContext): void {
 
   const element = ctx.currentElement;
   if (element) {
-    ctx.interact.addEventListener(element, listener.key, listener.value as (e: unknown) => void);
+    ctx.interact?.addEventListener(element, listener.key, listener.value as (e: unknown) => void);
   }
 }
 

@@ -116,7 +116,7 @@ function applyDecorations(
     } else if (isTagged(decoration, "listener")) {
       // Listeners are skipped on reuse to prevent duplicates
       if (!isReused) {
-        ctx.interact.addEventListener(
+        ctx.interact?.addEventListener(
           node,
           decoration.key,
           decoration.value as (e: unknown) => void,

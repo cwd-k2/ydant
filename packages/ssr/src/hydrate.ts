@@ -185,7 +185,7 @@ function hydrateElement(
   if (element.decorations) {
     for (const decoration of element.decorations) {
       if (isTagged(decoration, "listener")) {
-        ctx.interact.addEventListener(
+        ctx.interact?.addEventListener(
           node,
           decoration.key,
           decoration.value as (e: unknown) => void,

@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, expectTypeOf, vi } from "vitest";
 import { mount } from "@ydant/core";
-import { createBasePlugin, attr } from "@ydant/base";
+import type { CapabilityCheck, ProvidedCapabilities } from "@ydant/core";
+import { createBasePlugin, attr, on } from "@ydant/base";
 import {
   createCanvasCapabilities,
   rect,
@@ -127,6 +128,37 @@ describe("Canvas capabilities", () => {
     const shape = cap.root.children[0];
     expect(shape.tag).toBe("path");
     expect(shape.props.get("d")).toBe("M 10 10 L 90 90");
+  });
+
+  it("does not provide interact capability", () => {
+    type Canvas = [ReturnType<typeof createCanvasCapabilities>];
+    expectTypeOf<ProvidedCapabilities<Canvas>>().toEqualTypeOf<"tree" | "decorate" | "schedule">();
+  });
+
+  it("rejects generators that require interact", () => {
+    function* app() {
+      yield* rect(() => []);
+      yield* on("click", () => {});
+    }
+
+    type Result = CapabilityCheck<
+      ReturnType<typeof app>,
+      [ReturnType<typeof createCanvasCapabilities>]
+    >;
+    expectTypeOf<Result>().toHaveProperty("__capabilityError");
+  });
+
+  it("silently ignores listeners in children (interact not provided)", () => {
+    const cap = createCanvasCapabilities();
+
+    expect(() => {
+      mount(() => rect(() => [attr("fill", "red"), on("click", () => {})]), {
+        root: cap.root,
+        plugins: [cap, createBasePlugin()],
+      });
+    }).not.toThrow();
+
+    expect(cap.root.children).toHaveLength(1);
   });
 
   it("clears root on re-render via beforeRender", () => {

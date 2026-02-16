@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@ydant/core";
+import type { Plugin, RenderContext } from "@ydant/core";
 import { createBasePlugin } from "../plugin";
 import { createDOMCapabilities } from "../capabilities";
 import { div, span, button } from "../elements/html";
@@ -546,6 +547,80 @@ describe("createBasePlugin", () => {
 
       // Handler should only be called once (not duplicated)
       expect(handler).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("optional interact capability", () => {
+    /** DOM capabilities without interact — simulates Canvas-like environment. */
+    function createDOMCapabilitiesWithoutInteract(): Plugin<"tree" | "decorate" | "schedule"> {
+      return {
+        name: "dom-no-interact",
+        types: [],
+        initContext(ctx: RenderContext) {
+          ctx.tree = {
+            createElement: (tag: string) => document.createElement(tag),
+            createElementNS: (ns: string, tag: string) => document.createElementNS(ns, tag),
+            createTextNode: (content: string) => document.createTextNode(content),
+            appendChild: (parent: unknown, child: unknown) =>
+              (parent as Node).appendChild(child as Node),
+            removeChild: (parent: unknown, child: unknown) =>
+              (parent as Node).removeChild(child as Node),
+            clearChildren: (parent: unknown) => {
+              (parent as Element).textContent = "";
+            },
+          };
+          ctx.decorate = {
+            setAttribute: (node: unknown, key: string, value: string) =>
+              (node as Element).setAttribute(key, value),
+          };
+          ctx.schedule = {
+            scheduleCallback: (cb: () => void) => setTimeout(cb, 0),
+          };
+          ctx.currentElement = ctx.parent instanceof Element ? ctx.parent : null;
+        },
+      } as Plugin<"tree" | "decorate" | "schedule">;
+    }
+
+    it("silently ignores inline listeners when interact is not provided", () => {
+      const handler = vi.fn();
+
+      expect(() => {
+        mount(
+          () =>
+            div(function* () {
+              yield* button(() => [on("click", handler), text("Click")]);
+            }),
+          {
+            root: container,
+            plugins: [createDOMCapabilitiesWithoutInteract(), createBasePlugin()],
+          },
+        );
+      }).not.toThrow();
+
+      // The button renders, but clicking does nothing (listener was skipped)
+      const btn = container.querySelector("button");
+      expect(btn).not.toBeNull();
+      expect(btn?.textContent).toBe("Click");
+      btn?.click();
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it("silently ignores standalone listener primitives when interact is not provided", () => {
+      const handler = vi.fn();
+
+      expect(() => {
+        mount(
+          () =>
+            div(function* () {
+              yield* on("click", handler);
+              yield* text("Content");
+            }),
+          {
+            root: container,
+            plugins: [createDOMCapabilitiesWithoutInteract(), createBasePlugin()],
+          },
+        );
+      }).not.toThrow();
     });
   });
 
