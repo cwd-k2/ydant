@@ -5,6 +5,13 @@
 import type { Request, Response, Builder } from "./types";
 
 // =============================================================================
+// Scheduler
+// =============================================================================
+
+/** Decides *when* to flush an Engine's task queue. The flush callback is always synchronous. */
+export type Scheduler = (flush: () => void) => void;
+
+// =============================================================================
 // Backend
 // =============================================================================
 
@@ -28,6 +35,8 @@ export interface Backend<Capabilities extends string = string> {
   readonly name: string;
   /** The root node to mount into. */
   readonly root: unknown;
+  /** Default scheduler for engines using this backend. */
+  readonly defaultScheduler?: Scheduler;
   /**
    * Initializes capability properties on a {@link RenderContext}.
    *
@@ -72,6 +81,8 @@ export interface RenderContext {
   parent: unknown;
   /** The execution scope (backend + plugins) for this context. */
   scope: ExecutionScope;
+  /** The engine managing this context's execution scope. */
+  engine: Engine;
   /** Processes a {@link Builder}'s instructions in a new child context. */
   processChildren(builder: Builder, options?: { parent?: unknown; scope?: ExecutionScope }): void;
   /** Creates a new child-scoped {@link RenderContext} for the given parent node. */
@@ -152,4 +163,61 @@ export interface Plugin {
    * may omit this.
    */
   process?(request: Request, ctx: RenderContext): Response;
+}
+
+// =============================================================================
+// Engine / Hub
+// =============================================================================
+
+/** An inter-engine message. */
+export interface Message {
+  readonly type: string;
+  readonly [key: string]: unknown;
+}
+
+/** Options for creating an {@link Engine}. */
+export interface EngineOptions {
+  scheduler?: Scheduler;
+}
+
+/**
+ * An independent execution engine with a task queue and scheduler.
+ *
+ * Each Engine is associated with an {@link ExecutionScope} and uses
+ * a {@link Scheduler} to decide when to flush its task queue.
+ * Tasks are deduplicated via a Set — enqueueing the same function
+ * reference multiple times results in a single execution.
+ */
+export interface Engine {
+  /** Unique identifier for this engine. */
+  readonly id: string;
+  /** The execution scope this engine manages. */
+  readonly scope: ExecutionScope;
+  /** The hub that owns this engine. */
+  readonly hub: Hub;
+  /** Enqueues a task. Duplicate function references are deduplicated. */
+  enqueue(task: () => void): void;
+  /** Registers a handler for messages of the given type. */
+  on(type: string, handler: (message: Message) => void): void;
+  /** Stops the engine, preventing further task execution. */
+  stop(): void;
+}
+
+/**
+ * Orchestrates multiple {@link Engine} instances.
+ *
+ * The Hub manages engine lifecycle, scope-to-engine resolution,
+ * and inter-engine message dispatch.
+ */
+export interface Hub {
+  /** Creates a new engine with the given id and scope. */
+  spawn(id: string, scope: ExecutionScope, options?: EngineOptions): Engine;
+  /** Retrieves an engine by id. */
+  get(id: string): Engine | undefined;
+  /** Finds the engine associated with the given scope. */
+  resolve(scope: ExecutionScope): Engine | undefined;
+  /** Dispatches a message to the engine identified by target. */
+  dispatch(target: Engine | ExecutionScope, message: Message): void;
+  /** Disposes all engines managed by this hub. */
+  dispose(): void;
 }

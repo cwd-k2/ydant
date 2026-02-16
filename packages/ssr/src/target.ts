@@ -76,6 +76,7 @@ export function createSSRBackend(): SSRBackend {
   return {
     name: "ssr-backend",
     root,
+    defaultScheduler: (flush) => flush(),
 
     initContext(ctx: RenderContext) {
       ctx.tree = tree;

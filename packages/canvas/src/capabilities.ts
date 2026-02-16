@@ -68,6 +68,7 @@ export function createCanvasBackend(): CanvasBackend {
   return {
     name: "canvas-backend",
     root,
+    defaultScheduler: (flush) => requestAnimationFrame(flush),
 
     initContext(ctx: RenderContext) {
       ctx.tree = tree;

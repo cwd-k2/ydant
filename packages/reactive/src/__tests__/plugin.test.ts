@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { mount } from "@ydant/core";
+import { mount, sync } from "@ydant/core";
 import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
 import { signal } from "../signal";
 import { reactive } from "../reactive";
@@ -32,6 +32,7 @@ describe("createReactivePlugin", () => {
       {
         backend: createDOMBackend(container),
         plugins: [createBasePlugin(), createReactivePlugin()],
+        scheduler: sync,
       },
     );
 
@@ -49,12 +50,13 @@ describe("createReactivePlugin", () => {
       {
         backend: createDOMBackend(container),
         plugins: [createBasePlugin(), createReactivePlugin()],
+        scheduler: sync,
       },
     );
 
     expect(container.textContent).toContain("Count: 0");
 
-    // Update signal
+    // Update signal — sync scheduler means immediate re-render
     count.set(5);
 
     expect(container.textContent).toContain("Count: 5");
@@ -69,6 +71,7 @@ describe("createReactivePlugin", () => {
       {
         backend: createDOMBackend(container),
         plugins: [createBasePlugin(), createReactivePlugin()],
+        scheduler: sync,
       },
     );
 
@@ -88,6 +91,7 @@ describe("createReactivePlugin", () => {
       {
         backend: createDOMBackend(container),
         plugins: [createBasePlugin(), createReactivePlugin()],
+        scheduler: sync,
       },
     );
 
@@ -116,6 +120,7 @@ describe("createReactivePlugin", () => {
       {
         backend: createDOMBackend(container),
         plugins: [createBasePlugin(), createReactivePlugin()],
+        scheduler: sync,
       },
     );
 
@@ -129,6 +134,44 @@ describe("createReactivePlugin", () => {
     count2.set(200);
     expect(container.textContent).toContain("A: 1");
     expect(container.textContent).toContain("B: 200");
+  });
+
+  it("batches multiple signal updates in a single flush", async () => {
+    const firstName = signal("John");
+    const lastName = signal("Doe");
+    let renderCount = 0;
+
+    mount(
+      () =>
+        div(function* () {
+          yield* reactive(() => {
+            renderCount++;
+            return [text(`${firstName()} ${lastName()}`)];
+          });
+        }),
+      {
+        backend: createDOMBackend(container),
+        plugins: [createBasePlugin(), createReactivePlugin()],
+        // Use default microtask scheduler (from DOM backend) to test batching
+      },
+    );
+
+    expect(renderCount).toBe(1);
+    expect(container.textContent).toContain("John Doe");
+
+    // Multiple signal changes in same tick — should batch into one re-render
+    firstName.set("Jane");
+    lastName.set("Smith");
+
+    // Not yet re-rendered (microtask pending)
+    expect(renderCount).toBe(1);
+
+    // Flush microtask
+    await new Promise<void>((r) => queueMicrotask(r));
+
+    // Only 1 additional render, not 2
+    expect(renderCount).toBe(2);
+    expect(container.textContent).toContain("Jane Smith");
   });
 });
 
@@ -165,6 +208,7 @@ describe("ReactiveScope isolation", () => {
       {
         backend: createDOMBackend(containerA),
         plugins: [createBasePlugin(), createReactivePlugin()],
+        scheduler: sync,
       },
     );
 
@@ -179,6 +223,7 @@ describe("ReactiveScope isolation", () => {
       {
         backend: createDOMBackend(containerB),
         plugins: [createBasePlugin(), createReactivePlugin()],
+        scheduler: sync,
       },
     );
 

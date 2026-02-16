@@ -39,7 +39,17 @@ export type {
 // Plugin System
 // =============================================================================
 
-export type { Backend, ExecutionScope, Plugin, RenderContext } from "./plugin";
+export type {
+  Backend,
+  ExecutionScope,
+  Plugin,
+  RenderContext,
+  Scheduler,
+  Message,
+  EngineOptions,
+  Engine,
+  Hub,
+} from "./plugin";
 
 // =============================================================================
 // Utilities
@@ -53,6 +63,22 @@ export { isTagged, toRender } from "./utils";
 
 export type { Embed } from "./embed";
 export { embed, createEmbedPlugin } from "./embed";
+
+// =============================================================================
+// Mount
+// =============================================================================
+
+// =============================================================================
+// Scheduler
+// =============================================================================
+
+export { sync, microtask, animFrame } from "./scheduler";
+
+// =============================================================================
+// Hub
+// =============================================================================
+
+export { createHub } from "./hub";
 
 // =============================================================================
 // Mount

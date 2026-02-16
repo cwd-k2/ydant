@@ -64,6 +64,7 @@ export function createDOMBackend(
   return {
     name: "dom-backend",
     root,
+    defaultScheduler: (flush) => queueMicrotask(flush),
 
     initContext(ctx: RenderContext) {
       ctx.tree = tree;

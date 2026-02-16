@@ -4,6 +4,9 @@
  * Allows switching execution scopes within a render tree.
  * This is the mechanism for embedding one rendering environment
  * inside another (e.g., Canvas inside DOM).
+ *
+ * Same-scope embeds execute synchronously (same engine).
+ * Cross-scope embeds enqueue work on the target engine.
  */
 
 import type { Tagged, Spell, Builder } from "./types";
@@ -36,7 +39,20 @@ export function createEmbedPlugin(): Plugin {
     types: ["embed"],
     process(request: { type: string }, ctx: RenderContext) {
       const { scope, content } = request as Embed;
-      ctx.processChildren(content, { scope });
+
+      if (scope === ctx.scope) {
+        // Same scope — synchronous (same engine)
+        ctx.processChildren(content, { scope });
+      } else {
+        // Cross-scope — resolve or spawn target engine, then enqueue
+        const hub = ctx.engine.hub;
+        let target = hub.resolve(scope);
+        if (!target) {
+          target = hub.spawn(`embed-${scope.backend.name}-${Date.now()}`, scope);
+        }
+        target.enqueue(() => ctx.processChildren(content, { scope }));
+      }
+
       return undefined;
     },
   };

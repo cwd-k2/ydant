@@ -4,7 +4,7 @@
 
 import type { Builder, Render } from "../types";
 import { toRender } from "../utils";
-import type { ExecutionScope, Plugin, RenderContext } from "../plugin";
+import type { ExecutionScope, Hub, Plugin, RenderContext } from "../plugin";
 
 /**
  * Iterates over registered plugins, calling each one exactly once.
@@ -24,9 +24,12 @@ function forEachUniquePlugin(plugins: readonly Plugin[], callback: (plugin: Plug
  * Structured as a higher-order function so that `processChildren` can
  * capture the `processIterator` function via closure, breaking the
  * circular dependency between this module and `iterator.ts`.
+ *
+ * The hub parameter is used to resolve the engine for each scope.
  */
 export function createRenderContextFactory(
   processIterator: (iter: Render, ctx: RenderContext) => void,
+  hub: Hub,
 ) {
   function createRenderContext(
     scope: ExecutionScope,
@@ -38,6 +41,7 @@ export function createRenderContextFactory(
     const ctx = {
       parent: actualParent,
       scope,
+      engine: hub.resolve(scope)!,
     } as RenderContext;
 
     // Core-provided methods (capture scope via closure)

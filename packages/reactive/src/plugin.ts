@@ -5,6 +5,11 @@
  * Tracks Signal dependencies during rendering and automatically re-renders
  * reactive blocks when their dependencies change.
  *
+ * Updates are batched through the Engine's task queue. When a Signal changes,
+ * the rerender is enqueued (not executed immediately). The Engine's Scheduler
+ * decides when to flush, and Set dedup ensures each reactive block rerenders
+ * at most once per flush cycle even if multiple dependencies change.
+ *
  * @example
  * ```typescript
  * import { createReactivePlugin } from "@ydant/reactive/plugin";
@@ -48,8 +53,8 @@ export function createReactivePlugin(): Plugin {
       // Unmount callbacks accumulated during rendering
       let unmountCallbacks: Array<() => void> = [];
 
-      // Re-render function (called on dependency change)
-      const update = () => {
+      // Actual re-render logic
+      const rerender = () => {
         // Run previous unmount callbacks
         for (const callback of unmountCallbacks) {
           callback();
@@ -60,15 +65,19 @@ export function createReactivePlugin(): Plugin {
         ctx.tree.clearChildren(container);
 
         // Process children while tracking Signal dependencies, within the mount's scope
+        // subscriber is the tracking callback — it enqueues rerender on signal change
         runInScope(scope, () => {
-          runWithSubscriber(update, () => {
+          runWithSubscriber(subscriber, () => {
             ctx.processChildren(builder, { parent: container });
           });
         });
       };
 
-      // Initial render
-      update();
+      // Subscriber: called when a tracked signal changes → enqueue rerender
+      const subscriber = () => ctx.engine.enqueue(rerender);
+
+      // Initial render (synchronous — does not go through engine queue)
+      rerender();
 
       // Cleanup on unmount
       ctx.unmountCallbacks.push(() => {

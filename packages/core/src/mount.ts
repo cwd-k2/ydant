@@ -2,12 +2,15 @@
  * @ydant/core - Mount function
  */
 
-import type { Backend, ExecutionScope, Plugin } from "./plugin";
+import type { Backend, ExecutionScope, Hub, Plugin, Scheduler } from "./plugin";
 import type { Render, CapabilityCheck } from "./types";
 import { render } from "./render";
+import { createHub } from "./hub";
 
 /** A handle returned by {@link mount}, used to dispose the mount scope. */
 export interface MountHandle {
+  /** The hub managing engines for this mount scope. */
+  readonly hub: Hub;
   /** Disposes the mount scope, calling plugin teardown in reverse order. */
   dispose(): void;
 }
@@ -18,6 +21,8 @@ export type MountOptions<G extends Render = Render, B extends Backend = Backend>
   backend: B;
   /** Plugins to register for this mount scope. */
   plugins?: Plugin[];
+  /** Override the scheduler for the primary engine (defaults to backend.defaultScheduler, then sync). */
+  scheduler?: Scheduler;
 } & CapabilityCheck<G, B>;
 
 /**
@@ -87,13 +92,17 @@ export function mount<G extends Render, B extends Backend>(
   app: () => G,
   options: MountOptions<G, B>,
 ): MountHandle {
-  const { backend, plugins: pluginList } = options;
+  const { backend, plugins: pluginList, scheduler } = options;
   const allPlugins = pluginList ?? [];
 
   const scope = createExecutionScope(backend, allPlugins);
 
-  // Render, then call setup on each plugin with the root context
-  const rootCtx = render(app(), scope);
+  // Create the hub and primary engine
+  const hub = createHub();
+  hub.spawn("primary", scope, { scheduler });
+
+  // Render (initial render is synchronous — does not go through the engine queue)
+  const rootCtx = render(app(), scope, hub);
 
   // Call setup on each unique plugin
   const visited = new Set<string>();
@@ -106,6 +115,7 @@ export function mount<G extends Render, B extends Backend>(
   let disposed = false;
 
   return {
+    hub,
     dispose() {
       if (disposed) return;
       disposed = true;
@@ -117,6 +127,7 @@ export function mount<G extends Render, B extends Backend>(
         visited.add(plugin.name);
         plugin.teardown?.(rootCtx);
       }
+      hub.dispose();
     },
   };
 }
