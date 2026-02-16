@@ -1,3 +1,4 @@
+/// <reference path="./global.d.ts" />
 /**
  * @ydant/core
  *
@@ -17,7 +18,22 @@ export type {
   Builder,
   Render,
   Component,
+  RequiredCapabilities,
+  ProvidedCapabilities,
+  CapabilityCheck,
 } from "./types";
+
+// =============================================================================
+// Capabilities
+// =============================================================================
+
+export type {
+  TreeCapability,
+  DecorateCapability,
+  InteractCapability,
+  ScheduleCapability,
+  ResolveCapability,
+} from "./capabilities";
 
 // =============================================================================
 // Plugin System

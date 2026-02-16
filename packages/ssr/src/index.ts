@@ -10,15 +10,14 @@
 export type { VElement, VText, VRoot, VNode, VContainer } from "./vnode";
 
 // SSR capability provider
-export type { SSRCapabilities, StringTarget } from "./target";
-export { createSSRCapabilities, createStringTarget } from "./target";
+export type { SSRCapabilities } from "./target";
+export { createSSRCapabilities } from "./target";
 
 // SSR high-level API
 export type { RenderToStringOptions } from "./render";
 export { renderToString } from "./render";
 
-// Node resolver (capability layer for hydration)
-export type { NodeResolver } from "./resolver";
+// Node resolver
 export { createDOMNodeResolver } from "./resolver";
 
 // Hydration

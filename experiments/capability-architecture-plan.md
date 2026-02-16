@@ -1,5 +1,23 @@
 # 能力定義層アーキテクチャ — 実行計画
 
+> **Status: 実装完了** (2026-02)
+>
+> 以下の計画は実装時に大幅に簡略化された。主な差分:
+>
+> - **Phase 2-5 統合**: RenderTarget の段階的移行ではなく、一度に Capabilities システムに切り替え
+> - **`isElement` の配置**: MountOptions ではなく各 Capability Provider の initContext 内でローカルに判定
+> - **Phase 9 不要**: RenderTarget は先に完全除去されており、このプランの前提が更新済み
+> - **Phase 10 実装済み**: `Plugin<Capabilities>` phantom 型 + `CapabilityCheck` で mount() に組み込み
+> - **SSR の能力プロファイル**: 計画では Interact/Schedule なしだったが、実装では no-op で4能力全提供（crash 防止）
+> - **ResolveCapability**: 計画では SSR augmentation だったが、実装では core の augmentation に配置
+>
+> 実装の詳細は以下を参照:
+>
+> - `@ydant/core/src/capabilities.ts` — 能力インターフェース
+> - `@ydant/core/src/types.ts` — CapabilityCheck, RequiredCapabilities, ProvidedCapabilities
+> - `@ydant/core/src/mount.ts` — mount() の型パラメータ
+> - `@ydant/base/src/capabilities.ts` — DOM Capability Provider
+
 ## 前提: 現在のアーキテクチャと目標
 
 ### 現状 (RenderTarget モノリス)

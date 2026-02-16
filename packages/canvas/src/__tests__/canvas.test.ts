@@ -1,7 +1,16 @@
 import { describe, it, expect, vi } from "vitest";
 import { mount } from "@ydant/core";
 import { createBasePlugin, attr } from "@ydant/base";
-import { createCanvasCapabilities, rect, circle, group, canvasText, line } from "../index";
+import {
+  createCanvasCapabilities,
+  rect,
+  circle,
+  group,
+  canvasText,
+  line,
+  ellipse,
+  canvasPath,
+} from "../index";
 
 describe("Canvas capabilities", () => {
   it("creates a VShape tree from generators", () => {
@@ -84,6 +93,40 @@ describe("Canvas capabilities", () => {
     const lineShape = cap.root.children[0];
     expect(lineShape.tag).toBe("line");
     expect(lineShape.props.get("x2")).toBe("100");
+  });
+
+  it("creates ellipse shapes", () => {
+    const cap = createCanvasCapabilities();
+
+    mount(
+      () =>
+        ellipse(() => [
+          attr("cx", "100"),
+          attr("cy", "75"),
+          attr("rx", "50"),
+          attr("ry", "30"),
+          attr("fill", "green"),
+        ]),
+      { root: cap.root, plugins: [cap, createBasePlugin()] },
+    );
+
+    const shape = cap.root.children[0];
+    expect(shape.tag).toBe("ellipse");
+    expect(shape.props.get("rx")).toBe("50");
+    expect(shape.props.get("ry")).toBe("30");
+  });
+
+  it("creates canvasPath shapes", () => {
+    const cap = createCanvasCapabilities();
+
+    mount(() => canvasPath(() => [attr("d", "M 10 10 L 90 90"), attr("stroke", "#000")]), {
+      root: cap.root,
+      plugins: [cap, createBasePlugin()],
+    });
+
+    const shape = cap.root.children[0];
+    expect(shape.tag).toBe("path");
+    expect(shape.props.get("d")).toBe("M 10 10 L 90 90");
   });
 
   it("clears root on re-render via beforeRender", () => {
@@ -226,5 +269,100 @@ describe("Canvas paint", () => {
     expect(mockCtx.moveTo).toHaveBeenCalledWith(10, 20);
     expect(mockCtx.lineTo).toHaveBeenCalledWith(100, 200);
     expect(mockCtx.stroke).toHaveBeenCalled();
+  });
+
+  it("paints ellipse shapes", () => {
+    const cap = createCanvasCapabilities();
+
+    mount(
+      () =>
+        ellipse(() => [
+          attr("cx", "100"),
+          attr("cy", "75"),
+          attr("rx", "50"),
+          attr("ry", "30"),
+          attr("fill", "green"),
+        ]),
+      { root: cap.root, plugins: [cap, createBasePlugin()] },
+    );
+
+    const mockCtx = createMockCanvas();
+    cap.paint(mockCtx);
+
+    expect(mockCtx.ellipse).toHaveBeenCalledWith(100, 75, 50, 30, 0, 0, Math.PI * 2);
+    expect(mockCtx.fill).toHaveBeenCalled();
+  });
+
+  it("paints path shapes via Path2D", () => {
+    // Path2D is not available in jsdom; provide a minimal stub
+    const mockPath2D = vi.fn();
+    vi.stubGlobal("Path2D", mockPath2D);
+
+    const cap = createCanvasCapabilities();
+
+    mount(
+      () =>
+        canvasPath(() => [
+          attr("d", "M 10 10 L 90 90"),
+          attr("fill", "red"),
+          attr("stroke", "blue"),
+        ]),
+      { root: cap.root, plugins: [cap, createBasePlugin()] },
+    );
+
+    const mockCtx = createMockCanvas();
+    cap.paint(mockCtx);
+
+    expect(mockPath2D).toHaveBeenCalledWith("M 10 10 L 90 90");
+    expect(mockCtx.fill).toHaveBeenCalled();
+    expect(mockCtx.stroke).toHaveBeenCalled();
+
+    vi.unstubAllGlobals();
+  });
+
+  it("paints rect with roundRect when rx is set", () => {
+    const cap = createCanvasCapabilities();
+
+    mount(
+      () =>
+        rect(() => [
+          attr("x", "10"),
+          attr("y", "20"),
+          attr("width", "100"),
+          attr("height", "50"),
+          attr("rx", "8"),
+          attr("fill", "blue"),
+        ]),
+      { root: cap.root, plugins: [cap, createBasePlugin()] },
+    );
+
+    const mockCtx = createMockCanvas();
+    cap.paint(mockCtx);
+
+    expect(mockCtx.roundRect).toHaveBeenCalledWith(10, 20, 100, 50, 8);
+    expect(mockCtx.fill).toHaveBeenCalled();
+    expect(mockCtx.fillRect).not.toHaveBeenCalled();
+  });
+
+  it("applies opacity via globalAlpha", () => {
+    const cap = createCanvasCapabilities();
+
+    mount(
+      () =>
+        rect(() => [
+          attr("x", "0"),
+          attr("y", "0"),
+          attr("width", "50"),
+          attr("height", "50"),
+          attr("fill", "red"),
+          attr("opacity", "0.5"),
+        ]),
+      { root: cap.root, plugins: [cap, createBasePlugin()] },
+    );
+
+    const mockCtx = createMockCanvas();
+    cap.paint(mockCtx);
+
+    expect(mockCtx.globalAlpha).toBe(0.5);
   });
 });

@@ -1,5 +1,10 @@
 /**
  * PoC 2: yield 型逆引きと mount 検証の詳細テスト
+ *
+ * Status: アプローチ B — ボツ案（記録として保持）
+ *
+ * 型レベル効果追跡は PoC 3（アプローチ C）をベースに実装済み。
+ * 実装: packages/core/src/types.ts (RequiredCapabilities, CapabilityCheck 等)
  */
 
 // === SpellSchema ===

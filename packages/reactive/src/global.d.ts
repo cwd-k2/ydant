@@ -13,6 +13,6 @@ declare module "@ydant/core" {
   }
 
   interface SpellSchema {
-    reactive: { request: Reactive };
+    reactive: { request: Reactive; capabilities: "tree" | "decorate" };
   }
 }

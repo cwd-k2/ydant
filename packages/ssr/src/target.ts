@@ -7,18 +7,22 @@
  * Interact / Schedule は no-op で提供する（SSR ではイベントもライフサイクルも不要）。
  */
 
-import type { Plugin, RenderContext } from "@ydant/core";
 import type {
+  Plugin,
+  RenderContext,
   TreeCapability,
   DecorateCapability,
   InteractCapability,
   ScheduleCapability,
-} from "@ydant/base";
+} from "@ydant/core";
 import { toHTML } from "./serialize";
 import type { VContainer, VElement, VNode, VRoot, VText } from "./vnode";
 
+/** The capabilities provided by the SSR capability provider. */
+type SSRCapabilityNames = "tree" | "decorate" | "interact" | "schedule";
+
 /** A capability provider plugin for SSR with HTML serialization. */
-export interface SSRCapabilities extends Plugin {
+export interface SSRCapabilities extends Plugin<SSRCapabilityNames> {
   /** The virtual root node used as the mount point. */
   readonly root: unknown;
   /** Serializes the rendered VNode tree to an HTML string. */
@@ -95,7 +99,3 @@ export function createSSRCapabilities(): SSRCapabilities {
     },
   } as SSRCapabilities;
 }
-
-// Re-export the old name for type compatibility
-export type StringTarget = SSRCapabilities;
-export const createStringTarget = createSSRCapabilities;

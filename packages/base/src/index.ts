@@ -75,13 +75,7 @@ export type { SlotRef } from "./slot-ref";
 export { createHTMLElement, createSVGElement } from "./elements/factory";
 
 // Capabilities
-export type {
-  TreeCapability,
-  DecorateCapability,
-  InteractCapability,
-  ScheduleCapability,
-  DOMCapabilitiesOptions,
-} from "./capabilities";
+export type { DOMCapabilitiesOptions } from "./capabilities";
 export { createDOMCapabilities } from "./capabilities";
 
 // Plugin

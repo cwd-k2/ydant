@@ -97,6 +97,34 @@ describe("Portal plugin", () => {
     expect(root.textContent).toBe("Refreshed");
   });
 
+  it("multiple portals to same target: unmount of one clears all content", () => {
+    const root = document.createElement("div");
+    const sharedTarget = document.createElement("div");
+    const ref = createSlotRef();
+
+    function* App() {
+      const slot = yield* div(function* () {
+        yield* portal(sharedTarget, () => [text("Portal A")]);
+      });
+      ref.bind(slot);
+      yield* portal(sharedTarget, () => [text("Portal B")]);
+    }
+
+    mount(App, {
+      root,
+      plugins: [createDOMCapabilities(), createBasePlugin(), createPortalPlugin()],
+    });
+
+    expect(sharedTarget.textContent).toContain("Portal A");
+    expect(sharedTarget.textContent).toContain("Portal B");
+
+    // Refresh the div containing Portal A — its unmount triggers clearChildren on sharedTarget
+    ref.refresh(() => [text("No portal")]);
+
+    // Portal B's content is also gone because clearChildren removed all children
+    expect(sharedTarget.textContent).toBe("");
+  });
+
   describe("lifecycle inside portal", () => {
     let container: HTMLElement;
 

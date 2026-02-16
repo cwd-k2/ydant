@@ -1,5 +1,19 @@
 # 能力定義層の設計分析
 
+> **Status: 実装完了** (2026-02)
+>
+> この分析で特定した問題は Capabilities システムとして実装済み。
+> 以下は設計時の分析記録として残す。
+>
+> 実装の概要:
+>
+> - 能力インターフェース (`TreeCapability` 等) → `@ydant/core/src/capabilities.ts`
+> - DOM 実装 → `@ydant/base/src/capabilities.ts` (`createDOMCapabilities`)
+> - Canvas 実装 → `@ydant/canvas/src/capabilities.ts` (`createCanvasCapabilities`)
+> - SSR 実装 → `@ydant/ssr/src/target.ts` (`createSSRCapabilities`)
+> - Hydration → `ResolveCapability` + `createHydrationPlugin`
+> - 型レベル効果追跡 → `@ydant/core/src/types.ts` (`CapabilityCheck`, `RequiredCapabilities`)
+
 ## 1. 問題: 現 RenderTarget の DOM バイアス
 
 現在の `RenderTarget` は DOM API の形状をそのまま抽象化している。

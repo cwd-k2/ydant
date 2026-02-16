@@ -1,6 +1,11 @@
 /**
  * PoC: yield* による Generator 型パラメータの合成
  *
+ * Status: アプローチ A — ボツ案（記録として保持）
+ *
+ * 型レベル効果追跡は PoC 3（アプローチ C）をベースに実装済み。
+ * 実装: packages/core/src/types.ts (RequiredCapabilities, CapabilityCheck 等)
+ *
  * 検証項目:
  * 1. Spell<K> を yield* したとき、親 Generator の yield 型が自動推論されるか
  * 2. 複数の yield* で yield 型が union になるか

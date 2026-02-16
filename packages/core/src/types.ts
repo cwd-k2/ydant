@@ -102,3 +102,58 @@ export type Builder = () => Render | Render[];
  * ```
  */
 export type Component<P = void> = [P] extends [void] ? () => Render : (props: P) => Render;
+
+// =============================================================================
+// Capability Tracking Types
+// =============================================================================
+
+import type { Plugin } from "./plugin";
+
+/** Extracts the `capabilities` literal union from each {@link SpellSchema} entry. */
+type CapabilitiesOf = {
+  [K in keyof SpellSchema]: SpellSchema[K] extends { capabilities: infer C extends string }
+    ? C
+    : never;
+};
+
+/** Extracts the required capabilities from a Request type by matching its `type` tag back to SpellSchema. */
+type CapabilitiesOfRequest<R> = R extends { type: infer T }
+  ? T extends keyof SpellSchema
+    ? CapabilitiesOf[T]
+    : never
+  : never;
+
+/** Extracts the union of all capabilities required by a generator's yield type. */
+export type RequiredCapabilities<G> =
+  G extends Generator<infer Y, unknown, unknown> ? CapabilitiesOfRequest<Y> : never;
+
+/**
+ * Extracts the union of capabilities provided by a tuple of plugins.
+ * Filters out `string` (the wide default) — only specific capability literals count.
+ */
+export type ProvidedCapabilities<Ps extends readonly Plugin[]> = Ps[number] extends infer U
+  ? U extends Plugin<infer C>
+    ? string extends C
+      ? never
+      : C
+    : never
+  : never;
+
+/** True if `G` is the wide {@link Render} type (i.e., from a `Component` annotation). */
+type IsWideRender<G> = Render extends G ? true : false;
+
+/**
+ * Compile-time check that a generator's required capabilities
+ * are satisfied by the provided plugins.
+ *
+ * - Wide `Render` (from `Component` annotations) → check skipped.
+ * - Narrow generator → `RequiredCapabilities ⊆ ProvidedCapabilities` must hold.
+ */
+export type CapabilityCheck<G extends Render, Ps extends readonly Plugin[]> =
+  IsWideRender<G> extends true
+    ? {}
+    : Exclude<RequiredCapabilities<G>, ProvidedCapabilities<Ps>> extends never
+      ? {}
+      : {
+          __capabilityError: `Missing capabilities: ${Exclude<RequiredCapabilities<G>, ProvidedCapabilities<Ps>> & string}`;
+        };

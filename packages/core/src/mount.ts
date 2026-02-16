@@ -3,22 +3,25 @@
  */
 
 import type { Plugin } from "./plugin";
-import type { Component } from "./types";
+import type { Render, CapabilityCheck } from "./types";
 import { render } from "./render";
-
-/** Options for {@link mount}. */
-export interface MountOptions {
-  /** The root node to mount into. */
-  root: unknown;
-  /** Plugins to register for this mount scope. */
-  plugins?: Plugin[];
-}
 
 /** A handle returned by {@link mount}, used to dispose the mount scope. */
 export interface MountHandle {
   /** Disposes the mount scope, calling plugin teardown in reverse order. */
   dispose(): void;
 }
+
+/** Options for {@link mount}. */
+export type MountOptions<
+  G extends Render = Render,
+  Plugins extends readonly Plugin[] = Plugin[],
+> = {
+  /** The root node to mount into. */
+  root: unknown;
+  /** Plugins to register for this mount scope. */
+  plugins?: Plugins;
+} & CapabilityCheck<G, Plugins>;
 
 /**
  * Mounts a component into the given root node, starting the rendering pipeline.
@@ -45,7 +48,10 @@ export interface MountHandle {
  * // Later: handle.dispose();
  * ```
  */
-export function mount(app: Component, options: MountOptions): MountHandle {
+export function mount<G extends Render, const Plugins extends readonly Plugin[]>(
+  app: () => G,
+  options: MountOptions<G, Plugins>,
+): MountHandle {
   const { root, plugins: pluginList } = options;
 
   // Build a lookup map: type tag -> plugin

@@ -5,18 +5,22 @@
  * The tree can then be painted to a Canvas2D context via paint().
  */
 
-import type { Plugin, RenderContext } from "@ydant/core";
 import type {
+  Plugin,
+  RenderContext,
   TreeCapability,
   DecorateCapability,
   InteractCapability,
   ScheduleCapability,
-} from "@ydant/base";
+} from "@ydant/core";
 import type { VShape, VShapeContainer, VShapeRoot } from "./vshape";
 import { paintShape } from "./paint";
 
+/** The capabilities provided by the Canvas capability provider. */
+type CanvasCapabilityNames = "tree" | "decorate" | "interact" | "schedule";
+
 /** A capability provider plugin for Canvas2D rendering. */
-export interface CanvasCapabilities extends Plugin {
+export interface CanvasCapabilities extends Plugin<CanvasCapabilityNames> {
   /** The virtual root node used as the mount point. */
   readonly root: VShapeRoot;
   /** Paints the rendered shape tree to a Canvas2D context. */

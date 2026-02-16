@@ -1,29 +1,21 @@
 /**
- * @ydant/ssr - Node resolver
+ * @ydant/ssr - DOM Node Resolver
  *
- * Hydration 用の「ノード取得能力」レイヤー。
- * 既存 DOM ツリーをカーソルで歩き、createElement の代わりに
- * 既存の子ノードを順番に返す。
- *
- * Target でも Plugin でもない、独立した能力の提供者。
- * Plugin が「DSL をどう読むか」を決め、その中で必要に応じて
- * このレイヤーの能力を使う。
+ * Provides a DOM-based implementation of {@link ResolveCapability}.
+ * Walks existing child nodes of a parent using a cursor,
+ * enabling hydration to reuse server-rendered DOM nodes.
  */
 
-/** Cursor-based resolver that walks existing child nodes of a parent. */
-export interface NodeResolver {
-  /** Returns the next child node of `parent`, advancing the cursor. */
-  nextChild(parent: unknown): unknown | null;
-}
+import type { ResolveCapability } from "@ydant/core";
 
 /**
- * Creates a {@link NodeResolver} backed by the browser DOM.
+ * Creates a {@link ResolveCapability} backed by the browser DOM.
  *
  * Each parent node has its own cursor position (tracked via WeakMap).
  * Successive calls to `nextChild(parent)` return `childNodes[0]`,
  * `childNodes[1]`, etc.
  */
-export function createDOMNodeResolver(): NodeResolver {
+export function createDOMNodeResolver(): ResolveCapability {
   const cursors = new WeakMap<object, number>();
 
   return {

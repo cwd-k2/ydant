@@ -1,5 +1,16 @@
 /**
  * PoC 3: mount の型制約 — 正しいパターンを見つける
+ *
+ * Status: アプローチ C — 採用・実装済み (2026-02)
+ *
+ * このアプローチをベースに型レベル効果追跡を実装した。
+ * 実装: packages/core/src/types.ts (RequiredCapabilities, ProvidedCapabilities, CapabilityCheck)
+ *
+ * 実装での主な差分:
+ * - Plugin<Capabilities> に phantom 型パラメータを追加 (packages/core/src/plugin.ts)
+ * - mount() に const Plugins で tuple 推論 (packages/core/src/mount.ts)
+ * - IsWideRender で Component 注釈時のチェック skip を追加
+ * - ProvidedCapabilities で string (デフォルト) を除外するガード追加
  */
 
 export {};

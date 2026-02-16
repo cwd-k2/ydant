@@ -8,6 +8,6 @@ import type { Portal } from "./types";
 
 declare module "@ydant/core" {
   interface SpellSchema {
-    portal: { request: Portal };
+    portal: { request: Portal; capabilities: "tree" };
   }
 }

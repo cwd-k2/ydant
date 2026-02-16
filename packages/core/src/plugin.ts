@@ -45,7 +45,9 @@ export interface RenderContext {
 // =============================================================================
 
 /** A plugin that teaches the core runtime how to handle specific spell operations. */
-export interface Plugin {
+export interface Plugin<Capabilities extends string = string> {
+  /** Phantom field for compile-time capability tracking. Do not set at runtime. */
+  readonly __capabilities?: Capabilities;
   /** Unique identifier for this plugin. */
   readonly name: string;
   /** The `type` tags this plugin handles (e.g., `["element", "text"]`). */

@@ -15,6 +15,7 @@ import type {
   Plugin,
   MountHandle,
   RenderContext,
+  ResolveCapability,
   Render,
   Response,
   Request,
@@ -22,7 +23,6 @@ import type {
 import { mount, isTagged } from "@ydant/core";
 import { createDOMCapabilities, createBasePlugin, executeMount, createSlot } from "@ydant/base";
 import type { Element } from "@ydant/base";
-import type { NodeResolver } from "./resolver";
 import { createDOMNodeResolver } from "./resolver";
 
 declare const process: undefined | { env?: { NODE_ENV?: string } };
@@ -73,7 +73,7 @@ export function hydrate(app: Component, root: HTMLElement, options?: HydrateOpti
  * After setup() is called (initial render complete), all requests
  * delegate to the base plugin for normal DOM rendering.
  */
-export function createHydrationPlugin(resolver: NodeResolver): Plugin {
+export function createHydrationPlugin(resolver: ResolveCapability): Plugin {
   const base = createBasePlugin();
   let hydrating = true;
 
@@ -92,6 +92,7 @@ export function createHydrationPlugin(resolver: NodeResolver): Plugin {
 
     initContext(ctx: RenderContext, parentCtx?: RenderContext) {
       base.initContext?.(ctx, parentCtx);
+      ctx.resolve = resolver;
     },
 
     mergeChildContext(parentCtx: RenderContext, childCtx: RenderContext) {
@@ -151,7 +152,11 @@ export function createHydrationPlugin(resolver: NodeResolver): Plugin {
  * hydration mode). The returned Slot's refresh() uses normal rendering
  * (since hydrating will be false by the time refresh is called).
  */
-function hydrateElement(element: Element, ctx: RenderContext, resolver: NodeResolver): Response {
+function hydrateElement(
+  element: Element,
+  ctx: RenderContext,
+  resolver: ResolveCapability,
+): Response {
   // Acquire existing node instead of creating
   const node = resolver.nextChild(ctx.parent);
 
