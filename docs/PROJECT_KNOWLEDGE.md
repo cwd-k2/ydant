@@ -161,6 +161,18 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - API リネーム: `createDOMCapabilities()` → `createDOMBackend(root)`, `createCanvasCapabilities()` → `createCanvasBackend()`, `createSSRCapabilities()` → `createSSRBackend()`
 - Canvas/SSR で `root` を外部から渡す必要がなくなり、参照の二重化が解消
 
+### Phase 11: ExecutionScope と embed
+
+- `ExecutionScope` 型を導入: backend + pluginMap + allPlugins を束ねる
+- `RenderContext` から `plugins` / `allPlugins` を除去し `scope` フィールドに一本化
+- `processChildren` に `{ scope }` オプションを追加 — レンダリング中の実行環境切り替え
+- `embed()` spell + `createEmbedPlugin()` を core に追加（`capabilities: never`）
+- `createExecutionScope()` を公開 API として export
+- **processChildren の 2 種類の環境切り替え**:
+  - `{ parent }` — 同じ backend、別の親ノードへ（Portal が使用）
+  - `{ scope }` — 別の backend + plugins へ（embed が使用）
+- **mergeChildContext は親 scope の plugins で行う**: 子の state を親に取り込む操作は親の plugins が判断すべき。子 scope 固有の plugins の mergeChildContext は呼ばれない
+
 ---
 
 ## 学んだ教訓
