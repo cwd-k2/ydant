@@ -60,6 +60,9 @@ mount(() => Counter(0), {
 | **@ydant/router**     | SPA routing                         | [Details](./packages/router/README.md)     |
 | **@ydant/async**      | Suspense, ErrorBoundary             | [Details](./packages/async/README.md)      |
 | **@ydant/transition** | CSS transitions                     | [Details](./packages/transition/README.md) |
+| **@ydant/canvas**     | Canvas2D rendering                  | [Details](./packages/canvas/README.md)     |
+| **@ydant/portal**     | Render into alternate targets       | [Details](./packages/portal/README.md)     |
+| **@ydant/ssr**        | Server-side rendering + Hydration   | [Details](./packages/ssr/README.md)        |
 
 ## Quick Start
 
@@ -119,15 +122,21 @@ mount(App, {
 
 ## Examples
 
-| Example                            | Description                                   |
-| ---------------------------------- | --------------------------------------------- |
-| [showcase1](./examples/showcase1/) | Counter, Dialog - basic Slot usage            |
-| [showcase2](./examples/showcase2/) | ToDo App - CRUD, localStorage                 |
-| [showcase3](./examples/showcase3/) | Pomodoro Timer - SVG, lifecycle               |
-| [showcase4](./examples/showcase4/) | SPA - Router, Context, plugins                |
-| [showcase5](./examples/showcase5/) | Sortable list - keyed() for efficient updates |
-| [showcase6](./examples/showcase6/) | Async - Suspense, ErrorBoundary               |
-| [showcase7](./examples/showcase7/) | Transitions - enter/leave animations          |
+| Example                              | Description                                   |
+| ------------------------------------ | --------------------------------------------- |
+| [showcase1](./examples/showcase1/)   | Counter, Dialog - basic Slot usage            |
+| [showcase2](./examples/showcase2/)   | ToDo App - CRUD, localStorage                 |
+| [showcase3](./examples/showcase3/)   | Pomodoro Timer - SVG, lifecycle               |
+| [showcase4](./examples/showcase4/)   | SPA - Router, Context, plugins                |
+| [showcase5](./examples/showcase5/)   | Sortable list - keyed() for efficient updates |
+| [showcase6](./examples/showcase6/)   | Async - Suspense, ErrorBoundary               |
+| [showcase7](./examples/showcase7/)   | Transitions - enter/leave animations          |
+| [showcase8](./examples/showcase8/)   | Notification feed - reactive patterns         |
+| [showcase9](./examples/showcase9/)   | Admin dashboard - router, auth, context       |
+| [showcase10](./examples/showcase10/) | Form validation - dynamic rules               |
+| [showcase11](./examples/showcase11/) | Canvas2D rendering                            |
+| [showcase12](./examples/showcase12/) | Portal for modal dialogs                      |
+| [showcase13](./examples/showcase13/) | SSR + Hydration                               |
 
 Each example has a README with implementation tips. Run all examples:
 
@@ -149,6 +158,9 @@ npm install @ydant/context    # Context API
 npm install @ydant/router     # SPA routing
 npm install @ydant/async      # Suspense, ErrorBoundary
 npm install @ydant/transition # CSS transitions
+npm install @ydant/canvas    # Canvas2D rendering
+npm install @ydant/portal    # Render into alternate targets
+npm install @ydant/ssr       # Server-side rendering + Hydration
 ```
 
 ## Development
