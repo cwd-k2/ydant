@@ -197,6 +197,8 @@ export interface Engine {
   readonly hub: Hub;
   /** Enqueues a task. Duplicate function references are deduplicated. */
   enqueue(task: () => void): void;
+  /** Registers a callback invoked before each flush cycle begins. */
+  onBeforeFlush(callback: () => void): void;
   /** Registers a callback invoked after each flush cycle completes. */
   onFlush(callback: () => void): void;
   /** Registers a handler for messages of the given type. */

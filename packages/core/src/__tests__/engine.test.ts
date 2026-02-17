@@ -135,6 +135,18 @@ describe("Engine", () => {
     expect(task).toHaveBeenCalledTimes(1);
   });
 
+  it("onBeforeFlush is called before tasks execute", () => {
+    const scope = createMockScope();
+    const engine = hub.spawn("e1", scope, { scheduler: sync });
+
+    const order: string[] = [];
+    engine.onBeforeFlush(() => order.push("before"));
+    engine.onFlush(() => order.push("after"));
+    engine.enqueue(() => order.push("task"));
+
+    expect(order).toEqual(["before", "task", "after"]);
+  });
+
   it("onFlush callback is called after flush completes", () => {
     const scope = createMockScope();
     const engine = hub.spawn("e1", scope, { scheduler: sync });

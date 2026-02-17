@@ -15,6 +15,7 @@ import { sync } from "./scheduler";
 function createEngine(id: string, scope: ExecutionScope, hub: Hub, scheduler: Scheduler): Engine {
   const queue = new Set<() => void>();
   const handlers = new Map<string, Array<(message: Message) => void>>();
+  const beforeFlushCallbacks: Array<() => void> = [];
   const flushCallbacks: Array<() => void> = [];
   let stopped = false;
   let scheduled = false;
@@ -22,6 +23,11 @@ function createEngine(id: string, scope: ExecutionScope, hub: Hub, scheduler: Sc
   function flush(): void {
     if (stopped) return;
     scheduled = false;
+
+    // Notify before-flush observers
+    for (const cb of beforeFlushCallbacks) {
+      cb();
+    }
 
     // Snapshot and clear — tasks enqueued during flush will schedule a new round
     const tasks = [...queue];
@@ -54,6 +60,10 @@ function createEngine(id: string, scope: ExecutionScope, hub: Hub, scheduler: Sc
       scheduleFlush();
     },
 
+    onBeforeFlush(callback: () => void): void {
+      beforeFlushCallbacks.push(callback);
+    },
+
     onFlush(callback: () => void): void {
       flushCallbacks.push(callback);
     },
@@ -70,6 +80,7 @@ function createEngine(id: string, scope: ExecutionScope, hub: Hub, scheduler: Sc
     stop(): void {
       stopped = true;
       queue.clear();
+      beforeFlushCallbacks.length = 0;
       flushCallbacks.length = 0;
     },
   };
