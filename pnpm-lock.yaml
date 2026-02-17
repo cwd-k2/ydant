@@ -260,6 +260,12 @@ importers:
 
   packages/core: {}
 
+  packages/devtools:
+    dependencies:
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/portal:
     dependencies:
       '@ydant/base':

@@ -1,0 +1,48 @@
+{
+  "name": "@ydant/devtools",
+  "version": "0.1.0",
+  "description": "Developer tools plugin for Ydant — opt-in Engine lifecycle observation",
+  "keywords": [
+    "debug",
+    "devtools",
+    "ydant"
+  ],
+  "homepage": "https://github.com/cwd-k2/ydant#readme",
+  "bugs": {
+    "url": "https://github.com/cwd-k2/ydant/issues"
+  },
+  "license": "MIT",
+  "author": "cwd-k2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cwd-k2/ydant.git",
+    "directory": "packages/devtools"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "@ydant/dev": {
+        "types": "./src/index.ts",
+        "default": "./src/index.ts"
+      },
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@ydant/core": "workspace:*"
+  },
+  "packageManager": "pnpm@10.22.0"
+}
