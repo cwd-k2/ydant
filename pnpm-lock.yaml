@@ -126,6 +126,21 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ssr
 
+  examples/showcase14:
+    dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
+      '@ydant/canvas':
+        specifier: workspace:*
+        version: link:../../packages/canvas
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@ydant/reactive':
+        specifier: workspace:*
+        version: link:../../packages/reactive
+
   examples/showcase2:
     dependencies:
       '@ydant/base':

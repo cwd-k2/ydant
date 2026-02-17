@@ -2,7 +2,7 @@
   "name": "showcase1",
   "version": "1.0.0",
   "private": true,
-  "description": "",
+  "description": "Demo: Counter and Dialog Component with Slot",
   "scripts": {
     "dev": "vite",
     "typecheck": "tsc --noEmit"
