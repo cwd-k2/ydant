@@ -51,8 +51,10 @@ export function createEmbedPlugin(): Plugin {
         }
       }
 
-      // Always synchronous — embed is a structural rendering operation
-      ctx.processChildren(content, { scope });
+      // Always synchronous — embed is a structural rendering operation.
+      // Cross-scope embeds render into the target scope's root, not the current parent.
+      const parent = scope !== ctx.scope ? scope.backend.root : undefined;
+      ctx.processChildren(content, { scope, parent });
       return undefined;
     },
   };

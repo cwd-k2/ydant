@@ -201,6 +201,47 @@ describe("embed spell + plugin", () => {
     expect(order).toEqual(["before-embed", "child-processed", "after-embed"]);
   });
 
+  it("cross-scope embed uses target scope's backend root as parent", () => {
+    const parentBackend = createMockBackend("parent-be");
+    const childRoot = { __backend: "child-be" };
+    const childBackend: Backend = {
+      name: "child-be",
+      root: childRoot,
+      initContext() {},
+    };
+
+    let childParent: unknown;
+
+    const childPlugin: Plugin = {
+      name: "child-recorder",
+      types: ["record"],
+      process(_request, ctx) {
+        childParent = ctx.parent;
+        return undefined;
+      },
+    };
+
+    const childScope = createExecutionScope(childBackend, [childPlugin]);
+
+    mount(
+      asApp(function* () {
+        yield* embed(
+          childScope,
+          asBuilder(function* () {
+            yield { type: "record" };
+          }),
+        );
+      }),
+      {
+        backend: parentBackend,
+        plugins: [createEmbedPlugin()],
+      },
+    );
+
+    // Cross-scope embed should use the child backend's root, not the parent's
+    expect(childParent).toBe(childRoot);
+  });
+
   it("cross-scope embed spawns an engine for the target scope", () => {
     const parentBackend = createMockBackend("parent-be");
     const childBackend = createMockBackend("child-be");
