@@ -197,6 +197,8 @@ export interface Engine {
   readonly hub: Hub;
   /** Enqueues a task. Duplicate function references are deduplicated. */
   enqueue(task: () => void): void;
+  /** Registers a callback invoked after each flush cycle completes. */
+  onFlush(callback: () => void): void;
   /** Registers a handler for messages of the given type. */
   on(type: string, handler: (message: Message) => void): void;
   /** Stops the engine, preventing further task execution. */
@@ -216,6 +218,8 @@ export interface Hub {
   get(id: string): Engine | undefined;
   /** Finds the engine associated with the given scope. */
   resolve(scope: ExecutionScope): Engine | undefined;
+  /** Returns all active engines managed by this hub. */
+  engines(): Iterable<Engine>;
   /** Dispatches a message to the engine identified by target. */
   dispatch(target: Engine | ExecutionScope, message: Message): void;
   /** Disposes all engines managed by this hub. */

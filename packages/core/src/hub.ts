@@ -15,6 +15,7 @@ import { sync } from "./scheduler";
 function createEngine(id: string, scope: ExecutionScope, hub: Hub, scheduler: Scheduler): Engine {
   const queue = new Set<() => void>();
   const handlers = new Map<string, Array<(message: Message) => void>>();
+  const flushCallbacks: Array<() => void> = [];
   let stopped = false;
   let scheduled = false;
 
@@ -28,6 +29,11 @@ function createEngine(id: string, scope: ExecutionScope, hub: Hub, scheduler: Sc
 
     for (const task of tasks) {
       task();
+    }
+
+    // Notify flush observers after all tasks in this cycle have completed
+    for (const cb of flushCallbacks) {
+      cb();
     }
   }
 
@@ -48,6 +54,10 @@ function createEngine(id: string, scope: ExecutionScope, hub: Hub, scheduler: Sc
       scheduleFlush();
     },
 
+    onFlush(callback: () => void): void {
+      flushCallbacks.push(callback);
+    },
+
     on(type: string, handler: (message: Message) => void): void {
       let list = handlers.get(type);
       if (!list) {
@@ -60,6 +70,7 @@ function createEngine(id: string, scope: ExecutionScope, hub: Hub, scheduler: Sc
     stop(): void {
       stopped = true;
       queue.clear();
+      flushCallbacks.length = 0;
     },
   };
 
@@ -111,6 +122,10 @@ export function createHub(): Hub {
 
     resolve(scope: ExecutionScope): Engine | undefined {
       return scopeToEngine.get(scope);
+    },
+
+    engines(): Iterable<Engine> {
+      return engines.values();
     },
 
     dispatch(target: Engine | ExecutionScope, message: Message): void {

@@ -135,6 +135,62 @@ describe("Engine", () => {
     expect(task).toHaveBeenCalledTimes(1);
   });
 
+  it("onFlush callback is called after flush completes", () => {
+    const scope = createMockScope();
+    const engine = hub.spawn("e1", scope, { scheduler: sync });
+
+    const order: string[] = [];
+    engine.onFlush(() => order.push("flush-done"));
+    engine.enqueue(() => order.push("task"));
+
+    expect(order).toEqual(["task", "flush-done"]);
+  });
+
+  it("onFlush is called once per flush cycle", async () => {
+    const scope = createMockScope();
+    const engine = hub.spawn("e1", scope, { scheduler: microtask });
+
+    const flushCount = vi.fn();
+    engine.onFlush(flushCount);
+
+    engine.enqueue(() => {});
+    engine.enqueue(() => {});
+
+    await new Promise<void>((r) => queueMicrotask(r));
+    expect(flushCount).toHaveBeenCalledTimes(1);
+  });
+
+  it("onFlush supports multiple callbacks", () => {
+    const scope = createMockScope();
+    const engine = hub.spawn("e1", scope, { scheduler: sync });
+
+    const cb1 = vi.fn();
+    const cb2 = vi.fn();
+    engine.onFlush(cb1);
+    engine.onFlush(cb2);
+
+    engine.enqueue(() => {});
+
+    expect(cb1).toHaveBeenCalledTimes(1);
+    expect(cb2).toHaveBeenCalledTimes(1);
+  });
+
+  it("onFlush is not called after stop", () => {
+    const scope = createMockScope();
+    const flushes: Array<() => void> = [];
+    const manualScheduler = (flush: () => void) => flushes.push(flush);
+    const engine = hub.spawn("e1", scope, { scheduler: manualScheduler });
+
+    const cb = vi.fn();
+    engine.onFlush(cb);
+    engine.enqueue(() => {});
+
+    engine.stop();
+    flushes[0]();
+
+    expect(cb).not.toHaveBeenCalled();
+  });
+
   it("tasks enqueued during flush are not executed in the same cycle", async () => {
     const scope = createMockScope();
     const flushes: Array<() => void> = [];
@@ -227,6 +283,26 @@ describe("Hub", () => {
     const hub = createHub();
     // Should not throw
     hub.dispatch(createMockScope(), { type: "ping" });
+  });
+
+  it("engines() returns all active engines", () => {
+    const hub = createHub();
+    const e1 = hub.spawn("e1", createMockScope("s1"));
+    const e2 = hub.spawn("e2", createMockScope("s2"));
+
+    const result = [...hub.engines()];
+    expect(result).toContain(e1);
+    expect(result).toContain(e2);
+    expect(result).toHaveLength(2);
+  });
+
+  it("engines() is empty after dispose", () => {
+    const hub = createHub();
+    hub.spawn("e1", createMockScope());
+
+    hub.dispose();
+
+    expect([...hub.engines()]).toHaveLength(0);
   });
 
   it("dispose stops all engines", () => {
