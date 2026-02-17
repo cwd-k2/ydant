@@ -1,0 +1,17 @@
+{
+  "name": "showcase14",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo: Reactive Canvas with Engine.onFlush auto-repaint",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ydant/base": "workspace:*",
+    "@ydant/canvas": "workspace:*",
+    "@ydant/core": "workspace:*",
+    "@ydant/reactive": "workspace:*"
+  },
+  "packageManager": "pnpm@10.22.0"
+}
