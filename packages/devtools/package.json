@@ -42,7 +42,17 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@ydant/core": "workspace:*"
+    "@ydant/base": "workspace:*",
+    "@ydant/core": "workspace:*",
+    "@ydant/reactive": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@ydant/base": {
+      "optional": true
+    },
+    "@ydant/reactive": {
+      "optional": true
+    }
   },
   "packageManager": "pnpm@10.22.0"
 }

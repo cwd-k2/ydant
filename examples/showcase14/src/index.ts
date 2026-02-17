@@ -14,6 +14,7 @@
  */
 
 import { mount, createExecutionScope, embed, createEmbedPlugin } from "@ydant/core";
+import { createDevtoolsOverlay } from "@ydant/devtools";
 import {
   createDOMBackend,
   createBasePlugin,
@@ -193,9 +194,11 @@ const App = () =>
 // Mount + onFlush auto-repaint
 // =============================================================================
 
+const overlay = createDevtoolsOverlay();
+
 const handle = mount(App, {
   backend: createDOMBackend(document.getElementById("app")!),
-  plugins: [createBasePlugin(), createReactivePlugin(), createEmbedPlugin()],
+  plugins: [createBasePlugin(), createReactivePlugin(), createEmbedPlugin(), overlay.plugin],
 });
 
 // Register auto-repaint: when the canvas engine flushes, paint the updated VShape tree
@@ -204,3 +207,6 @@ canvasEngine.onFlush(() => {
   paintCount++;
   canvasBackend.paint(canvasCtx2d);
 });
+
+// Mount DevTools overlay
+overlay.connect(handle.hub);

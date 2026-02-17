@@ -137,6 +137,9 @@ importers:
       '@ydant/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@ydant/devtools':
+        specifier: workspace:*
+        version: link:../../packages/devtools
       '@ydant/reactive':
         specifier: workspace:*
         version: link:../../packages/reactive
@@ -262,9 +265,15 @@ importers:
 
   packages/devtools:
     dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../base
       '@ydant/core':
         specifier: workspace:*
         version: link:../core
+      '@ydant/reactive':
+        specifier: workspace:*
+        version: link:../reactive
 
   packages/portal:
     dependencies:

@@ -10,10 +10,11 @@ export default defineConfig({
       "@ydant/base": path.resolve(root, "packages/base/src/index.ts"),
       "@ydant/canvas": path.resolve(root, "packages/canvas/src/index.ts"),
       "@ydant/reactive": path.resolve(root, "packages/reactive/src/index.ts"),
+      "@ydant/devtools": path.resolve(root, "packages/devtools/src/index.ts"),
     },
   },
   optimizeDeps: {
-    exclude: ["@ydant/core", "@ydant/base", "@ydant/canvas", "@ydant/reactive"],
+    exclude: ["@ydant/core", "@ydant/base", "@ydant/canvas", "@ydant/reactive", "@ydant/devtools"],
   },
   server: {
     fs: {

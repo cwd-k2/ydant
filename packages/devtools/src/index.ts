@@ -32,3 +32,7 @@ export { TASK_ENQUEUED, FLUSH_START, FLUSH_END, ENGINE_SPAWNED, ENGINE_STOPPED }
 
 // ─── Plugin ───
 export { createDevtoolsPlugin } from "./plugin";
+
+// ─── Overlay ───
+export type { DevtoolsOverlay } from "./overlay";
+export { createDevtoolsOverlay } from "./overlay";
