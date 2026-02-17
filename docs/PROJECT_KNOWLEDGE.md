@@ -183,6 +183,12 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - **embed は同期を維持**: cross-scope embed は構造的操作であり非同期にすべきでないと判断。Engine は spawn するが processChildren は同期実行
 - **render() per-call factory**: Hub を各 mount で独立させるためモジュールレベル singleton を廃止
 
+### Phase 13: Engine flush hooks + DevTools
+
+- **Engine flush hooks**: `onBeforeFlush` / `onFlush` で flush サイクルの開始・完了を通知。`Hub.engines()` で外部から Engine を列挙
+- **Reactive Canvas**: `examples/showcase14` — Signal 変更 → canvas engine flush → onFlush → paint() の自動再描画パターン。reactive container が Canvas で透明グループとして機能することを実証
+- **@ydant/devtools**: opt-in の Engine lifecycle 観測プラグイン。monkey-patching + flush hooks で計装。`TASK_ENQUEUED`, `FLUSH_START`, `FLUSH_END`, `ENGINE_SPAWNED`, `ENGINE_STOPPED` の 5 イベント型。リングバッファ + onEvent ストリーミング
+
 ---
 
 ## 設計上の決定事項
@@ -326,93 +332,99 @@ mount() が Hub を作成し、`MountHandle.hub` で公開。RenderContext に `
 
 **Reactive バッチング**: Signal 変更 → `engine.enqueue(rerender)` → Scheduler タイミングで flush。Set dedup により同一ティック内の複数 Signal 変更が 1 回の rerender にバッチされる。
 
-### 将来の拡張方向: Reactive + DevTools ロードマップ
+### Reactive + DevTools ロードマップ
 
-Engine/Hub を活用する次の展開。Phase A が B・C の共通基盤。
+Engine/Hub を活用する拡張。Phase A が B・C の共通基盤。
 
 ```
-Phase A (Engine flush hooks)
-  ├── Phase B (Reactive Canvas)
-  └── Phase C (DevTools plugin)
-        └── Phase D (DevTools UI) [将来]
+Phase A (Engine flush hooks)         ✅ 完了
+  ├── Phase B (Reactive Canvas)      ✅ 完了
+  └── Phase C (DevTools plugin)      ✅ 完了
+        └── Phase D (DevTools UI)    📋 計画中
 ```
 
-#### Phase A: Engine flush hooks + enumerate API
+#### Phase A: Engine flush hooks + enumerate API ✅
 
-Engine のキュー drain 後に通知するフック。Reactive Canvas の自動再描画と DevTools のイベント追跡の両方に必要。
+- `Engine.onBeforeFlush(callback)` — flush 開始前の通知
+- `Engine.onFlush(callback)` — flush 完了後の通知
+- `Hub.engines(): Iterable<Engine>` — 外部からの Engine 列挙
+- **設計判断**: onBeforeFlush/onFlush で flush サイクルをブラケット。duration 測定が可能に
 
-**変更**:
+#### Phase B: Reactive Canvas showcase ✅
 
-- `Engine` interface に `onFlush(callback: () => void): void` を追加
-- `Hub` interface に `engines(): Iterable<Engine>` を追加（外部からの列挙用）
-- `hub.ts` の `createEngine` 内 `flush()` 末尾で onFlush コールバックを実行
+`examples/showcase14` — Signal 駆動の Canvas レンダリング。
 
-**設計判断**: onFlush は flush 完了後（全タスク実行後）に呼ぶ。flush 中に enqueue されたタスクは次の flush サイクルになるため、onFlush は「このサイクルの全タスクが終わった」タイミング。
-
-#### Phase B: Reactive Canvas showcase
-
-Signal 駆動の Canvas レンダリング。Engine/Hub の価値を非 DOM 環境で実証。
-
-**パターン**:
+**実証パターン**:
 
 ```typescript
-// mount 後に auto-repaint を登録
-const handle = mount(App, { ... });
 const canvasEngine = handle.hub.resolve(canvasScope)!;
 canvasEngine.onFlush(() => canvasBackend.paint(ctx2d));
 ```
 
-Signal 変更 → reactive rerender（VShape ツリー再構築）→ engine flush 完了 → onFlush で paint() → Canvas に描画。
+Signal 変更 → reactive rerender（VShape 再構築）→ engine flush → onFlush → paint() → Canvas 更新。
 
-**showcase**: `examples/showcase14` — インタラクティブな Canvas（DOM ボタンで Signal 変更 → Canvas 自動更新）
+**実装上の発見**:
 
-**検証ポイント**:
+- reactive plugin の `<span data-reactive="">` container は Canvas では VShape(tag: "span") になり、paint engine が未知タグを group として扱うため透明なグループとして機能する
+- Signal は scope を跨いで共有される。subscriber は各 scope の engine に enqueue する
 
-- Canvas scope 内で reactive が動作すること
-- Signal 変更が canvas engine のキューに入ること（DOM engine ではなく）
-- onFlush で paint() が呼ばれ Canvas が更新されること
-- 複数 Signal の同時変更がバッチされること
+#### Phase C: DevTools plugin ✅
 
-#### Phase C: DevTools plugin
+`@ydant/devtools` パッケージ — opt-in の Engine lifecycle 観測。
 
-opt-in のプラグインとして render lifecycle を observable にする。未登録時はゼロオーバーヘッド。
+**計装方法**: monkey-patching（enqueue, stop, hub.spawn をラップ）+ flush hooks（onBeforeFlush/onFlush）。Engine 自体にイベントコードを入れない opt-in 原則。
 
-**設計**:
+**イベント型**: `TASK_ENQUEUED`, `FLUSH_START`, `FLUSH_END`, `ENGINE_SPAWNED`, `ENGINE_STOPPED`
+
+**外部 API**: `DevtoolsPlugin` extends `Plugin` で `getEvents()` / `clearEvents()` を公開。`onEvent` コールバックでストリーミングも可能。
+
+**実装上の発見**:
+
+- setup() 時点で全 engine が存在する（render → setup の順序）
+- hub.spawn をラップすることで、将来の動的 spawn にも対応
+- teardown 後のイベント発火は `active` フラグで抑制。onBeforeFlush/onFlush の登録解除は不要（mount dispose で全コールバックがクリアされる）
+
+#### Phase D: DevTools UI
+
+Phase C の `@ydant/devtools` 上に構築する可視化レイヤー。
+
+**形態の選択肢**:
+
+| 形態                | 利点                           | 欠点                       |
+| ------------------- | ------------------------------ | -------------------------- |
+| DOM オーバーレイ    | 依存なし、Ydant 自身で描画可能 | アプリ DOM と混在          |
+| Canvas オーバーレイ | embed で隔離、高性能描画       | インタラクション実装が必要 |
+| ブラウザ拡張        | DevTools パネルに統合、本格的  | 配布・メンテの負荷         |
+
+**最小構成（オーバーレイ）**:
 
 ```typescript
-interface DevtoolsEvent {
-  type: string;
-  engineId: string;
-  timestamp: number;
-  [key: string]: unknown;
-}
-
-function createDevtoolsPlugin(options?: {
-  onEvent?: (event: DevtoolsEvent) => void;
-  bufferSize?: number;
-}): Plugin;
+function createDevtoolsOverlay(
+  devtools: DevtoolsPlugin,
+  hub: Hub,
+): {
+  mount(container: HTMLElement): void;
+  dispose(): void;
+};
 ```
+
+**表示項目**:
+
+- Engine 一覧（id, scope, status）
+- flush サイクルのタイムライン（FLUSH_START → FLUSH_END の duration）
+- タスク enqueue 頻度（バッチングの効果可視化）
+- リアルタイムイベントログ
 
 **実装方針**:
 
-- `Plugin.setup()` で engine を計装（enqueue ラップ、onFlush 登録）
-- `Plugin.teardown()` で計装解除
-- engine 自体にイベント発火コードを入れない（opt-in の原則）
-- 標準イベント型は string constants で定義:
-  - `FLUSH_START` / `FLUSH_END` — キュー flush のライフサイクル
-  - `TASK_ENQUEUED` — タスク追加
-  - `ENGINE_SPAWNED` / `ENGINE_STOPPED` — Engine ライフサイクル
-
-**外部 API**: `MountHandle.hub` 経由で Engine を列挙し、DevTools plugin のバッファを読み取る。
-
-#### Phase D: DevTools UI（将来）
-
-ブラウザパネルまたはオーバーレイ。Engine 活動のタイムライン可視化、reactive rerender の追跡。Phase C の上に構築。別途計画が必要。
+- `@ydant/devtools` パッケージ内に UI モジュールを追加（別エントリポイント `@ydant/devtools/overlay`）
+- または `@ydant/devtools-ui` として別パッケージ
+- Ydant 自身で DOM を描画する "dogfooding" パターン
 
 #### その他の将来方向
 
 - **Worker 委譲**: Engine の独立性により、Engine を Worker に移す土台がある
-- **Engine 間メッセージング**: `Hub.dispatch()` の骨格は実装済み。標準メッセージ型は Phase C で定義するものを流用可能
+- **Engine 間メッセージング**: `Hub.dispatch()` の骨格は実装済み。DevTools のイベント型を標準メッセージとして流用可能
 - **Slot.enqueueRefresh()**: 命令的 Slot 更新の非同期版。Engine キューを通すことで他の更新とバッチ可能
 
 ---
