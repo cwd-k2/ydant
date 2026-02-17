@@ -326,12 +326,94 @@ mount() が Hub を作成し、`MountHandle.hub` で公開。RenderContext に `
 
 **Reactive バッチング**: Signal 変更 → `engine.enqueue(rerender)` → Scheduler タイミングで flush。Set dedup により同一ティック内の複数 Signal 変更が 1 回の rerender にバッチされる。
 
-### 将来の拡張方向
+### 将来の拡張方向: Reactive + DevTools ロードマップ
 
-- **Message システム拡充**: `Engine.on()` / `Hub.dispatch()` の骨格は実装済み。標準メッセージ型（`"render-complete"`, `"error"` 等）やカスタムイベントは必要に応じて追加
-- **DevTools フック / ログミドルウェア**: Message システム上に構築可能
-- **Worker 委譲**: Engine の独立性により、将来的に Engine を Worker に委譲する土台がある
-- `MountHandle.hub` からエンジンの状態を外部から監視可能
+Engine/Hub を活用する次の展開。Phase A が B・C の共通基盤。
+
+```
+Phase A (Engine flush hooks)
+  ├── Phase B (Reactive Canvas)
+  └── Phase C (DevTools plugin)
+        └── Phase D (DevTools UI) [将来]
+```
+
+#### Phase A: Engine flush hooks + enumerate API
+
+Engine のキュー drain 後に通知するフック。Reactive Canvas の自動再描画と DevTools のイベント追跡の両方に必要。
+
+**変更**:
+
+- `Engine` interface に `onFlush(callback: () => void): void` を追加
+- `Hub` interface に `engines(): Iterable<Engine>` を追加（外部からの列挙用）
+- `hub.ts` の `createEngine` 内 `flush()` 末尾で onFlush コールバックを実行
+
+**設計判断**: onFlush は flush 完了後（全タスク実行後）に呼ぶ。flush 中に enqueue されたタスクは次の flush サイクルになるため、onFlush は「このサイクルの全タスクが終わった」タイミング。
+
+#### Phase B: Reactive Canvas showcase
+
+Signal 駆動の Canvas レンダリング。Engine/Hub の価値を非 DOM 環境で実証。
+
+**パターン**:
+
+```typescript
+// mount 後に auto-repaint を登録
+const handle = mount(App, { ... });
+const canvasEngine = handle.hub.resolve(canvasScope)!;
+canvasEngine.onFlush(() => canvasBackend.paint(ctx2d));
+```
+
+Signal 変更 → reactive rerender（VShape ツリー再構築）→ engine flush 完了 → onFlush で paint() → Canvas に描画。
+
+**showcase**: `examples/showcase14` — インタラクティブな Canvas（DOM ボタンで Signal 変更 → Canvas 自動更新）
+
+**検証ポイント**:
+
+- Canvas scope 内で reactive が動作すること
+- Signal 変更が canvas engine のキューに入ること（DOM engine ではなく）
+- onFlush で paint() が呼ばれ Canvas が更新されること
+- 複数 Signal の同時変更がバッチされること
+
+#### Phase C: DevTools plugin
+
+opt-in のプラグインとして render lifecycle を observable にする。未登録時はゼロオーバーヘッド。
+
+**設計**:
+
+```typescript
+interface DevtoolsEvent {
+  type: string;
+  engineId: string;
+  timestamp: number;
+  [key: string]: unknown;
+}
+
+function createDevtoolsPlugin(options?: {
+  onEvent?: (event: DevtoolsEvent) => void;
+  bufferSize?: number;
+}): Plugin;
+```
+
+**実装方針**:
+
+- `Plugin.setup()` で engine を計装（enqueue ラップ、onFlush 登録）
+- `Plugin.teardown()` で計装解除
+- engine 自体にイベント発火コードを入れない（opt-in の原則）
+- 標準イベント型は string constants で定義:
+  - `FLUSH_START` / `FLUSH_END` — キュー flush のライフサイクル
+  - `TASK_ENQUEUED` — タスク追加
+  - `ENGINE_SPAWNED` / `ENGINE_STOPPED` — Engine ライフサイクル
+
+**外部 API**: `MountHandle.hub` 経由で Engine を列挙し、DevTools plugin のバッファを読み取る。
+
+#### Phase D: DevTools UI（将来）
+
+ブラウザパネルまたはオーバーレイ。Engine 活動のタイムライン可視化、reactive rerender の追跡。Phase C の上に構築。別途計画が必要。
+
+#### その他の将来方向
+
+- **Worker 委譲**: Engine の独立性により、Engine を Worker に移す土台がある
+- **Engine 間メッセージング**: `Hub.dispatch()` の骨格は実装済み。標準メッセージ型は Phase C で定義するものを流用可能
+- **Slot.enqueueRefresh()**: 命令的 Slot 更新の非同期版。Engine キューを通すことで他の更新とバッチ可能
 
 ---
 
