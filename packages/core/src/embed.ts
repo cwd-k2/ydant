@@ -5,8 +5,10 @@
  * This is the mechanism for embedding one rendering environment
  * inside another (e.g., Canvas inside DOM).
  *
- * Same-scope embeds execute synchronously (same engine).
- * Cross-scope embeds enqueue work on the target engine.
+ * Embed always executes synchronously — it is a structural rendering
+ * operation, not an update. For cross-scope embeds, the plugin ensures
+ * an Engine exists for the target scope so that future reactive updates
+ * within the embedded scope can use it.
  */
 
 import type { Tagged, Spell, Builder } from "./types";
@@ -40,19 +42,17 @@ export function createEmbedPlugin(): Plugin {
     process(request: { type: string }, ctx: RenderContext) {
       const { scope, content } = request as Embed;
 
-      if (scope === ctx.scope) {
-        // Same scope — synchronous (same engine)
-        ctx.processChildren(content, { scope });
-      } else {
-        // Cross-scope — resolve or spawn target engine, then enqueue
+      // For cross-scope embeds, ensure an Engine exists for the target scope
+      // so that reactive updates within the embedded scope can use it later.
+      if (scope !== ctx.scope) {
         const hub = ctx.engine.hub;
-        let target = hub.resolve(scope);
-        if (!target) {
-          target = hub.spawn(`embed-${scope.backend.name}-${Date.now()}`, scope);
+        if (!hub.resolve(scope)) {
+          hub.spawn(`embed-${scope.backend.name}-${Date.now()}`, scope);
         }
-        target.enqueue(() => ctx.processChildren(content, { scope }));
       }
 
+      // Always synchronous — embed is a structural rendering operation
+      ctx.processChildren(content, { scope });
       return undefined;
     },
   };

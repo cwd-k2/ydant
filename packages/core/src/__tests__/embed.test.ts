@@ -162,4 +162,62 @@ describe("embed spell + plugin", () => {
     // mergeChildContext is called by the parent's plugins
     expect(mergeCalls).toContain("merged");
   });
+
+  it("cross-scope embed executes synchronously", () => {
+    const parentBackend = createMockBackend("parent-be");
+    const childBackend = createMockBackend("child-be");
+
+    const order: string[] = [];
+
+    const childPlugin: Plugin = {
+      name: "child-recorder",
+      types: ["record"],
+      process() {
+        order.push("child-processed");
+        return undefined;
+      },
+    };
+
+    const childScope = createExecutionScope(childBackend, [childPlugin]);
+
+    mount(
+      asApp(function* () {
+        order.push("before-embed");
+        yield* embed(
+          childScope,
+          asBuilder(function* () {
+            yield { type: "record" };
+          }),
+        );
+        order.push("after-embed");
+      }),
+      {
+        backend: parentBackend,
+        plugins: [createEmbedPlugin()],
+      },
+    );
+
+    // Embed executes synchronously — child processing happens between before and after
+    expect(order).toEqual(["before-embed", "child-processed", "after-embed"]);
+  });
+
+  it("cross-scope embed spawns an engine for the target scope", () => {
+    const parentBackend = createMockBackend("parent-be");
+    const childBackend = createMockBackend("child-be");
+
+    const childScope = createExecutionScope(childBackend, []);
+
+    const handle = mount(
+      asApp(function* () {
+        yield* embed(childScope, function* () {});
+      }),
+      {
+        backend: parentBackend,
+        plugins: [createEmbedPlugin()],
+      },
+    );
+
+    // An engine should have been spawned for the child scope
+    expect(handle.hub.resolve(childScope)).toBeDefined();
+  });
 });

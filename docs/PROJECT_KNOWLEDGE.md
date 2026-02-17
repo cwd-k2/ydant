@@ -173,6 +173,38 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
   - `{ scope }` — 別の backend + plugins へ（embed が使用）
 - **mergeChildContext は親 scope の plugins で行う**: 子の state を親に取り込む操作は親の plugins が判断すべき。子 scope 固有の plugins の mergeChildContext は呼ばれない
 
+### Phase 12: Engine / Hub アーキテクチャ
+
+- **Engine / Hub / Scheduler 基盤**: `packages/core/src/scheduler.ts`, `hub.ts` を新設。`plugin.ts` に `Scheduler`, `Message`, `Engine`, `Hub` 型を追加
+- **mount() 統合**: mount が Hub を作成し primary Engine を spawn。`MountHandle.hub` で公開。`MountOptions.scheduler?` でオーバーライド可能
+- **RenderContext.engine**: コンテキストから Engine にアクセス可能に。reactive プラグインがこれを使う
+- **Backend.defaultScheduler**: 各 Backend がデフォルトの Scheduler を宣言
+- **Reactive バッチング**: `update()` を `rerender()` + `subscriber()` に分離。subscriber が `engine.enqueue(rerender)` を呼び、Set dedup で同一ティック内の複数変更をバッチ
+- **embed は同期を維持**: cross-scope embed は構造的操作であり非同期にすべきでないと判断。Engine は spawn するが processChildren は同期実行
+- **render() per-call factory**: Hub を各 mount で独立させるためモジュールレベル singleton を廃止
+
+---
+
+## 設計上の決定事項
+
+### embed は常に同期
+
+cross-scope embed を非同期（target engine にキューイング）にする設計を一度実装したが、showcase11（Canvas embed）で `embed()` 直後に `paint()` を呼ぶパターンが壊れることを発見。embed は構造的なレンダリング操作であり、processChildren は常に同期実行する。Engine は spawn しておく（scope 内の将来の reactive 更新用）。
+
+### Slot.refresh() は同期のまま
+
+`Slot.refresh()` はユーザーが明示的に呼ぶ命令的 API。Engine キューを通すと UI 応答が遅れるため、直接実行を維持。将来 `Slot.enqueueRefresh()` を追加する余地は残す。
+
+### ScheduleCapability と Engine Scheduler は別レイヤー
+
+- `ScheduleCapability.scheduleCallback` → ライフサイクルコールバック（onMount 等）のタイミング
+- `Engine.Scheduler` → タスクキューの flush タイミング（reactive バッチング等）
+- 独立した関心事。混同しない。
+
+### 初回レンダリングは Engine キューを通さない
+
+mount() の初回 render は Engine キューを通さず直接実行する。Engine は後続の更新（reactive, 将来の cross-scope 非同期通信）から活躍する。
+
 ---
 
 ## 学んだ教訓
@@ -269,13 +301,37 @@ pnpm typecheck            # 型チェック
 `mount()` はコンパイル時に「Generator が必要とする能力 ⊆ Backend が提供する能力」を検証する
 （`CapabilityCheck` 型、`SpellSchema` の `capabilities` フィールド、`Backend<Capabilities>` phantom 型）。
 
+### Engine / Hub アーキテクチャ
+
+実行モデルを「同期コールスタック」から「独立した Engine のオーケストレーション」に拡張。
+
+- **Engine** — タスクキュー（Set による重複排除）+ Scheduler を持つ独立した実行エンジン
+- **Hub** — Engine のライフサイクル管理、scope-to-engine 解決、エンジン間メッセージルーティング
+- **Scheduler** — Engine のタスクキューをいつ flush するかの戦略（`sync`, `microtask`, `animFrame`）
+
+```
+Hub
+ ├── Engine "primary" (mount の主 scope)
+ ├── Engine "embed-canvas-..." (embed で spawn)
+ └── ...
+```
+
+mount() が Hub を作成し、`MountHandle.hub` で公開。RenderContext に `engine` フィールドを追加。
+
+**各 Backend のデフォルト Scheduler**:
+
+- DOM: `microtask`（バッチングの恩恵を受けつつ最速応答）
+- Canvas: `animFrame`（描画サイクルに合わせる）
+- SSR: `sync`（サーバーサイドは同期）
+
+**Reactive バッチング**: Signal 変更 → `engine.enqueue(rerender)` → Scheduler タイミングで flush。Set dedup により同一ティック内の複数 Signal 変更が 1 回の rerender にバッチされる。
+
 ### 将来の拡張方向
 
-- **Service 型定義**: `ServiceKey<T>`, `ServiceRegistry` を core に追加し、能力を Service 化
-- **Runtime 導入**: `createRuntime()` を `mount()` のラッパーとして追加
-- **Middleware**: `processIterator` に middleware chain を導入（DevTools, Logger 用）
-- `Plugin.setup/teardown` の `ctx` パラメータは将来の ServiceRegistry へのアクセスパスになりうる
-- `MountHandle` は拡張可能（現時点は `dispose` のみ）
+- **Message システム拡充**: `Engine.on()` / `Hub.dispatch()` の骨格は実装済み。標準メッセージ型（`"render-complete"`, `"error"` 等）やカスタムイベントは必要に応じて追加
+- **DevTools フック / ログミドルウェア**: Message システム上に構築可能
+- **Worker 委譲**: Engine の独立性により、将来的に Engine を Worker に委譲する土台がある
+- `MountHandle.hub` からエンジンの状態を外部から監視可能
 
 ---
 
