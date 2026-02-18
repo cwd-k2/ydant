@@ -47,12 +47,19 @@ export function createRenderContextFactory(
     // Core-provided methods (capture scope via closure)
     ctx.processChildren = (
       builder: Builder,
-      options?: { parent?: unknown; scope?: ExecutionScope },
+      options?: {
+        parent?: unknown;
+        scope?: ExecutionScope;
+        contextInit?: (childCtx: RenderContext, parentCtx: RenderContext) => void;
+      },
     ): void => {
       const targetParent = options?.parent ?? ctx.parent;
       const targetScope = options?.scope ?? ctx.scope;
 
       const childCtx = createRenderContext(targetScope, targetParent, ctx);
+
+      // Allow the caller to override context properties after plugin initContext
+      options?.contextInit?.(childCtx, ctx);
 
       const children = toRender(builder());
       processIterator(children, childCtx);

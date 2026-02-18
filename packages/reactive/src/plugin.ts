@@ -55,6 +55,8 @@ export function createReactivePlugin(): Plugin {
       let active = true;
       // Unmount callbacks accumulated during rendering
       let unmountCallbacks: Array<() => void> = [];
+      // Keyed nodes preserved across rerenders for DOM node reuse
+      let savedKeyedNodes: RenderContext["keyedNodes"] | undefined;
 
       // Actual re-render logic
       const rerender = () => {
@@ -69,12 +71,25 @@ export function createReactivePlugin(): Plugin {
         // Clear container and rebuild
         ctx.tree.clearChildren(container);
 
+        // Record the current length so we can splice off child-added callbacks
+        const beforeLength = ctx.unmountCallbacks.length;
+
         // Process children while tracking Signal dependencies, within the mount's scope
         // subscriber is the tracking callback — it enqueues rerender on signal change
         try {
           runInScope(scope, () => {
             runWithSubscriber(subscriber, () => {
-              ctx.processChildren(builder, { parent: container });
+              ctx.processChildren(builder, {
+                parent: container,
+                contextInit: (childCtx) => {
+                  // Restore keyed nodes from previous render for DOM node reuse
+                  if (savedKeyedNodes) {
+                    childCtx.keyedNodes = savedKeyedNodes;
+                  }
+                  // Save reference for next rerender (Map is mutable, entries added during processing are visible)
+                  savedKeyedNodes = childCtx.keyedNodes;
+                },
+              });
             });
           });
         } catch (error) {
@@ -86,6 +101,9 @@ export function createReactivePlugin(): Plugin {
           }
           throw error;
         }
+
+        // Capture child unmount callbacks for cleanup on next rerender
+        unmountCallbacks = ctx.unmountCallbacks.splice(beforeLength);
       };
 
       // Subscriber: called when a tracked signal changes → enqueue rerender

@@ -35,11 +35,13 @@ describe("RouterLink", () => {
     setLocationPathname("/");
     container = document.createElement("div");
     document.body.appendChild(container);
+    vi.useFakeTimers();
     vi.spyOn(window.history, "pushState").mockImplementation(() => {});
   });
 
   afterEach(() => {
     container.remove();
+    vi.useRealTimers();
     Object.defineProperty(window, "location", {
       value: savedLocation,
       writable: true,
@@ -133,6 +135,89 @@ describe("RouterLink", () => {
 
     const link = container.querySelector("a");
     expect(link?.getAttribute("class")).toBeNull();
+  });
+
+  it("updates activeClass on navigate", () => {
+    setLocationPathname("/");
+
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterLink({
+          href: "/about",
+          children: () => text("About"),
+          activeClass: "active",
+        });
+      }),
+    );
+
+    // onMount fires after rAF
+    vi.advanceTimersToNextFrame();
+
+    const link = container.querySelector("a")!;
+    expect(link.getAttribute("class")).toBeNull();
+
+    // Navigate to matching path
+    setLocationPathname("/about");
+    navigate("/about");
+
+    expect(link.getAttribute("class")).toBe("active");
+  });
+
+  it("removes activeClass when navigating away", () => {
+    setLocationPathname("/current");
+
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterLink({
+          href: "/current",
+          children: () => text("Current"),
+          activeClass: "active",
+        });
+      }),
+    );
+
+    vi.advanceTimersToNextFrame();
+
+    const link = container.querySelector("a")!;
+    expect(link.getAttribute("class")).toBe("active");
+
+    // Navigate away
+    setLocationPathname("/other");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    expect(link.getAttribute("class")).toBeNull();
+  });
+
+  it("cleans up event listeners on unmount", () => {
+    setLocationPathname("/");
+
+    let parentSlot: any;
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        parentSlot = yield* div(function* () {
+          yield* RouterLink({
+            href: "/test",
+            children: () => text("Test"),
+            activeClass: "active",
+          });
+        });
+      }),
+    );
+
+    vi.advanceTimersToNextFrame();
+
+    const link = container.querySelector("a")!;
+    expect(link.getAttribute("class")).toBeNull();
+
+    // Unmount RouterLink by replacing parent content
+    parentSlot.refresh(() => [text("Replaced")]);
+
+    // After unmount, route change should not affect the old link
+    setLocationPathname("/test");
+    navigate("/test");
+
+    // Content should be replaced, not the old link
+    expect(container.textContent).toContain("Replaced");
   });
 });
 

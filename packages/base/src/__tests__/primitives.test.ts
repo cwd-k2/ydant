@@ -64,6 +64,31 @@ describe("classes", () => {
       value: "single",
     });
   });
+
+  it("filters out falsy values", () => {
+    const isActive = false;
+    const isVisible = true;
+
+    const gen = classes("base", isActive && "active", isVisible && "visible", null, undefined, 0);
+    const result = gen.next();
+
+    expect(result.value).toEqual({
+      type: "attribute",
+      key: "class",
+      value: "base visible",
+    });
+  });
+
+  it("handles all falsy values", () => {
+    const gen = classes(false, null, undefined, 0, "");
+    const result = gen.next();
+
+    expect(result.value).toEqual({
+      type: "attribute",
+      key: "class",
+      value: "",
+    });
+  });
 });
 
 describe("on", () => {

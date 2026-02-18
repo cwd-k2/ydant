@@ -87,7 +87,15 @@ export interface RenderContext {
   /** The engine managing this context's execution scope. */
   engine: Engine;
   /** Processes a {@link Builder}'s instructions in a new child context. */
-  processChildren(builder: Builder, options?: { parent?: unknown; scope?: ExecutionScope }): void;
+  processChildren(
+    builder: Builder,
+    options?: {
+      parent?: unknown;
+      scope?: ExecutionScope;
+      /** Called after plugin initContext hooks, allowing the caller to override context properties. */
+      contextInit?: (childCtx: RenderContext, parentCtx: RenderContext) => void;
+    },
+  ): void;
   /** Creates a new child-scoped {@link RenderContext} for the given parent node. */
   createChildContext(parent: unknown): RenderContext;
 }

@@ -1,7 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { Plugin, RenderContext } from "@ydant/core";
 import { scope, sync } from "@ydant/core";
-import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
+import {
+  createBasePlugin,
+  createDOMBackend,
+  div,
+  li,
+  text,
+  onMount,
+  onUnmount,
+  keyed,
+} from "@ydant/base";
 import { signal } from "../signal";
 import { reactive } from "../reactive";
 import { createReactivePlugin } from "../plugin";
@@ -155,6 +164,73 @@ describe("createReactivePlugin", () => {
   });
 });
 
+describe("reactive unmount callbacks", () => {
+  let container: HTMLElement;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    container.remove();
+  });
+
+  it("calls onUnmount callback on rerender", () => {
+    const count = signal(0);
+    const unmountFn = vi.fn();
+
+    scope(createDOMBackend(container), [createBasePlugin(), createReactivePlugin()]).mount(
+      () =>
+        div(function* () {
+          yield* reactive(() => [
+            div(function* () {
+              yield* text(`Count: ${count()}`);
+              yield* onUnmount(unmountFn);
+            }),
+          ]);
+        }),
+      { scheduler: sync },
+    );
+
+    expect(container.textContent).toContain("Count: 0");
+    expect(unmountFn).not.toHaveBeenCalled();
+
+    // Trigger rerender — previous unmount callbacks should fire
+    count.set(1);
+
+    expect(container.textContent).toContain("Count: 1");
+    expect(unmountFn).toHaveBeenCalledOnce();
+  });
+
+  it("calls onUnmount callbacks multiple times across rerenders", () => {
+    const count = signal(0);
+    const unmountFn = vi.fn();
+
+    scope(createDOMBackend(container), [createBasePlugin(), createReactivePlugin()]).mount(
+      () =>
+        div(function* () {
+          yield* reactive(() => [
+            div(function* () {
+              yield* text(`Count: ${count()}`);
+              yield* onUnmount(unmountFn);
+            }),
+          ]);
+        }),
+      { scheduler: sync },
+    );
+
+    expect(unmountFn).not.toHaveBeenCalled();
+
+    count.set(1);
+    expect(unmountFn).toHaveBeenCalledTimes(1);
+
+    count.set(2);
+    expect(unmountFn).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe("handleRenderError integration", () => {
   let container: HTMLElement;
 
@@ -265,6 +341,87 @@ describe("handleRenderError integration", () => {
     expect(() => count.set(1)).toThrow("boom");
 
     dispose();
+  });
+});
+
+describe("reactive keyed() support", () => {
+  let container: HTMLElement;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    container.remove();
+  });
+
+  it("reuses DOM nodes with keyed() across signal changes", () => {
+    const items = signal([
+      { id: 1, name: "A" },
+      { id: 2, name: "B" },
+    ]);
+
+    scope(createDOMBackend(container), [createBasePlugin(), createReactivePlugin()]).mount(
+      () =>
+        div(function* () {
+          yield* reactive(() => items().map((item) => keyed(item.id, li)(() => [text(item.name)])));
+        }),
+      { scheduler: sync },
+    );
+
+    // Capture DOM node references
+    const reactiveSpan = container.querySelector("[data-reactive]")!;
+    const firstLi = reactiveSpan.children[0];
+    const secondLi = reactiveSpan.children[1];
+    expect(firstLi.textContent).toBe("A");
+    expect(secondLi.textContent).toBe("B");
+
+    // Update signal — same keys, different content
+    items.set([
+      { id: 1, name: "A updated" },
+      { id: 2, name: "B updated" },
+    ]);
+
+    // DOM nodes should be reused (same reference)
+    expect(reactiveSpan.children[0]).toBe(firstLi);
+    expect(reactiveSpan.children[1]).toBe(secondLi);
+    expect(firstLi.textContent).toBe("A updated");
+    expect(secondLi.textContent).toBe("B updated");
+  });
+
+  it("reorders DOM nodes correctly with keyed()", () => {
+    const items = signal([
+      { id: 1, name: "First" },
+      { id: 2, name: "Second" },
+      { id: 3, name: "Third" },
+    ]);
+
+    scope(createDOMBackend(container), [createBasePlugin(), createReactivePlugin()]).mount(
+      () =>
+        div(function* () {
+          yield* reactive(() => items().map((item) => keyed(item.id, li)(() => [text(item.name)])));
+        }),
+      { scheduler: sync },
+    );
+
+    const reactiveSpan = container.querySelector("[data-reactive]")!;
+    const originalFirst = reactiveSpan.children[0];
+    const originalSecond = reactiveSpan.children[1];
+    const originalThird = reactiveSpan.children[2];
+
+    // Reverse order
+    items.set([
+      { id: 3, name: "Third" },
+      { id: 1, name: "First" },
+      { id: 2, name: "Second" },
+    ]);
+
+    // Nodes should be reused and reordered
+    expect(reactiveSpan.children[0]).toBe(originalThird);
+    expect(reactiveSpan.children[1]).toBe(originalFirst);
+    expect(reactiveSpan.children[2]).toBe(originalSecond);
   });
 });
 

@@ -10,9 +10,11 @@ export function* attr(key: string, value: string): Spell<"attribute"> {
   yield { type: "attribute", key, value };
 }
 
-/** Sets the `class` attribute by joining all arguments. */
-export function* classes(...classNames: string[]): Spell<"attribute"> {
-  const value = classNames.join(" ");
+/** Sets the `class` attribute by joining all arguments. Falsy values are filtered out. */
+export function* classes(
+  ...classNames: (string | false | null | undefined | 0 | "")[]
+): Spell<"attribute"> {
+  const value = classNames.filter(Boolean).join(" ");
   yield { type: "attribute", key: "class", value };
 }
 
