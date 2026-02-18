@@ -1,22 +1,21 @@
 # Showcase 11: Canvas Embed
 
-DOM レンダリングの中に `embed()` で Canvas scope を埋め込むデモ。`ExecutionScope` による実行環境の切り替えを実演する。
+DOM レンダリングの中に `scope().embed()` で Canvas scope を埋め込むデモ。`scope()` builder による実行環境の切り替えを実演する。
 
 ## 機能
 
-- DOM 内に `<canvas>` 要素を配置し、`embed()` で Canvas backend に切り替え
+- DOM 内に `<canvas>` 要素を配置し、`scope().embed()` で Canvas backend に切り替え
 - 同一 `mount()` 内で DOM と Canvas2D が共存
 - `group()`, `rect()`, `circle()`, `line()`, `canvasText()` による宣言的な図形定義
 
 ## 実装のポイント
 
-### embed() による scope 切り替え
+### scope().embed() による scope 切り替え
 
-`createExecutionScope` で Canvas backend + plugins を束ね、`embed()` で子の描画を Canvas scope に委譲する:
+`scope()` で Canvas backend + plugins を束ね、`.embed()` で子の描画を Canvas scope に委譲する:
 
 ```typescript
 const canvasBackend = createCanvasBackend();
-const canvasScope = createExecutionScope(canvasBackend, [createBasePlugin()]);
 
 // DOM 要素として <canvas> を配置
 const slot =
@@ -27,7 +26,7 @@ const slot =
   });
 
 // Canvas scope に切り替え — VShape ツリーを構築
-yield * embed(canvasScope, NightScene);
+yield * scope(canvasBackend, [createBasePlugin()]).embed(NightScene);
 
 // 仮想ツリーを実際の canvas に描画
 canvasBackend.paint((slot.node as HTMLCanvasElement).getContext("2d")!);
@@ -42,24 +41,19 @@ DOM scope:
   h1 "Canvas Embed"
   p  "DOM content above..."
   <canvas>
-    [Canvas scope] ← embed() で切り替え
+    [Canvas scope] ← scope().embed() で切り替え
     group > rect, circle, line, ...
   </canvas>
   p  "DOM content below..."
 ```
 
-### createEmbedPlugin の登録
+### embed plugin の自動登録
 
-`embed()` spell は **親 scope の plugin** が処理する。DOM 側の mount に `createEmbedPlugin()` を登録:
+`scope()` は embed plugin を自動的に登録する。ユーザーが `createEmbedPlugin()` を意識する必要はない:
 
 ```typescript
-mount(App, {
-  backend: createDOMBackend(root),
-  plugins: [createBasePlugin(), createEmbedPlugin()],
-});
+scope(createDOMBackend(root), [createBasePlugin()]).mount(App);
 ```
-
-Canvas scope には Canvas 用の `createBasePlugin()` のみ。embed plugin は不要。
 
 ## 実行
 

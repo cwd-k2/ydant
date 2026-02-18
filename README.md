@@ -9,8 +9,17 @@
 Ydant is an experimental UI library that uses JavaScript generators as a domain-specific language for building DOM structures. It's deliberately minimal and unconventional—a playground for exploring what's possible when generators meet the DOM.
 
 ```typescript
-import { mount } from "@ydant/core";
-import { div, button, text, classes, on, type Slot } from "@ydant/base";
+import { scope } from "@ydant/core";
+import {
+  createDOMBackend,
+  createBasePlugin,
+  div,
+  button,
+  text,
+  classes,
+  on,
+  type Slot,
+} from "@ydant/base";
 
 function Counter(initial: number) {
   let count = initial;
@@ -31,12 +40,9 @@ function Counter(initial: number) {
   });
 }
 
-import { createBasePlugin, createDOMBackend } from "@ydant/base";
-
-mount(() => Counter(0), {
-  backend: createDOMBackend(document.getElementById("app")!),
-  plugins: [createBasePlugin()],
-});
+scope(createDOMBackend(document.getElementById("app")!), [createBasePlugin()]).mount(() =>
+  Counter(0),
+);
 ```
 
 ## Features
@@ -67,7 +73,7 @@ mount(() => Counter(0), {
 ## Quick Start
 
 ```typescript
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import {
   createBasePlugin,
   createDOMBackend,
@@ -79,16 +85,13 @@ import {
 
 const App: Component = () => div(() => [classes("app"), text("Hello, Ydant!")]);
 
-mount(App, {
-  backend: createDOMBackend(document.getElementById("root")!),
-  plugins: [createBasePlugin()],
-});
+scope(createDOMBackend(document.getElementById("root")!), [createBasePlugin()]).mount(App);
 ```
 
 ### With Plugins
 
 ```typescript
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import {
   createBasePlugin,
   createDOMBackend,
@@ -109,10 +112,11 @@ const App: Component = () =>
     yield* button(() => [on("click", () => count.update((n) => n + 1)), text("+1")]);
   });
 
-mount(App, {
-  backend: createDOMBackend(document.getElementById("root")!),
-  plugins: [createBasePlugin(), createReactivePlugin(), createContextPlugin()],
-});
+scope(createDOMBackend(document.getElementById("root")!), [
+  createBasePlugin(),
+  createReactivePlugin(),
+  createContextPlugin(),
+]).mount(App);
 ```
 
 ## Examples

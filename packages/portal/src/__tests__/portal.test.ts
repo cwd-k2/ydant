@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import {
   createBasePlugin,
   createDOMBackend,
@@ -24,10 +24,7 @@ describe("Portal plugin", () => {
       ]);
     }
 
-    mount(App, {
-      backend: createDOMBackend(root),
-      plugins: [createBasePlugin(), createPortalPlugin()],
-    });
+    scope(createDOMBackend(root), [createBasePlugin(), createPortalPlugin()]).mount(App);
 
     expect(root.textContent).toContain("Main content");
     expect(root.textContent).not.toContain("Portal content");
@@ -45,10 +42,7 @@ describe("Portal plugin", () => {
       yield* portal(target2, () => [text("Portal 2")]);
     }
 
-    mount(App, {
-      backend: createDOMBackend(root),
-      plugins: [createBasePlugin(), createPortalPlugin()],
-    });
+    scope(createDOMBackend(root), [createBasePlugin(), createPortalPlugin()]).mount(App);
 
     expect(target1.textContent).toBe("Portal 1");
     expect(target2.textContent).toBe("Portal 2");
@@ -62,10 +56,7 @@ describe("Portal plugin", () => {
       yield* portal(target, () => [div(() => [div(() => [text("Deeply nested")])])]);
     }
 
-    mount(App, {
-      backend: createDOMBackend(root),
-      plugins: [createBasePlugin(), createPortalPlugin()],
-    });
+    scope(createDOMBackend(root), [createBasePlugin(), createPortalPlugin()]).mount(App);
 
     expect(target.querySelector("div > div")?.textContent).toBe("Deeply nested");
   });
@@ -83,10 +74,7 @@ describe("Portal plugin", () => {
       ref.bind(slot);
     }
 
-    mount(App, {
-      backend: createDOMBackend(root),
-      plugins: [createBasePlugin(), createPortalPlugin()],
-    });
+    scope(createDOMBackend(root), [createBasePlugin(), createPortalPlugin()]).mount(App);
 
     expect(portalTarget.textContent).toBe("Portal content");
 
@@ -110,10 +98,7 @@ describe("Portal plugin", () => {
       yield* portal(sharedTarget, () => [text("Portal B")]);
     }
 
-    mount(App, {
-      backend: createDOMBackend(root),
-      plugins: [createBasePlugin(), createPortalPlugin()],
-    });
+    scope(createDOMBackend(root), [createBasePlugin(), createPortalPlugin()]).mount(App);
 
     expect(sharedTarget.textContent).toContain("Portal A");
     expect(sharedTarget.textContent).toContain("Portal B");
@@ -147,10 +132,7 @@ describe("Portal plugin", () => {
         });
       }
 
-      mount(App, {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin(), createPortalPlugin()],
-      });
+      scope(createDOMBackend(container), [createBasePlugin(), createPortalPlugin()]).mount(App);
 
       expect(mountCallback).not.toHaveBeenCalled();
       vi.runAllTimers();
@@ -172,10 +154,7 @@ describe("Portal plugin", () => {
         ref.bind(slot);
       }
 
-      mount(App, {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin(), createPortalPlugin()],
-      });
+      scope(createDOMBackend(container), [createBasePlugin(), createPortalPlugin()]).mount(App);
 
       expect(unmountCallback).not.toHaveBeenCalled();
 

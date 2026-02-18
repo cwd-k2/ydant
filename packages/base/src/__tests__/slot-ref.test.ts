@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import { createBasePlugin, div, text, createSlotRef } from "..";
 import { createDOMBackend } from "../capabilities";
 
@@ -20,18 +20,13 @@ describe("createSlotRef", () => {
   it("can bind a slot and access its properties", () => {
     const ref = createSlotRef();
 
-    mount(
-      () =>
-        div(function* () {
-          const slot = yield* div(function* () {
-            yield* text("initial");
-          });
-          ref.bind(slot);
-        }),
-      {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        const slot = yield* div(function* () {
+          yield* text("initial");
+        });
+        ref.bind(slot);
+      }),
     );
 
     expect(ref.current).not.toBeNull();
@@ -42,18 +37,13 @@ describe("createSlotRef", () => {
   it("can refresh content through the ref", () => {
     const ref = createSlotRef();
 
-    mount(
-      () =>
-        div(function* () {
-          const slot = yield* div(function* () {
-            yield* text("before");
-          });
-          ref.bind(slot);
-        }),
-      {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        const slot = yield* div(function* () {
+          yield* text("before");
+        });
+        ref.bind(slot);
+      }),
     );
 
     expect((ref.node as HTMLElement).textContent).toBe("before");

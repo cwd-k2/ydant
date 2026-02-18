@@ -41,7 +41,7 @@ dispose(); // Stop tracking
 ### With DOM (reactive primitive)
 
 ```typescript
-import { mount, type Component } from "@ydant/core";
+import { scope, type Component } from "@ydant/core";
 import { createDOMBackend, createBasePlugin, div, button, text, on } from "@ydant/base";
 import { signal, reactive, createReactivePlugin } from "@ydant/reactive";
 
@@ -55,10 +55,10 @@ const Counter: Component = () =>
     yield* button(() => [on("click", () => count.update((n) => n + 1)), text("Increment")]);
   });
 
-mount(Counter, {
-  backend: createDOMBackend(document.getElementById("app")!),
-  plugins: [createBasePlugin(), createReactivePlugin()],
-});
+scope(createDOMBackend(document.getElementById("app")!), [
+  createBasePlugin(),
+  createReactivePlugin(),
+]).mount(Counter);
 ```
 
 ## API
@@ -135,11 +135,11 @@ Without `batch`, each `set()` call would trigger the effect immediately. With `b
 function createReactivePlugin(): Plugin;
 ```
 
-Creates a plugin that handles `reactive` blocks. Must be passed to `mount()`. Depends on `createBasePlugin()`.
+Creates a plugin that handles `reactive` blocks. Must be included in the `scope()` plugins array. Depends on `createBasePlugin()`.
 
 ## Scoping
 
-Each `mount()` instance gets its own `ReactiveScope` via the plugin's `initContext()`. Signals, effects, and computed values created within a mount tree track dependencies in that scope, preventing interference between independent mount instances.
+Each `scope().mount()` instance gets its own `ReactiveScope` via the plugin's `initContext()`. Signals, effects, and computed values created within a mount tree track dependencies in that scope, preventing interference between independent mount instances.
 
 **Batch operations remain global by design** — `batch()` defers all effects regardless of scope. If batch were scoped, effects from other scopes would fire immediately during a batch, defeating its purpose.
 

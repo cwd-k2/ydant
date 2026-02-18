@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import type { Builder } from "@ydant/core";
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import { createBasePlugin, createDOMBackend, div, p, text } from "@ydant/base";
 import { createContext, provide, inject } from "../context";
 import { createContextPlugin } from "../plugin";
@@ -25,20 +25,15 @@ describe("createContextPlugin", () => {
       const ThemeContext = createContext<string>("light");
       let capturedTheme: string = "";
 
-      mount(
-        () =>
-          div(function* () {
-            yield* provide(ThemeContext, "dark");
-            // Cast to work around type mismatch with inject's return type
-            yield* p(function* () {
-              capturedTheme = yield* inject(ThemeContext);
-              yield* text(capturedTheme);
-            } as Builder);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin(), createContextPlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin(), createContextPlugin()]).mount(() =>
+        div(function* () {
+          yield* provide(ThemeContext, "dark");
+          // Cast to work around type mismatch with inject's return type
+          yield* p(function* () {
+            capturedTheme = yield* inject(ThemeContext);
+            yield* text(capturedTheme);
+          } as Builder);
+        }),
       );
 
       expect(capturedTheme).toBe("dark");
@@ -50,28 +45,23 @@ describe("createContextPlugin", () => {
       const LevelContext = createContext<number>(0);
       const capturedLevels: number[] = [];
 
-      mount(
-        () =>
-          div(function* () {
-            yield* provide(LevelContext, 1);
-            const level1 = yield* inject(LevelContext);
-            capturedLevels.push(level1);
+      scope(createDOMBackend(container), [createBasePlugin(), createContextPlugin()]).mount(() =>
+        div(function* () {
+          yield* provide(LevelContext, 1);
+          const level1 = yield* inject(LevelContext);
+          capturedLevels.push(level1);
+
+          yield* div(function* () {
+            yield* provide(LevelContext, 2);
+            const level2 = yield* inject(LevelContext);
+            capturedLevels.push(level2);
 
             yield* div(function* () {
-              yield* provide(LevelContext, 2);
-              const level2 = yield* inject(LevelContext);
-              capturedLevels.push(level2);
-
-              yield* div(function* () {
-                const level3 = yield* inject(LevelContext);
-                capturedLevels.push(level3);
-              } as Builder);
-            });
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin(), createContextPlugin()],
-        },
+              const level3 = yield* inject(LevelContext);
+              capturedLevels.push(level3);
+            } as Builder);
+          });
+        }),
       );
 
       expect(capturedLevels).toEqual([1, 2, 2]);
@@ -81,16 +71,11 @@ describe("createContextPlugin", () => {
       const MissingContext = createContext<string>("default-value");
       let capturedValue: string = "";
 
-      mount(
-        () =>
-          div(function* () {
-            capturedValue = yield* inject(MissingContext);
-            yield* text(capturedValue);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin(), createContextPlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin(), createContextPlugin()]).mount(() =>
+        div(function* () {
+          capturedValue = yield* inject(MissingContext);
+          yield* text(capturedValue);
+        }),
       );
 
       expect(capturedValue).toBe("default-value");
@@ -100,15 +85,10 @@ describe("createContextPlugin", () => {
       const NoDefaultContext = createContext<string>();
       let capturedValue: string | undefined = "initial";
 
-      mount(
-        () =>
-          div(function* () {
-            capturedValue = yield* inject(NoDefaultContext);
-          } as Builder),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin(), createContextPlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin(), createContextPlugin()]).mount(() =>
+        div(function* () {
+          capturedValue = yield* inject(NoDefaultContext);
+        } as Builder),
       );
 
       expect(capturedValue).toBeUndefined();
@@ -123,21 +103,16 @@ describe("createContextPlugin", () => {
       let theme: string = "";
       let user: { name: string } | null = null;
 
-      mount(
-        () =>
-          div(function* () {
-            yield* provide(ThemeContext, "dark");
-            yield* provide(UserContext, { name: "Alice" });
+      scope(createDOMBackend(container), [createBasePlugin(), createContextPlugin()]).mount(() =>
+        div(function* () {
+          yield* provide(ThemeContext, "dark");
+          yield* provide(UserContext, { name: "Alice" });
 
-            yield* p(function* () {
-              theme = yield* inject(ThemeContext);
-              user = yield* inject(UserContext);
-            } as Builder);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin(), createContextPlugin()],
-        },
+          yield* p(function* () {
+            theme = yield* inject(ThemeContext);
+            user = yield* inject(UserContext);
+          } as Builder);
+        }),
       );
 
       expect(theme).toBe("dark");

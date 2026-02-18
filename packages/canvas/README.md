@@ -11,30 +11,23 @@ pnpm add @ydant/canvas
 ## Usage
 
 ```typescript
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import { createBasePlugin, attr } from "@ydant/base";
 import { createCanvasBackend, group, rect, circle } from "@ydant/canvas";
 
 const canvas = createCanvasBackend();
 
-mount(
-  () =>
-    group(() => [
-      rect(() => [
-        attr("x", "10"),
-        attr("y", "20"),
-        attr("width", "100"),
-        attr("height", "50"),
-        attr("fill", "#ff0000"),
-      ]),
-      circle(() => [
-        attr("cx", "200"),
-        attr("cy", "100"),
-        attr("r", "30"),
-        attr("fill", "#0000ff"),
-      ]),
+scope(canvas, [createBasePlugin()]).mount(() =>
+  group(() => [
+    rect(() => [
+      attr("x", "10"),
+      attr("y", "20"),
+      attr("width", "100"),
+      attr("height", "50"),
+      attr("fill", "#ff0000"),
     ]),
-  { backend: canvas, plugins: [createBasePlugin()] },
+    circle(() => [attr("cx", "200"), attr("cy", "100"), attr("r", "30"), attr("fill", "#0000ff")]),
+  ]),
 );
 
 // Paint to a canvas element
@@ -60,7 +53,7 @@ interface CanvasBackend extends Backend<"tree" | "decorate" | "schedule"> {
 Creates a rendering backend for Canvas2D.
 
 - `root` — The virtual root node (managed internally by the backend).
-- `paint(ctx)` — Clears the canvas and draws all shapes. Call this after `mount()` or on each animation frame.
+- `paint(ctx)` — Clears the canvas and draws all shapes. Call this after mounting or on each animation frame.
 
 ### Shape Factories
 

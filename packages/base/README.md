@@ -25,7 +25,7 @@ pnpm add @ydant/base
 ## Usage
 
 ```typescript
-import { mount, type Component } from "@ydant/core";
+import { scope, type Component } from "@ydant/core";
 import { createDOMBackend, createBasePlugin, div, p, text, classes } from "@ydant/base";
 
 const Greeting: Component = () =>
@@ -34,10 +34,7 @@ const Greeting: Component = () =>
     yield* p(() => [text("Hello World!")]);
   });
 
-mount(Greeting, {
-  backend: createDOMBackend(document.getElementById("app")!),
-  plugins: [createBasePlugin()],
-});
+scope(createDOMBackend(document.getElementById("app")!), [createBasePlugin()]).mount(Greeting);
 ```
 
 ## API

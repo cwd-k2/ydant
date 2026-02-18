@@ -24,8 +24,11 @@ export type Scheduler = (flush: () => void) => void;
  *
  * @example
  * ```typescript
- * const backend = createDOMBackend(document.getElementById("app")!);
- * mount(App, { backend, plugins: [createBasePlugin()] });
+ * import { scope } from "@ydant/core";
+ * import { createDOMBackend, createBasePlugin } from "@ydant/base";
+ *
+ * scope(createDOMBackend(document.getElementById("app")!), [createBasePlugin()])
+ *   .mount(App);
  * ```
  */
 export interface Backend<Capabilities extends string = string> {

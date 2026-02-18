@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { mount, type Component } from "@ydant/core";
+import { scope, type Component } from "@ydant/core";
 import { createBasePlugin, createDOMBackend, div, p, text } from "@ydant/base";
 import type { RouteComponentProps } from "../types";
 import { RouterLink } from "../RouterLink";
@@ -48,15 +48,13 @@ describe("RouterLink", () => {
   });
 
   it("renders an anchor element", () => {
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterLink({
-            href: "/about",
-            children: () => text("About"),
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterLink({
+          href: "/about",
+          children: () => text("About"),
+        });
+      }),
     );
 
     const link = container.querySelector("a");
@@ -66,15 +64,13 @@ describe("RouterLink", () => {
   });
 
   it("calls navigate on click", () => {
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterLink({
-            href: "/clicked",
-            children: () => text("Click me"),
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterLink({
+          href: "/clicked",
+          children: () => text("Click me"),
+        });
+      }),
     );
 
     const link = container.querySelector("a") as HTMLAnchorElement;
@@ -84,15 +80,13 @@ describe("RouterLink", () => {
   });
 
   it("prevents default navigation", () => {
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterLink({
-            href: "/test",
-            children: () => text("Test"),
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterLink({
+          href: "/test",
+          children: () => text("Test"),
+        });
+      }),
     );
 
     const link = container.querySelector("a") as HTMLAnchorElement;
@@ -110,16 +104,14 @@ describe("RouterLink", () => {
   it("applies activeClass when path matches", () => {
     setLocationPathname("/current");
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterLink({
-            href: "/current",
-            children: () => text("Current"),
-            activeClass: "active",
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterLink({
+          href: "/current",
+          children: () => text("Current"),
+          activeClass: "active",
+        });
+      }),
     );
 
     const link = container.querySelector("a");
@@ -129,16 +121,14 @@ describe("RouterLink", () => {
   it("does not apply activeClass when path does not match", () => {
     setLocationPathname("/other");
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterLink({
-            href: "/different",
-            children: () => text("Link"),
-            activeClass: "active",
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterLink({
+          href: "/different",
+          children: () => text("Link"),
+          activeClass: "active",
+        });
+      }),
     );
 
     const link = container.querySelector("a");
@@ -173,17 +163,15 @@ describe("RouterView", () => {
     const HomePage: Component = () => p(() => [text("Home Page")]);
     const AboutPage: Component = () => p(() => [text("About Page")]);
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [
-              { path: "/", component: HomePage },
-              { path: "/about", component: AboutPage },
-            ],
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [
+            { path: "/", component: HomePage },
+            { path: "/about", component: AboutPage },
+          ],
+        });
+      }),
     );
 
     expect(container.textContent).toContain("Home Page");
@@ -193,17 +181,15 @@ describe("RouterView", () => {
     const HomePage: Component = () => p(() => [text("Home Page")]);
     const AboutPage: Component = () => p(() => [text("About Page")]);
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [
-              { path: "/", component: HomePage },
-              { path: "/about", component: AboutPage },
-            ],
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [
+            { path: "/", component: HomePage },
+            { path: "/about", component: AboutPage },
+          ],
+        });
+      }),
     );
 
     vi.advanceTimersToNextFrame();
@@ -224,14 +210,12 @@ describe("RouterView", () => {
       return p(() => [text(`User: ${params.id}`)]);
     };
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [{ path: "/users/:id", component: UserPage }],
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [{ path: "/users/:id", component: UserPage }],
+        });
+      }),
     );
 
     expect(capturedParams.id).toBe("42");
@@ -243,14 +227,12 @@ describe("RouterView", () => {
 
     const HomePage: Component = () => p(() => [text("Home")]);
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [{ path: "/", component: HomePage }],
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [{ path: "/", component: HomePage }],
+        });
+      }),
     );
 
     // Only the wrapper divs, no home page content
@@ -262,14 +244,12 @@ describe("RouterView", () => {
 
     const NotFound: Component = () => p(() => [text("404 Not Found")]);
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [{ path: "*", component: NotFound }],
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [{ path: "*", component: NotFound }],
+        });
+      }),
     );
 
     expect(container.textContent).toContain("404 Not Found");
@@ -280,15 +260,13 @@ describe("RouterView", () => {
 
     const UsersPage: Component = () => p(() => [text("Users List")]);
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [{ path: "/users", component: UsersPage }],
-            base: "/app",
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [{ path: "/users", component: UsersPage }],
+          base: "/app",
+        });
+      }),
     );
 
     expect(container.textContent).toContain("Users List");
@@ -299,15 +277,13 @@ describe("RouterView", () => {
 
     const HomePage: Component = () => p(() => [text("App Home")]);
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [{ path: "/", component: HomePage }],
-            base: "/app",
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [{ path: "/", component: HomePage }],
+          base: "/app",
+        });
+      }),
     );
 
     expect(container.textContent).toContain("App Home");
@@ -318,20 +294,18 @@ describe("RouterView", () => {
 
     const ProtectedPage: Component = () => p(() => [text("Protected Content")]);
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [
-              {
-                path: "/protected",
-                component: ProtectedPage,
-                guard: () => true,
-              },
-            ],
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [
+            {
+              path: "/protected",
+              component: ProtectedPage,
+              guard: () => true,
+            },
+          ],
+        });
+      }),
     );
 
     expect(container.textContent).toContain("Protected Content");
@@ -342,20 +316,18 @@ describe("RouterView", () => {
 
     const ProtectedPage: Component = () => p(() => [text("Protected Content")]);
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [
-              {
-                path: "/protected",
-                component: ProtectedPage,
-                guard: () => false,
-              },
-            ],
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [
+            {
+              path: "/protected",
+              component: ProtectedPage,
+              guard: () => false,
+            },
+          ],
+        });
+      }),
     );
 
     expect(container.textContent).not.toContain("Protected Content");
@@ -366,20 +338,18 @@ describe("RouterView", () => {
 
     const ProtectedPage: Component = () => p(() => [text("Async Protected Content")]);
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [
-              {
-                path: "/async-protected",
-                component: ProtectedPage,
-                guard: () => Promise.resolve(true),
-              },
-            ],
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [
+            {
+              path: "/async-protected",
+              component: ProtectedPage,
+              guard: () => Promise.resolve(true),
+            },
+          ],
+        });
+      }),
     );
 
     // Initially, content may not be shown (waiting for async guard)
@@ -395,20 +365,18 @@ describe("RouterView", () => {
 
     const BlockedPage: Component = () => p(() => [text("Should Not See This")]);
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [
-              {
-                path: "/async-blocked",
-                component: BlockedPage,
-                guard: () => Promise.resolve(false),
-              },
-            ],
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [
+            {
+              path: "/async-blocked",
+              component: BlockedPage,
+              guard: () => Promise.resolve(false),
+            },
+          ],
+        });
+      }),
     );
 
     vi.advanceTimersToNextFrame();
@@ -421,17 +389,15 @@ describe("RouterView", () => {
     const HomePage: Component = () => p(() => [text("Home")]);
     const AboutPage: Component = () => p(() => [text("About")]);
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [
-              { path: "/", component: HomePage },
-              { path: "/about", component: AboutPage },
-            ],
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [
+            { path: "/", component: HomePage },
+            { path: "/about", component: AboutPage },
+          ],
+        });
+      }),
     );
 
     vi.advanceTimersToNextFrame();
@@ -454,15 +420,13 @@ describe("RouterView", () => {
       return p(() => [text(`User: ${params.id}`)]);
     };
 
-    mount(
-      () =>
-        div(function* () {
-          yield* RouterView({
-            routes: [{ path: "/users/:id", component: UserPage }],
-            base: "/app",
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* RouterView({
+          routes: [{ path: "/users/:id", component: UserPage }],
+          base: "/app",
+        });
+      }),
     );
 
     expect(capturedParams.id).toBe("99");
@@ -476,19 +440,17 @@ describe("RouterView", () => {
     // Create a parent slot to control unmounting
     let parentSlot: any;
 
-    mount(
-      () =>
-        div(function* () {
-          parentSlot = yield* div(function* () {
-            yield* RouterView({
-              routes: [
-                { path: "/", component: HomePage },
-                { path: "/about", component: AboutPage },
-              ],
-            });
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        parentSlot = yield* div(function* () {
+          yield* RouterView({
+            routes: [
+              { path: "/", component: HomePage },
+              { path: "/about", component: AboutPage },
+            ],
           });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+        });
+      }),
     );
 
     vi.advanceTimersToNextFrame();

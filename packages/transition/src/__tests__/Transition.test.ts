@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { Builder } from "@ydant/core";
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import type { Slot } from "@ydant/base";
 import { createBasePlugin, createDOMBackend, div, text, classes } from "@ydant/base";
 import { Transition, createTransition } from "../Transition";
@@ -26,42 +26,36 @@ describe("Transition", () => {
   });
 
   it("renders content when show=true", () => {
-    mount(
-      () =>
-        Transition({
-          show: true,
-          content: () => div(() => [text("Visible Content")]),
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Transition({
+        show: true,
+        content: () => div(() => [text("Visible Content")]),
+      }),
     );
 
     expect(container.textContent).toContain("Visible Content");
   });
 
   it("renders nothing when show=false", () => {
-    mount(
-      () =>
-        Transition({
-          show: false,
-          content: () => div(() => [text("Hidden Content")]),
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Transition({
+        show: false,
+        content: () => div(() => [text("Hidden Content")]),
+      }),
     );
 
     expect(container.textContent).not.toContain("Hidden Content");
   });
 
   it("applies enter classes on mount", () => {
-    mount(
-      () =>
-        Transition({
-          show: true,
-          enter: "transition-opacity",
-          enterFrom: "opacity-0",
-          enterTo: "opacity-100",
-          content: () => div(() => [text("Content")]),
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Transition({
+        show: true,
+        enter: "transition-opacity",
+        enterFrom: "opacity-0",
+        enterTo: "opacity-100",
+        content: () => div(() => [text("Content")]),
+      }),
     );
 
     vi.advanceTimersToNextFrame();
@@ -72,13 +66,11 @@ describe("Transition", () => {
   });
 
   it("handles transition without classes", () => {
-    mount(
-      () =>
-        Transition({
-          show: true,
-          content: () => div(() => [text("Content")]),
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Transition({
+        show: true,
+        content: () => div(() => [text("Content")]),
+      }),
     );
 
     expect(container.textContent).toContain("Content");
@@ -86,13 +78,11 @@ describe("Transition", () => {
 
   it("toggles visibility based on show prop", () => {
     // Test show=true
-    mount(
-      () =>
-        Transition({
-          show: true,
-          content: () => div(() => [text("Toggle Content")]),
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Transition({
+        show: true,
+        content: () => div(() => [text("Toggle Content")]),
+      }),
     );
 
     expect(container.textContent).toContain("Toggle Content");
@@ -100,29 +90,25 @@ describe("Transition", () => {
     // Reset container and test show=false
     container.innerHTML = "";
 
-    mount(
-      () =>
-        Transition({
-          show: false,
-          content: () => div(() => [text("Toggle Content")]),
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Transition({
+        show: false,
+        content: () => div(() => [text("Toggle Content")]),
+      }),
     );
 
     expect(container.textContent).not.toContain("Toggle Content");
   });
 
   it("applies and removes enter classes through transition", () => {
-    mount(
-      () =>
-        Transition({
-          show: true,
-          enter: "transition-all",
-          enterFrom: "opacity-0 scale-95",
-          enterTo: "opacity-100 scale-100",
-          content: () => div(() => [classes("content-box"), text("Content")]),
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Transition({
+        show: true,
+        enter: "transition-all",
+        enterFrom: "opacity-0 scale-95",
+        enterTo: "opacity-100 scale-100",
+        content: () => div(() => [classes("content-box"), text("Content")]),
+      }),
     );
 
     // Trigger onMount callback (requestAnimationFrame)
@@ -144,16 +130,14 @@ describe("Transition", () => {
       transitionDuration: "0.3s",
     } as CSSStyleDeclaration);
 
-    mount(
-      () =>
-        Transition({
-          show: true,
-          enter: "transition-opacity",
-          enterFrom: "opacity-0",
-          enterTo: "opacity-100",
-          content: () => div(() => [classes("fade-target"), text("Fading")]),
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Transition({
+        show: true,
+        enter: "transition-opacity",
+        enterFrom: "opacity-0",
+        enterTo: "opacity-100",
+        content: () => div(() => [classes("fade-target"), text("Fading")]),
+      }),
     );
 
     vi.advanceTimersToNextFrame();
@@ -176,16 +160,14 @@ describe("Transition", () => {
       transitionDuration: "0.5s",
     } as CSSStyleDeclaration);
 
-    mount(
-      () =>
-        Transition({
-          show: true,
-          enter: "transition-opacity",
-          enterFrom: "opacity-0",
-          enterTo: "opacity-100",
-          content: () => div(() => [classes("event-target"), text("Content")]),
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Transition({
+        show: true,
+        enter: "transition-opacity",
+        enterFrom: "opacity-0",
+        enterTo: "opacity-100",
+        content: () => div(() => [classes("event-target"), text("Content")]),
+      }),
     );
 
     vi.advanceTimersToNextFrame();
@@ -200,16 +182,14 @@ describe("Transition", () => {
   });
 
   it("cleans up empty class strings", () => {
-    mount(
-      () =>
-        Transition({
-          show: true,
-          enter: "",
-          enterFrom: "",
-          enterTo: "",
-          content: () => div(() => [text("No Classes")]),
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Transition({
+        show: true,
+        enter: "",
+        enterFrom: "",
+        enterTo: "",
+        content: () => div(() => [text("No Classes")]),
+      }),
     );
 
     vi.advanceTimersToNextFrame();
@@ -368,20 +348,18 @@ describe("createTransition", () => {
       setShow: (show: boolean) => Promise<void>;
     } | null = null;
 
-    mount(
-      () =>
-        div(function* () {
-          handle = yield* createTransition({
-            enter: "fade-enter",
-            enterFrom: "fade-enter-from",
-            enterTo: "fade-enter-to",
-            leave: "fade-leave",
-            leaveFrom: "fade-leave-from",
-            leaveTo: "fade-leave-to",
-            content: () => div(() => [text("Transition Content")]),
-          });
-        } as Builder),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        handle = yield* createTransition({
+          enter: "fade-enter",
+          enterFrom: "fade-enter-from",
+          enterTo: "fade-enter-to",
+          leave: "fade-leave",
+          leaveFrom: "fade-leave-from",
+          leaveTo: "fade-leave-to",
+          content: () => div(() => [text("Transition Content")]),
+        });
+      } as Builder),
     );
     vi.advanceTimersToNextFrame();
 
@@ -396,17 +374,15 @@ describe("createTransition", () => {
       setShow: (show: boolean) => Promise<void>;
     } | null = null;
 
-    mount(
-      () =>
-        div(function* () {
-          handle = yield* createTransition({
-            enter: "fade-enter",
-            enterFrom: "fade-enter-from",
-            enterTo: "fade-enter-to",
-            content: () => div(() => [classes("transition-child"), text("Content")]),
-          });
-        } as Builder),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        handle = yield* createTransition({
+          enter: "fade-enter",
+          enterFrom: "fade-enter-from",
+          enterTo: "fade-enter-to",
+          content: () => div(() => [classes("transition-child"), text("Content")]),
+        });
+      } as Builder),
     );
     vi.advanceTimersToNextFrame();
 
@@ -428,17 +404,15 @@ describe("createTransition", () => {
       setShow: (show: boolean) => Promise<void>;
     } | null = null;
 
-    mount(
-      () =>
-        div(function* () {
-          handle = yield* createTransition({
-            leave: "fade-leave",
-            leaveFrom: "fade-leave-from",
-            leaveTo: "fade-leave-to",
-            content: () => div(() => [classes("transition-child"), text("Content")]),
-          });
-        } as Builder),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        handle = yield* createTransition({
+          leave: "fade-leave",
+          leaveFrom: "fade-leave-from",
+          leaveTo: "fade-leave-to",
+          content: () => div(() => [classes("transition-child"), text("Content")]),
+        });
+      } as Builder),
     );
     vi.advanceTimersToNextFrame();
 
@@ -461,14 +435,12 @@ describe("createTransition", () => {
       setShow: (show: boolean) => Promise<void>;
     } | null = null;
 
-    mount(
-      () =>
-        div(function* () {
-          handle = yield* createTransition({
-            content: () => div(() => [text("Content")]),
-          });
-        } as Builder),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        handle = yield* createTransition({
+          content: () => div(() => [text("Content")]),
+        });
+      } as Builder),
     );
     vi.advanceTimersToNextFrame();
 
@@ -497,15 +469,13 @@ describe("createTransition", () => {
       setShow: (show: boolean) => Promise<void>;
     } | null = null;
 
-    mount(
-      () =>
-        div(function* () {
-          handle = yield* createTransition({
-            enter: "fade-enter",
-            content: () => div(() => [classes("child"), text("Content")]),
-          });
-        } as Builder),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        handle = yield* createTransition({
+          enter: "fade-enter",
+          content: () => div(() => [classes("child"), text("Content")]),
+        });
+      } as Builder),
     );
     vi.advanceTimersToNextFrame();
 

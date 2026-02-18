@@ -28,7 +28,7 @@ DOM の存在すら仮定せず、Backend とプラグインが全ての具体�
 
 **基盤:**
 
-- `@ydant/core` - 処理系、Backend/Plugin インターフェース、mount()
+- `@ydant/core` - 処理系、Backend/Plugin インターフェース、scope() builder
 - `@ydant/base` - 要素ファクトリ、プリミティブ、Slot、ベースプラグイン、DOM Backend
 
 **レンダリングバックエンド:**
@@ -49,7 +49,7 @@ DOM の存在すら仮定せず、Backend とプラグインが全ての具体�
 - `@ydant/transition` - CSS トランジション
 
 Backend は「どこに」レンダリングするかを定義し、Plugin は「どのように」spell を処理するかを定義する。
-`mount()` 時に Backend 1 つと任意数の Plugin を登録する。
+`scope(backend, plugins)` で Backend 1 つと任意数の Plugin を登録し、`.mount()` / `.embed()` で実行する。
 `createBasePlugin()` は要素やプリミティブを処理するために必須。
 
 ## Commands

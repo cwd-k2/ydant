@@ -13,10 +13,8 @@
  *   onEvent: (e) => console.log(e.type, e.engineId),
  * });
  *
- * mount(App, {
- *   backend: createDOMBackend(root),
- *   plugins: [createBasePlugin(), devtools],
- * });
+ * scope(createDOMBackend(root), [createBasePlugin(), devtools])
+ *   .mount(App);
  *
  * // Read buffered events
  * console.log(devtools.getEvents());

@@ -13,7 +13,7 @@
  * - Multiple Signal changes batching into a single rerender
  */
 
-import { mount, createExecutionScope, embed, createEmbedPlugin } from "@ydant/core";
+import { scope } from "@ydant/core";
 import { createDevtoolsOverlay } from "@ydant/devtools";
 import {
   createDOMBackend,
@@ -105,10 +105,7 @@ const Scene = () =>
 // =============================================================================
 
 const canvasBackend = createCanvasBackend();
-const canvasScope = createExecutionScope(canvasBackend, [
-  createBasePlugin(),
-  createReactivePlugin(),
-]);
+const canvasBuilder = scope(canvasBackend, [createBasePlugin(), createReactivePlugin()]);
 
 let canvasCtx2d: CanvasRenderingContext2D;
 
@@ -130,7 +127,13 @@ const App = () =>
     canvasCtx2d = (slot.node as HTMLCanvasElement).getContext("2d")!;
 
     // Embed Canvas scope — builds VShape tree with reactive tracking
-    yield* embed(canvasScope, Scene);
+    const canvasEngine = yield* canvasBuilder.embed(Scene);
+
+    // Register auto-repaint: when the canvas engine flushes, paint the updated VShape tree
+    canvasEngine.onFlush(() => {
+      paintCount++;
+      canvasBackend.paint(canvasCtx2d);
+    });
 
     // Initial paint
     canvasBackend.paint(canvasCtx2d);
@@ -196,17 +199,11 @@ const App = () =>
 
 const overlay = createDevtoolsOverlay();
 
-const handle = mount(App, {
-  backend: createDOMBackend(document.getElementById("app")!),
-  plugins: [createBasePlugin(), createReactivePlugin(), createEmbedPlugin(), overlay.plugin],
-});
-
-// Register auto-repaint: when the canvas engine flushes, paint the updated VShape tree
-const canvasEngine = handle.hub.resolve(canvasScope)!;
-canvasEngine.onFlush(() => {
-  paintCount++;
-  canvasBackend.paint(canvasCtx2d);
-});
+const handle = scope(createDOMBackend(document.getElementById("app")!), [
+  createBasePlugin(),
+  createReactivePlugin(),
+  overlay.plugin,
+]).mount(App);
 
 // Mount DevTools overlay
 overlay.connect(handle.hub);

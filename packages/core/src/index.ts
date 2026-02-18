@@ -58,11 +58,10 @@ export type {
 export { isTagged, toRender } from "./utils";
 
 // =============================================================================
-// Embed
+// Embed (type only — createEmbedPlugin is auto-registered by scope())
 // =============================================================================
 
 export type { Embed } from "./embed";
-export { embed, createEmbedPlugin } from "./embed";
 
 // =============================================================================
 // Scheduler
@@ -77,8 +76,14 @@ export { sync, microtask, animFrame } from "./scheduler";
 export { createHub } from "./hub";
 
 // =============================================================================
-// Mount
+// Scope Builder
 // =============================================================================
 
-export type { MountOptions, MountHandle } from "./mount";
-export { mount, createExecutionScope } from "./mount";
+export type { ScopeBuilder } from "./scope";
+export { scope } from "./scope";
+
+// =============================================================================
+// Mount (types only — use scope().mount() instead)
+// =============================================================================
+
+export type { MountHandle } from "./mount";

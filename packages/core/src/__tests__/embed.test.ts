@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { mount, createExecutionScope, createEmbedPlugin, embed } from "../index";
+import { mount, createExecutionScope } from "../mount";
+import { createEmbedPlugin, embed } from "../embed";
+import { sync } from "../scheduler";
 import type { Backend, Plugin, RenderContext } from "../plugin";
 
 // ---------------------------------------------------------------------------
@@ -34,7 +36,17 @@ describe("embed spell + plugin", () => {
       type: "embed",
       scope,
       content: expect.any(Function),
+      scheduler: undefined,
     });
+  });
+
+  it("embed spell passes scheduler in request", () => {
+    const scope = createExecutionScope(createMockBackend("test"), []);
+    const gen = embed(scope, function* () {}, { scheduler: sync });
+
+    const result = gen.next();
+    expect(result.done).toBe(false);
+    expect((result.value as any).scheduler).toBe(sync);
   });
 
   it("createEmbedPlugin handles embed requests", () => {
@@ -260,5 +272,101 @@ describe("embed spell + plugin", () => {
 
     // An engine should have been spawned for the child scope
     expect(handle.hub.resolve(childScope)).toBeDefined();
+  });
+
+  it("cross-scope embed returns the spawned engine", () => {
+    const parentBackend = createMockBackend("parent-be");
+    const childBackend = createMockBackend("child-be");
+
+    const childScope = createExecutionScope(childBackend, []);
+    let returnedEngine: unknown;
+
+    mount(
+      asApp(function* () {
+        const gen = embed(childScope, function* () {});
+        gen.next();
+        // Simulate runtime passing the engine as response
+        const step2 = gen.next({ id: "mock-engine" } as any);
+        returnedEngine = step2.value;
+      }),
+      {
+        backend: parentBackend,
+        plugins: [createEmbedPlugin()],
+      },
+    );
+
+    expect(returnedEngine).toEqual({ id: "mock-engine" });
+  });
+
+  it("embed plugin returns engine as response for cross-scope", () => {
+    const parentBackend = createMockBackend("parent-be");
+    const childBackend = createMockBackend("child-be");
+
+    const childScope = createExecutionScope(childBackend, []);
+    const plugin = createEmbedPlugin();
+
+    // Simulate ctx for cross-scope
+    const mockHub = {
+      resolve: () => undefined,
+      spawn: (_id: string, _scope: any, _opts?: any) => ({ id: "spawned-engine" }),
+    };
+    const mockCtx = {
+      scope: createExecutionScope(parentBackend, []),
+      engine: { hub: mockHub },
+      processChildren: () => {},
+    } as unknown as RenderContext;
+
+    const result = plugin.process!(
+      { type: "embed", scope: childScope, content: function* () {} } as any,
+      mockCtx,
+    );
+
+    expect(result).toEqual({ id: "spawned-engine" });
+  });
+
+  it("same-scope embed returns ctx.engine", () => {
+    const backend = createMockBackend("be");
+    const theScope = createExecutionScope(backend, []);
+    const plugin = createEmbedPlugin();
+
+    const mockEngine = { id: "current-engine", hub: {} };
+    const mockCtx = {
+      scope: theScope,
+      engine: mockEngine,
+      processChildren: () => {},
+    } as unknown as RenderContext;
+
+    const result = plugin.process!(
+      { type: "embed", scope: theScope, content: function* () {} } as any,
+      mockCtx,
+    );
+
+    expect(result).toBe(mockEngine);
+  });
+
+  it("embed plugin passes scheduler to hub.spawn", () => {
+    const parentBackend = createMockBackend("parent-be");
+    const childBackend = createMockBackend("child-be");
+
+    const childScope = createExecutionScope(childBackend, []);
+    const plugin = createEmbedPlugin();
+
+    const spawnSpy = vi.fn((_id: string, _scope: any, _opts?: any) => ({ id: "engine" }));
+    const mockHub = {
+      resolve: () => undefined,
+      spawn: spawnSpy,
+    };
+    const mockCtx = {
+      scope: createExecutionScope(parentBackend, []),
+      engine: { hub: mockHub },
+      processChildren: () => {},
+    } as unknown as RenderContext;
+
+    plugin.process!(
+      { type: "embed", scope: childScope, content: function* () {}, scheduler: sync } as any,
+      mockCtx,
+    );
+
+    expect(spawnSpy).toHaveBeenCalledWith(expect.any(String), childScope, { scheduler: sync });
   });
 });

@@ -7,7 +7,7 @@ import type { Render, CapabilityCheck } from "./types";
 import { render } from "./render";
 import { createHub } from "./hub";
 
-/** A handle returned by {@link mount}, used to dispose the mount scope. */
+/** A handle returned by mounting, used to dispose the mount scope. */
 export interface MountHandle {
   /** The hub managing engines for this mount scope. */
   readonly hub: Hub;
@@ -15,7 +15,7 @@ export interface MountHandle {
   dispose(): void;
 }
 
-/** Options for {@link mount}. */
+/** Options for the internal mount function. */
 export type MountOptions<G extends Render = Render, B extends Backend = Backend> = {
   /** The rendering backend that provides platform-specific capabilities. */
   backend: B;
@@ -64,45 +64,22 @@ export function createExecutionScope(
 }
 
 /**
- * Mounts a component into the given root node, starting the rendering pipeline.
- *
- * Registers plugins, validates their dependencies, calls setup hooks,
- * and renders the component's generator into the target.
- *
- * @param app - The root component to render.
- * @param options - Configuration including backend and plugins.
- * @returns A handle to dispose the mount scope.
- *
- * @example
- * ```typescript
- * import { mount } from "@ydant/core";
- * import { createDOMBackend, createBasePlugin, div, text } from "@ydant/base";
- *
- * const App = () => div(() => [text("Hello!")]);
- *
- * const handle = mount(App, {
- *   backend: createDOMBackend(document.getElementById("app")!),
- *   plugins: [createBasePlugin()],
- * });
- *
- * // Later: handle.dispose();
- * ```
+ * Internal mount implementation that takes a pre-built ExecutionScope.
+ * Used by both mount() and ScopeBuilder.mount().
  */
-export function mount<G extends Render, B extends Backend>(
+export function mountWithScope<G extends Render>(
+  execScope: ExecutionScope,
   app: () => G,
-  options: MountOptions<G, B>,
+  scheduler?: Scheduler,
 ): MountHandle {
-  const { backend, plugins: pluginList, scheduler } = options;
-  const allPlugins = pluginList ?? [];
-
-  const scope = createExecutionScope(backend, allPlugins);
+  const allPlugins = execScope.allPlugins;
 
   // Create the hub and primary engine
   const hub = createHub();
-  hub.spawn("primary", scope, { scheduler });
+  hub.spawn("primary", execScope, { scheduler });
 
   // Render (initial render is synchronous — does not go through the engine queue)
-  const rootCtx = render(app(), scope, hub);
+  const rootCtx = render(app(), execScope, hub);
 
   // Call setup on each unique plugin
   const visited = new Set<string>();
@@ -130,4 +107,19 @@ export function mount<G extends Render, B extends Backend>(
       hub.dispose();
     },
   };
+}
+
+/**
+ * Internal mount function. Prefer `scope(backend, plugins).mount(app)` for public usage.
+ *
+ * @internal
+ */
+export function mount<G extends Render, B extends Backend>(
+  app: () => G,
+  options: MountOptions<G, B>,
+): MountHandle {
+  const { backend, plugins: pluginList, scheduler } = options;
+  const allPlugins = pluginList ?? [];
+  const execScope = createExecutionScope(backend, allPlugins);
+  return mountWithScope(execScope, app, scheduler);
 }

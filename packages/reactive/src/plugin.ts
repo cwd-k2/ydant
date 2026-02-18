@@ -12,13 +12,14 @@
  *
  * @example
  * ```typescript
- * import { createReactivePlugin } from "@ydant/reactive/plugin";
- * import { mount } from "@ydant/core";
+ * import { scope } from "@ydant/core";
+ * import { createDOMBackend, createBasePlugin } from "@ydant/base";
+ * import { createReactivePlugin } from "@ydant/reactive";
  *
- * mount(App, {
- *   backend: createDOMBackend(document.getElementById("app")!),
- *   plugins: [createBasePlugin(), createReactivePlugin()]
- * });
+ * scope(createDOMBackend(document.getElementById("app")!), [
+ *   createBasePlugin(),
+ *   createReactivePlugin(),
+ * ]).mount(App);
  * ```
  */
 

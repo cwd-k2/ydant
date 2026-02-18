@@ -6,12 +6,14 @@
  *
  * @example
  * ```typescript
- * import { createContextPlugin } from "@ydant/context/plugin";
- * import { mount } from "@ydant/core";
+ * import { scope } from "@ydant/core";
+ * import { createDOMBackend, createBasePlugin } from "@ydant/base";
+ * import { createContextPlugin } from "@ydant/context";
  *
- * mount(App, document.getElementById("app")!, {
- *   plugins: [createContextPlugin()]
- * });
+ * scope(createDOMBackend(document.getElementById("app")!), [
+ *   createBasePlugin(),
+ *   createContextPlugin(),
+ * ]).mount(App);
  * ```
  */
 

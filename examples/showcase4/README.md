@@ -13,17 +13,19 @@ Router, Context, Reactive プラグインを組み合わせた SPA デモ。
 
 ### プラグインの登録
 
-複数プラグインを mount 時に登録:
+複数プラグインを `scope()` で登録:
 
 ```typescript
+import { scope } from "@ydant/core";
 import { createBasePlugin, createDOMBackend } from "@ydant/base";
 import { createReactivePlugin } from "@ydant/reactive";
 import { createContextPlugin } from "@ydant/context";
 
-mount(App, {
-  backend: createDOMBackend(root),
-  plugins: [createBasePlugin(), createReactivePlugin(), createContextPlugin()],
-});
+scope(createDOMBackend(root), [
+  createBasePlugin(),
+  createReactivePlugin(),
+  createContextPlugin(),
+]).mount(App);
 ```
 
 Router コンポーネント（RouterView, RouterLink）は base プリミティブ上に構築されているため、プラグイン登録不要で動作する。

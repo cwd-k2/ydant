@@ -25,33 +25,38 @@ pnpm add @ydant/core
 ## Usage
 
 ```typescript
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import { createDOMBackend, createBasePlugin, div, text, type Component } from "@ydant/base";
 
 const App: Component = () => div(() => [text("Hello!")]);
 
-mount(App, {
-  backend: createDOMBackend(document.getElementById("app")!),
-  plugins: [createBasePlugin()],
-});
+scope(createDOMBackend(document.getElementById("app")!), [createBasePlugin()]).mount(App);
 ```
 
 ## API
 
-### Mount
+### scope (Builder API)
 
 ```typescript
-function mount(app: Component, options: MountOptions): MountHandle;
+function scope<C extends string>(backend: Backend<C>, plugins: Plugin[]): ScopeBuilder<C>;
 
-interface MountOptions {
-  backend: Backend;
-  plugins?: Plugin[];
+interface ScopeBuilder<C extends string = string> {
+  mount(app: () => Render, options?: { scheduler?: Scheduler }): MountHandle;
+  embed(content: Builder, options?: { scheduler?: Scheduler }): Spell<"embed">;
 }
 
 interface MountHandle {
+  readonly hub: Hub;
   dispose(): void;
 }
 ```
+
+`scope()` creates a builder that bundles a backend and plugins. Terminal operations:
+
+- `.mount(app)` — Mounts a component, returning a handle for disposal.
+- `.embed(content)` — Use with `yield*` inside a component to embed content under this scope. Returns the `Engine` for the target scope.
+
+The embed plugin is automatically registered; users don't need to manage it.
 
 ### Backend
 
@@ -90,17 +95,17 @@ interface Plugin {
 
 ### Types
 
-| Type            | Description                                                     |
-| --------------- | --------------------------------------------------------------- |
-| `MountHandle`   | Handle returned by `mount()` with `dispose()` for cleanup       |
-| `Tagged<T,P>`   | Helper type for tagged unions: `{ type: T } & P`                |
-| `SpellSchema`   | Co-locates request and response types per spell operation       |
-| `Spell<Key>`    | Typed generator for a specific spell operation key              |
-| `Request`       | Union of all yieldable types (derived from `SpellSchema`)       |
-| `Response`      | Union of all response types returned by `process()`             |
-| `Render`        | Generator for rendering — components, elements, and children    |
-| `Builder`       | `() => Render \| Render[]` - Element children factory           |
-| `Component<P?>` | `() => Render` (no args) or `(props: P) => Render` (with props) |
+| Type            | Description                                                       |
+| --------------- | ----------------------------------------------------------------- |
+| `MountHandle`   | Handle returned by `scope().mount()` with `dispose()` for cleanup |
+| `Tagged<T,P>`   | Helper type for tagged unions: `{ type: T } & P`                  |
+| `SpellSchema`   | Co-locates request and response types per spell operation         |
+| `Spell<Key>`    | Typed generator for a specific spell operation key                |
+| `Request`       | Union of all yieldable types (derived from `SpellSchema`)         |
+| `Response`      | Union of all response types returned by `process()`               |
+| `Render`        | Generator for rendering — components, elements, and children      |
+| `Builder`       | `() => Render \| Render[]` - Element children factory             |
+| `Component<P?>` | `() => Render` (no args) or `(props: P) => Render` (with props)   |
 
 ### Plugin Extension Interfaces
 

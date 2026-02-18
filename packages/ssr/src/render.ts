@@ -5,7 +5,7 @@
  */
 
 import type { Component, Plugin } from "@ydant/core";
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import { createBasePlugin } from "@ydant/base";
 import { createSSRBackend } from "./target";
 
@@ -26,10 +26,7 @@ export interface RenderToStringOptions {
 export function renderToString(app: Component, options?: RenderToStringOptions): string {
   const backend = createSSRBackend();
   const userPlugins = options?.plugins ?? [createBasePlugin()];
-  const handle = mount(app, {
-    backend,
-    plugins: userPlugins,
-  });
+  const handle = scope(backend, userPlugins).mount(app);
   const html = backend.toHTML();
   handle.dispose();
   return html;

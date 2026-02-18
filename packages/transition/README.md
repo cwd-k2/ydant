@@ -15,8 +15,8 @@ pnpm add @ydant/transition
 For simple show/hide with enter animation:
 
 ```typescript
-import { mount, type Component } from "@ydant/core";
-import { createBasePlugin, div, button, text, on, type Slot } from "@ydant/base";
+import { type Component } from "@ydant/core";
+import { div, button, text, on, type Slot } from "@ydant/base";
 import { Transition } from "@ydant/transition";
 
 const App: Component = () => {

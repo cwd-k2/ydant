@@ -45,15 +45,12 @@ const html = renderToString(App, {
 ### createSSRBackend (low-level)
 
 ```typescript
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import { createBasePlugin } from "@ydant/base";
 import { createSSRBackend } from "@ydant/ssr";
 
 const ssr = createSSRBackend();
-const handle = mount(App, {
-  backend: ssr,
-  plugins: [createBasePlugin()],
-});
+const handle = scope(ssr, [createBasePlugin()]).mount(App);
 
 const html = ssr.toHTML();
 handle.dispose();
@@ -114,7 +111,7 @@ interface SSRBackend extends Backend<"tree" | "decorate" | "interact" | "schedul
 }
 ```
 
-Creates a rendering backend for SSR that builds a virtual node tree. Pass it as the `backend` option to `mount()`. Call `toHTML()` after mounting to get the HTML string.
+Creates a rendering backend for SSR that builds a virtual node tree. Pass it to `scope()` as the backend. Call `toHTML()` after mounting to get the HTML string.
 
 ### hydrate
 

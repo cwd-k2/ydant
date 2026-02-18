@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import type { RenderContext } from "@ydant/core";
 import { createBasePlugin } from "../plugin";
 import { createDOMBackend } from "../capabilities";
@@ -32,30 +32,25 @@ describe("createBasePlugin", () => {
 
   describe("processText", () => {
     it("creates text node and appends to parent", () => {
-      mount(() => div(() => [text("Hello, World!")]), {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      });
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(() => [text("Hello, World!")]),
+      );
 
       const divEl = container.querySelector("div");
       expect(divEl?.textContent).toBe("Hello, World!");
     });
 
     it("handles empty text", () => {
-      mount(() => div(() => [text("")]), {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      });
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() => div(() => [text("")]));
 
       const divEl = container.querySelector("div");
       expect(divEl?.textContent).toBe("");
     });
 
     it("handles special characters", () => {
-      mount(() => div(() => [text('<script>alert("xss")</script>')]), {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      });
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(() => [text('<script>alert("xss")</script>')]),
+      );
 
       const divEl = container.querySelector("div");
       expect(divEl?.textContent).toBe('<script>alert("xss")</script>');
@@ -66,10 +61,9 @@ describe("createBasePlugin", () => {
 
   describe("processAttribute", () => {
     it("sets attribute on element", () => {
-      mount(() => div(() => [attr("id", "my-div"), attr("data-test", "value")]), {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      });
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(() => [attr("id", "my-div"), attr("data-test", "value")]),
+      );
 
       const divEl = container.querySelector("div");
       expect(divEl?.getAttribute("id")).toBe("my-div");
@@ -77,10 +71,9 @@ describe("createBasePlugin", () => {
     });
 
     it("handles class attribute", () => {
-      mount(() => div(() => [attr("class", "container flex")]), {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      });
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(() => [attr("class", "container flex")]),
+      );
 
       const divEl = container.querySelector("div");
       expect(divEl?.getAttribute("class")).toBe("container flex");
@@ -91,10 +84,9 @@ describe("createBasePlugin", () => {
     it("adds event listener to element", () => {
       const handler = vi.fn();
 
-      mount(() => button(() => [on("click", handler), text("Click me")]), {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      });
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        button(() => [on("click", handler), text("Click me")]),
+      );
 
       const btn = container.querySelector("button");
       btn?.click();
@@ -105,10 +97,9 @@ describe("createBasePlugin", () => {
     it("receives event object", () => {
       const handler = vi.fn();
 
-      mount(() => button(() => [on("click", handler)]), {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      });
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        button(() => [on("click", handler)]),
+      );
 
       const btn = container.querySelector("button");
       btn?.click();
@@ -121,17 +112,12 @@ describe("createBasePlugin", () => {
     it("calls onMount callback after DOM insertion", () => {
       const mountCallback = vi.fn();
 
-      mount(
-        () =>
-          div(() => [
-            onMount(() => {
-              mountCallback();
-            }),
-          ]),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(() => [
+          onMount(() => {
+            mountCallback();
+          }),
+        ]),
       );
 
       // onMount is called in requestAnimationFrame
@@ -145,19 +131,14 @@ describe("createBasePlugin", () => {
     it("calls onMount with DOM ready", () => {
       let domReady = false;
 
-      mount(
-        () =>
-          div(() => [
-            attr("id", "test-element"),
-            onMount(() => {
-              // DOM should be ready when onMount is called
-              domReady = document.getElementById("test-element") !== null;
-            }),
-          ]),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(() => [
+          attr("id", "test-element"),
+          onMount(() => {
+            // DOM should be ready when onMount is called
+            domReady = document.getElementById("test-element") !== null;
+          }),
+        ]),
       );
 
       vi.runAllTimers();
@@ -168,17 +149,12 @@ describe("createBasePlugin", () => {
     it("registers onUnmount callback", () => {
       const unmountCallback = vi.fn();
 
-      mount(
-        () =>
-          div(() => [
-            onUnmount(() => {
-              unmountCallback();
-            }),
-          ]),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(() => [
+          onUnmount(() => {
+            unmountCallback();
+          }),
+        ]),
       );
 
       vi.runAllTimers();
@@ -192,22 +168,17 @@ describe("createBasePlugin", () => {
       const unmountCallback = vi.fn();
       let slot: Slot | undefined;
 
-      mount(
-        () =>
-          div(function* () {
-            slot = yield* div(() => [
-              span(() => [
-                onUnmount(() => {
-                  unmountCallback();
-                }),
-                text("Child"),
-              ]),
-            ]);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* div(() => [
+            span(() => [
+              onUnmount(() => {
+                unmountCallback();
+              }),
+              text("Child"),
+            ]),
+          ]);
+        }),
       );
 
       vi.runAllTimers();
@@ -225,17 +196,12 @@ describe("createBasePlugin", () => {
 
       const cleanupFn = vi.fn();
 
-      mount(
-        () =>
-          div(() => [
-            onMount(() => {
-              return cleanupFn;
-            }),
-          ]),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(() => [
+          onMount(() => {
+            return cleanupFn;
+          }),
+        ]),
       );
 
       // cleanup function は requestAnimationFrame 後に unmountCallbacks に追加される
@@ -256,21 +222,16 @@ describe("createBasePlugin", () => {
       const cleanupFn = vi.fn();
       let slot: Slot | undefined;
 
-      mount(
-        () =>
-          div(function* () {
-            slot = yield* div(() => [
-              span(() => [
-                // onUnmount を直接使用する推奨パターン
-                onUnmount(cleanupFn),
-                text("Child"),
-              ]),
-            ]);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* div(() => [
+            span(() => [
+              // onUnmount を直接使用する推奨パターン
+              onUnmount(cleanupFn),
+              text("Child"),
+            ]),
+          ]);
+        }),
       );
 
       vi.runAllTimers();
@@ -288,20 +249,15 @@ describe("createBasePlugin", () => {
       const calls: string[] = [];
       let slot: Slot | undefined;
 
-      mount(
-        () =>
-          div(function* () {
-            slot = yield* div(() => [
-              span(() => [
-                onUnmount(() => calls.push("outer")),
-                div(() => [onUnmount(() => calls.push("inner")), text("Nested")]),
-              ]),
-            ]);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* div(() => [
+            span(() => [
+              onUnmount(() => calls.push("outer")),
+              div(() => [onUnmount(() => calls.push("inner")), text("Nested")]),
+            ]),
+          ]);
+        }),
       );
 
       vi.runAllTimers();
@@ -318,15 +274,10 @@ describe("createBasePlugin", () => {
     it("creates keyed element with string key", () => {
       let slot: Slot | undefined;
 
-      mount(
-        () =>
-          div(function* () {
-            slot = yield* keyed("my-key", div)(() => [text("Content")]);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* keyed("my-key", div)(() => [text("Content")]);
+        }),
       );
 
       expect(slot?.node).toBeDefined();
@@ -336,15 +287,10 @@ describe("createBasePlugin", () => {
     it("allows numeric keys", () => {
       let slot: Slot | undefined;
 
-      mount(
-        () =>
-          div(function* () {
-            slot = yield* keyed(42, div)(() => [text("Numeric key")]);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* keyed(42, div)(() => [text("Numeric key")]);
+        }),
       );
 
       expect(slot?.node).toBeDefined();
@@ -354,15 +300,10 @@ describe("createBasePlugin", () => {
     it("allows zero as key", () => {
       let slot: Slot | undefined;
 
-      mount(
-        () =>
-          div(function* () {
-            slot = yield* keyed(0, div)(() => [text("Zero key")]);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* keyed(0, div)(() => [text("Zero key")]);
+        }),
       );
 
       expect(slot?.node).toBeDefined();
@@ -372,10 +313,9 @@ describe("createBasePlugin", () => {
 
   describe("processElement", () => {
     it("creates HTML element", () => {
-      mount(() => div(() => [text("Content")]), {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      });
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(() => [text("Content")]),
+      );
 
       const divEl = container.querySelector("div");
       expect(divEl).not.toBeNull();
@@ -383,10 +323,9 @@ describe("createBasePlugin", () => {
     });
 
     it("nests elements correctly", () => {
-      mount(() => div(() => [span(() => [text("Child 1")]), span(() => [text("Child 2")])]), {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      });
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(() => [span(() => [text("Child 1")]), span(() => [text("Child 2")])]),
+      );
 
       const divEl = container.querySelector("div");
       const spans = divEl?.querySelectorAll("span");
@@ -399,15 +338,10 @@ describe("createBasePlugin", () => {
     it("returns Slot from element", () => {
       let slot: Slot | undefined;
 
-      mount(
-        () =>
-          div(function* () {
-            slot = yield* span(() => [text("Content")]);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* span(() => [text("Content")]);
+        }),
       );
 
       expect(slot).toBeDefined();
@@ -421,15 +355,10 @@ describe("createBasePlugin", () => {
     it("clears and rebuilds children", () => {
       let slot: Slot | undefined;
 
-      mount(
-        () =>
-          div(function* () {
-            slot = yield* div(() => [text("Original")]);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* div(() => [text("Original")]);
+        }),
       );
 
       expect((slot?.node as HTMLElement).textContent).toBe("Original");
@@ -442,15 +371,10 @@ describe("createBasePlugin", () => {
     it("handles nested elements on refresh", () => {
       let slot: Slot | undefined;
 
-      mount(
-        () =>
-          div(function* () {
-            slot = yield* div(() => [span(() => [text("Child")])]);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* div(() => [span(() => [text("Child")])]);
+        }),
       );
 
       expect((slot?.node as HTMLElement).querySelector("span")?.textContent).toBe("Child");
@@ -466,15 +390,10 @@ describe("createBasePlugin", () => {
     it("clears all children on refresh with empty builder", () => {
       let slot: Slot | undefined;
 
-      mount(
-        () =>
-          div(function* () {
-            slot = yield* div(() => [span(() => [text("Child 1")]), span(() => [text("Child 2")])]);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* div(() => [span(() => [text("Child 1")]), span(() => [text("Child 2")])]);
+        }),
       );
 
       expect((slot?.node as HTMLElement).querySelectorAll("span").length).toBe(2);
@@ -490,15 +409,10 @@ describe("createBasePlugin", () => {
 
       let slot: Slot | undefined;
 
-      mount(
-        () =>
-          div(function* () {
-            slot = yield* div(() => []);
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* div(() => []);
+        }),
       );
 
       vi.runAllTimers();
@@ -524,17 +438,12 @@ describe("createBasePlugin", () => {
       const handler = vi.fn();
       let slot: Slot | undefined;
 
-      mount(
-        () =>
-          div(function* () {
-            slot = yield* div(function* () {
-              yield* keyed("btn", button)(() => [on("click", handler), text("Click")]);
-            });
-          }),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* div(function* () {
+            yield* keyed("btn", button)(() => [on("click", handler), text("Click")]);
+          });
+        }),
       );
 
       // Refresh to trigger element reuse
@@ -587,15 +496,10 @@ describe("createBasePlugin", () => {
       const handler = vi.fn();
 
       expect(() => {
-        mount(
-          () =>
-            div(function* () {
-              yield* button(() => [on("click", handler), text("Click")]);
-            }),
-          {
-            backend: createDOMBackendWithoutInteract(container),
-            plugins: [createBasePlugin()],
-          },
+        scope(createDOMBackendWithoutInteract(container), [createBasePlugin()]).mount(() =>
+          div(function* () {
+            yield* button(() => [on("click", handler), text("Click")]);
+          }),
         );
       }).not.toThrow();
 
@@ -611,16 +515,11 @@ describe("createBasePlugin", () => {
       const handler = vi.fn();
 
       expect(() => {
-        mount(
-          () =>
-            div(function* () {
-              yield* on("click", handler);
-              yield* text("Content");
-            }),
-          {
-            backend: createDOMBackendWithoutInteract(container),
-            plugins: [createBasePlugin()],
-          },
+        scope(createDOMBackendWithoutInteract(container), [createBasePlugin()]).mount(() =>
+          div(function* () {
+            yield* on("click", handler);
+            yield* text("Content");
+          }),
         );
       }).not.toThrow();
     });
@@ -628,17 +527,12 @@ describe("createBasePlugin", () => {
 
   describe("multiple elements", () => {
     it("handles multiple sibling elements", () => {
-      mount(
-        () =>
-          div(() => [
-            span(() => [text("First")]),
-            span(() => [text("Second")]),
-            span(() => [text("Third")]),
-          ]),
-        {
-          backend: createDOMBackend(container),
-          plugins: [createBasePlugin()],
-        },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(() => [
+          span(() => [text("First")]),
+          span(() => [text("Second")]),
+          span(() => [text("Third")]),
+        ]),
       );
 
       const spans = container.querySelectorAll("span");
@@ -649,10 +543,9 @@ describe("createBasePlugin", () => {
     });
 
     it("handles multiple levels of nesting", () => {
-      mount(() => div(() => [div(() => [div(() => [text("Deep")])])]), {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      });
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(() => [div(() => [div(() => [text("Deep")])])]),
+      );
 
       const divs = container.querySelectorAll("div");
       expect(divs.length).toBe(3);

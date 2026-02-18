@@ -11,7 +11,7 @@ pnpm add @ydant/portal
 ## Usage
 
 ```typescript
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import { createDOMBackend, createBasePlugin, div, attr, text } from "@ydant/base";
 import { createPortalPlugin, portal } from "@ydant/portal";
 
@@ -24,10 +24,10 @@ function* App() {
   ]);
 }
 
-mount(App, {
-  backend: createDOMBackend(document.getElementById("app")!),
-  plugins: [createBasePlugin(), createPortalPlugin()],
-});
+scope(createDOMBackend(document.getElementById("app")!), [
+  createBasePlugin(),
+  createPortalPlugin(),
+]).mount(App);
 ```
 
 The portal's children render into `modalContainer` instead of the app root. This is useful for modals, tooltips, and dropdowns that need to escape their parent's overflow or stacking context.

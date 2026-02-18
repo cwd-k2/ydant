@@ -20,7 +20,7 @@ import type {
   Response,
   Request,
 } from "@ydant/core";
-import { mount, isTagged } from "@ydant/core";
+import { scope, isTagged } from "@ydant/core";
 import { createDOMBackend, createBasePlugin, executeMount, createSlot } from "@ydant/base";
 import type { Element } from "@ydant/base";
 import { createDOMNodeResolver } from "./resolver";
@@ -50,10 +50,10 @@ export function hydrate(app: Component, root: HTMLElement, options?: HydrateOpti
   const hydrationPlugin = createHydrationPlugin(resolver);
   const extraPlugins = options?.plugins ?? [];
 
-  return mount(app, {
-    backend: createDOMBackend(root, { skipPrepare: true }),
-    plugins: [hydrationPlugin, ...extraPlugins],
-  });
+  return scope(createDOMBackend(root, { skipPrepare: true }), [
+    hydrationPlugin,
+    ...extraPlugins,
+  ]).mount(app);
 }
 
 // =============================================================================

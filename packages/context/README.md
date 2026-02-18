@@ -13,7 +13,7 @@ pnpm add @ydant/context
 ### Context API
 
 ```typescript
-import { mount, type Component } from "@ydant/core";
+import { scope, type Component } from "@ydant/core";
 import { createDOMBackend, createBasePlugin, div, text } from "@ydant/base";
 import { createContext, provide, inject, createContextPlugin } from "@ydant/context";
 
@@ -35,10 +35,10 @@ const ChildComponent: Component = () =>
   });
 
 // Mount with backend and plugins
-mount(App, {
-  backend: createDOMBackend(document.getElementById("app")!),
-  plugins: [createBasePlugin(), createContextPlugin()],
-});
+scope(createDOMBackend(document.getElementById("app")!), [
+  createBasePlugin(),
+  createContextPlugin(),
+]).mount(App);
 ```
 
 > **Note:** `@ydant/base` is required for DOM rendering.
@@ -75,7 +75,7 @@ Retrieves the value from the nearest ancestor provider. Use with `yield*`. Retur
 function createContextPlugin(): Plugin;
 ```
 
-Creates a plugin that handles `provide` and `inject`. Must be passed to `mount()`. Depends on `createBasePlugin()`.
+Creates a plugin that handles `provide` and `inject`. Must be included in the `scope()` plugins array. Depends on `createBasePlugin()`.
 
 The context plugin extends `RenderContext`:
 

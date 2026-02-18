@@ -8,15 +8,13 @@
  * @example
  * ```typescript
  * const overlay = createDevtoolsOverlay();
- * const handle = mount(App, {
- *   backend: createDOMBackend(root),
- *   plugins: [createBasePlugin(), overlay.plugin],
- * });
+ * const handle = scope(createDOMBackend(root), [createBasePlugin(), overlay.plugin])
+ *   .mount(App);
  * overlay.connect(handle.hub);
  * ```
  */
 
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import type { Hub, MountHandle } from "@ydant/core";
 import { createDOMBackend, createBasePlugin, div, span, text, attr, on } from "@ydant/base";
 import { signal, reactive, createReactivePlugin } from "@ydant/reactive";
@@ -143,11 +141,10 @@ export function createDevtoolsOverlay(): DevtoolsOverlay {
       document.body.appendChild(container);
 
       // Mount overlay app (separate Ydant scope — no devtools plugin here!)
-      overlayHandle = mount(OverlayApp, {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin(), createReactivePlugin()],
-        scheduler: (flush) => requestAnimationFrame(flush),
-      });
+      overlayHandle = scope(createDOMBackend(container), [
+        createBasePlugin(),
+        createReactivePlugin(),
+      ]).mount(OverlayApp, { scheduler: (flush) => requestAnimationFrame(flush) });
     },
 
     dispose() {

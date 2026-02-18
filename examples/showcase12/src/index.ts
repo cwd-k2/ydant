@@ -6,7 +6,7 @@
  * The modal is rendered into #modal-root while the trigger stays in #app.
  */
 
-import { mount, type Component } from "@ydant/core";
+import { scope, type Component } from "@ydant/core";
 import {
   createDOMBackend,
   createBasePlugin,
@@ -97,7 +97,7 @@ const App: Component = () =>
     ]),
   ]);
 
-mount(App, {
-  backend: createDOMBackend(document.getElementById("app")!),
-  plugins: [createBasePlugin(), createPortalPlugin()],
-});
+scope(createDOMBackend(document.getElementById("app")!), [
+  createBasePlugin(),
+  createPortalPlugin(),
+]).mount(App);

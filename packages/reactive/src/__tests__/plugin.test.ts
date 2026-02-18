@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { mount, sync } from "@ydant/core";
+import { scope, sync } from "@ydant/core";
 import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
 import { signal } from "../signal";
 import { reactive } from "../reactive";
@@ -24,16 +24,12 @@ describe("createReactivePlugin", () => {
   it("renders reactive content", () => {
     const count = signal(0);
 
-    mount(
+    scope(createDOMBackend(container), [createBasePlugin(), createReactivePlugin()]).mount(
       () =>
         div(function* () {
           yield* reactive(() => [text(`Count: ${count()}`)]);
         }),
-      {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin(), createReactivePlugin()],
-        scheduler: sync,
-      },
+      { scheduler: sync },
     );
 
     expect(container.textContent).toContain("Count: 0");
@@ -42,16 +38,12 @@ describe("createReactivePlugin", () => {
   it("updates when signal changes", () => {
     const count = signal(0);
 
-    mount(
+    scope(createDOMBackend(container), [createBasePlugin(), createReactivePlugin()]).mount(
       () =>
         div(function* () {
           yield* reactive(() => [text(`Count: ${count()}`)]);
         }),
-      {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin(), createReactivePlugin()],
-        scheduler: sync,
-      },
+      { scheduler: sync },
     );
 
     expect(container.textContent).toContain("Count: 0");
@@ -63,16 +55,12 @@ describe("createReactivePlugin", () => {
   });
 
   it("creates a span container with data-reactive attribute", () => {
-    mount(
+    scope(createDOMBackend(container), [createBasePlugin(), createReactivePlugin()]).mount(
       () =>
         div(function* () {
           yield* reactive(() => [text("Content")]);
         }),
-      {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin(), createReactivePlugin()],
-        scheduler: sync,
-      },
+      { scheduler: sync },
     );
 
     const reactiveSpan = container.querySelector("[data-reactive]");
@@ -83,16 +71,12 @@ describe("createReactivePlugin", () => {
   it("clears and rebuilds content on signal change", () => {
     const items = signal([1, 2, 3]);
 
-    mount(
+    scope(createDOMBackend(container), [createBasePlugin(), createReactivePlugin()]).mount(
       () =>
         div(function* () {
           yield* reactive(() => items().map((n) => text(`Item ${n} `)));
         }),
-      {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin(), createReactivePlugin()],
-        scheduler: sync,
-      },
+      { scheduler: sync },
     );
 
     expect(container.textContent).toContain("Item 1");
@@ -111,17 +95,13 @@ describe("createReactivePlugin", () => {
     const count1 = signal(0);
     const count2 = signal(100);
 
-    mount(
+    scope(createDOMBackend(container), [createBasePlugin(), createReactivePlugin()]).mount(
       () =>
         div(function* () {
           yield* reactive(() => [text(`A: ${count1()} `)]);
           yield* reactive(() => [text(`B: ${count2()}`)]);
         }),
-      {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin(), createReactivePlugin()],
-        scheduler: sync,
-      },
+      { scheduler: sync },
     );
 
     expect(container.textContent).toContain("A: 0");
@@ -141,19 +121,14 @@ describe("createReactivePlugin", () => {
     const lastName = signal("Doe");
     let renderCount = 0;
 
-    mount(
-      () =>
-        div(function* () {
-          yield* reactive(() => {
-            renderCount++;
-            return [text(`${firstName()} ${lastName()}`)];
-          });
-        }),
-      {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin(), createReactivePlugin()],
-        // Use default microtask scheduler (from DOM backend) to test batching
-      },
+    // Use default microtask scheduler (from DOM backend) to test batching
+    scope(createDOMBackend(container), [createBasePlugin(), createReactivePlugin()]).mount(() =>
+      div(function* () {
+        yield* reactive(() => {
+          renderCount++;
+          return [text(`${firstName()} ${lastName()}`)];
+        });
+      }),
     );
 
     expect(renderCount).toBe(1);
@@ -197,7 +172,7 @@ describe("ReactiveScope isolation", () => {
     let renderCountA = 0;
     let renderCountB = 0;
 
-    mount(
+    scope(createDOMBackend(containerA), [createBasePlugin(), createReactivePlugin()]).mount(
       () =>
         div(function* () {
           yield* reactive(() => {
@@ -205,14 +180,10 @@ describe("ReactiveScope isolation", () => {
             return [text(`A: ${countA()}`)];
           });
         }),
-      {
-        backend: createDOMBackend(containerA),
-        plugins: [createBasePlugin(), createReactivePlugin()],
-        scheduler: sync,
-      },
+      { scheduler: sync },
     );
 
-    mount(
+    scope(createDOMBackend(containerB), [createBasePlugin(), createReactivePlugin()]).mount(
       () =>
         div(function* () {
           yield* reactive(() => {
@@ -220,11 +191,7 @@ describe("ReactiveScope isolation", () => {
             return [text(`B: ${countB()}`)];
           });
         }),
-      {
-        backend: createDOMBackend(containerB),
-        plugins: [createBasePlugin(), createReactivePlugin()],
-        scheduler: sync,
-      },
+      { scheduler: sync },
     );
 
     expect(containerA.textContent).toContain("A: 0");

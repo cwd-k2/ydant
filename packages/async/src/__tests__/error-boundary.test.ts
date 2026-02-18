@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
 import { ErrorBoundary } from "../ErrorBoundary";
 
@@ -13,15 +13,13 @@ describe("ErrorBoundary", () => {
   });
 
   it("renders content when no error is thrown", () => {
-    mount(
-      () =>
-        ErrorBoundary({
-          fallback: (error) => div(() => [text(`Error: ${error.message}`)]),
-          content: function* () {
-            yield* div(() => [text("Content")]);
-          },
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      ErrorBoundary({
+        fallback: (error) => div(() => [text(`Error: ${error.message}`)]),
+        content: function* () {
+          yield* div(() => [text("Content")]);
+        },
+      }),
     );
 
     expect(container.textContent).toContain("Content");
@@ -29,15 +27,13 @@ describe("ErrorBoundary", () => {
   });
 
   it("renders fallback when error is thrown", () => {
-    mount(
-      () =>
-        ErrorBoundary({
-          fallback: (error) => div(() => [text(`Error: ${error.message}`)]),
-          content: function* () {
-            throw new Error("Something went wrong");
-          },
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      ErrorBoundary({
+        fallback: (error) => div(() => [text(`Error: ${error.message}`)]),
+        content: function* () {
+          throw new Error("Something went wrong");
+        },
+      }),
     );
 
     expect(container.textContent).toContain("Error: Something went wrong");
@@ -47,15 +43,13 @@ describe("ErrorBoundary", () => {
   it("provides error object to fallback", () => {
     const testError = new Error("Test error message");
 
-    mount(
-      () =>
-        ErrorBoundary({
-          fallback: (error) => div(() => [text(`Caught: ${error.name} - ${error.message}`)]),
-          content: function* () {
-            throw testError;
-          },
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      ErrorBoundary({
+        fallback: (error) => div(() => [text(`Caught: ${error.name} - ${error.message}`)]),
+        content: function* () {
+          throw testError;
+        },
+      }),
     );
 
     expect(container.textContent).toContain("Caught: Error - Test error message");
@@ -65,24 +59,22 @@ describe("ErrorBoundary", () => {
     let shouldError = true;
     let resetFn: (() => void) | null = null;
 
-    mount(
-      () =>
-        ErrorBoundary({
-          fallback: (error, reset) => {
-            resetFn = reset;
-            return div(function* () {
-              yield* text(`Error: ${error.message}`);
-              yield* div(() => [text("Retry")]);
-            });
-          },
-          content: function* () {
-            if (shouldError) {
-              throw new Error("Failed");
-            }
-            yield* div(() => [text("Success!")]);
-          },
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      ErrorBoundary({
+        fallback: (error, reset) => {
+          resetFn = reset;
+          return div(function* () {
+            yield* text(`Error: ${error.message}`);
+            yield* div(() => [text("Retry")]);
+          });
+        },
+        content: function* () {
+          if (shouldError) {
+            throw new Error("Failed");
+          }
+          yield* div(() => [text("Success!")]);
+        },
+      }),
     );
 
     expect(container.textContent).toContain("Error: Failed");
@@ -102,15 +94,13 @@ describe("ErrorBoundary", () => {
     let thrownValue: unknown = null;
 
     try {
-      mount(
-        () =>
-          ErrorBoundary({
-            fallback: (error) => div(() => [text(`Error: ${error.message}`)]),
-            content: function* () {
-              throw pendingPromise;
-            },
-          }),
-        { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        ErrorBoundary({
+          fallback: (error) => div(() => [text(`Error: ${error.message}`)]),
+          content: function* () {
+            throw pendingPromise;
+          },
+        }),
       );
     } catch (e) {
       thrownValue = e;
@@ -123,22 +113,20 @@ describe("ErrorBoundary", () => {
     let errorCount = 0;
     let resetFn: (() => void) | null = null;
 
-    mount(
-      () =>
-        ErrorBoundary({
-          fallback: (error, reset) => {
-            resetFn = reset;
-            return div(function* () {
-              yield* text(`Error #${errorCount}: ${error.message}`);
-              yield* div(() => [text("Retry")]);
-            });
-          },
-          content: function* () {
-            errorCount++;
-            throw new Error(`Failure ${errorCount}`);
-          },
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      ErrorBoundary({
+        fallback: (error, reset) => {
+          resetFn = reset;
+          return div(function* () {
+            yield* text(`Error #${errorCount}: ${error.message}`);
+            yield* div(() => [text("Retry")]);
+          });
+        },
+        content: function* () {
+          errorCount++;
+          throw new Error(`Failure ${errorCount}`);
+        },
+      }),
     );
 
     expect(container.textContent).toContain("Error #1: Failure 1");

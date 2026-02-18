@@ -1,15 +1,12 @@
 import { describe, expect, test } from "vitest";
 import type { Component } from "@ydant/core";
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import { attr, classes, createBasePlugin, div, on, p, span, text } from "@ydant/base";
 import { createSSRBackend } from "../target";
 
 function renderHTML(app: Component): string {
   const backend = createSSRBackend();
-  const handle = mount(app, {
-    backend,
-    plugins: [createBasePlugin()],
-  });
+  const handle = scope(backend, [createBasePlugin()]).mount(app);
   const html = backend.toHTML();
   handle.dispose();
   return html;

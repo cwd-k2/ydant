@@ -11,7 +11,7 @@ pnpm add @ydant/router
 ## Usage
 
 ```typescript
-import { mount, type Component } from "@ydant/core";
+import { scope, type Component } from "@ydant/core";
 import { createDOMBackend, createBasePlugin, div, nav, text } from "@ydant/base";
 import { RouterView, RouterLink, getRoute, navigate } from "@ydant/router";
 
@@ -46,10 +46,7 @@ const App: Component = () =>
     });
   });
 
-mount(App, {
-  backend: createDOMBackend(document.getElementById("app")!),
-  plugins: [createBasePlugin()],
-});
+scope(createDOMBackend(document.getElementById("app")!), [createBasePlugin()]).mount(App);
 ```
 
 ## API

@@ -8,7 +8,7 @@
  * for declarative shape rendering — all within a single mount().
  */
 
-import { mount, createExecutionScope, embed, createEmbedPlugin } from "@ydant/core";
+import { scope } from "@ydant/core";
 import {
   createDOMBackend,
   createBasePlugin,
@@ -159,8 +159,7 @@ const App = () =>
     const canvasEl = slot.node as HTMLCanvasElement;
 
     // 2. Embed Canvas scope — builds VShape tree synchronously
-    const canvasScope = createExecutionScope(canvasBackend, [createBasePlugin()]);
-    yield* embed(canvasScope, NightScene);
+    yield* scope(canvasBackend, [createBasePlugin()]).embed(NightScene);
 
     // 3. Paint the virtual tree onto the real <canvas>
     canvasBackend.paint(canvasEl.getContext("2d")!);
@@ -175,7 +174,4 @@ const App = () =>
 // Mount into DOM
 // =============================================================================
 
-mount(App, {
-  backend: createDOMBackend(document.getElementById("app")!),
-  plugins: [createBasePlugin(), createEmbedPlugin()],
-});
+scope(createDOMBackend(document.getElementById("app")!), [createBasePlugin()]).mount(App);

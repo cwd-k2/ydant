@@ -12,22 +12,34 @@
  */
 
 import type { Tagged, Spell, Builder } from "./types";
-import type { ExecutionScope, Plugin, RenderContext } from "./plugin";
+import type { Engine, ExecutionScope, Plugin, RenderContext, Scheduler } from "./plugin";
 
 // =============================================================================
 // Types
 // =============================================================================
 
 /** An embed request — renders children under a different {@link ExecutionScope}. */
-export type Embed = Tagged<"embed", { scope: ExecutionScope; content: Builder }>;
+export type Embed = Tagged<
+  "embed",
+  { scope: ExecutionScope; content: Builder; scheduler?: Scheduler }
+>;
 
 // =============================================================================
 // Spell
 // =============================================================================
 
-/** Renders children under a different execution scope. Use with `yield*`. */
-export function* embed(scope: ExecutionScope, content: Builder): Spell<"embed"> {
-  yield { type: "embed", scope, content } as Embed;
+/** Renders children under a different execution scope. Use with `yield*`. Returns the {@link Engine} for the target scope. */
+export function* embed(
+  scope: ExecutionScope,
+  content: Builder,
+  options?: { scheduler?: Scheduler },
+): Spell<"embed"> {
+  return (yield {
+    type: "embed",
+    scope,
+    content,
+    scheduler: options?.scheduler,
+  } as Embed) as Engine;
 }
 
 // =============================================================================
@@ -40,22 +52,26 @@ export function createEmbedPlugin(): Plugin {
     name: "embed",
     types: ["embed"],
     process(request: { type: string }, ctx: RenderContext) {
-      const { scope, content } = request as Embed;
+      const { scope, content, scheduler } = request as Embed;
 
-      // For cross-scope embeds, ensure an Engine exists for the target scope
-      // so that reactive updates within the embedded scope can use it later.
+      let engine: Engine;
+
       if (scope !== ctx.scope) {
+        // For cross-scope embeds, ensure an Engine exists for the target scope.
         const hub = ctx.engine.hub;
-        if (!hub.resolve(scope)) {
-          hub.spawn(`embed-${scope.backend.name}-${Date.now()}`, scope);
-        }
+        const existing = hub.resolve(scope);
+        engine =
+          existing ?? hub.spawn(`embed-${scope.backend.name}-${Date.now()}`, scope, { scheduler });
+      } else {
+        // Same-scope embed — reuse the current engine.
+        engine = ctx.engine;
       }
 
       // Always synchronous — embed is a structural rendering operation.
       // Cross-scope embeds render into the target scope's root, not the current parent.
       const parent = scope !== ctx.scope ? scope.backend.root : undefined;
       ctx.processChildren(content, { scope, parent });
-      return undefined;
+      return engine;
     },
   };
 }

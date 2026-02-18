@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import type { Slot } from "@ydant/base";
 import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
 import { TransitionGroup, createTransitionGroupRefresher } from "../TransitionGroup";
@@ -30,16 +30,14 @@ describe("TransitionGroup", () => {
       { id: 3, name: "Item 3" },
     ];
 
-    mount(
-      () =>
-        div(function* () {
-          yield* TransitionGroup({
-            items,
-            keyFn: (item) => item.id,
-            content: (item) => div(() => [text(item.name)]),
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* TransitionGroup({
+          items,
+          keyFn: (item) => item.id,
+          content: (item) => div(() => [text(item.name)]),
+        });
+      }),
     );
 
     expect(container.textContent).toContain("Item 1");
@@ -48,16 +46,14 @@ describe("TransitionGroup", () => {
   });
 
   it("renders empty list", () => {
-    mount(
-      () =>
-        div(function* () {
-          yield* TransitionGroup<Item>({
-            items: [],
-            keyFn: (item) => item.id,
-            content: (item) => div(() => [text(item.name)]),
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* TransitionGroup<Item>({
+          items: [],
+          keyFn: (item) => item.id,
+          content: (item) => div(() => [text(item.name)]),
+        });
+      }),
     );
 
     // The container has a wrapper div from TransitionGroup, but no item divs
@@ -68,19 +64,17 @@ describe("TransitionGroup", () => {
   it("applies enter classes on mount", () => {
     const items: Item[] = [{ id: 1, name: "Item 1" }];
 
-    mount(
-      () =>
-        div(function* () {
-          yield* TransitionGroup({
-            items,
-            keyFn: (item) => item.id,
-            enter: "transition-opacity",
-            enterFrom: "opacity-0",
-            enterTo: "opacity-100",
-            content: (item) => div(() => [text(item.name)]),
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* TransitionGroup({
+          items,
+          keyFn: (item) => item.id,
+          enter: "transition-opacity",
+          enterFrom: "opacity-0",
+          enterTo: "opacity-100",
+          content: (item) => div(() => [text(item.name)]),
+        });
+      }),
     );
 
     vi.advanceTimersToNextFrame();
@@ -96,19 +90,17 @@ describe("TransitionGroup", () => {
 
     const capturedIndices: number[] = [];
 
-    mount(
-      () =>
-        div(function* () {
-          yield* TransitionGroup({
-            items,
-            keyFn: (item) => item.id,
-            content: (item, index) => {
-              capturedIndices.push(index);
-              return div(() => [text(`${item.name} at ${index}`)]);
-            },
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* TransitionGroup({
+          items,
+          keyFn: (item) => item.id,
+          content: (item, index) => {
+            capturedIndices.push(index);
+            return div(() => [text(`${item.name} at ${index}`)]);
+          },
+        });
+      }),
     );
 
     expect(capturedIndices).toEqual([0, 1]);
@@ -129,16 +121,14 @@ describe("TransitionGroup", () => {
       return key;
     };
 
-    mount(
-      () =>
-        div(function* () {
-          yield* TransitionGroup({
-            items,
-            keyFn: originalKeyFn,
-            content: (item) => div(() => [text(item.name)]),
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        yield* TransitionGroup({
+          items,
+          keyFn: originalKeyFn,
+          content: (item) => div(() => [text(item.name)]),
+        });
+      }),
     );
 
     expect(capturedKeys).toContain(100);
@@ -179,16 +169,14 @@ describe("createTransitionGroupRefresher", () => {
 
     let containerSlot!: Slot;
 
-    mount(
-      () =>
-        div(function* () {
-          containerSlot = yield* div(function* () {
-            for (const item of items) {
-              yield* div(() => [text(item.name)]);
-            }
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        containerSlot = yield* div(function* () {
+          for (const item of items) {
+            yield* div(() => [text(item.name)]);
+          }
+        });
+      }),
     );
 
     expect(container.textContent).toContain("Initial");
@@ -216,19 +204,17 @@ describe("createTransitionGroupRefresher", () => {
     // Create initial TransitionGroup
     let containerSlot!: Slot;
 
-    mount(
-      () =>
-        div(function* () {
-          containerSlot = yield* TransitionGroup({
-            items,
-            keyFn: (item) => item.id,
-            leave: "transition-opacity",
-            leaveFrom: "opacity-100",
-            leaveTo: "opacity-0",
-            content: (item) => div(() => [text(item.name)]),
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        containerSlot = yield* TransitionGroup({
+          items,
+          keyFn: (item) => item.id,
+          leave: "transition-opacity",
+          leaveFrom: "opacity-100",
+          leaveTo: "opacity-0",
+          content: (item) => div(() => [text(item.name)]),
+        });
+      }),
     );
 
     vi.advanceTimersToNextFrame();
@@ -266,19 +252,17 @@ describe("createTransitionGroupRefresher", () => {
 
     let containerSlot!: Slot;
 
-    mount(
-      () =>
-        div(function* () {
-          containerSlot = yield* TransitionGroup({
-            items,
-            keyFn: (item) => item.id,
-            leave: "fade-out",
-            leaveFrom: "opacity-100",
-            leaveTo: "opacity-0",
-            content: (item) => div(() => [text(item.name)]),
-          });
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        containerSlot = yield* TransitionGroup({
+          items,
+          keyFn: (item) => item.id,
+          leave: "fade-out",
+          leaveFrom: "opacity-100",
+          leaveTo: "opacity-0",
+          content: (item) => div(() => [text(item.name)]),
+        });
+      }),
     );
 
     vi.advanceTimersToNextFrame();

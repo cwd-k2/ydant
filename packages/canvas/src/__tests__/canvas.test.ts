@@ -1,5 +1,5 @@
 import { describe, it, expect, expectTypeOf, vi } from "vitest";
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import type { CapabilityCheck, ProvidedCapabilities } from "@ydant/core";
 import { createBasePlugin, attr, on } from "@ydant/base";
 import {
@@ -17,24 +17,22 @@ describe("Canvas backend", () => {
   it("creates a VShape tree from generators", () => {
     const canvas = createCanvasBackend();
 
-    mount(
-      () =>
-        group(() => [
-          rect(() => [
-            attr("x", "10"),
-            attr("y", "20"),
-            attr("width", "100"),
-            attr("height", "50"),
-            attr("fill", "#ff0000"),
-          ]),
-          circle(() => [
-            attr("cx", "200"),
-            attr("cy", "100"),
-            attr("r", "30"),
-            attr("fill", "#0000ff"),
-          ]),
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      group(() => [
+        rect(() => [
+          attr("x", "10"),
+          attr("y", "20"),
+          attr("width", "100"),
+          attr("height", "50"),
+          attr("fill", "#ff0000"),
         ]),
-      { backend: canvas, plugins: [createBasePlugin()] },
+        circle(() => [
+          attr("cx", "200"),
+          attr("cy", "100"),
+          attr("r", "30"),
+          attr("fill", "#0000ff"),
+        ]),
+      ]),
     );
 
     expect(canvas.root.children).toHaveLength(1);
@@ -57,16 +55,14 @@ describe("Canvas backend", () => {
   it("creates text shapes", () => {
     const canvas = createCanvasBackend();
 
-    mount(
-      () =>
-        canvasText(() => [
-          attr("x", "50"),
-          attr("y", "50"),
-          attr("content", "Hello Canvas"),
-          attr("font", "24px sans-serif"),
-          attr("fill", "#000"),
-        ]),
-      { backend: canvas, plugins: [createBasePlugin()] },
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      canvasText(() => [
+        attr("x", "50"),
+        attr("y", "50"),
+        attr("content", "Hello Canvas"),
+        attr("font", "24px sans-serif"),
+        attr("fill", "#000"),
+      ]),
     );
 
     expect(canvas.root.children).toHaveLength(1);
@@ -79,16 +75,14 @@ describe("Canvas backend", () => {
   it("creates line shapes", () => {
     const canvas = createCanvasBackend();
 
-    mount(
-      () =>
-        line(() => [
-          attr("x1", "0"),
-          attr("y1", "0"),
-          attr("x2", "100"),
-          attr("y2", "100"),
-          attr("stroke", "#000"),
-        ]),
-      { backend: canvas, plugins: [createBasePlugin()] },
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      line(() => [
+        attr("x1", "0"),
+        attr("y1", "0"),
+        attr("x2", "100"),
+        attr("y2", "100"),
+        attr("stroke", "#000"),
+      ]),
     );
 
     const lineShape = canvas.root.children[0];
@@ -99,16 +93,14 @@ describe("Canvas backend", () => {
   it("creates ellipse shapes", () => {
     const canvas = createCanvasBackend();
 
-    mount(
-      () =>
-        ellipse(() => [
-          attr("cx", "100"),
-          attr("cy", "75"),
-          attr("rx", "50"),
-          attr("ry", "30"),
-          attr("fill", "green"),
-        ]),
-      { backend: canvas, plugins: [createBasePlugin()] },
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      ellipse(() => [
+        attr("cx", "100"),
+        attr("cy", "75"),
+        attr("rx", "50"),
+        attr("ry", "30"),
+        attr("fill", "green"),
+      ]),
     );
 
     const shape = canvas.root.children[0];
@@ -120,10 +112,9 @@ describe("Canvas backend", () => {
   it("creates canvasPath shapes", () => {
     const canvas = createCanvasBackend();
 
-    mount(() => canvasPath(() => [attr("d", "M 10 10 L 90 90"), attr("stroke", "#000")]), {
-      backend: canvas,
-      plugins: [createBasePlugin()],
-    });
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      canvasPath(() => [attr("d", "M 10 10 L 90 90"), attr("stroke", "#000")]),
+    );
 
     const shape = canvas.root.children[0];
     expect(shape.tag).toBe("path");
@@ -149,10 +140,9 @@ describe("Canvas backend", () => {
     const canvas = createCanvasBackend();
 
     expect(() => {
-      mount(() => rect(() => [attr("fill", "red"), on("click", () => {})]), {
-        backend: canvas,
-        plugins: [createBasePlugin()],
-      });
+      scope(canvas, [createBasePlugin()]).mount(() =>
+        rect(() => [attr("fill", "red"), on("click", () => {})]),
+      );
     }).not.toThrow();
 
     expect(canvas.root.children).toHaveLength(1);
@@ -162,10 +152,10 @@ describe("Canvas backend", () => {
     const canvas = createCanvasBackend();
     const App = () => rect(() => [attr("fill", "red")]);
 
-    mount(App, { backend: canvas, plugins: [createBasePlugin()] });
+    scope(canvas, [createBasePlugin()]).mount(App);
     expect(canvas.root.children).toHaveLength(1);
 
-    mount(App, { backend: canvas, plugins: [createBasePlugin()] });
+    scope(canvas, [createBasePlugin()]).mount(App);
     expect(canvas.root.children).toHaveLength(1);
   });
 });
@@ -202,25 +192,23 @@ describe("Canvas paint", () => {
   it("paints shapes to a Canvas2D context", () => {
     const canvas = createCanvasBackend();
 
-    mount(
-      () =>
-        group(() => [
-          rect(() => [
-            attr("x", "10"),
-            attr("y", "20"),
-            attr("width", "100"),
-            attr("height", "50"),
-            attr("fill", "#ff0000"),
-          ]),
-          circle(() => [
-            attr("cx", "200"),
-            attr("cy", "100"),
-            attr("r", "30"),
-            attr("fill", "#0000ff"),
-            attr("stroke", "#000"),
-          ]),
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      group(() => [
+        rect(() => [
+          attr("x", "10"),
+          attr("y", "20"),
+          attr("width", "100"),
+          attr("height", "50"),
+          attr("fill", "#ff0000"),
         ]),
-      { backend: canvas, plugins: [createBasePlugin()] },
+        circle(() => [
+          attr("cx", "200"),
+          attr("cy", "100"),
+          attr("r", "30"),
+          attr("fill", "#0000ff"),
+          attr("stroke", "#000"),
+        ]),
+      ]),
     );
 
     const mockCtx = createMockCanvas();
@@ -236,16 +224,14 @@ describe("Canvas paint", () => {
   it("paints text shapes", () => {
     const canvas = createCanvasBackend();
 
-    mount(
-      () =>
-        canvasText(() => [
-          attr("x", "50"),
-          attr("y", "50"),
-          attr("content", "Hello"),
-          attr("fill", "#000"),
-          attr("font", "16px Arial"),
-        ]),
-      { backend: canvas, plugins: [createBasePlugin()] },
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      canvasText(() => [
+        attr("x", "50"),
+        attr("y", "50"),
+        attr("content", "Hello"),
+        attr("fill", "#000"),
+        attr("font", "16px Arial"),
+      ]),
     );
 
     const mockCtx = createMockCanvas();
@@ -257,18 +243,16 @@ describe("Canvas paint", () => {
   it("paints nested groups", () => {
     const canvas = createCanvasBackend();
 
-    mount(
-      () =>
-        group(() => [
-          rect(() => [
-            attr("x", "0"),
-            attr("y", "0"),
-            attr("width", "50"),
-            attr("height", "50"),
-            attr("fill", "red"),
-          ]),
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      group(() => [
+        rect(() => [
+          attr("x", "0"),
+          attr("y", "0"),
+          attr("width", "50"),
+          attr("height", "50"),
+          attr("fill", "red"),
         ]),
-      { backend: canvas, plugins: [createBasePlugin()] },
+      ]),
     );
 
     const mockCtx = createMockCanvas();
@@ -280,16 +264,14 @@ describe("Canvas paint", () => {
   it("paints line shapes", () => {
     const canvas = createCanvasBackend();
 
-    mount(
-      () =>
-        line(() => [
-          attr("x1", "10"),
-          attr("y1", "20"),
-          attr("x2", "100"),
-          attr("y2", "200"),
-          attr("stroke", "#000"),
-        ]),
-      { backend: canvas, plugins: [createBasePlugin()] },
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      line(() => [
+        attr("x1", "10"),
+        attr("y1", "20"),
+        attr("x2", "100"),
+        attr("y2", "200"),
+        attr("stroke", "#000"),
+      ]),
     );
 
     const mockCtx = createMockCanvas();
@@ -303,16 +285,14 @@ describe("Canvas paint", () => {
   it("paints ellipse shapes", () => {
     const canvas = createCanvasBackend();
 
-    mount(
-      () =>
-        ellipse(() => [
-          attr("cx", "100"),
-          attr("cy", "75"),
-          attr("rx", "50"),
-          attr("ry", "30"),
-          attr("fill", "green"),
-        ]),
-      { backend: canvas, plugins: [createBasePlugin()] },
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      ellipse(() => [
+        attr("cx", "100"),
+        attr("cy", "75"),
+        attr("rx", "50"),
+        attr("ry", "30"),
+        attr("fill", "green"),
+      ]),
     );
 
     const mockCtx = createMockCanvas();
@@ -329,14 +309,8 @@ describe("Canvas paint", () => {
 
     const canvas = createCanvasBackend();
 
-    mount(
-      () =>
-        canvasPath(() => [
-          attr("d", "M 10 10 L 90 90"),
-          attr("fill", "red"),
-          attr("stroke", "blue"),
-        ]),
-      { backend: canvas, plugins: [createBasePlugin()] },
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      canvasPath(() => [attr("d", "M 10 10 L 90 90"), attr("fill", "red"), attr("stroke", "blue")]),
     );
 
     const mockCtx = createMockCanvas();
@@ -352,17 +326,15 @@ describe("Canvas paint", () => {
   it("paints rect with roundRect when rx is set", () => {
     const canvas = createCanvasBackend();
 
-    mount(
-      () =>
-        rect(() => [
-          attr("x", "10"),
-          attr("y", "20"),
-          attr("width", "100"),
-          attr("height", "50"),
-          attr("rx", "8"),
-          attr("fill", "blue"),
-        ]),
-      { backend: canvas, plugins: [createBasePlugin()] },
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      rect(() => [
+        attr("x", "10"),
+        attr("y", "20"),
+        attr("width", "100"),
+        attr("height", "50"),
+        attr("rx", "8"),
+        attr("fill", "blue"),
+      ]),
     );
 
     const mockCtx = createMockCanvas();
@@ -376,17 +348,15 @@ describe("Canvas paint", () => {
   it("applies opacity via globalAlpha", () => {
     const canvas = createCanvasBackend();
 
-    mount(
-      () =>
-        rect(() => [
-          attr("x", "0"),
-          attr("y", "0"),
-          attr("width", "50"),
-          attr("height", "50"),
-          attr("fill", "red"),
-          attr("opacity", "0.5"),
-        ]),
-      { backend: canvas, plugins: [createBasePlugin()] },
+    scope(canvas, [createBasePlugin()]).mount(() =>
+      rect(() => [
+        attr("x", "0"),
+        attr("y", "0"),
+        attr("width", "50"),
+        attr("height", "50"),
+        attr("fill", "red"),
+        attr("opacity", "0.5"),
+      ]),
     );
 
     const mockCtx = createMockCanvas();

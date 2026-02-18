@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
 import { Suspense } from "../Suspense";
 
@@ -13,15 +13,13 @@ describe("Suspense", () => {
   });
 
   it("renders content when no promise is thrown", () => {
-    mount(
-      () =>
-        Suspense({
-          fallback: () => div(() => [text("Loading...")]),
-          content: function* () {
-            yield* div(() => [text("Content")]);
-          },
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Suspense({
+        fallback: () => div(() => [text("Loading...")]),
+        content: function* () {
+          yield* div(() => [text("Content")]);
+        },
+      }),
     );
 
     expect(container.textContent).toContain("Content");
@@ -31,15 +29,13 @@ describe("Suspense", () => {
   it("renders fallback when promise is thrown", () => {
     const pendingPromise = new Promise(() => {});
 
-    mount(
-      () =>
-        Suspense({
-          fallback: () => div(() => [text("Loading...")]),
-          content: function* () {
-            throw pendingPromise;
-          },
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Suspense({
+        fallback: () => div(() => [text("Loading...")]),
+        content: function* () {
+          throw pendingPromise;
+        },
+      }),
     );
 
     expect(container.textContent).toContain("Loading...");
@@ -53,18 +49,16 @@ describe("Suspense", () => {
     });
     let hasResolved = false;
 
-    mount(
-      () =>
-        Suspense({
-          fallback: () => div(() => [text("Loading...")]),
-          content: function* () {
-            if (!hasResolved) {
-              throw promise;
-            }
-            yield* div(() => [text("Loaded Content")]);
-          },
-        }),
-      { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      Suspense({
+        fallback: () => div(() => [text("Loading...")]),
+        content: function* () {
+          if (!hasResolved) {
+            throw promise;
+          }
+          yield* div(() => [text("Loaded Content")]);
+        },
+      }),
     );
 
     expect(container.textContent).toContain("Loading...");
@@ -82,15 +76,13 @@ describe("Suspense", () => {
     const error = new Error("Component error");
 
     expect(() => {
-      mount(
-        () =>
-          Suspense({
-            fallback: () => div(() => [text("Loading...")]),
-            content: function* () {
-              throw error;
-            },
-          }),
-        { backend: createDOMBackend(container), plugins: [createBasePlugin()] },
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        Suspense({
+          fallback: () => div(() => [text("Loading...")]),
+          content: function* () {
+            throw error;
+          },
+        }),
       );
     }).toThrow(error);
   });

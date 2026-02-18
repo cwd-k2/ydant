@@ -14,10 +14,11 @@ import type {
   ResolveCapability,
 } from "./capabilities";
 import type { Embed } from "./embed";
+import type { Engine } from "./plugin";
 
 declare module "@ydant/core" {
   interface SpellSchema {
-    embed: { request: Embed; capabilities: never };
+    embed: { request: Embed; response: Engine; capabilities: never };
   }
 
   interface RenderContext {

@@ -166,12 +166,19 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - `ExecutionScope` 型を導入: backend + pluginMap + allPlugins を束ねる
 - `RenderContext` から `plugins` / `allPlugins` を除去し `scope` フィールドに一本化
 - `processChildren` に `{ scope }` オプションを追加 — レンダリング中の実行環境切り替え
-- `embed()` spell + `createEmbedPlugin()` を core に追加（`capabilities: never`）
-- `createExecutionScope()` を公開 API として export
+- `embed` spell + embed plugin を core に追加（`capabilities: never`）
 - **processChildren の 2 種類の環境切り替え**:
   - `{ parent }` — 同じ backend、別の親ノードへ（Portal が使用）
   - `{ scope }` — 別の backend + plugins へ（embed が使用）
 - **mergeChildContext は親 scope の plugins で行う**: 子の state を親に取り込む操作は親の plugins が判断すべき。子 scope 固有の plugins の mergeChildContext は呼ばれない
+
+### Phase 14: scope() Builder API
+
+- `scope(backend, plugins)` で builder を構築し、`.mount()` / `.embed()` 終端メソッドで実行する統一 API を導入
+- embed plugin は `scope()` が自動登録（ユーザーは `createEmbedPlugin()` を意識しない）
+- `yield* scope(...).embed(content)` が `Engine` を直接返す — `hub.resolve()` パターン不要に
+- scheduler は終端操作のオプション（`{ scheduler: sync }`）
+- standalone `mount()`, `embed()`, `createExecutionScope()`, `createEmbedPlugin()` を public export から削除
 
 ### Phase 12: Engine / Hub アーキテクチャ
 
@@ -209,7 +216,7 @@ cross-scope embed を非同期（target engine にキューイング）にする
 
 ### 初回レンダリングは Engine キューを通さない
 
-mount() の初回 render は Engine キューを通さず直接実行する。Engine は後続の更新（reactive, 将来の cross-scope 非同期通信）から活躍する。
+`scope().mount()` の初回 render は Engine キューを通さず直接実行する。Engine は後続の更新（reactive, 将来の cross-scope 非同期通信）から活躍する。
 
 ---
 
@@ -304,7 +311,7 @@ pnpm typecheck            # 型チェック
 | Hydration    |      |          | ✓        | ✓        | ✓       |
 | Canvas       | ✓    | ✓        | no-op    | no-op    |         |
 
-`mount()` はコンパイル時に「Generator が必要とする能力 ⊆ Backend が提供する能力」を検証する
+`scope().mount()` はコンパイル時に「Generator が必要とする能力 ⊆ Backend が提供する能力」を検証する
 （`CapabilityCheck` 型、`SpellSchema` の `capabilities` フィールド、`Backend<Capabilities>` phantom 型）。
 
 ### Engine / Hub アーキテクチャ
@@ -322,7 +329,7 @@ Hub
  └── ...
 ```
 
-mount() が Hub を作成し、`MountHandle.hub` で公開。RenderContext に `engine` フィールドを追加。
+`scope().mount()` が Hub を作成し、`MountHandle.hub` で公開。RenderContext に `engine` フィールドを追加。
 
 **各 Backend のデフォルト Scheduler**:
 
@@ -357,7 +364,9 @@ Phase A (Engine flush hooks)         ✅ 完了
 **実証パターン**:
 
 ```typescript
-const canvasEngine = handle.hub.resolve(canvasScope)!;
+// コンポーネント内で embed 直後に Engine を取得
+const canvasEngine =
+  yield * scope(canvasBackend, [createBasePlugin(), createReactivePlugin()]).embed(Scene);
 canvasEngine.onFlush(() => canvasBackend.paint(ctx2d));
 ```
 

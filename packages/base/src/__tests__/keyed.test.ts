@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { mount } from "@ydant/core";
+import { scope } from "@ydant/core";
 import { createBasePlugin } from "../plugin";
 import { createDOMBackend } from "../capabilities";
 import { div, button } from "../elements/html";
@@ -23,17 +23,12 @@ describe("keyed element reuse", () => {
   it("reuses DOM node on Slot.refresh()", () => {
     let slot: Slot | undefined;
 
-    mount(
-      () =>
-        div(function* () {
-          slot = yield* div(function* () {
-            yield* keyed("stable", div)(() => [text("hello")]);
-          });
-        }),
-      {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        slot = yield* div(function* () {
+          yield* keyed("stable", div)(() => [text("hello")]);
+        });
+      }),
     );
 
     const nodeBefore = (slot!.node as HTMLElement).firstElementChild;
@@ -52,17 +47,12 @@ describe("keyed element reuse", () => {
     const handler = vi.fn();
     let slot: Slot | undefined;
 
-    mount(
-      () =>
-        div(function* () {
-          slot = yield* div(function* () {
-            yield* keyed("btn", button)(() => [on("click", handler), text("Click")]);
-          });
-        }),
-      {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        slot = yield* div(function* () {
+          yield* keyed("btn", button)(() => [on("click", handler), text("Click")]);
+        });
+      }),
     );
 
     slot!.refresh(function* () {
@@ -79,17 +69,12 @@ describe("keyed element reuse", () => {
     const mountCallback = vi.fn();
     let slot: Slot | undefined;
 
-    mount(
-      () =>
-        div(function* () {
-          slot = yield* div(function* () {
-            yield* keyed("item", div)(() => [onMount(mountCallback), text("content")]);
-          });
-        }),
-      {
-        backend: createDOMBackend(container),
-        plugins: [createBasePlugin()],
-      },
+    scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+      div(function* () {
+        slot = yield* div(function* () {
+          yield* keyed("item", div)(() => [onMount(mountCallback), text("content")]);
+        });
+      }),
     );
 
     vi.advanceTimersToNextFrame();
