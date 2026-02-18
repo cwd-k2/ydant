@@ -77,6 +77,7 @@ pnpm typecheck            # 型チェック
 | `README.md` / `README.ja.md` | プロジェクト概要、機能一覧（**常に同期**）   |
 | `packages/*/README.md`       | 各パッケージの API 仕様                      |
 | `examples/*/README.md`       | 各 showcase の実装パターン・躓きポイント     |
+| `docs/ARCHITECTURE.md`       | アーキテクチャ図解、概念間の関係             |
 | `docs/CONVENTIONS.md`        | 命名規則、型の使い分け、コーディングパターン |
 | `docs/TESTING.md`            | テスト方針、TDD の適用、テストの書き方       |
 | `docs/DOCUMENTATION.md`      | ドキュメント方針、テンプレート、更新ルール   |

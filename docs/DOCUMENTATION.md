@@ -35,6 +35,7 @@
 | `README.md` / `README.ja.md` | プロジェクト概要、機能一覧                   | 初見ユーザー       |
 | `packages/*/README.md`       | パッケージの API 仕様                        | ライブラリ利用者   |
 | `examples/*/README.md`       | 実装パターン、躓きポイント                   | 学習者             |
+| `docs/ARCHITECTURE.md`       | アーキテクチャ図解、概念間の関係             | コントリビューター |
 | `docs/CONVENTIONS.md`        | 命名規則、型の使い分け、コーディングパターン | コントリビューター |
 | `docs/TESTING.md`            | テスト方針、TDD の適用、テストの書き方       | テスト作成者       |
 | `docs/DOCUMENTATION.md`      | ドキュメント方針（このファイル）             | ドキュメント作成者 |
