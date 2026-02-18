@@ -308,7 +308,11 @@ describe("embed spell + plugin", () => {
     // Simulate ctx for cross-scope
     const mockHub = {
       resolve: () => undefined,
-      spawn: (_id: string, _scope: any, _opts?: any) => ({ id: "spawned-engine" }),
+      spawn: (_id: string, _scope: any, _opts?: any) => ({
+        id: "spawned-engine",
+        onError: () => {},
+      }),
+      dispatch: () => {},
     };
     const mockCtx = {
       scope: createExecutionScope(parentBackend, []),
@@ -321,7 +325,7 @@ describe("embed spell + plugin", () => {
       mockCtx,
     );
 
-    expect(result).toEqual({ id: "spawned-engine" });
+    expect(result).toEqual({ id: "spawned-engine", onError: expect.any(Function) });
   });
 
   it("same-scope embed returns ctx.engine", () => {
@@ -351,10 +355,14 @@ describe("embed spell + plugin", () => {
     const childScope = createExecutionScope(childBackend, []);
     const plugin = createEmbedPlugin();
 
-    const spawnSpy = vi.fn((_id: string, _scope: any, _opts?: any) => ({ id: "engine" }));
+    const spawnSpy = vi.fn((_id: string, _scope: any, _opts?: any) => ({
+      id: "engine",
+      onError: () => {},
+    }));
     const mockHub = {
       resolve: () => undefined,
       spawn: spawnSpy,
+      dispatch: () => {},
     };
     const mockCtx = {
       scope: createExecutionScope(parentBackend, []),
@@ -368,5 +376,90 @@ describe("embed spell + plugin", () => {
     );
 
     expect(spawnSpy).toHaveBeenCalledWith(expect.any(String), childScope, { scheduler: sync });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Cross-scope error propagation
+  // ---------------------------------------------------------------------------
+
+  it("cross-scope embed registers onError that dispatches to parent engine", () => {
+    const parentBackend = createMockBackend("parent-be");
+    const childBackend = createMockBackend("child-be");
+
+    const childScope = createExecutionScope(childBackend, []);
+
+    const handle = mount(
+      asApp(function* () {
+        yield* embed(childScope, function* () {});
+      }),
+      {
+        backend: parentBackend,
+        plugins: [createEmbedPlugin()],
+        scheduler: sync,
+      },
+    );
+
+    // Listen for error messages on the parent engine
+    const parentEngine = handle.hub.get("primary")!;
+    const errorHandler = vi.fn();
+    parentEngine.on("engine:error", errorHandler);
+
+    // Get the child engine and trigger an error via its task queue
+    const childEngine = handle.hub.resolve(childScope)!;
+    expect(childEngine).toBeDefined();
+
+    childEngine.onError(() => {}); // Ensure child doesn't re-throw
+    childEngine.enqueue(() => {
+      throw new Error("child-error");
+    });
+
+    expect(errorHandler).toHaveBeenCalledTimes(1);
+    expect(errorHandler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "engine:error",
+        sourceEngineId: childEngine.id,
+      }),
+    );
+    expect((errorHandler.mock.calls[0][0] as any).error).toBeInstanceOf(Error);
+    expect(((errorHandler.mock.calls[0][0] as any).error as Error).message).toBe("child-error");
+  });
+
+  it("reused engine does not get duplicate onError registration", () => {
+    const parentBackend = createMockBackend("parent-be");
+    const childBackend = createMockBackend("child-be");
+
+    const childScope = createExecutionScope(childBackend, []);
+
+    let embedCount = 0;
+
+    const handle = mount(
+      asApp(function* () {
+        yield* embed(childScope, function* () {});
+        embedCount++;
+        // Second embed with the same scope should reuse the engine
+        yield* embed(childScope, function* () {});
+        embedCount++;
+      }),
+      {
+        backend: parentBackend,
+        plugins: [createEmbedPlugin()],
+        scheduler: sync,
+      },
+    );
+
+    expect(embedCount).toBe(2);
+
+    const parentEngine = handle.hub.get("primary")!;
+    const errorHandler = vi.fn();
+    parentEngine.on("engine:error", errorHandler);
+
+    const childEngine = handle.hub.resolve(childScope)!;
+    childEngine.onError(() => {}); // Prevent re-throw
+    childEngine.enqueue(() => {
+      throw new Error("once");
+    });
+
+    // Should dispatch only once — no duplicate onError registration
+    expect(errorHandler).toHaveBeenCalledTimes(1);
   });
 });

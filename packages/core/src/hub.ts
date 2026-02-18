@@ -17,11 +17,17 @@ function createEngine(id: string, scope: ExecutionScope, hub: Hub, scheduler: Sc
   const handlers = new Map<string, Array<(message: Message) => void>>();
   const beforeFlushCallbacks: Array<() => void> = [];
   const flushCallbacks: Array<() => void> = [];
+  const errorCallbacks: Array<(error: unknown) => void> = [];
   let stopped = false;
+  let paused = false;
   let scheduled = false;
 
   function flush(): void {
     if (stopped) return;
+    if (paused) {
+      scheduled = false;
+      return;
+    }
     scheduled = false;
 
     // Notify before-flush observers
@@ -34,17 +40,26 @@ function createEngine(id: string, scope: ExecutionScope, hub: Hub, scheduler: Sc
     queue.clear();
 
     for (const task of tasks) {
-      task();
+      try {
+        task();
+      } catch (error) {
+        if (errorCallbacks.length > 0) {
+          for (const cb of errorCallbacks) cb(error);
+          break; // Skip remaining tasks
+        } else {
+          throw error; // Backward-compatible: re-throw when no handler
+        }
+      }
     }
 
-    // Notify flush observers after all tasks in this cycle have completed
+    // Notify flush observers (even when error was handled — observer consistency)
     for (const cb of flushCallbacks) {
       cb();
     }
   }
 
   function scheduleFlush(): void {
-    if (scheduled || stopped) return;
+    if (scheduled || stopped || paused) return;
     scheduled = true;
     scheduler(flush);
   }
@@ -53,6 +68,9 @@ function createEngine(id: string, scope: ExecutionScope, hub: Hub, scheduler: Sc
     id,
     scope,
     hub,
+    get paused() {
+      return paused;
+    },
 
     enqueue(task: () => void): void {
       if (stopped) return;
@@ -77,16 +95,42 @@ function createEngine(id: string, scope: ExecutionScope, hub: Hub, scheduler: Sc
       list.push(handler);
     },
 
+    onError(callback: (error: unknown) => void): void {
+      errorCallbacks.push(callback);
+    },
+
+    pause(): void {
+      if (paused || stopped) return;
+      paused = true;
+    },
+
+    resume(): void {
+      if (!paused || stopped) return;
+      paused = false;
+      if (queue.size > 0) {
+        scheduleFlush();
+      }
+    },
+
     stop(): void {
       stopped = true;
       queue.clear();
       beforeFlushCallbacks.length = 0;
       flushCallbacks.length = 0;
+      errorCallbacks.length = 0;
     },
   };
 
   // Attach deliver as an internal method accessible to Hub
   (engine as EngineInternal).__deliver = (message: Message): void => {
+    // Handle built-in messages before user handlers
+    if (message.type === "engine:pause") {
+      engine.pause();
+    } else if (message.type === "engine:resume") {
+      engine.resume();
+    }
+
+    // User handlers see state after built-in processing
     const list = handlers.get(message.type);
     if (list) {
       for (const handler of list) {

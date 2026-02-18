@@ -14,7 +14,16 @@ import type {
   ExecutionScope,
   EngineOptions,
 } from "@ydant/core";
-import { TASK_ENQUEUED, FLUSH_START, FLUSH_END, ENGINE_SPAWNED, ENGINE_STOPPED } from "./events";
+import {
+  TASK_ENQUEUED,
+  FLUSH_START,
+  FLUSH_END,
+  ENGINE_SPAWNED,
+  ENGINE_STOPPED,
+  ENGINE_PAUSED,
+  ENGINE_RESUMED,
+  ENGINE_ERROR,
+} from "./events";
 import type { DevtoolsEvent } from "./events";
 
 /** Options for {@link createDevtoolsPlugin}. */
@@ -65,6 +74,20 @@ export function createDevtoolsPlugin(options?: DevtoolsPluginOptions): DevtoolsP
       originalStop();
     };
 
+    // Wrap pause
+    const originalPause = engine.pause.bind(engine);
+    engine.pause = () => {
+      emit({ type: ENGINE_PAUSED, engineId: engine.id, timestamp: Date.now() });
+      originalPause();
+    };
+
+    // Wrap resume
+    const originalResume = engine.resume.bind(engine);
+    engine.resume = () => {
+      emit({ type: ENGINE_RESUMED, engineId: engine.id, timestamp: Date.now() });
+      originalResume();
+    };
+
     // Register flush hooks
     engine.onBeforeFlush(() => {
       emit({ type: FLUSH_START, engineId: engine.id, timestamp: Date.now() });
@@ -73,9 +96,22 @@ export function createDevtoolsPlugin(options?: DevtoolsPluginOptions): DevtoolsP
       emit({ type: FLUSH_END, engineId: engine.id, timestamp: Date.now() });
     });
 
+    // Register error observation
+    engine.on("engine:error", (message) => {
+      emit({
+        type: ENGINE_ERROR,
+        engineId: engine.id,
+        timestamp: Date.now(),
+        error: message.error,
+        sourceEngineId: message.sourceEngineId,
+      });
+    });
+
     cleanups.push(() => {
       engine.enqueue = originalEnqueue;
       engine.stop = originalStop;
+      engine.pause = originalPause;
+      engine.resume = originalResume;
     });
 
     emit({ type: ENGINE_SPAWNED, engineId: engine.id, timestamp: Date.now() });

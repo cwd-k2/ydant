@@ -9,6 +9,9 @@ import {
   FLUSH_END,
   ENGINE_SPAWNED,
   ENGINE_STOPPED,
+  ENGINE_PAUSED,
+  ENGINE_RESUMED,
+  ENGINE_ERROR,
 } from "../index";
 
 // ---------------------------------------------------------------------------
@@ -195,5 +198,56 @@ describe("DevTools plugin", () => {
       expect(typeof event.timestamp).toBe("number");
       expect(event.timestamp).toBeGreaterThan(0);
     }
+  });
+
+  it("emits ENGINE_PAUSED when engine is paused", () => {
+    const { engine, devtools } = setupDevtools(hub, scope);
+
+    engine.pause();
+
+    const paused = devtools.getEvents().filter((e) => e.type === ENGINE_PAUSED);
+    expect(paused).toHaveLength(1);
+    expect(paused[0].engineId).toBe("primary");
+  });
+
+  it("emits ENGINE_RESUMED when engine is resumed", () => {
+    const { engine, devtools } = setupDevtools(hub, scope);
+
+    engine.pause();
+    engine.resume();
+
+    const resumed = devtools.getEvents().filter((e) => e.type === ENGINE_RESUMED);
+    expect(resumed).toHaveLength(1);
+    expect(resumed[0].engineId).toBe("primary");
+  });
+
+  it("emits ENGINE_ERROR when engine receives error message", () => {
+    const { engine, devtools } = setupDevtools(hub, scope);
+
+    const testError = new Error("test-error");
+    hub.dispatch(engine, {
+      type: "engine:error",
+      error: testError,
+      sourceEngineId: "child-engine",
+    });
+
+    const errors = devtools.getEvents().filter((e) => e.type === ENGINE_ERROR);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].engineId).toBe("primary");
+    expect(errors[0].error).toBe(testError);
+    expect(errors[0].sourceEngineId).toBe("child-engine");
+  });
+
+  it("teardown restores pause and resume", () => {
+    const { engine, devtools } = setupDevtools(hub, scope);
+
+    devtools.clearEvents();
+    devtools.teardown!({} as RenderContext);
+
+    engine.pause();
+    engine.resume();
+
+    // No events emitted after teardown
+    expect(devtools.getEvents()).toHaveLength(0);
   });
 });

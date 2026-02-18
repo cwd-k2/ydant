@@ -198,6 +198,8 @@ export interface Engine {
   readonly scope: ExecutionScope;
   /** The hub that owns this engine. */
   readonly hub: Hub;
+  /** Whether this engine is currently paused. */
+  readonly paused: boolean;
   /** Enqueues a task. Duplicate function references are deduplicated. */
   enqueue(task: () => void): void;
   /** Registers a callback invoked before each flush cycle begins. */
@@ -206,6 +208,12 @@ export interface Engine {
   onFlush(callback: () => void): void;
   /** Registers a handler for messages of the given type. */
   on(type: string, handler: (message: Message) => void): void;
+  /** Registers an error handler for task execution failures during flush. */
+  onError(callback: (error: unknown) => void): void;
+  /** Pauses the engine. Enqueued tasks accumulate but flush is deferred until resume. */
+  pause(): void;
+  /** Resumes a paused engine. Schedules a flush if tasks are pending. */
+  resume(): void;
   /** Stops the engine, preventing further task execution. */
   stop(): void;
 }

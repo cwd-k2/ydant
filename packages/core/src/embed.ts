@@ -60,8 +60,20 @@ export function createEmbedPlugin(): Plugin {
         // For cross-scope embeds, ensure an Engine exists for the target scope.
         const hub = ctx.engine.hub;
         const existing = hub.resolve(scope);
-        engine =
-          existing ?? hub.spawn(`embed-${scope.backend.name}-${Date.now()}`, scope, { scheduler });
+        if (existing) {
+          engine = existing;
+        } else {
+          engine = hub.spawn(`embed-${scope.backend.name}-${Date.now()}`, scope, { scheduler });
+          // Propagate errors from child engine to parent engine via dispatch
+          const parentEngine = ctx.engine;
+          engine.onError((error) => {
+            hub.dispatch(parentEngine, {
+              type: "engine:error",
+              error,
+              sourceEngineId: engine.id,
+            });
+          });
+        }
       } else {
         // Same-scope embed — reuse the current engine.
         engine = ctx.engine;

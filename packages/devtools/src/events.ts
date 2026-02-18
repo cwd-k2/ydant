@@ -19,6 +19,15 @@ export const ENGINE_SPAWNED = "engine:spawned";
 /** Emitted when an Engine is stopped. */
 export const ENGINE_STOPPED = "engine:stopped";
 
+/** Emitted when an Engine is paused. */
+export const ENGINE_PAUSED = "engine:paused";
+
+/** Emitted when an Engine is resumed. */
+export const ENGINE_RESUMED = "engine:resumed";
+
+/** Emitted when an Engine encounters a task error. */
+export const ENGINE_ERROR = "engine:error";
+
 /** A DevTools event recording Engine lifecycle activity. */
 export interface DevtoolsEvent {
   readonly type: string;
