@@ -15,6 +15,10 @@ describe("createReactivePlugin", () => {
     vi.useFakeTimers();
   });
 
+  afterEach(() => {
+    container.remove();
+  });
+
   it("creates a plugin with correct name and types", () => {
     const plugin = createReactivePlugin();
 
@@ -160,6 +164,10 @@ describe("handleRenderError integration", () => {
     vi.useFakeTimers();
   });
 
+  afterEach(() => {
+    container.remove();
+  });
+
   it("calls handleRenderError when rerender throws and handler exists", () => {
     const count = signal(0);
     const errorHandler = vi.fn(() => true);
@@ -196,6 +204,41 @@ describe("handleRenderError integration", () => {
 
     expect(errorHandler).toHaveBeenCalledOnce();
     expect(errorHandler).toHaveBeenCalledWith(expect.any(Error));
+  });
+
+  it("re-throws original error when handleRenderError itself throws", () => {
+    const count = signal(0);
+
+    const throwingHandler: Plugin = {
+      name: "throwing-boundary",
+      types: [],
+      initContext(ctx: RenderContext) {
+        ctx.handleRenderError = () => {
+          throw new Error("handler exploded");
+        };
+      },
+    };
+
+    scope(createDOMBackend(container), [
+      createBasePlugin(),
+      createReactivePlugin(),
+      throwingHandler,
+    ]).mount(
+      () =>
+        div(function* () {
+          yield* reactive(() => {
+            const val = count();
+            if (val > 0) throw new Error("original error");
+            return [text(`Count: ${val}`)];
+          });
+        }),
+      { scheduler: sync },
+    );
+
+    expect(container.textContent).toContain("Count: 0");
+
+    // The original error should be re-thrown, not the handler's error
+    expect(() => count.set(1)).toThrow("original error");
   });
 
   it("re-throws when no handleRenderError is set (backward compat)", () => {

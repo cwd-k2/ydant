@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { scope, sync } from "@ydant/core";
 import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
 import { createReactivePlugin } from "@ydant/reactive";
@@ -13,6 +13,10 @@ describe("ErrorBoundary", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    container.remove();
   });
 
   // ─── Existing: sync error tests ───
@@ -260,5 +264,44 @@ describe("ErrorBoundary", () => {
 
     expect(container.textContent).toContain("Inner: boom");
     expect(container.textContent).not.toContain("Outer");
+  });
+
+  it("falls back to parent ErrorBoundary when inner fallback throws", () => {
+    const count = signal(0);
+
+    scope(createDOMBackend(container), [
+      createBasePlugin(),
+      createReactivePlugin(),
+      createAsyncPlugin(),
+    ]).mount(
+      () =>
+        ErrorBoundary({
+          fallback: (error) => div(() => [text(`Outer: ${error.message}`)]),
+          content: function* () {
+            yield* div(function* () {
+              yield* ErrorBoundary({
+                fallback: () => {
+                  throw new Error("fallback exploded");
+                },
+                content: function* () {
+                  yield* reactive(() => {
+                    const val = count();
+                    if (val > 0) throw new Error("inner error");
+                    return [text(`Count: ${val}`)];
+                  });
+                },
+              });
+            });
+          },
+        }),
+      { scheduler: sync },
+    );
+
+    expect(container.textContent).toContain("Count: 0");
+
+    // Inner fallback throws → outer ErrorBoundary catches the original error
+    count.set(1);
+
+    expect(container.textContent).toContain("Outer: inner error");
   });
 });

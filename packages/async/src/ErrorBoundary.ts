@@ -53,8 +53,8 @@ export function* ErrorBoundary(props: ErrorBoundaryProps): Spell<"element"> {
           yield* boundary(errorHandler);
           yield* fallback(error as Error, reset);
         });
-      } catch {
-        // Fallback itself errored — propagate to parent
+      } catch (fallbackError) {
+        console.warn("[ErrorBoundary] Fallback render failed:", fallbackError);
         return false;
       }
       return true;

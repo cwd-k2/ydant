@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { scope, sync } from "@ydant/core";
 import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
 import { createReactivePlugin } from "@ydant/reactive";
@@ -13,6 +13,10 @@ describe("Suspense", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    container.remove();
   });
 
   // ─── Existing: sync suspend tests ───
@@ -138,5 +142,47 @@ describe("Suspense", () => {
     await vi.runAllTimersAsync();
 
     expect(container.textContent).toContain("Count: 1");
+  });
+
+  it("does not cause unhandled rejection when retry throws (safeRetry)", async () => {
+    let resolvePromise: (() => void) | null = null;
+    let throwCount = 0;
+
+    // Track unhandled rejections
+    const unhandledRejections: unknown[] = [];
+    const handler = (event: PromiseRejectionEvent) => {
+      unhandledRejections.push(event.reason);
+      event.preventDefault();
+    };
+    window.addEventListener("unhandledrejection", handler);
+
+    try {
+      scope(createDOMBackend(container), [createBasePlugin(), createAsyncPlugin()]).mount(() =>
+        Suspense({
+          fallback: () => div(() => [text("Loading...")]),
+          content: function* () {
+            throwCount++;
+            // Always throw a new promise — retry will also suspend (throw a Promise)
+            const p = new Promise<void>((resolve) => {
+              resolvePromise = resolve;
+            });
+            throw p;
+          },
+        }),
+      );
+
+      expect(container.textContent).toContain("Loading...");
+      expect(throwCount).toBe(1);
+
+      // Resolve the first promise — retry fires, but content throws another promise
+      resolvePromise!();
+      await vi.runAllTimersAsync();
+
+      // The retry succeeded without unhandled rejection (safeRetry caught the thrown Promise)
+      expect(throwCount).toBe(2);
+      expect(unhandledRejections).toEqual([]);
+    } finally {
+      window.removeEventListener("unhandledrejection", handler);
+    }
   });
 });

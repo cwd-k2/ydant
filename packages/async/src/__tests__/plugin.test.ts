@@ -1,6 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { scope, sync } from "@ydant/core";
 import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
+import { createReactivePlugin } from "@ydant/reactive";
+import { signal, reactive } from "@ydant/reactive";
 import { createAsyncPlugin } from "../plugin";
 import { boundary } from "../boundary";
 
@@ -11,6 +13,10 @@ describe("createAsyncPlugin", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    container.remove();
   });
 
   it("creates a plugin with correct name, types, and dependencies", () => {
@@ -40,8 +46,13 @@ describe("createAsyncPlugin", () => {
 
   it("chains handlers: inner first, then parent", () => {
     const callOrder: string[] = [];
+    const count = signal(0);
 
-    scope(createDOMBackend(container), [createBasePlugin(), createAsyncPlugin()]).mount(
+    scope(createDOMBackend(container), [
+      createBasePlugin(),
+      createReactivePlugin(),
+      createAsyncPlugin(),
+    ]).mount(
       () =>
         div(function* () {
           yield* boundary(() => {
@@ -52,14 +63,20 @@ describe("createAsyncPlugin", () => {
             callOrder.push("inner");
             return false; // Not handled — delegate to parent
           });
-          yield* text("content");
+          yield* reactive(() => {
+            const val = count();
+            if (val > 0) throw new Error("chain test");
+            return [text(`Count: ${val}`)];
+          });
         }),
       { scheduler: sync },
     );
 
-    // Manually test the handler chain by getting the ctx (indirectly via error)
-    // We need a reactive update to trigger the chain, but for unit testing
-    // we verify the plugin structure works by checking the output renders
-    expect(container.textContent).toContain("content");
+    expect(container.textContent).toContain("Count: 0");
+
+    // Trigger error — inner handler runs first (returns false), then parent (returns true)
+    count.set(1);
+
+    expect(callOrder).toEqual(["inner", "parent"]);
   });
 });

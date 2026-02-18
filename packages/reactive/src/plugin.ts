@@ -51,11 +51,15 @@ export function createReactivePlugin(): Plugin {
       ctx.decorate.setAttribute(container, "data-reactive", "");
       ctx.tree.appendChild(ctx.parent, container);
 
+      // Active flag — set to false on unmount to prevent stale subscriptions
+      let active = true;
       // Unmount callbacks accumulated during rendering
       let unmountCallbacks: Array<() => void> = [];
 
       // Actual re-render logic
       const rerender = () => {
+        if (!active) return;
+
         // Run previous unmount callbacks
         for (const callback of unmountCallbacks) {
           callback();
@@ -75,7 +79,11 @@ export function createReactivePlugin(): Plugin {
           });
         } catch (error) {
           // Delegate to error boundary if available
-          if (ctx.handleRenderError?.(error)) return;
+          try {
+            if (ctx.handleRenderError?.(error)) return;
+          } catch {
+            // Handler itself threw — fall through to re-throw original error
+          }
           throw error;
         }
       };
@@ -88,6 +96,7 @@ export function createReactivePlugin(): Plugin {
 
       // Cleanup on unmount
       ctx.unmountCallbacks.push(() => {
+        active = false;
         for (const callback of unmountCallbacks) {
           callback();
         }

@@ -40,7 +40,11 @@ export function createAsyncPlugin(): Plugin {
       const parentHandler = ctx.handleRenderError;
       // Chain: inner handler runs first, falls back to parent if not handled
       ctx.handleRenderError = (error: unknown): boolean => {
-        if (request.handler(error)) return true;
+        try {
+          if (request.handler(error)) return true;
+        } catch {
+          // Inner handler threw — fall through to parent
+        }
         return parentHandler?.(error) ?? false;
       };
     },

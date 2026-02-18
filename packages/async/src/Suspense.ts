@@ -41,6 +41,13 @@ export function* Suspense(props: SuspenseProps): Spell<"element"> {
 
   const containerSlot = yield* div(function* () {
     const retry = () => containerSlot.refresh(renderWithBoundary);
+    const safeRetry = () => {
+      try {
+        retry();
+      } catch {
+        // Re-render error is handled by boundary on next cycle
+      }
+    };
 
     const suspenseHandler = (error: unknown): boolean => {
       // Only handle Promises — let ErrorBoundary handle real errors
@@ -51,11 +58,11 @@ export function* Suspense(props: SuspenseProps): Spell<"element"> {
           yield* boundary(suspenseHandler);
           yield* fallback();
         });
-      } catch {
-        // Fallback itself errored — propagate to parent
+      } catch (fallbackError) {
+        console.warn("[Suspense] Fallback render failed:", fallbackError);
         return false;
       }
-      error.then(retry, retry);
+      error.then(safeRetry, safeRetry);
       return true;
     };
 
@@ -78,7 +85,7 @@ export function* Suspense(props: SuspenseProps): Spell<"element"> {
 
       if (isSuspended && pendingPromise) {
         yield* fallback();
-        pendingPromise.then(retry, retry);
+        pendingPromise.then(safeRetry, safeRetry);
       }
     }
 
