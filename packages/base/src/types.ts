@@ -79,6 +79,16 @@ export type Element = Tagged<
     children: Render;
     decorations?: Array<Attribute | Listener>;
     key?: string | number;
-    ns?: string;
+  }
+>;
+
+/** A DSL instruction that creates an SVG element with children and optional decorations. */
+export type SvgElement = Tagged<
+  "svg",
+  {
+    tag: string;
+    children: Render;
+    decorations?: Array<Attribute | Listener>;
+    key?: string | number;
   }
 >;

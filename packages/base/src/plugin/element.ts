@@ -5,7 +5,9 @@
 import type { Render, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 import type { Response } from "@ydant/core";
-import type { Element, Slot } from "../types";
+import type { Element, SvgElement, Attribute, Listener, Slot } from "../types";
+
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**
  * Executes pending mount callbacks on the next animation frame.
@@ -26,9 +28,26 @@ export function executeMount(ctx: RenderContext): void {
   });
 }
 
-/** Processes an {@link Element} request: creates (or reuses) a node, applies decorations, renders children, and returns a {@link Slot}. */
-export function processElement(element: Element, ctx: RenderContext): Response {
-  const elementKey = element.key ?? null;
+// =============================================================================
+// processNode — shared logic for element/svg/shape processing
+// =============================================================================
+
+/** Options for {@link processNode}. */
+export interface ProcessNodeOptions {
+  key?: string | number;
+  children: Render;
+  createNode: (ctx: RenderContext) => unknown;
+  applyDecorations?: (node: unknown, isReused: boolean, ctx: RenderContext) => void;
+}
+
+/**
+ * Shared processing logic for element-like spell types (element, svg, shape).
+ *
+ * Creates (or reuses) a node, optionally applies decorations,
+ * renders children, and returns a {@link Slot}.
+ */
+export function processNode(options: ProcessNodeOptions, ctx: RenderContext): Response {
+  const elementKey = options.key ?? null;
 
   // Reuse existing node if a matching keyed element exists
   let node: unknown;
@@ -43,16 +62,14 @@ export function processElement(element: Element, ctx: RenderContext): Response {
     ctx.unmountCallbacks.push(...existing.unmountCallbacks);
     ctx.keyedNodes.delete(elementKey);
   } else {
-    node = element.ns
-      ? ctx.tree.createElementNS(element.ns, element.tag)
-      : ctx.tree.createElement(element.tag);
+    node = options.createNode(ctx);
   }
 
   // Append to parent (moves the node if reused)
   ctx.tree.appendChild(ctx.parent, node);
 
   // Apply inline decorations (attributes, listeners)
-  applyDecorations(element, node, isReused, ctx);
+  options.applyDecorations?.(node, isReused, ctx);
 
   // Create a child-scoped context for this element
   const childCtx = ctx.createChildContext(node);
@@ -77,8 +94,8 @@ export function processElement(element: Element, ctx: RenderContext): Response {
     ctx.tree.clearChildren(node);
   }
 
-  if (element.children) {
-    childCtx.processChildren(() => element.children as Render, {
+  if (options.children) {
+    childCtx.processChildren(() => options.children as Render, {
       parent: node,
     });
   }
@@ -96,6 +113,42 @@ export function processElement(element: Element, ctx: RenderContext): Response {
   return slot;
 }
 
+// =============================================================================
+// Spell-specific processors
+// =============================================================================
+
+/** Processes an {@link Element} request. */
+export function processElement(element: Element, ctx: RenderContext): Response {
+  return processNode(
+    {
+      key: element.key,
+      children: element.children,
+      createNode: (ctx) => ctx.tree.createElement(element.tag),
+      applyDecorations: (node, isReused, ctx) =>
+        applyDecorations(element.decorations, node, isReused, ctx),
+    },
+    ctx,
+  );
+}
+
+/** Processes an {@link SvgElement} request. */
+export function processSvg(element: SvgElement, ctx: RenderContext): Response {
+  return processNode(
+    {
+      key: element.key,
+      children: element.children,
+      createNode: (ctx) => ctx.tree.createElementNS(SVG_NS, element.tag),
+      applyDecorations: (node, isReused, ctx) =>
+        applyDecorations(element.decorations, node, isReused, ctx),
+    },
+    ctx,
+  );
+}
+
+// =============================================================================
+// Decoration helpers
+// =============================================================================
+
 /**
  * Applies inline decorations to a node.
  *
@@ -103,14 +156,14 @@ export function processElement(element: Element, ctx: RenderContext): Response {
  * to avoid duplicates — keyed element reuse assumes the same listeners persist.
  */
 function applyDecorations(
-  element: Element,
+  decorations: Array<Attribute | Listener> | undefined,
   node: unknown,
   isReused: boolean,
   ctx: RenderContext,
 ): void {
-  if (!element.decorations) return;
+  if (!decorations) return;
 
-  for (const decoration of element.decorations) {
+  for (const decoration of decorations) {
     if (isTagged(decoration, "attribute")) {
       ctx.decorate.setAttribute(node, decoration.key, decoration.value);
     } else if (isTagged(decoration, "listener")) {
@@ -125,6 +178,10 @@ function applyDecorations(
     }
   }
 }
+
+// =============================================================================
+// Slot
+// =============================================================================
 
 /** Creates a {@link Slot} that can re-render its children and manage unmount callbacks. */
 export function createSlot(

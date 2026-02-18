@@ -26,7 +26,14 @@ import {
   attr,
   on,
 } from "@ydant/base";
-import { createCanvasBackend, group, rect, circle, canvasText } from "@ydant/canvas";
+import {
+  createCanvasBackend,
+  createCanvasPlugin,
+  group,
+  rect,
+  circle,
+  canvasText,
+} from "@ydant/canvas";
 import { signal, reactive, createReactivePlugin } from "@ydant/reactive";
 
 const canvas = createHTMLElement("canvas");
@@ -105,7 +112,11 @@ const Scene = () =>
 // =============================================================================
 
 const canvasBackend = createCanvasBackend();
-const canvasBuilder = scope(canvasBackend, [createBasePlugin(), createReactivePlugin()]);
+const canvasBuilder = scope(canvasBackend, [
+  createBasePlugin(),
+  createCanvasPlugin(),
+  createReactivePlugin(),
+]);
 
 let canvasCtx2d: CanvasRenderingContext2D;
 

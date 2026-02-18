@@ -26,7 +26,14 @@ describe("createBasePlugin", () => {
       const plugin = createBasePlugin();
 
       expect(plugin.name).toBe("base");
-      expect(plugin.types).toEqual(["element", "text", "attribute", "listener", "lifecycle"]);
+      expect(plugin.types).toEqual([
+        "element",
+        "svg",
+        "text",
+        "attribute",
+        "listener",
+        "lifecycle",
+      ]);
     });
   });
 

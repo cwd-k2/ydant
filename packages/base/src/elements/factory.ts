@@ -4,9 +4,7 @@
 
 import type { Builder, Spell } from "@ydant/core";
 import { toRender } from "@ydant/core";
-import type { Element, Slot } from "../types";
-
-const SVG_NS = "http://www.w3.org/2000/svg";
+import type { Element, SvgElement, Slot } from "../types";
 
 /**
  * Creates an HTML element factory for the given tag name.
@@ -27,16 +25,12 @@ export function createHTMLElement(tag: string): (builder: Builder) => Spell<"ele
 /**
  * Creates an SVG element factory for the given tag name.
  *
- * Same as {@link createHTMLElement} but uses the SVG namespace.
+ * Same as {@link createHTMLElement} but yields a `"svg"` spell type
+ * processed via `createElementNS` with the SVG namespace.
  */
-export function createSVGElement(tag: string): (builder: Builder) => Spell<"element"> {
-  return function* (builder: Builder): Spell<"element"> {
+export function createSVGElement(tag: string): (builder: Builder) => Spell<"svg"> {
+  return function* (builder: Builder): Spell<"svg"> {
     const children = toRender(builder());
-    return (yield {
-      type: "element",
-      tag,
-      children,
-      ns: SVG_NS,
-    } as Element) as Slot;
+    return (yield { type: "svg", tag, children } as SvgElement) as Slot;
   };
 }

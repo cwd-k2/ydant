@@ -52,9 +52,7 @@ import {
   tspan,
 } from "../elements/svg";
 import { text, attr } from "../primitives";
-import type { Element } from "../types";
-
-const SVG_NS = "http://www.w3.org/2000/svg";
+import type { Element, SvgElement } from "../types";
 
 /** Helper to collect all items from an iterator */
 function collectIterator<T>(iter: Iterator<T>): T[] {
@@ -104,12 +102,12 @@ describe("HTML element factories", () => {
     expect(children[1]).toEqual({ type: "text", content: "Second" });
   });
 
-  it("does not set ns property for HTML elements", () => {
+  it("does not have ns property on Element type", () => {
     const gen = div(() => []);
     const result = gen.next();
     const element = result.value as Element;
 
-    expect(element.ns).toBeUndefined();
+    expect(element).not.toHaveProperty("ns");
   });
 
   it.each([
@@ -156,32 +154,31 @@ describe("HTML element factories", () => {
 });
 
 describe("SVG element factories", () => {
-  it("creates SVG element with namespace", () => {
+  it("creates SVG element with svg type", () => {
     const gen = svg(() => []);
     const result = gen.next();
-    const element = result.value as Element;
+    const element = result.value as SvgElement;
 
     expect(result.done).toBe(false);
     expect(element).toMatchObject({
-      type: "element",
+      type: "svg",
       tag: "svg",
-      ns: SVG_NS,
     });
+    expect(element).not.toHaveProperty("ns");
   });
 
   it("includes children from builder", () => {
     const gen = svg(() => [circle(() => [attr("cx", "50"), attr("cy", "50"), attr("r", "40")])]);
     const result = gen.next();
-    const element = result.value as Element;
+    const element = result.value as SvgElement;
 
     const children = collectIterator(element.children);
     expect(children).toHaveLength(1);
 
-    const circleElement = children[0] as Element;
+    const circleElement = children[0] as SvgElement;
     expect(circleElement).toMatchObject({
-      type: "element",
+      type: "svg",
       tag: "circle",
-      ns: SVG_NS,
     });
   });
 
@@ -204,15 +201,14 @@ describe("SVG element factories", () => {
     ["stop", stop],
     ["text", svgText],
     ["tspan", tspan],
-  ] as const)("creates %s SVG element with namespace", (tagName, factory) => {
+  ] as const)("creates %s SVG element with svg type", (tagName, factory) => {
     const gen = factory(() => []);
     const result = gen.next();
-    const element = result.value as Element;
+    const element = result.value as SvgElement;
 
     expect(element).toMatchObject({
-      type: "element",
+      type: "svg",
       tag: tagName,
-      ns: SVG_NS,
     });
   });
 });

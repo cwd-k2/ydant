@@ -6,7 +6,7 @@
  */
 
 // Types
-export type { Slot, Element, Attribute, Listener, Text, Lifecycle } from "./types";
+export type { Slot, Element, SvgElement, Attribute, Listener, Text, Lifecycle } from "./types";
 
 // Primitives
 export { attr, classes, on, text, onMount, onUnmount, style, keyed } from "./primitives";
@@ -82,4 +82,5 @@ export { createDOMBackend } from "./capabilities";
 export { createBasePlugin } from "./plugin/index";
 
 // Building blocks (for extension plugins like @ydant/ssr hydration)
-export { createSlot, executeMount } from "./plugin/element";
+export { createSlot, executeMount, processNode } from "./plugin/element";
+export type { ProcessNodeOptions } from "./plugin/element";

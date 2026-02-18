@@ -1,19 +1,20 @@
 /**
  * @ydant/canvas - Shape element factories
  *
- * Each factory creates an Element request with a canvas-specific tag.
- * These are processed by createBasePlugin() just like DOM elements,
- * but the canvas capability provider creates VShapes instead of DOM nodes.
+ * Each factory creates a Shape request with a canvas-specific tag.
+ * These are processed by createCanvasPlugin() which uses the shared
+ * processNode utility to create VShapes via the canvas backend.
  */
 
 import type { Builder, Spell } from "@ydant/core";
 import { toRender } from "@ydant/core";
-import type { Element, Slot } from "@ydant/base";
+import type { Slot } from "@ydant/base";
+import type { Shape } from "./types";
 
-function createShapeElement(tag: string): (builder: Builder) => Spell<"element"> {
-  return function* (builder: Builder): Spell<"element"> {
+function createShapeElement(tag: string): (builder: Builder) => Spell<"shape"> {
+  return function* (builder: Builder): Spell<"shape"> {
     const children = toRender(builder());
-    return (yield { type: "element", tag, children } as Element) as Slot;
+    return (yield { type: "shape", tag, children } as Shape) as Slot;
   };
 }
 

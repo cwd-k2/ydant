@@ -22,7 +22,7 @@ import type {
 } from "@ydant/core";
 import { scope, isTagged } from "@ydant/core";
 import { createDOMBackend, createBasePlugin, executeMount, createSlot } from "@ydant/base";
-import type { Element } from "@ydant/base";
+import type { Element, SvgElement } from "@ydant/base";
 import { createDOMNodeResolver } from "./resolver";
 
 declare const process: undefined | { env?: { NODE_ENV?: string } };
@@ -106,8 +106,8 @@ export function createHydrationPlugin(resolver: ResolveCapability): Plugin {
 
       // --- Hydration mode: reinterpret the DSL ---
 
-      if (isTagged(request, "element")) {
-        return hydrateElement(request, ctx, resolver);
+      if (isTagged(request, "element") || isTagged(request, "svg")) {
+        return hydrateElement(request as Element | SvgElement, ctx, resolver);
       }
 
       if (isTagged(request, "text")) {
@@ -153,7 +153,7 @@ export function createHydrationPlugin(resolver: ResolveCapability): Plugin {
  * (since hydrating will be false by the time refresh is called).
  */
 function hydrateElement(
-  element: Element,
+  element: Element | SvgElement,
   ctx: RenderContext,
   resolver: ResolveCapability,
 ): Response {

@@ -4,7 +4,7 @@
 
 import type { Request, Response, Plugin, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
-import { processElement } from "./element";
+import { processElement, processSvg } from "./element";
 import { processAttribute, processListener, processText, processLifecycle } from "./primitives";
 
 /**
@@ -14,7 +14,7 @@ import { processAttribute, processListener, processText, processLifecycle } from
 export function createBasePlugin(): Plugin {
   return {
     name: "base",
-    types: ["element", "text", "attribute", "listener", "lifecycle"],
+    types: ["element", "svg", "text", "attribute", "listener", "lifecycle"],
 
     initContext(ctx: RenderContext, parentCtx?: RenderContext) {
       if (parentCtx && ctx.parent === parentCtx.parent) {
@@ -46,6 +46,9 @@ export function createBasePlugin(): Plugin {
     process(request: Request, ctx: RenderContext): Response {
       if (isTagged(request, "element")) {
         return processElement(request, ctx);
+      }
+      if (isTagged(request, "svg")) {
+        return processSvg(request, ctx);
       }
       if (isTagged(request, "text")) {
         processText(request, ctx);

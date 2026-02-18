@@ -19,7 +19,15 @@ import {
   text,
   attr,
 } from "@ydant/base";
-import { createCanvasBackend, group, rect, circle, line, canvasText } from "@ydant/canvas";
+import {
+  createCanvasBackend,
+  createCanvasPlugin,
+  group,
+  rect,
+  circle,
+  line,
+  canvasText,
+} from "@ydant/canvas";
 
 const canvas = createHTMLElement("canvas");
 
@@ -159,7 +167,7 @@ const App = () =>
     const canvasEl = slot.node as HTMLCanvasElement;
 
     // 2. Embed Canvas scope — builds VShape tree synchronously
-    yield* scope(canvasBackend, [createBasePlugin()]).embed(NightScene);
+    yield* scope(canvasBackend, [createBasePlugin(), createCanvasPlugin()]).embed(NightScene);
 
     // 3. Paint the virtual tree onto the real <canvas>
     canvasBackend.paint(canvasEl.getContext("2d")!);

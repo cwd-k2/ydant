@@ -2,7 +2,7 @@
  * @ydant/base - Primitives
  */
 
-import type { Spell, Render } from "@ydant/core";
+import type { Spell, Render, SpellSchema } from "@ydant/core";
 import type { Slot } from "./types";
 
 /** Sets an HTML attribute on the current element. Use with `yield*`. */
@@ -93,9 +93,9 @@ export function* style(
 }
 
 /**
- * Wraps an element factory or component to attach a stable key for DOM reuse.
+ * Wraps an element factory or component to attach a stable key for node reuse.
  *
- * When the same key appears across re-renders, the existing DOM node is reused
+ * When the same key appears across re-renders, the existing node is reused
  * instead of being recreated, preserving state and improving performance.
  *
  * @param key - A unique identifier (string or number) within the parent scope.
@@ -108,10 +108,18 @@ export function* style(
  * yield* keyed(item.id, ListItemView)({ item, onDelete });
  * ```
  */
+export function keyed<K extends keyof SpellSchema, Args extends unknown[]>(
+  key: string | number,
+  factory: (...args: Args) => Spell<K>,
+): (...args: Args) => Spell<K>;
 export function keyed<Args extends unknown[]>(
   key: string | number,
   factory: (...args: Args) => Render,
-): (...args: Args) => Spell<"element"> {
+): (...args: Args) => Spell<"element">;
+export function keyed<Args extends unknown[]>(
+  key: string | number,
+  factory: (...args: Args) => Render,
+): (...args: Args) => Render {
   return (...args: Args) => {
     return (function* (): Spell<"element"> {
       const inner = factory(...args) as Spell<"element">;
