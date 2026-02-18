@@ -22,20 +22,8 @@
  */
 
 // ─── Types ───
-export type { DevtoolsEvent } from "./events";
+export type { DevtoolsEventType, DevtoolsEvent } from "./events";
 export type { DevtoolsPluginOptions, DevtoolsPlugin } from "./plugin";
-
-// ─── Constants ───
-export {
-  TASK_ENQUEUED,
-  FLUSH_START,
-  FLUSH_END,
-  ENGINE_SPAWNED,
-  ENGINE_STOPPED,
-  ENGINE_PAUSED,
-  ENGINE_RESUMED,
-  ENGINE_ERROR,
-} from "./events";
 
 // ─── Plugin ───
 export { createDevtoolsPlugin } from "./plugin";

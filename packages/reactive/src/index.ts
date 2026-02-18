@@ -28,7 +28,7 @@
 import "@ydant/base";
 
 // ─── Types ───
-export type { Subscriber, Readable } from "./types";
+export type { Readable } from "./types";
 export type { Signal } from "./signal";
 export type { Computed } from "./computed";
 export type { Reactive } from "./reactive";

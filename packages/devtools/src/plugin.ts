@@ -14,16 +14,6 @@ import type {
   ExecutionScope,
   EngineOptions,
 } from "@ydant/core";
-import {
-  TASK_ENQUEUED,
-  FLUSH_START,
-  FLUSH_END,
-  ENGINE_SPAWNED,
-  ENGINE_STOPPED,
-  ENGINE_PAUSED,
-  ENGINE_RESUMED,
-  ENGINE_ERROR,
-} from "./events";
 import type { DevtoolsEvent } from "./events";
 
 /** Options for {@link createDevtoolsPlugin}. */
@@ -63,43 +53,43 @@ export function createDevtoolsPlugin(options?: DevtoolsPluginOptions): DevtoolsP
     // Wrap enqueue
     const originalEnqueue = engine.enqueue.bind(engine);
     engine.enqueue = (task: () => void) => {
-      emit({ type: TASK_ENQUEUED, engineId: engine.id, timestamp: Date.now() });
+      emit({ type: "task:enqueued", engineId: engine.id, timestamp: Date.now() });
       originalEnqueue(task);
     };
 
     // Wrap stop
     const originalStop = engine.stop.bind(engine);
     engine.stop = () => {
-      emit({ type: ENGINE_STOPPED, engineId: engine.id, timestamp: Date.now() });
+      emit({ type: "engine:stopped", engineId: engine.id, timestamp: Date.now() });
       originalStop();
     };
 
     // Wrap pause
     const originalPause = engine.pause.bind(engine);
     engine.pause = () => {
-      emit({ type: ENGINE_PAUSED, engineId: engine.id, timestamp: Date.now() });
+      emit({ type: "engine:paused", engineId: engine.id, timestamp: Date.now() });
       originalPause();
     };
 
     // Wrap resume
     const originalResume = engine.resume.bind(engine);
     engine.resume = () => {
-      emit({ type: ENGINE_RESUMED, engineId: engine.id, timestamp: Date.now() });
+      emit({ type: "engine:resumed", engineId: engine.id, timestamp: Date.now() });
       originalResume();
     };
 
     // Register flush hooks
     engine.onBeforeFlush(() => {
-      emit({ type: FLUSH_START, engineId: engine.id, timestamp: Date.now() });
+      emit({ type: "flush:start", engineId: engine.id, timestamp: Date.now() });
     });
     engine.onFlush(() => {
-      emit({ type: FLUSH_END, engineId: engine.id, timestamp: Date.now() });
+      emit({ type: "flush:end", engineId: engine.id, timestamp: Date.now() });
     });
 
     // Register error observation
     engine.on("engine:error", (message) => {
       emit({
-        type: ENGINE_ERROR,
+        type: "engine:error",
         engineId: engine.id,
         timestamp: Date.now(),
         error: message.error,
@@ -114,7 +104,7 @@ export function createDevtoolsPlugin(options?: DevtoolsPluginOptions): DevtoolsP
       engine.resume = originalResume;
     });
 
-    emit({ type: ENGINE_SPAWNED, engineId: engine.id, timestamp: Date.now() });
+    emit({ type: "engine:spawned", engineId: engine.id, timestamp: Date.now() });
   }
 
   return {

@@ -2,17 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createHub } from "@ydant/core";
 import { sync, microtask } from "@ydant/core";
 import type { Backend, ExecutionScope, Hub, RenderContext } from "@ydant/core";
-import {
-  createDevtoolsPlugin,
-  TASK_ENQUEUED,
-  FLUSH_START,
-  FLUSH_END,
-  ENGINE_SPAWNED,
-  ENGINE_STOPPED,
-  ENGINE_PAUSED,
-  ENGINE_RESUMED,
-  ENGINE_ERROR,
-} from "../index";
+import { createDevtoolsPlugin } from "../index";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -51,55 +41,55 @@ describe("DevTools plugin", () => {
     scope = createMockScope();
   });
 
-  it("emits ENGINE_SPAWNED for existing engines on setup", () => {
+  it("emits engine:spawned for existing engines on setup", () => {
     const { devtools } = setupDevtools(hub, scope);
 
     const events = devtools.getEvents();
     expect(events).toHaveLength(1);
-    expect(events[0].type).toBe(ENGINE_SPAWNED);
+    expect(events[0].type).toBe("engine:spawned");
     expect(events[0].engineId).toBe("primary");
   });
 
-  it("emits TASK_ENQUEUED when a task is enqueued", () => {
+  it("emits task:enqueued when a task is enqueued", () => {
     const { engine, devtools } = setupDevtools(hub, scope);
 
     engine.enqueue(() => {});
 
-    const enqueued = devtools.getEvents().filter((e) => e.type === TASK_ENQUEUED);
+    const enqueued = devtools.getEvents().filter((e) => e.type === "task:enqueued");
     expect(enqueued).toHaveLength(1);
     expect(enqueued[0].engineId).toBe("primary");
   });
 
-  it("emits FLUSH_START and FLUSH_END around flush cycle", () => {
+  it("emits flush:start and flush:end around flush cycle", () => {
     const { engine, devtools } = setupDevtools(hub, scope);
 
     engine.enqueue(() => {});
 
     const types = devtools
       .getEvents()
-      .filter((e) => e.type === FLUSH_START || e.type === FLUSH_END)
+      .filter((e) => e.type === "flush:start" || e.type === "flush:end")
       .map((e) => e.type);
-    expect(types).toEqual([FLUSH_START, FLUSH_END]);
+    expect(types).toEqual(["flush:start", "flush:end"]);
   });
 
-  it("emits correct order: TASK_ENQUEUED → FLUSH_START → FLUSH_END", () => {
+  it("emits correct order: task:enqueued → flush:start → flush:end", () => {
     const { engine, devtools } = setupDevtools(hub, scope);
 
     engine.enqueue(() => {});
 
     const types = devtools
       .getEvents()
-      .filter((e) => e.type !== ENGINE_SPAWNED)
+      .filter((e) => e.type !== "engine:spawned")
       .map((e) => e.type);
-    expect(types).toEqual([TASK_ENQUEUED, FLUSH_START, FLUSH_END]);
+    expect(types).toEqual(["task:enqueued", "flush:start", "flush:end"]);
   });
 
-  it("emits ENGINE_STOPPED when engine is stopped", () => {
+  it("emits engine:stopped when engine is stopped", () => {
     const { engine, devtools } = setupDevtools(hub, scope);
 
     engine.stop();
 
-    const stopped = devtools.getEvents().filter((e) => e.type === ENGINE_STOPPED);
+    const stopped = devtools.getEvents().filter((e) => e.type === "engine:stopped");
     expect(stopped).toHaveLength(1);
   });
 
@@ -109,17 +99,17 @@ describe("DevTools plugin", () => {
     const scope2 = createMockScope("second");
     const engine2 = hub.spawn("secondary", scope2, { scheduler: sync });
 
-    const spawned = devtools.getEvents().filter((e) => e.type === ENGINE_SPAWNED);
+    const spawned = devtools.getEvents().filter((e) => e.type === "engine:spawned");
     expect(spawned).toHaveLength(2);
     expect(spawned[1].engineId).toBe("secondary");
 
     engine2.enqueue(() => {});
-    const enqueued = devtools.getEvents().filter((e) => e.type === TASK_ENQUEUED);
+    const enqueued = devtools.getEvents().filter((e) => e.type === "task:enqueued");
     expect(enqueued).toHaveLength(1);
     expect(enqueued[0].engineId).toBe("secondary");
   });
 
-  it("batched signal changes produce one FLUSH_START/FLUSH_END pair", async () => {
+  it("batched signal changes produce one flush:start/flush:end pair", async () => {
     const scope = createMockScope();
     const engine = hub.spawn("primary", scope, { scheduler: microtask });
     const ctx = { engine } as RenderContext;
@@ -134,8 +124,8 @@ describe("DevTools plugin", () => {
 
     await new Promise<void>((r) => queueMicrotask(r));
 
-    const flushStarts = devtools.getEvents().filter((e) => e.type === FLUSH_START);
-    const flushEnds = devtools.getEvents().filter((e) => e.type === FLUSH_END);
+    const flushStarts = devtools.getEvents().filter((e) => e.type === "flush:start");
+    const flushEnds = devtools.getEvents().filter((e) => e.type === "flush:end");
     expect(flushStarts).toHaveLength(1);
     expect(flushEnds).toHaveLength(1);
     // Task was deduplicated
@@ -151,7 +141,7 @@ describe("DevTools plugin", () => {
 
     engine.enqueue(() => {});
 
-    // ENGINE_SPAWNED + TASK_ENQUEUED + FLUSH_START + FLUSH_END
+    // engine:spawned + task:enqueued + flush:start + flush:end
     expect(onEvent).toHaveBeenCalledTimes(4);
   });
 
@@ -161,7 +151,7 @@ describe("DevTools plugin", () => {
     const devtools = createDevtoolsPlugin({ bufferSize: 5 });
     devtools.setup!(ctx);
 
-    // ENGINE_SPAWNED is event 1, then each enqueue generates 3 events
+    // engine:spawned is event 1, then each enqueue generates 3 events
     for (let i = 0; i < 5; i++) {
       engine.enqueue(() => {});
     }
@@ -200,28 +190,28 @@ describe("DevTools plugin", () => {
     }
   });
 
-  it("emits ENGINE_PAUSED when engine is paused", () => {
+  it("emits engine:paused when engine is paused", () => {
     const { engine, devtools } = setupDevtools(hub, scope);
 
     engine.pause();
 
-    const paused = devtools.getEvents().filter((e) => e.type === ENGINE_PAUSED);
+    const paused = devtools.getEvents().filter((e) => e.type === "engine:paused");
     expect(paused).toHaveLength(1);
     expect(paused[0].engineId).toBe("primary");
   });
 
-  it("emits ENGINE_RESUMED when engine is resumed", () => {
+  it("emits engine:resumed when engine is resumed", () => {
     const { engine, devtools } = setupDevtools(hub, scope);
 
     engine.pause();
     engine.resume();
 
-    const resumed = devtools.getEvents().filter((e) => e.type === ENGINE_RESUMED);
+    const resumed = devtools.getEvents().filter((e) => e.type === "engine:resumed");
     expect(resumed).toHaveLength(1);
     expect(resumed[0].engineId).toBe("primary");
   });
 
-  it("emits ENGINE_ERROR when engine receives error message", () => {
+  it("emits engine:error when engine receives error message", () => {
     const { engine, devtools } = setupDevtools(hub, scope);
 
     const testError = new Error("test-error");
@@ -231,7 +221,7 @@ describe("DevTools plugin", () => {
       sourceEngineId: "child-engine",
     });
 
-    const errors = devtools.getEvents().filter((e) => e.type === ENGINE_ERROR);
+    const errors = devtools.getEvents().filter((e) => e.type === "engine:error");
     expect(errors).toHaveLength(1);
     expect(errors[0].engineId).toBe("primary");
     expect(errors[0].error).toBe(testError);
