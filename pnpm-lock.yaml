@@ -236,6 +236,9 @@ importers:
       '@ydant/core':
         specifier: workspace:*
         version: link:../core
+      '@ydant/reactive':
+        specifier: workspace:*
+        version: link:../reactive
 
   packages/base:
     dependencies:

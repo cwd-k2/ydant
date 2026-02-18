@@ -67,11 +67,17 @@ export function createReactivePlugin(): Plugin {
 
         // Process children while tracking Signal dependencies, within the mount's scope
         // subscriber is the tracking callback — it enqueues rerender on signal change
-        runInScope(scope, () => {
-          runWithSubscriber(subscriber, () => {
-            ctx.processChildren(builder, { parent: container });
+        try {
+          runInScope(scope, () => {
+            runWithSubscriber(subscriber, () => {
+              ctx.processChildren(builder, { parent: container });
+            });
           });
-        });
+        } catch (error) {
+          // Delegate to error boundary if available
+          if (ctx.handleRenderError?.(error)) return;
+          throw error;
+        }
       };
 
       // Subscriber: called when a tracked signal changes → enqueue rerender

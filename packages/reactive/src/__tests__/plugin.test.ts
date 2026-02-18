@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { Plugin, RenderContext } from "@ydant/core";
 import { scope, sync } from "@ydant/core";
 import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
 import { signal } from "../signal";
@@ -147,6 +148,80 @@ describe("createReactivePlugin", () => {
     // Only 1 additional render, not 2
     expect(renderCount).toBe(2);
     expect(container.textContent).toContain("Jane Smith");
+  });
+});
+
+describe("handleRenderError integration", () => {
+  let container: HTMLElement;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    vi.useFakeTimers();
+  });
+
+  it("calls handleRenderError when rerender throws and handler exists", () => {
+    const count = signal(0);
+    const errorHandler = vi.fn(() => true);
+
+    // A test plugin that sets handleRenderError on the context
+    const testBoundaryPlugin: Plugin = {
+      name: "test-boundary",
+      types: [],
+      initContext(ctx: RenderContext) {
+        ctx.handleRenderError = errorHandler;
+      },
+    };
+
+    scope(createDOMBackend(container), [
+      createBasePlugin(),
+      createReactivePlugin(),
+      testBoundaryPlugin,
+    ]).mount(
+      () =>
+        div(function* () {
+          yield* reactive(() => {
+            const val = count();
+            if (val > 0) throw new Error("boom");
+            return [text(`Count: ${val}`)];
+          });
+        }),
+      { scheduler: sync },
+    );
+
+    expect(container.textContent).toContain("Count: 0");
+
+    // Trigger reactive update that throws
+    count.set(1);
+
+    expect(errorHandler).toHaveBeenCalledOnce();
+    expect(errorHandler).toHaveBeenCalledWith(expect.any(Error));
+  });
+
+  it("re-throws when no handleRenderError is set (backward compat)", () => {
+    const count = signal(0);
+
+    const { dispose } = scope(createDOMBackend(container), [
+      createBasePlugin(),
+      createReactivePlugin(),
+    ]).mount(
+      () =>
+        div(function* () {
+          yield* reactive(() => {
+            const val = count();
+            if (val > 0) throw new Error("boom");
+            return [text(`Count: ${val}`)];
+          });
+        }),
+      { scheduler: sync },
+    );
+
+    expect(container.textContent).toContain("Count: 0");
+
+    // Without a handler, the error should propagate
+    expect(() => count.set(1)).toThrow("boom");
+
+    dispose();
   });
 });
 

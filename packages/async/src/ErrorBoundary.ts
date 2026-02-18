@@ -2,6 +2,8 @@
  * ErrorBoundary
  *
  * Catches errors thrown by child components and displays a fallback UI.
+ * Handles both synchronous errors (via try-catch in the generator) and
+ * asynchronous errors (via boundary spell for reactive update errors).
  *
  * @example
  * ```typescript
@@ -20,6 +22,7 @@
 
 import type { Spell, Render } from "@ydant/core";
 import { div } from "@ydant/base";
+import { boundary } from "./boundary";
 
 /** Props for the ErrorBoundary component. */
 export interface ErrorBoundaryProps {
@@ -32,37 +35,43 @@ export interface ErrorBoundaryProps {
 /**
  * ErrorBoundary component for catching rendering errors.
  *
- * Note: In JavaScript generators, catching errors thrown at yield points
- * requires special handling. This implementation only catches synchronous errors.
+ * Catches both synchronous errors (thrown during initial render) and
+ * asynchronous errors (thrown during reactive updates) via the boundary spell.
  */
 export function* ErrorBoundary(props: ErrorBoundaryProps): Spell<"element"> {
   const { fallback, content } = props;
 
   const containerSlot = yield* div(function* () {
-    try {
-      yield* content();
-    } catch (error) {
-      // Re-throw Promises so Suspense can handle them
-      if (error instanceof Promise) {
-        throw error;
-      }
+    const reset = () => containerSlot.refresh(renderWithBoundary);
 
-      // Error caught — display fallback
-      const reset = () => {
+    const errorHandler = (error: unknown): boolean => {
+      // Let Suspense handle Promises
+      if (error instanceof Promise) return false;
+
+      try {
         containerSlot.refresh(function* () {
-          try {
-            yield* content();
-          } catch (retryError) {
-            if (retryError instanceof Promise) {
-              throw retryError;
-            }
-            yield* fallback(retryError as Error, reset);
-          }
+          yield* boundary(errorHandler);
+          yield* fallback(error as Error, reset);
         });
-      };
+      } catch {
+        // Fallback itself errored — propagate to parent
+        return false;
+      }
+      return true;
+    };
 
-      yield* fallback(error as Error, reset);
+    function* renderWithBoundary() {
+      yield* boundary(errorHandler);
+      try {
+        yield* content();
+      } catch (error) {
+        // Re-throw Promises so Suspense can handle them
+        if (error instanceof Promise) throw error;
+        yield* fallback(error as Error, reset);
+      }
     }
+
+    yield* renderWithBoundary();
   });
 
   return containerSlot;

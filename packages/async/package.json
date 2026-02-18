@@ -44,7 +44,8 @@
   },
   "peerDependencies": {
     "@ydant/base": "workspace:*",
-    "@ydant/core": "workspace:*"
+    "@ydant/core": "workspace:*",
+    "@ydant/reactive": "workspace:*"
   },
   "packageManager": "pnpm@10.22.0"
 }

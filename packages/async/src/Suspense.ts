@@ -3,6 +3,8 @@
  *
  * Manages the loading state of asynchronous components.
  * Displays a fallback UI when a child component throws a Promise.
+ * Handles both synchronous suspends (thrown during initial render) and
+ * asynchronous suspends (thrown during reactive updates) via the boundary spell.
  *
  * @example
  * ```typescript
@@ -18,6 +20,7 @@
 
 import type { Spell, Render } from "@ydant/core";
 import { div } from "@ydant/base";
+import { boundary } from "./boundary";
 
 /** Props for the Suspense component. */
 export interface SuspenseProps {
@@ -30,49 +33,56 @@ export interface SuspenseProps {
 /**
  * Suspense component for handling asynchronous loading states.
  *
- * Note: The current implementation has limitations when combining
- * the generator-based DSL with the Promise-throw pattern.
- * As an alternative, explicit loading state management using
- * the Resource's loading/error properties is recommended.
+ * Catches both synchronous suspends (thrown during initial render) and
+ * asynchronous suspends (thrown during reactive updates) via the boundary spell.
  */
 export function* Suspense(props: SuspenseProps): Spell<"element"> {
   const { fallback, content } = props;
 
   const containerSlot = yield* div(function* () {
-    let isSuspended = false;
-    let pendingPromise: Promise<unknown> | null = null;
+    const retry = () => containerSlot.refresh(renderWithBoundary);
 
-    // Attempt to render content
-    try {
-      yield* content();
-    } catch (thrown) {
-      if (thrown instanceof Promise) {
-        isSuspended = true;
-        pendingPromise = thrown;
-      } else {
-        throw thrown;
+    const suspenseHandler = (error: unknown): boolean => {
+      // Only handle Promises — let ErrorBoundary handle real errors
+      if (!(error instanceof Promise)) return false;
+
+      try {
+        containerSlot.refresh(function* () {
+          yield* boundary(suspenseHandler);
+          yield* fallback();
+        });
+      } catch {
+        // Fallback itself errored — propagate to parent
+        return false;
+      }
+      error.then(retry, retry);
+      return true;
+    };
+
+    function* renderWithBoundary() {
+      yield* boundary(suspenseHandler);
+
+      let isSuspended = false;
+      let pendingPromise: Promise<unknown> | null = null;
+
+      try {
+        yield* content();
+      } catch (thrown) {
+        if (thrown instanceof Promise) {
+          isSuspended = true;
+          pendingPromise = thrown;
+        } else {
+          throw thrown;
+        }
+      }
+
+      if (isSuspended && pendingPromise) {
+        yield* fallback();
+        pendingPromise.then(retry, retry);
       }
     }
 
-    // Show fallback when suspended
-    if (isSuspended && pendingPromise) {
-      yield* fallback();
-
-      // Re-render when the Promise resolves (on error, retry and let ErrorBoundary handle it)
-      pendingPromise
-        .then(() => {
-          containerSlot.refresh(function* () {
-            yield* content();
-          });
-        })
-        .catch(() => {
-          // Retry rendering on error as well
-          // If the Resource is in an error state, content() will throw
-          containerSlot.refresh(function* () {
-            yield* content();
-          });
-        });
-    }
+    yield* renderWithBoundary();
   });
 
   return containerSlot;

@@ -34,5 +34,7 @@ declare module "@ydant/core" {
     currentElement: unknown;
     /** Node resolver for hydration. Only injected when hydrating. */
     resolve?: ResolveCapability;
+    /** Error handler for async render errors (e.g., reactive updates). Returns true if handled. */
+    handleRenderError?: (error: unknown) => boolean;
   }
 }
