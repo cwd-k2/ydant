@@ -1,0 +1,144 @@
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ydant Showcase 18 — Collaborative Editing</title>
+    <script type="module" src="./src/index.ts"></script>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "Inter", sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 16px;
+        min-height: 100vh;
+      }
+      h1 { font-size: 1.5rem; margin-bottom: 4px; }
+      .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
+      .controls {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      button {
+        padding: 5px 12px;
+        border: 1px solid #475569;
+        border-radius: 5px;
+        background: #334155;
+        color: #e2e8f0;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      button:hover { background: #475569; }
+      button.active { background: #059669; border-color: #10b981; }
+      .editors {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        max-width: 900px;
+        margin: 0 auto 12px;
+      }
+      .editor-panel {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 12px;
+        min-height: 240px;
+      }
+      .editor-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .badge-a { background: #059669; color: #a7f3d0; font-size: 10px; padding: 1px 6px; border-radius: 4px; }
+      .badge-b { background: #7c3aed; color: #ddd6fe; font-size: 10px; padding: 1px 6px; border-radius: 4px; }
+      .editor-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 3px 6px;
+        border-radius: 3px;
+        font-family: monospace;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .line-num {
+        color: #475569;
+        min-width: 16px;
+        text-align: right;
+        font-size: 11px;
+      }
+      .line-content { flex: 1; }
+      .line-editor { color: #64748b; font-size: 10px; min-width: 16px; }
+      .editor-line.conflict {
+        background: #7f1d1d;
+        border: 1px solid #dc2626;
+      }
+      .editor-line.editing-a { background: rgba(5, 150, 105, 0.15); }
+      .editor-line.editing-b { background: rgba(124, 58, 237, 0.15); }
+      .conflict-banner {
+        background: #7f1d1d;
+        border: 1px solid #dc2626;
+        border-radius: 4px;
+        padding: 6px 10px;
+        font-size: 12px;
+        color: #fca5a5;
+        margin-bottom: 8px;
+      }
+      .bottom-panel {
+        max-width: 900px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .status-panel {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 12px;
+      }
+      .panel-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #94a3b8;
+        margin-bottom: 6px;
+      }
+      .engine-state {
+        font-family: monospace;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      .state-label { color: #64748b; }
+      .state-active { color: #4ade80; }
+      .state-paused { color: #fbbf24; }
+      .log-panel {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .log-entry {
+        font-family: monospace;
+        font-size: 11px;
+        padding: 1px 0;
+        border-bottom: 1px solid #1e293b;
+      }
+      .log-time { color: #475569; }
+      .log-event { color: #7dd3fc; }
+      .log-error { color: #f87171; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>

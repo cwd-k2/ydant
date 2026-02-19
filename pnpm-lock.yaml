@@ -144,6 +144,72 @@ importers:
         specifier: workspace:*
         version: link:../../packages/reactive
 
+  examples/showcase15:
+    dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
+      '@ydant/canvas':
+        specifier: workspace:*
+        version: link:../../packages/canvas
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@ydant/devtools':
+        specifier: workspace:*
+        version: link:../../packages/devtools
+      '@ydant/reactive':
+        specifier: workspace:*
+        version: link:../../packages/reactive
+      '@ydant/ssr':
+        specifier: workspace:*
+        version: link:../../packages/ssr
+
+  examples/showcase16:
+    dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
+      '@ydant/canvas':
+        specifier: workspace:*
+        version: link:../../packages/canvas
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@ydant/devtools':
+        specifier: workspace:*
+        version: link:../../packages/devtools
+      '@ydant/reactive':
+        specifier: workspace:*
+        version: link:../../packages/reactive
+
+  examples/showcase17:
+    dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
+      '@ydant/canvas':
+        specifier: workspace:*
+        version: link:../../packages/canvas
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@ydant/reactive':
+        specifier: workspace:*
+        version: link:../../packages/reactive
+
+  examples/showcase18:
+    dependencies:
+      '@ydant/base':
+        specifier: workspace:*
+        version: link:../../packages/base
+      '@ydant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@ydant/reactive':
+        specifier: workspace:*
+        version: link:../../packages/reactive
+
   examples/showcase2:
     dependencies:
       '@ydant/base':
@@ -236,6 +302,7 @@ importers:
       '@ydant/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
       '@ydant/reactive':
         specifier: workspace:*
         version: link:../reactive

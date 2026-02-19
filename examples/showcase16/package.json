@@ -1,0 +1,18 @@
+{
+  "name": "showcase16",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo: Priority-Based Rendering with pause/resume + frame budget",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ydant/base": "workspace:*",
+    "@ydant/canvas": "workspace:*",
+    "@ydant/core": "workspace:*",
+    "@ydant/devtools": "workspace:*",
+    "@ydant/reactive": "workspace:*"
+  },
+  "packageManager": "pnpm@10.22.0"
+}

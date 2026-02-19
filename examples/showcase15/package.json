@@ -1,0 +1,19 @@
+{
+  "name": "showcase15",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo: Multi-Target Dashboard (DOM + Canvas + SSR) with 3 Schedulers",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ydant/base": "workspace:*",
+    "@ydant/canvas": "workspace:*",
+    "@ydant/core": "workspace:*",
+    "@ydant/devtools": "workspace:*",
+    "@ydant/reactive": "workspace:*",
+    "@ydant/ssr": "workspace:*"
+  },
+  "packageManager": "pnpm@10.22.0"
+}

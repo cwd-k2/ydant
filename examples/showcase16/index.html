@@ -1,0 +1,109 @@
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ydant Showcase 16 — Priority-Based Rendering</title>
+    <script type="module" src="./src/index.ts"></script>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "Inter", sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 16px;
+        min-height: 100vh;
+      }
+      h1 { font-size: 1.5rem; margin-bottom: 4px; }
+      .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
+      .top-controls {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 12px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        flex-wrap: wrap;
+      }
+      .top-controls label {
+        font-size: 13px;
+        color: #94a3b8;
+      }
+      .top-controls input[type="range"] {
+        width: 200px;
+        accent-color: #3b82f6;
+      }
+      .canvases {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        max-width: 900px;
+        margin: 0 auto 12px;
+      }
+      .canvas-panel {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 12px;
+      }
+      .panel-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .badge {
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-weight: 500;
+      }
+      .badge-high { background: #dc2626; color: #fecaca; }
+      .badge-low { background: #2563eb; color: #bfdbfe; }
+      .badge-paused { background: #854d0e; color: #fef08a; }
+      canvas {
+        border: 1px solid #334155;
+        border-radius: 4px;
+        background: #0f172a;
+        width: 100%;
+        height: 300px;
+      }
+      .stats-bar {
+        max-width: 900px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      .stat-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        padding: 8px 12px;
+        text-align: center;
+      }
+      .stat-label { font-size: 11px; color: #64748b; }
+      .stat-value { font-size: 18px; font-weight: 600; font-family: monospace; }
+      .stat-value.high { color: #f87171; }
+      .stat-value.low { color: #60a5fa; }
+      .stat-value.budget { color: #fbbf24; }
+      .stat-value.paused { color: #a78bfa; }
+      button {
+        padding: 5px 12px;
+        border: 1px solid #475569;
+        border-radius: 5px;
+        background: #334155;
+        color: #e2e8f0;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      button:hover { background: #475569; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
