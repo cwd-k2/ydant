@@ -47,6 +47,23 @@ export interface SlotRef<TNode = unknown> {
  * }));
  * ```
  */
+/**
+ * Creates a {@link SlotRef} already bound to the given {@link Slot}.
+ *
+ * A convenience shorthand for `createSlotRef()` + `bind()`.
+ *
+ * @example
+ * ```typescript
+ * const ref = slotRef(yield* div(() => [text("Hello")]));
+ * // later: ref.refresh(() => [text("Updated")]);
+ * ```
+ */
+export function slotRef<TNode = unknown>(slot: Slot<TNode>): SlotRef<TNode> {
+  const ref = createSlotRef<TNode>();
+  ref.bind(slot as Slot);
+  return ref;
+}
+
 export function createSlotRef<TNode = unknown>(): SlotRef<TNode> {
   let _current: Slot<TNode> | null = null;
 

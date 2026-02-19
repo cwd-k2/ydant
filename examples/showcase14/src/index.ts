@@ -15,17 +15,7 @@
 
 import { scope } from "@ydant/core";
 import { createDevtoolsOverlay } from "@ydant/devtools";
-import {
-  createDOMBackend,
-  createBasePlugin,
-  createHTMLElement,
-  div,
-  h1,
-  p,
-  text,
-  attr,
-  on,
-} from "@ydant/base";
+import { createDOMBackend, createBasePlugin, createHTMLElement, html, attr } from "@ydant/base";
 import {
   createCanvasBackend,
   createCanvasPlugin,
@@ -36,8 +26,8 @@ import {
 } from "@ydant/canvas";
 import { signal, reactive, createReactivePlugin } from "@ydant/reactive";
 
+const { div, h1, p } = html;
 const canvas = createHTMLElement("canvas");
-const button = createHTMLElement("button");
 
 // =============================================================================
 // Signals — shared between DOM and Canvas scopes
@@ -121,20 +111,15 @@ const canvasBuilder = scope(canvasBackend, [
 let canvasCtx2d: CanvasRenderingContext2D;
 
 const App = () =>
-  div(function* () {
-    yield* attr("class", "container");
-
-    yield* h1(() => [text("Reactive Canvas")]);
-    yield* p(() => [
-      attr("class", "subtitle"),
-      text("Signal changes auto-repaint the Canvas via Engine.onFlush()"),
-    ]);
+  div({ classes: ["container"] }, function* () {
+    yield* h1("Reactive Canvas");
+    yield* p(
+      { classes: ["subtitle"] },
+      "Signal changes auto-repaint the Canvas via Engine.onFlush()",
+    );
 
     // Canvas element (DOM)
-    const slot = yield* canvas(function* () {
-      yield* attr("width", "600");
-      yield* attr("height", "400");
-    });
+    const slot = yield* canvas({ width: "600", height: "400" });
     canvasCtx2d = (slot.node as HTMLCanvasElement).getContext("2d")!;
 
     // Embed Canvas scope — builds VShape tree with reactive tracking
@@ -151,56 +136,31 @@ const App = () =>
 
     // Controls
     const step = 20;
+    const btn = (label: string, handler: () => void) => html.button({ onClick: handler }, label);
 
-    yield* div(function* () {
-      yield* attr("class", "controls");
-
-      yield* button(function* () {
-        yield* on("click", () => cy.update((v) => Math.max(radius(), v - step)));
-        yield* text("\u2191");
-      });
-      yield* button(function* () {
-        yield* on("click", () => cx.update((v) => Math.max(radius(), v - step)));
-        yield* text("\u2190");
-      });
-      yield* button(function* () {
-        yield* on("click", () => cx.update((v) => Math.min(600 - radius(), v + step)));
-        yield* text("\u2192");
-      });
-      yield* button(function* () {
-        yield* on("click", () => cy.update((v) => Math.min(400 - radius(), v + step)));
-        yield* text("\u2193");
-      });
-      yield* button(function* () {
-        yield* on("click", () => radius.update((v) => Math.max(10, v - 10)));
-        yield* text("\u2212");
-      });
-      yield* button(function* () {
-        yield* on("click", () => radius.update((v) => Math.min(100, v + 10)));
-        yield* text("+");
-      });
-      yield* button(function* () {
-        yield* on("click", () => colorIndex.update((v) => v + 1));
-        yield* text("Color");
-      });
-      yield* button(function* () {
-        yield* on("click", () => {
-          // Change all signals at once — demonstrates batching
-          cx.set(100 + Math.floor(Math.random() * 400));
-          cy.set(50 + Math.floor(Math.random() * 300));
-          radius.set(20 + Math.floor(Math.random() * 60));
-          colorIndex.update((v) => v + 1);
-        });
-        yield* text("Randomize");
+    yield* div({ classes: ["controls"] }, function* () {
+      yield* btn("\u2191", () => cy.update((v) => Math.max(radius(), v - step)));
+      yield* btn("\u2190", () => cx.update((v) => Math.max(radius(), v - step)));
+      yield* btn("\u2192", () => cx.update((v) => Math.min(600 - radius(), v + step)));
+      yield* btn("\u2193", () => cy.update((v) => Math.min(400 - radius(), v + step)));
+      yield* btn("\u2212", () => radius.update((v) => Math.max(10, v - 10)));
+      yield* btn("+", () => radius.update((v) => Math.min(100, v + 10)));
+      yield* btn("Color", () => colorIndex.update((v) => v + 1));
+      yield* btn("Randomize", () => {
+        // Change all signals at once — demonstrates batching
+        cx.set(100 + Math.floor(Math.random() * 400));
+        cy.set(50 + Math.floor(Math.random() * 300));
+        radius.set(20 + Math.floor(Math.random() * 60));
+        colorIndex.update((v) => v + 1);
       });
     });
 
     // Status (DOM reactive)
     yield* reactive(() => [
-      p(() => [
-        attr("class", "status"),
-        text(`pos=(${cx()}, ${cy()})  r=${radius()}  color=${color()}  paints=${paintCount}`),
-      ]),
+      p(
+        { classes: ["status"] },
+        `pos=(${cx()}, ${cy()})  r=${radius()}  color=${color()}  paints=${paintCount}`,
+      ),
     ]);
   });
 

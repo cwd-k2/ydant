@@ -2,7 +2,7 @@
  * @ydant/base - DSL type definitions
  */
 
-import type { Tagged, Render, Builder } from "@ydant/core";
+import type { Tagged, Render, Builder, Spell } from "@ydant/core";
 
 // =============================================================================
 // Slot Types
@@ -92,3 +92,50 @@ export type SvgElement = Tagged<
     key?: string | number;
   }
 >;
+
+// =============================================================================
+// Element Props Types
+// =============================================================================
+
+/** Class attribute value. An array of class names with falsy filtering. */
+export type ClassValue = (string | false | null | undefined | 0 | "")[];
+
+/** Style attribute value. A string or a CSSStyleDeclaration-like object with CSS custom properties. */
+export type StyleValue = string | (Partial<CSSStyleDeclaration> & Record<`--${string}`, string>);
+
+/** Event handler Props generated from HTMLElementEventMap. */
+export type EventHandlerProps = {
+  [K in keyof HTMLElementEventMap as `on${Capitalize<K>}`]?: (e: HTMLElementEventMap[K]) => void;
+};
+
+/** Props for element factories. Combines event handlers, class/style shorthands, and arbitrary attributes. */
+export type ElementProps = EventHandlerProps & {
+  classes?: ClassValue;
+  style?: StyleValue;
+  key?: string | number;
+  [key: string]: unknown;
+};
+
+// =============================================================================
+// Element Factory Types
+// =============================================================================
+
+/** HTML element factory with Props overloads. */
+export interface HTMLElementFactory {
+  (builder: Builder): Spell<"element">;
+  (): Spell<"element">;
+  (text: string): Spell<"element">;
+  (props: ElementProps): Spell<"element">;
+  (props: ElementProps, text: string): Spell<"element">;
+  (props: ElementProps, builder: Builder): Spell<"element">;
+}
+
+/** SVG element factory with Props overloads. */
+export interface SVGElementFactory {
+  (builder: Builder): Spell<"svg">;
+  (): Spell<"svg">;
+  (text: string): Spell<"svg">;
+  (props: ElementProps): Spell<"svg">;
+  (props: ElementProps, text: string): Spell<"svg">;
+  (props: ElementProps, builder: Builder): Spell<"svg">;
+}

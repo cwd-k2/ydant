@@ -3,7 +3,7 @@
  */
 
 import type { Spell, Render, SpellSchema } from "@ydant/core";
-import type { Slot } from "./types";
+import type { Slot, HTMLElementFactory, SVGElementFactory } from "./types";
 
 /** Sets an HTML attribute on the current element. Use with `yield*`. */
 export function* attr(key: string, value: string): Spell<"attribute"> {
@@ -110,6 +110,8 @@ export function* style(
  * yield* keyed(item.id, ListItemView)({ item, onDelete });
  * ```
  */
+export function keyed(key: string | number, factory: HTMLElementFactory): HTMLElementFactory;
+export function keyed(key: string | number, factory: SVGElementFactory): SVGElementFactory;
 export function keyed<K extends keyof SpellSchema, Args extends unknown[]>(
   key: string | number,
   factory: (...args: Args) => Spell<K>,

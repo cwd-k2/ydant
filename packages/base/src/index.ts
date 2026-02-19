@@ -6,7 +6,21 @@
  */
 
 // Types
-export type { Slot, Element, SvgElement, Attribute, Listener, Text, Lifecycle } from "./types";
+export type {
+  Slot,
+  Element,
+  SvgElement,
+  Attribute,
+  Listener,
+  Text,
+  Lifecycle,
+  ElementProps,
+  ClassValue,
+  StyleValue,
+  EventHandlerProps,
+  HTMLElementFactory,
+  SVGElementFactory,
+} from "./types";
 
 // Primitives
 export { attr, classes, on, text, onMount, onUnmount, style, keyed } from "./primitives";
@@ -68,8 +82,13 @@ export {
 } from "./elements/svg";
 
 // SlotRef
-export { createSlotRef } from "./slot-ref";
+export { createSlotRef, slotRef } from "./slot-ref";
 export type { SlotRef } from "./slot-ref";
+
+// Namespace exports
+import * as htmlElements from "./elements/html";
+import * as svgElements from "./elements/svg";
+export { htmlElements as html, svgElements as svgNs };
 
 // Factory helpers
 export { createHTMLElement, createSVGElement } from "./elements/factory";

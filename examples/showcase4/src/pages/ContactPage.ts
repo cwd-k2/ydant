@@ -1,7 +1,9 @@
 import type { Component } from "@ydant/core";
-import { div, h1, p, span, button, input, label, text, attr, classes, on } from "@ydant/base";
+import { html, text } from "@ydant/base";
 import { signal, reactive } from "@ydant/reactive";
 import { createForm, required, email, minLength } from "../form";
+
+const { div, h1, p, span, button, input, label } = html;
 
 /**
  * コンタクトフォームページ
@@ -32,18 +34,15 @@ export const ContactPage: Component = () => {
     formState.set(form.getState());
   });
 
-  return div(function* () {
-    yield* classes("p-6", "max-w-md");
-    yield* h1(() => [classes("text-2xl", "font-bold", "mb-4"), text("Contact")]);
+  return div({ classes: ["p-6", "max-w-md"] }, function* () {
+    yield* h1({ classes: ["text-2xl", "font-bold", "mb-4"] }, "Contact");
 
-    yield* p(() => [
-      classes("text-sm", "text-gray-500", "mb-4"),
-      text("This form uses user-implemented validation (not a library)."),
-    ]);
+    yield* p(
+      { classes: ["text-sm", "text-gray-500", "mb-4"] },
+      "This form uses user-implemented validation (not a library).",
+    );
 
-    yield* div(function* () {
-      yield* classes("space-y-4");
-
+    yield* div({ classes: ["space-y-4"] }, function* () {
       // Name field
       yield* FormField({
         labelText: "Name",
@@ -84,20 +83,24 @@ export const ContactPage: Component = () => {
       });
 
       // Submit button
-      yield* button(function* () {
-        yield* classes(
-          "w-full",
-          "px-4",
-          "py-2",
-          "bg-blue-500",
-          "text-white",
-          "rounded",
-          "hover:bg-blue-600",
-          "disabled:opacity-50",
-        );
-        yield* on("click", () => form.submit());
-        yield* reactive(() => [text(formState().isSubmitting ? "Sending..." : "Send Message")]);
-      });
+      yield* button(
+        {
+          classes: [
+            "w-full",
+            "px-4",
+            "py-2",
+            "bg-blue-500",
+            "text-white",
+            "rounded",
+            "hover:bg-blue-600",
+            "disabled:opacity-50",
+          ],
+          onClick: () => form.submit(),
+        },
+        function* () {
+          yield* reactive(() => [text(formState().isSubmitting ? "Sending..." : "Send Message")]);
+        },
+      );
     });
   });
 };
@@ -116,19 +119,19 @@ const FormField: Component<FormFieldProps> = (props) => {
   const { labelText, type, getValue, setValue, onBlur, getError } = props;
 
   return div(function* () {
-    yield* label(() => [classes("block", "font-medium", "mb-1"), text(labelText)]);
-    yield* input(function* () {
-      yield* attr("type", type);
-      yield* attr("value", getValue());
-      yield* classes("w-full", "px-3", "py-2", "border", "rounded", "dark:bg-gray-700");
-      yield* on("input", (e) => {
+    yield* label({ classes: ["block", "font-medium", "mb-1"] }, labelText);
+    yield* input({
+      type,
+      value: getValue(),
+      classes: ["w-full", "px-3", "py-2", "border", "rounded", "dark:bg-gray-700"],
+      onInput: (e: Event) => {
         setValue((e.target as HTMLInputElement).value);
-      });
-      yield* on("blur", onBlur);
+      },
+      onBlur,
     });
     yield* reactive(() => {
       const error = getError();
-      return error ? [span(() => [classes("text-red-500", "text-sm"), text(error)])] : [];
+      return error ? [span({ classes: ["text-red-500", "text-sm"] }, error)] : [];
     });
   });
 };
