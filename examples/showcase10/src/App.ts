@@ -126,26 +126,33 @@ export const App: Component = () =>
         if (!fields.password.value) return;
         yield* classes("mt-2");
         yield* div(() => [
-          classes("h-2", "bg-gray-200", "rounded-full", "overflow-hidden"),
+          classes("h-2", "bg-slate-700", "rounded-full", "overflow-hidden"),
           div(() => [
             classes("h-full", "rounded-full", "transition-all", "duration-300", c.bar, w),
           ]),
         ]);
-        yield* span(() => [classes("text-xs", "text-gray-500", "mt-1"), text(c.label)]);
+        yield* span(() => [classes("text-xs", "text-gray-400", "mt-1"), text(c.label)]);
       };
     }
 
     // --- Form ---
     yield* form(function* () {
-      yield* classes("space-y-5", "bg-white", "p-6", "rounded-lg", "shadow");
+      yield* classes(
+        "space-y-5",
+        "bg-slate-800",
+        "p-6",
+        "rounded-lg",
+        "border",
+        "border-slate-700",
+      );
       yield* on("submit", (e) => {
         e.preventDefault();
         const valid = validateAll();
         if (valid) {
           summaryRef.refresh(function* () {
-            yield* classes("p-4", "bg-green-50", "border", "border-green-300", "rounded");
+            yield* classes("p-4", "bg-green-900/30", "border", "border-green-700", "rounded");
             yield* p(() => [
-              classes("text-green-700", "font-medium"),
+              classes("text-green-400", "font-medium"),
               text("Registration successful!"),
             ]);
           });
@@ -154,13 +161,13 @@ export const App: Component = () =>
             .filter(([, f]) => f.error)
             .map(([name, f]) => `${name}: ${f.error}`);
           summaryRef.refresh(function* () {
-            yield* classes("p-4", "bg-red-50", "border", "border-red-300", "rounded");
+            yield* classes("p-4", "bg-red-900/30", "border", "border-red-700", "rounded");
             yield* p(() => [
-              classes("text-red-700", "font-medium", "mb-2"),
+              classes("text-red-400", "font-medium", "mb-2"),
               text("Please fix the following errors:"),
             ]);
             for (const err of errors) {
-              yield* p(() => [classes("text-red-600", "text-sm"), text(err)]);
+              yield* p(() => [classes("text-red-300", "text-sm"), text(err)]);
             }
           });
         }
@@ -189,7 +196,7 @@ export const App: Component = () =>
       // Password
       yield* div(function* () {
         yield* label(() => [
-          classes("block", "text-sm", "font-medium", "text-gray-700", "mb-1"),
+          classes("block", "text-sm", "font-medium", "text-gray-300", "mb-1"),
           text("Password"),
         ]);
         yield* input(function* () {
@@ -200,6 +207,9 @@ export const App: Component = () =>
             "px-3",
             "py-2",
             "border",
+            "border-slate-600",
+            "bg-slate-700",
+            "text-gray-200",
             "rounded",
             "focus:outline-none",
             "focus:ring-2",
@@ -260,7 +270,7 @@ interface FormFieldGroupProps {
 function FormFieldGroup(props: FormFieldGroupProps): Render {
   return div(function* () {
     yield* label(() => [
-      classes("block", "text-sm", "font-medium", "text-gray-700", "mb-1"),
+      classes("block", "text-sm", "font-medium", "text-gray-300", "mb-1"),
       text(props.label),
     ]);
     yield* input(function* () {
@@ -271,6 +281,9 @@ function FormFieldGroup(props: FormFieldGroupProps): Render {
         "px-3",
         "py-2",
         "border",
+        "border-slate-600",
+        "bg-slate-700",
+        "text-gray-200",
         "rounded",
         "focus:outline-none",
         "focus:ring-2",

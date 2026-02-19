@@ -18,7 +18,7 @@ const HomePage: Component = () =>
     yield* classes("p-6", "text-center");
     yield* h1(() => [classes("text-2xl", "font-bold", "mb-4"), text("Admin Dashboard Demo")]);
     yield* p(() => [
-      classes("text-gray-600", "mb-6"),
+      classes("text-gray-400", "mb-6"),
       text("This demo shows Route Guards (sync/async) and createResource with refetchInterval."),
     ]);
     yield* button(function* () {
@@ -50,7 +50,7 @@ const NotFoundPage: Component = () =>
  */
 export const App: Component = () =>
   div(function* () {
-    yield* classes("min-h-screen", "bg-gray-100");
+    yield* classes("min-h-screen", "bg-slate-900");
 
     yield* NavBar();
 

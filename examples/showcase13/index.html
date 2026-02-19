@@ -5,92 +5,107 @@
     <title>Ydant Showcase 13 — SSR + Hydration</title>
     <script type="module" src="./src/index.ts"></script>
     <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
         font-family: "Inter", sans-serif;
-        margin: 0;
-        padding: 20px;
-        background-color: #f3f4f6;
-        color: #1f2937;
+        padding: 16px;
+        background: #0f172a;
+        color: #e2e8f0;
+        min-height: 100vh;
       }
       .container {
         max-width: 700px;
         margin: 0 auto;
       }
+      h1 { font-size: 1.5rem; margin-bottom: 16px; }
       .phase {
-        background: white;
-        border-radius: 12px;
-        padding: 24px;
-        margin-bottom: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 12px;
       }
       .phase h2 {
         margin-top: 0;
+        margin-bottom: 8px;
         font-size: 1.1em;
+      }
+      .phase p {
+        margin-bottom: 8px;
+        color: #94a3b8;
+        font-size: 13px;
       }
       .badge {
         display: inline-block;
-        padding: 2px 8px;
+        padding: 1px 6px;
         border-radius: 4px;
-        font-size: 0.75em;
-        font-weight: bold;
+        font-size: 10px;
+        font-weight: 500;
         margin-left: 8px;
         vertical-align: middle;
       }
       .badge-ssr {
-        background: #dbeafe;
-        color: #1d4ed8;
+        background: #1d4ed8;
+        color: #bfdbfe;
       }
       .badge-hydrated {
-        background: #dcfce7;
-        color: #15803d;
+        background: #059669;
+        color: #a7f3d0;
       }
       #ssr-output {
-        background: #1e293b;
-        color: #e2e8f0;
-        padding: 16px;
-        border-radius: 8px;
+        background: #0f172a;
+        border: 1px solid #334155;
+        color: #a5b4fc;
+        padding: 12px;
+        border-radius: 4px;
         font-family: monospace;
-        font-size: 0.85em;
+        font-size: 11px;
         white-space: pre-wrap;
         word-break: break-all;
         max-height: 200px;
         overflow-y: auto;
+        line-height: 1.5;
       }
       #app {
-        border: 2px dashed #d1d5db;
+        border: 1px dashed #334155;
         border-radius: 8px;
         padding: 16px;
         min-height: 60px;
       }
       .btn {
-        padding: 8px 16px;
-        border-radius: 6px;
+        padding: 5px 12px;
+        border: 1px solid #475569;
+        border-radius: 5px;
         font-weight: bold;
         cursor: pointer;
-        border: none;
         margin-right: 8px;
+        transition: background 0.15s;
       }
       .btn-primary {
-        background: #4f46e5;
-        color: white;
+        background: #334155;
+        color: #e2e8f0;
       }
+      .btn-primary:hover { background: #475569; }
       .btn-secondary {
-        background: #e5e7eb;
-        color: #374151;
+        background: #1e293b;
+        color: #94a3b8;
+        border-color: #334155;
       }
+      .btn-secondary:hover { background: #334155; }
       #log {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 4px;
         padding: 12px;
         font-family: monospace;
-        font-size: 0.8em;
+        font-size: 11px;
         max-height: 150px;
         overflow-y: auto;
+        color: #94a3b8;
       }
       #log div {
         padding: 2px 0;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid #1e293b;
       }
     </style>
   </head>

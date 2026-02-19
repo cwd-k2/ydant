@@ -12,7 +12,17 @@ const { nav, span, button } = html;
  */
 export function NavBar(): Render {
   return nav(
-    { classes: ["flex", "gap-4", "p-4", "bg-gray-100", "dark:bg-gray-800", "border-b"] },
+    {
+      classes: [
+        "flex",
+        "gap-4",
+        "p-4",
+        "bg-gray-100",
+        "dark:bg-slate-800",
+        "border-b",
+        "dark:border-slate-700",
+      ],
+    },
     function* () {
       yield* RouterLink({
         href: `${basePath}/`,
@@ -32,7 +42,7 @@ export function NavBar(): Render {
       // テーマ切り替えボタン
       yield* button(
         {
-          classes: ["ml-auto", "px-3", "py-1", "bg-gray-200", "dark:bg-gray-700", "rounded"],
+          classes: ["ml-auto", "px-3", "py-1", "bg-gray-200", "dark:bg-slate-700", "rounded"],
           onClick: toggleTheme,
         },
         function* () {

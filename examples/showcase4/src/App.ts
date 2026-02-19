@@ -19,7 +19,7 @@ export const basePath = window.location.pathname.includes("/showcase4") ? "/show
  */
 export const App: Component = () =>
   div(
-    { classes: ["min-h-screen", "bg-white", "dark:bg-gray-900", "dark:text-white"] },
+    { classes: ["min-h-screen", "bg-white", "dark:bg-slate-900", "dark:text-gray-100"] },
     function* () {
       // テーマに応じてダークモードクラスを適用
       yield* onMount(() => {

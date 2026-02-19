@@ -26,7 +26,7 @@ export const LoginPage: Component = () =>
     const errorRef = createSlotRef();
 
     yield* div(function* () {
-      yield* classes("bg-white", "p-8", "rounded-lg", "shadow-md", "w-80");
+      yield* classes("bg-slate-800", "p-8", "rounded-lg", "border", "border-slate-700", "w-80");
       yield* h1(() => [classes("text-xl", "font-bold", "mb-6", "text-center"), text("Login")]);
 
       yield* div(function* () {
@@ -43,6 +43,9 @@ export const LoginPage: Component = () =>
             "px-3",
             "py-2",
             "border",
+            "border-slate-600",
+            "bg-slate-700",
+            "text-gray-200",
             "rounded",
             "focus:outline-none",
             "focus:ring-2",
@@ -86,11 +89,11 @@ export const LoginPage: Component = () =>
         yield* classes(
           "w-full",
           "py-2",
-          "bg-gray-200",
-          "text-gray-700",
+          "bg-slate-700",
+          "text-gray-300",
           "rounded",
           "font-medium",
-          "hover:bg-gray-300",
+          "hover:bg-slate-600",
         );
         yield* on("click", () => {
           if (!username.trim()) {

@@ -5,12 +5,13 @@
     <title>Ydant Showcase 11 — Canvas Embed</title>
     <script type="module" src="./src/index.ts"></script>
     <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
         font-family: "Inter", sans-serif;
-        margin: 0;
-        padding: 20px;
-        background-color: #1a1a2e;
-        color: #eee;
+        padding: 16px;
+        background: #0f172a;
+        color: #e2e8f0;
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -18,18 +19,16 @@
       .container {
         text-align: center;
       }
-      h1 {
-        margin-bottom: 8px;
-      }
+      h1 { font-size: 1.5rem; margin-bottom: 4px; }
       .subtitle {
-        color: #aaa;
+        color: #94a3b8;
         margin-bottom: 16px;
-        font-size: 14px;
+        font-size: 13px;
       }
       canvas {
-        border: 2px solid #333;
+        border: 1px solid #334155;
         border-radius: 8px;
-        background: #16213e;
+        background: #0f172a;
         display: block;
         margin: 0 auto;
       }

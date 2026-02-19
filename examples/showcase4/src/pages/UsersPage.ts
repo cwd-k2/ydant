@@ -43,7 +43,7 @@ export const UsersPage: Component = () =>
               classes: [
                 "p-3",
                 "bg-gray-50",
-                "dark:bg-gray-700",
+                "dark:bg-slate-800",
                 "rounded",
                 "flex",
                 "justify-between",

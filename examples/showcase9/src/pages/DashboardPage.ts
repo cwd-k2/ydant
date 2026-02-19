@@ -13,7 +13,7 @@ export const DashboardPage: Component = () =>
     const user = getUser();
     yield* h1(() => [classes("text-2xl", "font-bold", "mb-2"), text(`Dashboard`)]);
     yield* p(() => [
-      classes("text-gray-500", "mb-6"),
+      classes("text-gray-400", "mb-6"),
       text(`Welcome, ${user?.name ?? "User"} (${user?.role ?? "unknown"})`),
     ]);
 
@@ -70,7 +70,7 @@ export const DashboardPage: Component = () =>
       fallback: () =>
         div(() => [
           classes("flex", "items-center", "justify-center", "py-12"),
-          span(() => [classes("text-gray-500"), text("Loading metrics...")]),
+          span(() => [classes("text-gray-400"), text("Loading metrics...")]),
         ]),
       content: function* () {
         const m = metricsResource();

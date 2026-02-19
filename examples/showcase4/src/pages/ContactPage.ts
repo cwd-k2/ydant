@@ -123,7 +123,16 @@ const FormField: Component<FormFieldProps> = (props) => {
     yield* input({
       type,
       value: getValue(),
-      classes: ["w-full", "px-3", "py-2", "border", "rounded", "dark:bg-gray-700"],
+      classes: [
+        "w-full",
+        "px-3",
+        "py-2",
+        "border",
+        "rounded",
+        "dark:bg-slate-700",
+        "dark:border-slate-600",
+        "dark:text-gray-200",
+      ],
       onInput: (e: Event) => {
         setValue((e.target as HTMLInputElement).value);
       },

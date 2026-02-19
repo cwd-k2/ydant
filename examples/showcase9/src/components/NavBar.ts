@@ -41,7 +41,16 @@ function renderAuthSection(): Render {
 
 export function NavBar(): Render {
   return nav(function* () {
-    yield* classes("flex", "items-center", "gap-4", "p-4", "bg-gray-800", "text-white");
+    yield* classes(
+      "flex",
+      "items-center",
+      "gap-4",
+      "p-4",
+      "bg-slate-800",
+      "border-b",
+      "border-slate-700",
+      "text-white",
+    );
 
     yield* span(() => [classes("font-bold", "text-lg"), text("Admin")]);
 

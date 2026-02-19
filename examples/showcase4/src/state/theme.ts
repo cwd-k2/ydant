@@ -11,7 +11,7 @@ function loadTheme(): Theme {
   } catch {
     // localStorage が使用できない場合は無視
   }
-  return "light";
+  return "dark";
 }
 
 function saveTheme(theme: Theme): void {
