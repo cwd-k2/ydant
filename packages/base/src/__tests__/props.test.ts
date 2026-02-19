@@ -132,7 +132,7 @@ describe("parseFactoryArgs", () => {
     it("converts onMouseDown to mousedown listener", () => {
       const handler = () => {};
       const result = parseFactoryArgs([{ onMouseDown: handler }]);
-      expect(result.decorations).toEqual([{ type: "listener", key: "mouseDown", value: handler }]);
+      expect(result.decorations).toEqual([{ type: "listener", key: "mousedown", value: handler }]);
     });
 
     it("converts onInput to input listener", () => {

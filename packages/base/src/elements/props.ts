@@ -64,7 +64,7 @@ function propsToElementFields(props: ElementProps): {
       }
     } else if (EVENT_RE.test(k) && typeof v === "function") {
       // onClick → click, onMouseDown → mousedown
-      const eventName = k.slice(2, 3).toLowerCase() + k.slice(3);
+      const eventName = k.slice(2).toLowerCase();
       decorations.push({ type: "listener", key: eventName, value: v as (e: Event) => void });
     } else {
       // Plain attribute

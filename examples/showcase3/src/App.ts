@@ -10,10 +10,10 @@ import {
   classes,
   on,
   attr,
-  svg,
   circle,
   onUnmount,
   createSlotRef,
+  svg,
 } from "@ydant/base";
 import type { TimerMode, TimerState } from "./types";
 import { DURATIONS, MODE_LABELS, MODE_COLORS } from "./constants";
@@ -102,7 +102,7 @@ export const App: Component = () => {
       // SVG progress ring
       yield* div(function* () {
         yield* classes("absolute", "inset-0", "flex", "items-center", "justify-center");
-        progressRingRef.bind(yield* svg(renderProgressRing));
+        progressRingRef.bind(yield* svg.svg(renderProgressRing));
       });
 
       // Timer text overlay

@@ -59,9 +59,8 @@ export {
   td,
 } from "./elements/html";
 
-// SVG Elements
+// SVG Elements (flat exports exclude `svg` to avoid collision with namespace)
 export {
-  svg,
   circle,
   ellipse,
   line,
@@ -88,7 +87,7 @@ export type { SlotRef } from "./slot-ref";
 // Namespace exports
 import * as htmlElements from "./elements/html";
 import * as svgElements from "./elements/svg";
-export { htmlElements as html, svgElements as svgNs };
+export { htmlElements as html, svgElements as svg };
 
 // Factory helpers
 export { createHTMLElement, createSVGElement } from "./elements/factory";
