@@ -80,6 +80,55 @@ div(function* () {
 div(() => [classes("border"), text("simple")]);
 ```
 
+### Props 構文
+
+要素ファクトリは Props オブジェクトによる宣言的な呼び出しをサポート:
+
+```ts
+// Props + テキスト
+yield * button({ classes: ["btn", "primary"], onClick: handler }, "Click me");
+
+// Props + Builder
+yield *
+  div({ classes: ["container"], style: { padding: "16px" } }, function* () {
+    yield* p("Hello");
+  });
+
+// Props のみ
+yield * input({ type: "text", classes: ["field"] });
+
+// テキストのみ
+yield * p("Simple text");
+```
+
+**設計判断**:
+
+- **`classes` は配列のみ**: `classes()` プリミティブと一致させる。条件付きクラス `[isActive && "active"]` が自然に書ける
+- **`class` ではなく `classes`**: DSL プリミティブ `classes()` との命名一貫性を優先
+- **`style` は `string | object`**: オブジェクト形式は camelCase→kebab-case 変換あり、CSS カスタムプロパティ (`--primary`) もサポート
+- **`on*` イベントハンドラ**: `onClick`, `onInput` 等は `HTMLElementEventMap` から型推論。内部で `addEventListener` のイベント名（全小文字）に変換
+- **`key`**: Props 内で指定可能。`keyed()` ラッパーの代替（コンポーネント包装には `keyed()` が引き続き必要）
+
+### 名前空間 export
+
+`html` / `svg` 名前空間で要素ファクトリをまとめて import できる:
+
+```ts
+import { html, svg } from "@ydant/base";
+const { div, h1, button } = html;
+
+// SVG の <svg> ルート要素は svg.svg() でアクセス
+yield *
+  svg.svg({ viewBox: "0 0 100 100" }, function* () {
+    yield* svg.circle({ cx: "50", cy: "50", r: "40" });
+  });
+```
+
+**設計判断**:
+
+- flat export と名前空間 export は共存する（後方互換 + tree-shaking）
+- `svg` 要素ファクトリ（`<svg>` タグ用）は名前空間との衝突を避けるため flat export から除外。`svg.svg()` または destructure `const { svg: svgRoot } = svg` でアクセス
+
 ### Props の命名: `children` vs `content`
 
 - **`children`**: DOM 要素の実際の子要素に使う（`RouterLink.children`, `Element.children`, `Slot.refresh(children)`）

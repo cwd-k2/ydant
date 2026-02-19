@@ -196,6 +196,14 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - **Reactive Canvas**: `examples/showcase14` — Signal 変更 → canvas engine flush → onFlush → paint() の自動再描画パターン。reactive container が Canvas で透明グループとして機能することを実証
 - **@ydant/devtools**: opt-in の Engine lifecycle 観測プラグイン。monkey-patching + flush hooks で計装。`TASK_ENQUEUED`, `FLUSH_START`, `FLUSH_END`, `ENGINE_SPAWNED`, `ENGINE_STOPPED` の 5 イベント型。リングバッファ + onEvent ストリーミング
 
+### Phase 15: Props オーバーロード + 名前空間 export
+
+- **要素ファクトリの Props オーバーロード**: `div({ classes: [...], onClick: handler }, "text")` 形式を追加。6 つの呼び出しパターン（空、Builder、テキスト、Props、Props+テキスト、Props+Builder）を `typeof` による実行時判別 + TypeScript オーバーロードで実現
+- **`html` / `svg` 名前空間 export**: flat export と共存。`svg` 要素ファクトリ（`<svg>` タグ用）は名前空間との衝突回避のため flat export から除外
+- **`slotRef()` 便利関数**: `createSlotRef()` + `bind()` の 2 ステップを 1 ステップに短縮
+- **Props 設計**: `classes` は配列のみ（`classes()` プリミティブと一致）、`style` は `string | object`、`on*` は `HTMLElementEventMap` から型推論
+- **showcase 移行**: showcase1, 3, 4, 14 を新 Props 構文に移行し実用性を検証
+
 ---
 
 ## 設計上の決定事項
