@@ -23,7 +23,7 @@ describe("createAsyncPlugin", () => {
     const plugin = createAsyncPlugin();
 
     expect(plugin.name).toBe("async");
-    expect(plugin.types).toEqual(["boundary"]);
+    expect(plugin.types).toEqual(["boundary", "chunked"]);
     expect(plugin.dependencies).toEqual(["base"]);
   });
 

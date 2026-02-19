@@ -12,8 +12,11 @@ import "@ydant/base";
 export type { Resource } from "./resource";
 export type { SuspenseProps } from "./Suspense";
 export type { ErrorBoundaryProps } from "./ErrorBoundary";
+export type { LazyProps } from "./Lazy";
 // ─── Runtime ───
 export { createResource } from "./resource";
 export { Suspense } from "./Suspense";
 export { ErrorBoundary } from "./ErrorBoundary";
+export { Lazy } from "./Lazy";
+export { chunked } from "./chunked";
 export { createAsyncPlugin } from "./plugin";
