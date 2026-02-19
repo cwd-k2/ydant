@@ -3,9 +3,9 @@ import { div, span, button, text, classes, on } from "@ydant/base";
 import type { ListItem } from "../types";
 
 const PRIORITY_COLORS: Record<ListItem["priority"], string[]> = {
-  high: ["bg-red-100", "text-red-800", "border-red-200"],
-  medium: ["bg-yellow-100", "text-yellow-800", "border-yellow-200"],
-  low: ["bg-green-100", "text-green-800", "border-green-200"],
+  high: ["bg-red-900/30", "text-red-300", "border-red-700"],
+  medium: ["bg-yellow-900/30", "text-yellow-300", "border-yellow-700"],
+  low: ["bg-green-900/30", "text-green-300", "border-green-700"],
 };
 
 const PRIORITY_LABELS: Record<ListItem["priority"], string> = {
@@ -49,7 +49,7 @@ export const ListItemView: Component<ListItemViewProps> = (props) => {
     yield* span(() => [classes("flex-1", "font-medium"), text(item.text)]);
 
     // Item ID (for debugging key behavior)
-    yield* span(() => [classes("text-xs", "text-gray-500"), text(`#${item.id}`)]);
+    yield* span(() => [classes("text-xs", "text-gray-400"), text(`#${item.id}`)]);
 
     // Move buttons
     yield* div(() => [
@@ -59,9 +59,9 @@ export const ListItemView: Component<ListItemViewProps> = (props) => {
           "px-2",
           "py-1",
           "text-sm",
-          "bg-gray-200",
+          "bg-slate-700",
           "rounded",
-          "hover:bg-gray-300",
+          "hover:bg-slate-600",
           "disabled:opacity-50",
         );
         yield* on("click", onMoveUp);
@@ -75,9 +75,9 @@ export const ListItemView: Component<ListItemViewProps> = (props) => {
           "px-2",
           "py-1",
           "text-sm",
-          "bg-gray-200",
+          "bg-slate-700",
           "rounded",
-          "hover:bg-gray-300",
+          "hover:bg-slate-600",
           "disabled:opacity-50",
         );
         yield* on("click", onMoveDown);
@@ -91,10 +91,10 @@ export const ListItemView: Component<ListItemViewProps> = (props) => {
           "px-2",
           "py-1",
           "text-sm",
-          "bg-red-200",
-          "text-red-700",
+          "bg-red-900/30",
+          "text-red-400",
           "rounded",
-          "hover:bg-red-300",
+          "hover:bg-red-900/50",
         );
         yield* on("click", onDelete);
         yield* text("×");

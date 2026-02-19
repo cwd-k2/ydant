@@ -9,10 +9,10 @@ const COUNTER_CLASSES = [
   "font-mono",
   "mb-4",
   "p-4",
-  "bg-gray-100",
+  "bg-slate-800",
   "rounded-lg",
   "border-2",
-  "border-gray-300",
+  "border-slate-600",
 ] as const;
 
 /**
@@ -21,7 +21,7 @@ const COUNTER_CLASSES = [
  */
 export function* CounterSection() {
   yield* h3(
-    { classes: ["text-xl", "font-semibold", "text-gray-700", "mb-4"] },
+    { classes: ["text-xl", "font-semibold", "text-gray-300", "mb-4"] },
     "1. Counter Demo (Generator syntax for Slot)",
   );
 

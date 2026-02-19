@@ -16,6 +16,6 @@ export function LoadingSpinner(message = "Loading..."): Render {
         "mb-4",
       ),
     ]),
-    span(() => [classes("text-gray-500"), text(message)]),
+    span(() => [classes("text-gray-400"), text(message)]),
   ]);
 }

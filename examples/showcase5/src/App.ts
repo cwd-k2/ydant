@@ -99,7 +99,7 @@ export const App: Component = () => {
   };
 
   const renderStats = function* () {
-    yield* classes("flex", "gap-4", "text-sm", "text-gray-500");
+    yield* classes("flex", "gap-4", "text-sm", "text-gray-400");
 
     const high = items.filter((i) => i.priority === "high").length;
     const medium = items.filter((i) => i.priority === "medium").length;
@@ -107,9 +107,9 @@ export const App: Component = () => {
 
     yield* div(() => [
       classes("flex", "gap-2"),
-      div(() => [classes("text-red-600"), text(`High: ${high}`)]),
-      div(() => [classes("text-yellow-600"), text(`Medium: ${medium}`)]),
-      div(() => [classes("text-green-600"), text(`Low: ${low}`)]),
+      div(() => [classes("text-red-400"), text(`High: ${high}`)]),
+      div(() => [classes("text-yellow-400"), text(`Medium: ${medium}`)]),
+      div(() => [classes("text-green-400"), text(`Low: ${low}`)]),
     ]);
 
     yield* div(() => [classes("ml-auto"), text(`Total: ${items.length}`)]);
@@ -120,12 +120,12 @@ export const App: Component = () => {
 
     // Header
     yield* h1(() => [
-      classes("text-2xl", "font-bold", "text-center", "text-purple-800"),
+      classes("text-2xl", "font-bold", "text-center", "text-purple-300"),
       text("Sortable List with keyed()"),
     ]);
 
     yield* p(() => [
-      classes("text-center", "text-gray-500", "text-sm"),
+      classes("text-center", "text-gray-400", "text-sm"),
       text(
         "Demonstrates keyed() for efficient DOM updates. " +
           "Move items around and watch DOM IDs stay stable.",
@@ -134,7 +134,7 @@ export const App: Component = () => {
 
     // Add item form
     yield* div(function* () {
-      yield* classes("flex", "gap-2", "p-4", "bg-gray-50", "rounded-lg");
+      yield* classes("flex", "gap-2", "p-4", "bg-slate-800", "rounded-lg");
 
       yield* input(function* () {
         yield* attr("type", "text");
@@ -186,7 +186,7 @@ export const App: Component = () => {
     // Sort controls
     yield* div(function* () {
       yield* classes("flex", "gap-2", "items-center");
-      yield* h2(() => [classes("text-sm", "font-medium", "text-gray-700"), text("Sort by:")]);
+      yield* h2(() => [classes("text-sm", "font-medium", "text-gray-300"), text("Sort by:")]);
 
       const sortButtons: { order: SortOrder; label: string }[] = [
         { order: "id", label: "ID" },
@@ -196,7 +196,14 @@ export const App: Component = () => {
 
       for (const btn of sortButtons) {
         yield* button(function* () {
-          yield* classes("px-3", "py-1", "text-sm", "rounded", "bg-gray-200", "hover:bg-gray-300");
+          yield* classes(
+            "px-3",
+            "py-1",
+            "text-sm",
+            "rounded",
+            "bg-slate-700",
+            "hover:bg-slate-600",
+          );
           yield* on("click", () => sortItemsBy(btn.order));
           yield* text(btn.label);
         });
@@ -211,7 +218,7 @@ export const App: Component = () => {
 
     // Info
     yield* div(() => [
-      classes("mt-4", "p-4", "bg-blue-50", "rounded-lg", "text-sm"),
+      classes("mt-4", "p-4", "bg-blue-900/30", "rounded-lg", "text-sm"),
       h2(() => [classes("font-semibold", "mb-2"), text("How keyed() works:")]),
       p(() => [
         text(

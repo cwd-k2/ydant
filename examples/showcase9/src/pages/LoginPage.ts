@@ -32,7 +32,7 @@ export const LoginPage: Component = () =>
       yield* div(function* () {
         yield* classes("mb-4");
         yield* label(() => [
-          classes("block", "text-sm", "font-medium", "text-gray-700", "mb-1"),
+          classes("block", "text-sm", "font-medium", "text-gray-300", "mb-1"),
           text("Username"),
         ]);
         yield* input(function* () {

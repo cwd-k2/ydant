@@ -15,17 +15,17 @@ export const MODE_LABELS: Record<TimerMode, string> = {
 export const MODE_COLORS: Record<TimerMode, { bg: string; text: string; ring: string }> = {
   work: {
     bg: "bg-red-500",
-    text: "text-red-600",
+    text: "text-red-400",
     ring: "#dc2626",
   },
   break: {
     bg: "bg-green-500",
-    text: "text-green-600",
+    text: "text-green-400",
     ring: "#059669",
   },
   "long-break": {
     bg: "bg-blue-500",
-    text: "text-blue-600",
+    text: "text-blue-400",
     ring: "#2563eb",
   },
 };

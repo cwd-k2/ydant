@@ -10,17 +10,17 @@ const { div, h1, h3, p, button } = html;
  */
 function* ArraySyntaxSection() {
   yield* h3(
-    { classes: ["text-xl", "font-semibold", "text-gray-700", "mb-4"] },
+    { classes: ["text-xl", "font-semibold", "text-gray-300", "mb-4"] },
     "2. Array Syntax Demo",
   );
 
-  yield* div({ classes: ["p-4", "bg-blue-50", "rounded-lg"] }, function* () {
+  yield* div({ classes: ["p-4", "bg-blue-900/30", "rounded-lg"] }, function* () {
     yield* p(
-      { classes: ["text-gray-700"] },
+      { classes: ["text-gray-300"] },
       "This section uses the array syntax: div(() => [classes(...), text(...)])",
     );
     yield* p(
-      { classes: ["text-gray-600", "mt-2", "text-sm"] },
+      { classes: ["text-gray-400", "mt-2", "text-sm"] },
       "Array syntax is more concise for static structures. Use generator syntax when you need Slot.",
     );
   });
@@ -31,13 +31,13 @@ function* ArraySyntaxSection() {
  */
 function* DialogSection() {
   yield* h3(
-    { classes: ["text-xl", "font-semibold", "text-gray-700", "mb-4"] },
+    { classes: ["text-xl", "font-semibold", "text-gray-300", "mb-4"] },
     "3. Dialog Component (function example)",
   );
 
-  yield* div({ classes: ["p-4", "bg-green-50", "rounded-lg", "mb-4"] }, function* () {
+  yield* div({ classes: ["p-4", "bg-green-900/30", "rounded-lg", "mb-4"] }, function* () {
     yield* p(
-      { classes: ["text-gray-700", "text-sm"] },
+      { classes: ["text-gray-300", "text-sm"] },
       "The Dialog component is a simple function that takes props and returns a generator.",
     );
   });
@@ -86,7 +86,7 @@ function* DialogSection() {
  * 区切り線
  */
 function Divider(): Render {
-  return div({ classes: ["border-t", "border-gray-200", "my-6"] });
+  return div({ classes: ["border-t", "border-slate-700", "my-6"] });
 }
 
 /**
@@ -96,7 +96,7 @@ export const App: Component = () =>
   div({ classes: ["container", "mx-auto", "p-6"] }, function* () {
     // タイトル
     yield* h1(
-      { classes: ["text-purple-800", "mb-5", "text-center", "text-2xl", "font-bold"] },
+      { classes: ["text-purple-300", "mb-5", "text-center", "text-2xl", "font-bold"] },
       "Demo Showcase 1: Ydant DSL Components (Generator-based)",
     );
 

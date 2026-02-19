@@ -6,11 +6,11 @@
     <title>Ydant Examples</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-100 min-h-screen">
+  <body class="bg-slate-900 min-h-screen text-gray-200">
     <div class="container mx-auto px-4 py-8">
       <header class="text-center mb-12">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">Ydant Examples</h1>
-        <p class="text-gray-600">Generator-based DOM rendering DSL</p>
+        <h1 class="text-4xl font-bold text-gray-100 mb-2">Ydant Examples</h1>
+        <p class="text-gray-400">Generator-based DOM rendering DSL</p>
       </header>
 
       <div id="grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3"></div>
@@ -24,14 +24,15 @@
       const modules = import.meta.glob('./showcase*/package.json', { eager: true });
 
       const tagColors = {
-        reactive: ['bg-blue-100', 'text-blue-700'],
-        router: ['bg-orange-100', 'text-orange-700'],
-        context: ['bg-amber-100', 'text-amber-700'],
-        async: ['bg-red-100', 'text-red-700'],
-        transition: ['bg-pink-100', 'text-pink-700'],
-        canvas: ['bg-emerald-100', 'text-emerald-700'],
-        portal: ['bg-violet-100', 'text-violet-700'],
-        ssr: ['bg-cyan-100', 'text-cyan-700'],
+        reactive: ['bg-blue-900/40', 'text-blue-300'],
+        router: ['bg-orange-900/40', 'text-orange-300'],
+        context: ['bg-amber-900/40', 'text-amber-300'],
+        async: ['bg-red-900/40', 'text-red-300'],
+        transition: ['bg-pink-900/40', 'text-pink-300'],
+        canvas: ['bg-emerald-900/40', 'text-emerald-300'],
+        portal: ['bg-violet-900/40', 'text-violet-300'],
+        ssr: ['bg-cyan-900/40', 'text-cyan-300'],
+        devtools: ['bg-purple-900/40', 'text-purple-300'],
       };
 
       const showcases = Object.entries(modules)
@@ -50,16 +51,16 @@
       for (const { num, description, deps } of showcases) {
         const tags = deps
           .map((dep) => {
-            const [bg, text] = tagColors[dep] ?? ['bg-gray-100', 'text-gray-700'];
+            const [bg, text] = tagColors[dep] ?? ['bg-slate-700', 'text-gray-300'];
             return `<span class="px-2 py-1 ${bg} ${text} text-xs rounded">${dep}</span>`;
           })
           .join('');
 
         grid.insertAdjacentHTML(
           'beforeend',
-          `<a href="./showcase${num}/" class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-2">Showcase ${num}</h2>
-            <p class="text-gray-600 text-sm mb-4">${description}</p>
+          `<a href="./showcase${num}/" class="block bg-slate-800 rounded-lg border border-slate-700 hover:border-slate-500 transition-colors p-6">
+            <h2 class="text-xl font-semibold text-gray-100 mb-2">Showcase ${num}</h2>
+            <p class="text-gray-400 text-sm mb-4">${description}</p>
             ${tags ? `<div class="flex flex-wrap gap-2">${tags}</div>` : ''}
           </a>`,
         );

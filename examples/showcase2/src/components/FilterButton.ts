@@ -19,7 +19,7 @@ export const FilterButton: Component<FilterButtonProps> = (props) => {
       "transition-colors",
       ...(isActive
         ? ["bg-blue-500", "text-white"]
-        : ["bg-gray-100", "text-gray-600", "hover:bg-gray-200"]),
+        : ["bg-slate-700", "text-gray-300", "hover:bg-slate-600"]),
     ),
     on("click", onClick),
     text(label),

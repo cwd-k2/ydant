@@ -10,7 +10,7 @@ export const HomePage: Component = () =>
   div({ classes: ["p-6"] }, function* () {
     yield* h1({ classes: ["text-3xl", "font-bold", "mb-4"] }, "Welcome!");
     yield* p(
-      { classes: ["text-gray-600", "dark:text-gray-300"] },
+      { classes: ["text-gray-600", "dark:text-gray-400"] },
       "This is a demo of Ydant SPA with Router, Context, and Reactive features.",
     );
 

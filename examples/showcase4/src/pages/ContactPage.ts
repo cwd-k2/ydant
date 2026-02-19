@@ -38,7 +38,7 @@ export const ContactPage: Component = () => {
     yield* h1({ classes: ["text-2xl", "font-bold", "mb-4"] }, "Contact");
 
     yield* p(
-      { classes: ["text-sm", "text-gray-500", "mb-4"] },
+      { classes: ["text-sm", "text-gray-500", "dark:text-gray-400", "mb-4"] },
       "This form uses user-implemented validation (not a library).",
     );
 

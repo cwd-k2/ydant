@@ -68,7 +68,7 @@ export const App: Component = () => {
   };
 
   const renderTodoList = function* () {
-    yield* classes("border", "border-gray-200", "rounded-lg", "overflow-hidden", "mb-4");
+    yield* classes("border", "border-slate-700", "rounded-lg", "overflow-hidden", "mb-4");
 
     const filteredTodos = getFilteredTodos();
 
@@ -105,7 +105,7 @@ export const App: Component = () => {
   };
 
   const renderStats = function* () {
-    yield* classes("flex", "justify-between", "items-center", "text-sm", "text-gray-500");
+    yield* classes("flex", "justify-between", "items-center", "text-sm", "text-gray-400");
 
     const activeCount = getActiveCount();
     const completedCount = todos.length - activeCount;
@@ -114,7 +114,7 @@ export const App: Component = () => {
 
     if (completedCount > 0) {
       yield* button(function* () {
-        yield* classes("text-red-500", "hover:text-red-700", "hover:underline");
+        yield* classes("text-red-500", "hover:text-red-400", "hover:underline");
         yield* on("click", () => {
           todos = todos.filter((t) => !t.completed);
           saveTodos(todos);
@@ -131,7 +131,7 @@ export const App: Component = () => {
 
     // Title
     yield* h1(() => [
-      classes("text-2xl", "font-bold", "text-center", "text-purple-800", "mb-6"),
+      classes("text-2xl", "font-bold", "text-center", "text-purple-300", "mb-6"),
       text("ToDo App"),
     ]);
 
@@ -152,7 +152,7 @@ export const App: Component = () => {
             "px-4",
             "py-2",
             "border",
-            "border-gray-300",
+            "border-slate-600",
             "rounded-lg",
             "focus:outline-none",
             "focus:ring-2",

@@ -24,7 +24,7 @@ export const ModeButton: Component<ModeButtonProps> = (props) => {
       "transition-all",
       ...(isActive
         ? [colors.bg, "text-white", "shadow-lg"]
-        : ["bg-gray-100", "text-gray-600", "hover:bg-gray-200"]),
+        : ["bg-slate-700", "text-gray-300", "hover:bg-slate-600"]),
     ),
     on("click", onClick),
     text(MODE_LABELS[mode]),

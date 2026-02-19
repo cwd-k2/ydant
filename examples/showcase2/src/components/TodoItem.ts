@@ -12,19 +12,19 @@ export const TodoItem: Component<TodoItemProps> = (props) => {
   const { todo, onToggle, onDelete } = props;
 
   return div(() => [
-    classes("todo-item", "flex", "items-center", "gap-3", "p-3", "border-b", "border-gray-100"),
+    classes("todo-item", "flex", "items-center", "gap-3", "p-3", "border-b", "border-slate-700"),
 
     // Checkbox
     input(() => [
       attr("type", "checkbox"),
       ...(todo.completed ? [attr("checked", "checked")] : []),
-      classes("w-5", "h-5", "rounded", "border-gray-300", "cursor-pointer"),
+      classes("w-5", "h-5", "rounded", "border-slate-600", "cursor-pointer"),
       on("change", onToggle),
     ]),
 
     // Todo text
     span(() => [
-      classes("flex-1", "text-gray-700", ...(todo.completed ? ["todo-completed"] : [])),
+      classes("flex-1", "text-gray-200", ...(todo.completed ? ["todo-completed"] : [])),
       text(todo.text),
     ]),
 
@@ -36,7 +36,7 @@ export const TodoItem: Component<TodoItemProps> = (props) => {
         "py-1",
         "text-red-500",
         "hover:text-red-700",
-        "hover:bg-red-50",
+        "hover:bg-red-900/30",
         "rounded",
       ),
       on("click", onDelete),

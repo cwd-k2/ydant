@@ -70,7 +70,7 @@ export const App: Component = () => {
 
     // 背景の円
     yield* circle(() => [
-      attr("stroke", "#e5e7eb"),
+      attr("stroke", "#334155"),
       attr("fill", "transparent"),
       attr("stroke-width", String(RING_STROKE)),
       attr("r", String(RING_NORMALIZED_RADIUS)),
@@ -128,7 +128,7 @@ export const App: Component = () => {
         });
 
         yield* span(() => [
-          classes("text-gray-500", "text-lg", "mt-2"),
+          classes("text-gray-400", "text-lg", "mt-2"),
           text(MODE_LABELS[state.mode]),
         ]);
       });
@@ -180,12 +180,12 @@ export const App: Component = () => {
         "btn-control",
         "px-8",
         "py-3",
-        "bg-gray-200",
-        "text-gray-700",
+        "bg-slate-700",
+        "text-gray-300",
         "rounded-full",
         "font-semibold",
         "text-lg",
-        "hover:bg-gray-300",
+        "hover:bg-slate-600",
       );
       yield* on("click", resetTimer);
       yield* text("Reset");
@@ -193,10 +193,18 @@ export const App: Component = () => {
   };
 
   const renderSessions = function* () {
-    yield* classes("flex", "flex-col", "items-center", "p-4", "bg-gray-50", "rounded-xl", "w-full");
+    yield* classes(
+      "flex",
+      "flex-col",
+      "items-center",
+      "p-4",
+      "bg-slate-800",
+      "rounded-xl",
+      "w-full",
+    );
 
     yield* h2(() => [
-      classes("text-sm", "font-medium", "text-gray-500", "mb-2"),
+      classes("text-sm", "font-medium", "text-gray-400", "mb-2"),
       text("Sessions Completed"),
     ]);
 
@@ -213,7 +221,7 @@ export const App: Component = () => {
         yield* span(() => [classes("text-gray-400"), text("No sessions yet")]);
       } else if (state.sessionsCompleted > 8) {
         yield* span(() => [
-          classes("text-gray-600", "font-medium"),
+          classes("text-gray-400", "font-medium"),
           text(`+${state.sessionsCompleted - 8} more`),
         ]);
       }
@@ -300,12 +308,12 @@ export const App: Component = () => {
 
     // Title
     yield* h1(() => [
-      classes("text-3xl", "font-bold", "text-gray-800", "mb-2"),
+      classes("text-3xl", "font-bold", "text-gray-100", "mb-2"),
       text("Pomodoro Timer"),
     ]);
 
     yield* p(() => [
-      classes("text-gray-500", "mb-8", "text-center"),
+      classes("text-gray-400", "mb-8", "text-center"),
       text("Stay focused and productive!"),
     ]);
 

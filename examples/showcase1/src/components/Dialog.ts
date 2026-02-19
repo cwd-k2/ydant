@@ -38,13 +38,33 @@ export const Dialog: Component<DialogProps> = (props) => {
     function* () {
       // ダイアログ本体
       yield* div(
-        { classes: ["bg-white", "rounded-lg", "shadow-xl", "max-w-md", "w-full", "mx-4"] },
+        {
+          classes: [
+            "bg-slate-800",
+            "rounded-lg",
+            "shadow-xl",
+            "max-w-md",
+            "w-full",
+            "mx-4",
+            "border",
+            "border-slate-700",
+          ],
+        },
         function* () {
           // ヘッダー
           yield* div(
-            { classes: ["flex", "items-center", "justify-between", "p-4", "border-b"] },
+            {
+              classes: [
+                "flex",
+                "items-center",
+                "justify-between",
+                "p-4",
+                "border-b",
+                "border-slate-700",
+              ],
+            },
             function* () {
-              yield* h3({ classes: ["text-lg", "font-semibold", "text-gray-800"] }, title);
+              yield* h3({ classes: ["text-lg", "font-semibold", "text-gray-100"] }, title);
               yield* button(
                 {
                   classes: ["text-gray-400", "hover:text-gray-600", "text-2xl", "leading-none"],
@@ -57,22 +77,22 @@ export const Dialog: Component<DialogProps> = (props) => {
 
           // コンテンツ
           yield* div({ classes: ["p-4"] }, function* () {
-            yield* p({ classes: ["text-gray-600"] }, content);
+            yield* p({ classes: ["text-gray-300"] }, content);
           });
 
           // フッター
           yield* div(
-            { classes: ["flex", "justify-end", "gap-2", "p-4", "border-t"] },
+            { classes: ["flex", "justify-end", "gap-2", "p-4", "border-t", "border-slate-700"] },
             function* () {
               yield* button(
                 {
                   classes: [
                     "px-4",
                     "py-2",
-                    "bg-gray-200",
-                    "text-gray-700",
+                    "bg-slate-700",
+                    "text-gray-300",
                     "rounded",
-                    "hover:bg-gray-300",
+                    "hover:bg-slate-600",
                   ],
                   onClick: onClose,
                 },

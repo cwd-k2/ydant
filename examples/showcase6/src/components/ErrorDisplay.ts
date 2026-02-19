@@ -10,9 +10,9 @@ export const ErrorDisplay: Component<ErrorDisplayProps> = (props) => {
   const { error, onRetry } = props;
 
   return div(function* () {
-    yield* classes("p-6", "bg-red-50", "border", "border-red-200", "rounded-lg");
-    yield* h3(() => [classes("text-red-800", "font-semibold", "mb-2"), text("Error Occurred")]);
-    yield* p(() => [classes("text-red-600", "text-sm", "mb-4"), text(error.message)]);
+    yield* classes("p-6", "bg-red-900/30", "border", "border-red-700", "rounded-lg");
+    yield* h3(() => [classes("text-red-300", "font-semibold", "mb-2"), text("Error Occurred")]);
+    yield* p(() => [classes("text-red-400", "text-sm", "mb-4"), text(error.message)]);
 
     if (onRetry) {
       yield* button(function* () {

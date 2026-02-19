@@ -19,7 +19,7 @@ function ToggleSection(): Render {
   let fadeTransition: TransitionHandle;
 
   const renderSection = function* () {
-    yield* classes("p-4", "bg-gray-50", "rounded-lg");
+    yield* classes("p-4", "bg-slate-800", "rounded-lg");
 
     yield* button(function* () {
       yield* classes(
@@ -48,10 +48,10 @@ function ToggleSection(): Render {
       leaveTo: "fade-leave-to",
       content: () =>
         div(() => [
-          classes("p-4", "bg-blue-100", "rounded-lg"),
+          classes("p-4", "bg-blue-900/30", "rounded-lg"),
           p(() => [text("This content fades in and out!")]),
           p(() => [
-            classes("text-sm", "text-blue-600", "mt-2"),
+            classes("text-sm", "text-blue-400", "mt-2"),
             text("The createTransition API handles enter AND leave animations."),
           ]),
         ]),
@@ -70,7 +70,7 @@ function SlideSection(): Render {
   let slideTransition: TransitionHandle;
 
   const renderSection = function* () {
-    yield* classes("p-4", "bg-gray-50", "rounded-lg");
+    yield* classes("p-4", "bg-slate-800", "rounded-lg");
 
     yield* button(function* () {
       yield* classes(
@@ -98,7 +98,7 @@ function SlideSection(): Render {
       leaveTo: "slide-leave-to",
       content: () =>
         div(() => [
-          classes("p-4", "bg-green-100", "rounded-lg"),
+          classes("p-4", "bg-green-900/30", "rounded-lg"),
           p(() => [text("This panel slides in and out!")]),
         ]),
     });
@@ -222,12 +222,12 @@ export const App: Component = () =>
 
     // Header
     yield* h1(() => [
-      classes("text-2xl", "font-bold", "text-center", "text-purple-800", "mb-2"),
+      classes("text-2xl", "font-bold", "text-center", "text-purple-300", "mb-2"),
       text("CSS Transitions"),
     ]);
 
     yield* p(() => [
-      classes("text-center", "text-gray-500", "text-sm", "mb-6"),
+      classes("text-center", "text-gray-400", "text-sm", "mb-6"),
       text("createTransition for single elements, createTransitionGroupRefresher for lists."),
     ]);
 
@@ -235,20 +235,20 @@ export const App: Component = () =>
     yield* ToggleSection();
 
     // Divider
-    yield* div(() => [classes("border-t", "border-gray-200", "my-6")]);
+    yield* div(() => [classes("border-t", "border-slate-700", "my-6")]);
 
     // Slide section
     yield* SlideSection();
 
     // Divider
-    yield* div(() => [classes("border-t", "border-gray-200", "my-6")]);
+    yield* div(() => [classes("border-t", "border-slate-700", "my-6")]);
 
     // Toast section
     yield* ToastSection();
 
     // Info
     yield* div(() => [
-      classes("mt-6", "p-4", "bg-blue-50", "rounded-lg", "text-sm"),
+      classes("mt-6", "p-4", "bg-blue-900/30", "rounded-lg", "text-sm"),
       h2(() => [classes("font-semibold", "mb-2"), text("@ydant/transition APIs:")]),
       p(() => [
         text(

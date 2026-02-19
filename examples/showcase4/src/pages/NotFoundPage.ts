@@ -11,7 +11,7 @@ const { div, h1, p, button } = html;
 export const NotFoundPage: Component = () =>
   div({ classes: ["p-6", "text-center"] }, function* () {
     yield* h1({ classes: ["text-4xl", "font-bold", "mb-4", "text-red-500"] }, "404");
-    yield* p({ classes: ["text-gray-600", "dark:text-gray-300"] }, "Page not found");
+    yield* p({ classes: ["text-gray-600", "dark:text-gray-400"] }, "Page not found");
     yield* button(
       {
         classes: ["mt-4", "px-4", "py-2", "bg-blue-500", "text-white", "rounded"],
