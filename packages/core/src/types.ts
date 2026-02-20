@@ -88,8 +88,11 @@ export type Response = void | ResponseOf[keyof SpellSchema];
  */
 export type Render = Generator<Request, void | ReturnOf[keyof SpellSchema], Response>;
 
+/** A {@link Render} generator or a falsy value (`false | null | undefined`). */
+export type MaybeRender = Render | false | null | undefined;
+
 /** A factory function that produces rendering instructions for an element's children. */
-export type Builder = () => Render | Render[];
+export type Builder = () => Render | MaybeRender[];
 
 /**
  * A component — a function that returns a {@link Render} generator.

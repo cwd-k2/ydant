@@ -16,6 +16,7 @@ export type {
   Request,
   Response,
   Builder,
+  MaybeRender,
   Render,
   Component,
   RequiredCapabilities,

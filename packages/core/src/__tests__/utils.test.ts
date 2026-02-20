@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { isTagged, toRender } from "../utils";
-import type { Render, Tagged } from "../types";
+import type { MaybeRender, Render, Tagged } from "../types";
 
 // テスト用の型定義
 type TestText = Tagged<"text", { content: string }>;
@@ -112,5 +112,59 @@ describe("toRender", () => {
     expect(items).toHaveLength(2);
     expect(items[0]).toEqual({ type: "text", content: "a" });
     expect(items[1]).toEqual({ type: "text", content: "b" });
+  });
+
+  it("filters out false from arrays", () => {
+    function* gen() {
+      yield { type: "text", content: "kept" } as const;
+    }
+
+    const result = toRender([false, gen(), false] as unknown as MaybeRender[]);
+    const items: unknown[] = [];
+    let next = result.next();
+    while (!next.done) {
+      items.push(next.value);
+      next = result.next();
+    }
+
+    expect(items).toHaveLength(1);
+    expect(items[0]).toEqual({ type: "text", content: "kept" });
+  });
+
+  it("filters out null and undefined from arrays", () => {
+    function* gen1() {
+      yield { type: "text", content: "a" } as const;
+    }
+    function* gen2() {
+      yield { type: "text", content: "b" } as const;
+    }
+
+    const result = toRender([null, gen1(), undefined, gen2(), null] as unknown as (
+      | Render
+      | null
+      | undefined
+    )[]);
+    const items: unknown[] = [];
+    let next = result.next();
+    while (!next.done) {
+      items.push(next.value);
+      next = result.next();
+    }
+
+    expect(items).toHaveLength(2);
+    expect(items[0]).toEqual({ type: "text", content: "a" });
+    expect(items[1]).toEqual({ type: "text", content: "b" });
+  });
+
+  it("handles array of all falsy values", () => {
+    const result = toRender([false, null, undefined] as unknown as MaybeRender[]);
+    const items: unknown[] = [];
+    let next = result.next();
+    while (!next.done) {
+      items.push(next.value);
+      next = result.next();
+    }
+
+    expect(items).toHaveLength(0);
   });
 });

@@ -1,4 +1,4 @@
-import type { Tagged, Request, Render } from "./types";
+import type { Tagged, Request, Render, MaybeRender } from "./types";
 
 /**
  * Checks whether a tagged object matches a given type tag.
@@ -17,11 +17,11 @@ export function isTagged(value: { type: string }, tag: string): boolean {
 }
 
 /** Normalizes a {@link Builder}'s return value into a single {@link Render} generator. */
-export function toRender(result: Render | Render[]): Render {
+export function toRender(result: Render | MaybeRender[]): Render {
   if (Array.isArray(result)) {
     return (function* () {
       for (const render of result) {
-        yield* render;
+        if (render) yield* render;
       }
     })() as Render;
   }
