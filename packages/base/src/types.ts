@@ -9,8 +9,9 @@ import type { Tagged, Render, Builder, Spell } from "@ydant/core";
 // =============================================================================
 
 /**
- * A handle to a mounted element, providing access to its node
- * and the ability to re-render its children.
+ * A handle to a mounted element, providing access to its rendered node.
+ *
+ * Use the standalone {@link refresh} function to re-render a Slot's children.
  *
  * @typeParam TNode - The type of the rendered node. Defaults to `unknown`
  *   because the base package is render-target agnostic.
@@ -18,8 +19,6 @@ import type { Tagged, Render, Builder, Spell } from "@ydant/core";
 export interface Slot<TNode = unknown> {
   /** The underlying rendered node. */
   readonly node: TNode;
-  /** Replaces the element's children by running a new {@link Builder}. */
-  refresh(children: Builder): void;
 }
 
 // =============================================================================

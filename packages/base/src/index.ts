@@ -80,10 +80,6 @@ export {
   tspan,
 } from "./elements/svg";
 
-// SlotRef
-export { createSlotRef, slotRef } from "./slot-ref";
-export type { SlotRef } from "./slot-ref";
-
 // Namespace exports
 import * as htmlElements from "./elements/html";
 import * as svgElements from "./elements/svg";
@@ -100,7 +96,7 @@ export { createDOMBackend } from "./capabilities";
 export { createBasePlugin } from "./plugin/index";
 
 // Building blocks (for extension plugins like @ydant/ssr hydration)
-export { createSlot, executeMount, processNode } from "./plugin/element";
+export { createSlot, executeMount, processNode, refresh } from "./plugin/element";
 export type { ProcessNodeOptions } from "./plugin/element";
 export { parseFactoryArgs } from "./elements/props";
 export type { ParsedFactoryArgs } from "./elements/props";

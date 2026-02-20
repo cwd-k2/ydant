@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { scope, sync } from "@ydant/core";
-import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
+import { createBasePlugin, createDOMBackend, div, text, refresh } from "@ydant/base";
 import type { Slot } from "@ydant/base";
 import { Lazy } from "../Lazy";
 import { createAsyncPlugin } from "../plugin";
@@ -191,7 +191,7 @@ describe("Lazy", () => {
     mockDisconnect.mockClear();
 
     // Refreshing parent slot triggers unmount of children (including Lazy's onMount cleanup)
-    parentSlot.refresh(function* () {
+    refresh(parentSlot, function* () {
       yield* text("Replaced");
     });
 

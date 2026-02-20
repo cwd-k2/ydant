@@ -1,6 +1,6 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
 import type { Component } from "@ydant/core";
-import { div, span, p, button, text, onMount } from "@ydant/base";
+import { div, span, p, button, text, onMount, refresh } from "@ydant/base";
 import type { Slot } from "@ydant/base";
 import { renderToString } from "../render";
 import { hydrate } from "../hydrate";
@@ -108,8 +108,8 @@ describe("hydrate", () => {
     ssrAndHydrate(App);
     expect(container.innerHTML).toBe("<div>initial</div>");
 
-    // After hydration, Slot.refresh should work with normal rendering
-    slot!.refresh(function* () {
+    // After hydration, refresh should work with normal rendering
+    refresh(slot!, function* () {
       yield* text("updated");
     });
     expect(container.querySelector("div")!.innerHTML).toBe("updated");

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { scope, sync } from "@ydant/core";
-import { createBasePlugin, createDOMBackend, div, text, onUnmount } from "@ydant/base";
+import { createBasePlugin, createDOMBackend, div, text, onUnmount, refresh } from "@ydant/base";
 import type { Slot } from "@ydant/base";
 import { chunked } from "../chunked";
 import { createAsyncPlugin } from "../plugin";
@@ -209,7 +209,7 @@ describe("chunked", () => {
     expect(container.textContent).toBe("abcd");
 
     // Refresh parent slot — all unmount callbacks should fire
-    parentSlot.refresh(function* () {
+    refresh(parentSlot, function* () {
       yield* text("replaced");
     });
 

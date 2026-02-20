@@ -10,75 +10,30 @@ pnpm add @ydant/transition
 
 ## Usage
 
-### Transition (Enter-only)
+### Transition
 
-For simple show/hide with enter animation:
-
-```typescript
-import { type Component } from "@ydant/core";
-import { div, button, text, type Slot } from "@ydant/base";
-import { Transition } from "@ydant/transition";
-
-const App: Component = () => {
-  let show = true;
-  let transitionSlot: Slot;
-
-  return div(function* () {
-    yield* button(
-      {
-        onClick: () => {
-          show = !show;
-          transitionSlot.refresh(() =>
-            Transition({
-              show,
-              enter: "transition-opacity duration-300",
-              enterFrom: "opacity-0",
-              enterTo: "opacity-100",
-              content: () => div(() => [text("Fade me!")]),
-            }),
-          );
-        },
-      },
-      "Toggle",
-    );
-
-    transitionSlot = yield* div(() =>
-      Transition({
-        show,
-        enter: "transition-opacity duration-300",
-        enterFrom: "opacity-0",
-        enterTo: "opacity-100",
-        content: () => div(() => [text("Fade me!")]),
-      }),
-    );
-  });
-};
-```
-
-### createTransition (Enter + Leave)
-
-For full enter/leave animation support with programmatic control:
+Transition provides enter/leave animation with programmatic show/hide control:
 
 ```typescript
 import { type Component } from "@ydant/core";
 import { div, button, text } from "@ydant/base";
-import { createTransition, type TransitionHandle } from "@ydant/transition";
+import { Transition, type TransitionHandle } from "@ydant/transition";
 
 const App: Component = () => {
-  let fadeTransition: TransitionHandle;
+  let fade: TransitionHandle;
 
   return div(function* () {
     yield* button(
       {
         onClick: async () => {
-          const isVisible = fadeTransition.slot.node.firstElementChild !== null;
-          await fadeTransition.setShow(!isVisible);
+          const isVisible = fade.slot.node.firstElementChild !== null;
+          await fade.setShow(!isVisible);
         },
       },
       "Toggle",
     );
 
-    fadeTransition = yield* createTransition({
+    fade = yield* Transition({
       enter: "fade-enter",
       enterFrom: "fade-enter-from",
       enterTo: "fade-enter-to",
@@ -91,9 +46,23 @@ const App: Component = () => {
 };
 ```
 
+Use `show: true` to render content immediately (with enter animation):
+
+```typescript
+fade =
+  yield *
+  Transition({
+    show: true,
+    enter: "transition-opacity duration-300",
+    enterFrom: "opacity-0",
+    enterTo: "opacity-100",
+    content: () => div(() => [text("Visible on mount")]),
+  });
+```
+
 ### CSS Classes
 
-Both `Transition` and `createTransition` use explicit class props:
+`Transition` uses explicit class props:
 
 | Prop        | When Applied               |
 | ----------- | -------------------------- |
@@ -187,10 +156,10 @@ refresher(slot, newItems);
 ### Transition
 
 ```typescript
-function Transition(props: TransitionProps): Render;
+function* Transition(props: TransitionProps): TransitionInstruction;
 
 interface TransitionProps {
-  show: boolean;
+  show?: boolean; // defaults to false
   enter?: string;
   enterFrom?: string;
   enterTo?: string;
@@ -199,26 +168,16 @@ interface TransitionProps {
   leaveTo?: string;
   content: () => Render;
 }
-```
-
-Enter-only transition component. For leave animations, use `createTransition`.
-
-### createTransition
-
-```typescript
-function* createTransition(
-  props: Omit<TransitionProps, "show">,
-): TransitionInstruction;
 
 type TransitionInstruction = Generator<Element, TransitionHandle, Slot>;
 
 interface TransitionHandle {
-  slot: Slot;
+  slot: Slot<HTMLElement>;
   setShow(show: boolean): Promise<void>;
 }
 ```
 
-Creates a transition with programmatic show/hide control including leave animations.
+Transition with enter/leave animation support. Returns a `TransitionHandle` for programmatic show/hide control.
 
 ### TransitionGroup
 
@@ -257,6 +216,6 @@ function leaveTransition(el: HTMLElement, props: TransitionProps): Promise<void>
 
 ## Module Structure
 
-- `Transition.ts` - Transition, createTransition, enterTransition, leaveTransition
+- `Transition.ts` - Transition, enterTransition, leaveTransition
 - `TransitionGroup.ts` - TransitionGroup, createTransitionGroupRefresher
 - `utils.ts` - CSS class helpers (addClasses, removeClasses, waitForTransition)

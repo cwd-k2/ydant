@@ -1,13 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { scope } from "@ydant/core";
+import type { Slot } from "@ydant/base";
 import {
   createBasePlugin,
   createDOMBackend,
-  createSlotRef,
   div,
   text,
   onMount,
   onUnmount,
+  refresh,
 } from "@ydant/base";
 import { createPortalPlugin, portal } from "../index";
 
@@ -58,17 +59,16 @@ describe("Portal plugin", () => {
     expect(target.querySelector("div > div")?.textContent).toBe("Deeply nested");
   });
 
-  it("cleans up portal target children on Slot.refresh()", () => {
+  it("cleans up portal target children on refresh()", () => {
     const root = document.createElement("div");
     const portalTarget = document.createElement("div");
-    const ref = createSlotRef();
+    let parentSlot: Slot;
 
     function* App() {
-      const slot = yield* div(function* () {
+      parentSlot = yield* div(function* () {
         yield* text("Main");
         yield* portal(portalTarget, () => [text("Portal content")]);
       });
-      ref.bind(slot);
     }
 
     scope(createDOMBackend(root), [createBasePlugin(), createPortalPlugin()]).mount(App);
@@ -76,7 +76,7 @@ describe("Portal plugin", () => {
     expect(portalTarget.textContent).toBe("Portal content");
 
     // Refresh the parent slot without portal
-    ref.refresh(() => [text("Refreshed")]);
+    refresh(parentSlot!, () => [text("Refreshed")]);
 
     expect(portalTarget.textContent).toBe("");
     expect(root.textContent).toBe("Refreshed");
@@ -85,13 +85,12 @@ describe("Portal plugin", () => {
   it("multiple portals to same target: unmount of one clears all content", () => {
     const root = document.createElement("div");
     const sharedTarget = document.createElement("div");
-    const ref = createSlotRef();
+    let parentSlot: Slot;
 
     function* App() {
-      const slot = yield* div(function* () {
+      parentSlot = yield* div(function* () {
         yield* portal(sharedTarget, () => [text("Portal A")]);
       });
-      ref.bind(slot);
       yield* portal(sharedTarget, () => [text("Portal B")]);
     }
 
@@ -101,7 +100,7 @@ describe("Portal plugin", () => {
     expect(sharedTarget.textContent).toContain("Portal B");
 
     // Refresh the div containing Portal A — its unmount triggers clearChildren on sharedTarget
-    ref.refresh(() => [text("No portal")]);
+    refresh(parentSlot!, () => [text("No portal")]);
 
     // Portal B's content is also gone because clearChildren removed all children
     expect(sharedTarget.textContent).toBe("");
@@ -139,16 +138,15 @@ describe("Portal plugin", () => {
     it("onUnmount fires when portal parent is refreshed", () => {
       const portalTarget = document.createElement("div");
       const unmountCallback = vi.fn();
-      const ref = createSlotRef();
+      let parentSlot: Slot;
 
       function* App() {
-        const slot = yield* div(function* () {
+        parentSlot = yield* div(function* () {
           yield* portal(portalTarget, function* () {
             yield* div(() => [text("In portal")]);
             yield* onUnmount(unmountCallback);
           });
         });
-        ref.bind(slot);
       }
 
       scope(createDOMBackend(container), [createBasePlugin(), createPortalPlugin()]).mount(App);
@@ -156,7 +154,7 @@ describe("Portal plugin", () => {
       expect(unmountCallback).not.toHaveBeenCalled();
 
       // Refresh parent slot — portal content should be unmounted
-      ref.refresh(() => [text("No portal")]);
+      refresh(parentSlot!, () => [text("No portal")]);
 
       expect(unmountCallback).toHaveBeenCalledOnce();
       expect(portalTarget.textContent).toBe("");

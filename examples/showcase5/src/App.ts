@@ -1,5 +1,6 @@
 import type { Component } from "@ydant/core";
-import { createSlotRef, div, h1, h2, p, button, input, select, option, keyed } from "@ydant/base";
+import type { Slot } from "@ydant/base";
+import { refresh, div, h1, h2, p, button, input, select, option, keyed } from "@ydant/base";
 import type { ListItem, SortOrder } from "./types";
 import { ListItemView } from "./components/ListItemView";
 
@@ -18,8 +19,8 @@ export const App: Component = () => {
   let newItemText = "";
   let newItemPriority: ListItem["priority"] = "medium";
 
-  const listRef = createSlotRef();
-  const statsRef = createSlotRef();
+  let listSlot: Slot;
+  let statsSlot: Slot;
 
   // Sort items in place (one-time action)
   const sortItemsBy = (order: SortOrder) => {
@@ -35,7 +36,7 @@ export const App: Component = () => {
         items.sort((a, b) => a.text.localeCompare(b.text));
         break;
     }
-    listRef.refresh(renderList);
+    refresh(listSlot, renderList);
   };
 
   // Move item in array
@@ -46,8 +47,8 @@ export const App: Component = () => {
     // Swap items
     [items[index], items[newIndex]] = [items[newIndex], items[index]];
 
-    listRef.refresh(renderList);
-    statsRef.refresh(renderStats);
+    refresh(listSlot, renderList);
+    refresh(statsSlot, renderStats);
   };
 
   const renderList = function* () {
@@ -73,8 +74,8 @@ export const App: Component = () => {
           onMoveDown: () => moveItem(i, 1),
           onDelete: () => {
             items = items.filter((t) => t.id !== item.id);
-            listRef.refresh(renderList);
-            statsRef.refresh(renderStats);
+            refresh(listSlot, renderList);
+            refresh(statsSlot, renderStats);
           },
         });
       }
@@ -145,8 +146,8 @@ export const App: Component = () => {
                 priority: newItemPriority,
               });
               newItemText = "";
-              listRef.refresh(renderList);
-              statsRef.refresh(renderStats);
+              refresh(listSlot, renderList);
+              refresh(statsSlot, renderStats);
             }
           },
         },
@@ -176,10 +177,10 @@ export const App: Component = () => {
     });
 
     // List
-    listRef.bind(yield* div({ class: "space-y-2" }, renderList));
+    listSlot = yield* div({ class: "space-y-2" }, renderList);
 
     // Stats
-    statsRef.bind(yield* div({ class: "flex gap-4 text-sm text-gray-400" }, renderStats));
+    statsSlot = yield* div({ class: "flex gap-4 text-sm text-gray-400" }, renderStats);
 
     // Info
     yield* div({ class: "mt-4 p-4 bg-blue-900/30 rounded-lg text-sm" }, function* () {

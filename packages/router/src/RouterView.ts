@@ -20,7 +20,7 @@
  */
 
 import type { Render } from "@ydant/core";
-import { div, onMount } from "@ydant/base";
+import { div, onMount, refresh } from "@ydant/base";
 import type { RouteDefinition, RouterViewProps } from "./types";
 import { ROUTE_CHANGE_EVENT } from "./state";
 import { matchPath } from "./matching";
@@ -113,14 +113,14 @@ export function RouterView(props: RouterViewProps): Render {
     const innerSlot = yield* div(() => renderMatchedRouteContent(matched));
 
     // Handle initial async guard evaluation
-    handleAsyncGuard(matched, (builder) => innerSlot.refresh(builder));
+    handleAsyncGuard(matched, (builder) => refresh(innerSlot, builder));
 
     // Listen for route change events
     yield* onMount(() => {
       const handleRouteChange = () => {
         const newMatched = findMatchedRoute(routes, base, window.location.pathname);
-        innerSlot.refresh(() => renderMatchedRouteContent(newMatched));
-        handleAsyncGuard(newMatched, (builder) => innerSlot.refresh(builder));
+        refresh(innerSlot, () => renderMatchedRouteContent(newMatched));
+        handleAsyncGuard(newMatched, (builder) => refresh(innerSlot, builder));
       };
 
       window.addEventListener("popstate", handleRouteChange);

@@ -6,7 +6,7 @@ Ydant プロジェクトにおける命名規則、型の使い分け、コー�
 
 ### 関数プレフィックス
 
-- **`create*`**: 設定・構築を伴うオブジェクトの生成（Plugin, Context, SlotRef, Resource, etc.）
+- **`create*`**: 設定・構築を伴うオブジェクトの生成（Plugin, Context, Resource, etc.）
 - **`get*`**: 現在の状態を取得する関数（getRoute など）
 - **プレフィックスなし**: リアクティブプリミティブ（signal, computed, effect）
   — 他のリアクティビティライブラリとの慣習に合わせたもの
@@ -133,7 +133,7 @@ yield *
 
 ### Props の命名: `children` vs `content`
 
-- **`children`**: DOM 要素の実際の子要素に使う（`RouterLink.children`, `Element.children`, `Slot.refresh(children)`）
+- **`children`**: DOM 要素の実際の子要素に使う（`RouterLink.children`, `Element.children`）
 - **`content`**: 抽象的な描画関数を受け取る Props に使う（`Suspense.content`, `ErrorBoundary.content`, `Transition.content`, `TransitionGroup.content`）
 
 ```ts
@@ -375,18 +375,13 @@ yield * keyed(itemKey, content)(item, i);
 内部構造を持つコンポーネントは Props インターフェースを定義:
 
 ```ts
-export interface TransitionProps {
-  show: boolean;
-  enter?: string;
-  enterFrom?: string;
-  enterTo?: string;
+export interface SuspenseProps {
+  fallback: () => Render;
   content: () => Render;
 }
 
-export function Transition(props: TransitionProps): Render {
-  return div(function* () {
-    // 実装
-  });
+export function* Suspense(props: SuspenseProps): ElementRender {
+  // 実装
 }
 ```
 

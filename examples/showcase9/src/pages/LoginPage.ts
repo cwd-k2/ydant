@@ -1,5 +1,6 @@
 import type { Component } from "@ydant/core";
-import { div, h1, button, input, label, text, createSlotRef } from "@ydant/base";
+import type { Slot } from "@ydant/base";
+import { div, h1, button, input, label, text, refresh } from "@ydant/base";
 import { navigate } from "@ydant/router";
 import { login, isLoggedIn } from "../auth";
 import { refreshNavAuth } from "../components/NavBar";
@@ -22,7 +23,7 @@ export const LoginPage: Component = () =>
     }
 
     let username = "";
-    const errorRef = createSlotRef();
+    let errorSlot: Slot;
 
     yield* div({ class: "bg-slate-800 p-8 rounded-lg border border-slate-700 w-80" }, function* () {
       yield* h1({ class: "text-xl font-bold mb-6 text-center" }, "Login");
@@ -46,7 +47,7 @@ export const LoginPage: Component = () =>
           class: "w-full py-2 mb-2 bg-blue-500 text-white rounded font-medium hover:bg-blue-600",
           onClick: () => {
             if (!username.trim()) {
-              errorRef.refresh(function* () {
+              refresh(errorSlot, function* () {
                 yield* text("Please enter a username");
               });
               return;
@@ -65,7 +66,7 @@ export const LoginPage: Component = () =>
           class: "w-full py-2 bg-slate-700 text-gray-300 rounded font-medium hover:bg-slate-600",
           onClick: () => {
             if (!username.trim()) {
-              errorRef.refresh(function* () {
+              refresh(errorSlot, function* () {
                 yield* text("Please enter a username");
               });
               return;
@@ -78,6 +79,6 @@ export const LoginPage: Component = () =>
         "Login as Viewer",
       );
 
-      errorRef.bind(yield* div({ class: "text-red-500 text-sm mt-2" }));
+      errorSlot = yield* div({ class: "text-red-500 text-sm mt-2" });
     });
   });

@@ -17,7 +17,7 @@
  */
 
 import type { Spell, Render } from "@ydant/core";
-import { div } from "@ydant/base";
+import { div, refresh } from "@ydant/base";
 import { onMount, onUnmount } from "@ydant/base";
 
 /** Props for the Lazy component. */
@@ -64,7 +64,7 @@ export function* Lazy(props: LazyProps): Spell<"element"> {
       const node = containerSlot.node as globalThis.Element;
 
       const activate = () => {
-        containerSlot.refresh(content);
+        refresh(containerSlot, content);
       };
 
       if (trigger === "visible") {

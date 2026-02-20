@@ -99,42 +99,34 @@ yield *
 
 ### Types
 
-| Type        | Description                                                   |
-| ----------- | ------------------------------------------------------------- |
-| `Slot`      | `{ readonly node: HTMLElement, refresh: (children) => void }` |
-| `SlotRef`   | Reference holder for a `Slot`, created by `createSlotRef()`   |
-| `Element`   | Tagged type for HTML/SVG elements                             |
-| `Text`      | Tagged type for text nodes                                    |
-| `Lifecycle` | Tagged type for lifecycle hooks                               |
-| `ClassItem` | `string \| false \| null \| undefined \| 0 \| ""`             |
+| Type        | Description                                       |
+| ----------- | ------------------------------------------------- |
+| `Slot`      | `{ readonly node: TNode }` — element handle       |
+| `Element`   | Tagged type for HTML/SVG elements                 |
+| `Text`      | Tagged type for text nodes                        |
+| `Lifecycle` | Tagged type for lifecycle hooks                   |
+| `ClassItem` | `string \| false \| null \| undefined \| 0 \| ""` |
 
 > `Render`, `Component` types are defined in `@ydant/core`.
 
-### createSlotRef
+### refresh()
 
 ```typescript
-function createSlotRef(): SlotRef;
-
-interface SlotRef {
-  readonly current: Slot | null;
-  bind(slot: Slot): void;
-  refresh(children: Builder): void;
-  readonly node: HTMLElement | null;
-}
+function refresh(slot: Slot, builder: Builder): void;
 ```
 
-Creates a reference holder for a `Slot`. Use `bind()` to associate a Slot, then `refresh()` and `node` to interact with it:
+Replaces a Slot's children by running a new Builder. The Slot is obtained from `yield*` on an element factory:
 
 ```typescript
-const ref = createSlotRef();
+let mySlot: Slot;
 
 yield *
   div(function* () {
-    ref.bind(yield* div(() => [text("Content")]));
+    mySlot = yield* div(() => [text("Content")]);
   });
 
-// Later: update via ref
-ref.refresh(() => [text("Updated!")]);
+// Later: update the content
+refresh(mySlot, () => [text("Updated!")]);
 ```
 
 ### keyed() and Element Reuse
@@ -172,7 +164,7 @@ const slot =
   });
 
 // Later: update the content
-slot.refresh(() => [p("Updated!")]);
+refresh(slot, () => [p("Updated!")]);
 ```
 
 ### Array Syntax

@@ -1,6 +1,7 @@
 import type { Component, Render } from "@ydant/core";
+import type { Slot } from "@ydant/base";
 import type { FormField, PasswordStrength } from "./types";
-import { div, h1, span, p, button, input, label, form, createSlotRef } from "@ydant/base";
+import { div, h1, span, p, button, input, label, form, refresh } from "@ydant/base";
 import {
   validateUsername,
   validateEmail,
@@ -41,21 +42,16 @@ export const App: Component = () =>
       confirm: { value: "", touched: false, error: null },
     };
 
-    // --- SlotRefs ---
-    const errorRefs = {
-      username: createSlotRef(),
-      email: createSlotRef(),
-      password: createSlotRef(),
-      confirm: createSlotRef(),
-    };
-    const strengthRef = createSlotRef();
-    const summaryRef = createSlotRef();
+    // --- Slot references ---
+    const errorSlots: Record<string, Slot> = {};
+    let strengthSlot: Slot;
+    let summarySlot: Slot;
 
     // --- Validation ---
     function validateField(name: string, validator: Validator): void {
       const field = fields[name];
       field.error = validator(field.value);
-      errorRefs[name as keyof typeof errorRefs].refresh(renderError(field.error));
+      if (errorSlots[name]) refresh(errorSlots[name], renderError(field.error));
     }
 
     function validateAll(): boolean {
@@ -64,10 +60,10 @@ export const App: Component = () =>
       fields.password.error = validatePassword(fields.password.value);
       fields.confirm.error = validateConfirm(fields.confirm.value, fields.password.value);
 
-      for (const name of Object.keys(errorRefs)) {
+      for (const name of Object.keys(errorSlots)) {
         const field = fields[name];
         field.touched = true;
-        errorRefs[name as keyof typeof errorRefs].refresh(renderError(field.error));
+        if (errorSlots[name]) refresh(errorSlots[name], renderError(field.error));
       }
 
       return Object.values(fields).every((f) => f.error === null);
@@ -80,11 +76,11 @@ export const App: Component = () =>
       }
       // password 入力時は強度メーターも更新
       if (name === "password") {
-        strengthRef.refresh(renderStrength(getPasswordStrength(el.value)));
+        refresh(strengthSlot, renderStrength(getPasswordStrength(el.value)));
         // confirm フィールドも再検証（パスワード変更時）
         if (fields.confirm.touched) {
           fields.confirm.error = validateConfirm(fields.confirm.value, el.value);
-          errorRefs.confirm.refresh(renderError(fields.confirm.error));
+          if (errorSlots.confirm) refresh(errorSlots.confirm, renderError(fields.confirm.error));
         }
       }
     }
@@ -123,7 +119,7 @@ export const App: Component = () =>
           e.preventDefault();
           const valid = validateAll();
           if (valid) {
-            summaryRef.refresh(function* () {
+            refresh(summarySlot, function* () {
               yield* p(
                 { class: "p-4 bg-green-900/30 border border-green-700 rounded" },
                 function* () {
@@ -135,7 +131,7 @@ export const App: Component = () =>
             const errors = Object.entries(fields)
               .filter(([, f]) => f.error)
               .map(([name, f]) => `${name}: ${f.error}`);
-            summaryRef.refresh(function* () {
+            refresh(summarySlot, function* () {
               yield* div(
                 { class: "p-4 bg-red-900/30 border border-red-700 rounded" },
                 function* () {
@@ -158,7 +154,7 @@ export const App: Component = () =>
           label: "Username",
           type: "text",
           placeholder: "Enter username",
-          errorRef: errorRefs.username,
+          onSlotReady: (s) => (errorSlots.username = s),
           onInput: (el) => handleInput("username", validateUsername, el),
           onBlur: () => handleBlur("username", validateUsername),
         });
@@ -168,7 +164,7 @@ export const App: Component = () =>
           label: "Email",
           type: "email",
           placeholder: "Enter email",
-          errorRef: errorRefs.email,
+          onSlotReady: (s) => (errorSlots.email = s),
           onInput: (el) => handleInput("email", validateEmail, el),
           onBlur: () => handleBlur("email", validateEmail),
         });
@@ -184,8 +180,8 @@ export const App: Component = () =>
             onInput: (e) => handleInput("password", validatePassword, e.target as HTMLInputElement),
             onBlur: () => handleBlur("password", validatePassword),
           });
-          errorRefs.password.bind(yield* p(renderError(null)));
-          strengthRef.bind(yield* div(renderStrength("weak")));
+          errorSlots.password = yield* p(renderError(null));
+          strengthSlot = yield* div(renderStrength("weak"));
         });
 
         // Confirm Password
@@ -193,7 +189,7 @@ export const App: Component = () =>
           label: "Confirm Password",
           type: "password",
           placeholder: "Re-enter password",
-          errorRef: errorRefs.confirm,
+          onSlotReady: (s) => (errorSlots.confirm = s),
           onInput: (el) =>
             handleInput("confirm", (v) => validateConfirm(v, fields.password.value), el),
           onBlur: () => handleBlur("confirm", (v) => validateConfirm(v, fields.password.value)),
@@ -210,7 +206,7 @@ export const App: Component = () =>
         );
 
         // Summary
-        summaryRef.bind(yield* div(() => []));
+        summarySlot = yield* div(() => []);
       },
     );
   });
@@ -221,7 +217,7 @@ interface FormFieldGroupProps {
   label: string;
   type: string;
   placeholder: string;
-  errorRef: ReturnType<typeof createSlotRef>;
+  onSlotReady: (slot: Slot) => void;
   onInput: (el: HTMLInputElement) => void;
   onBlur: () => void;
 }
@@ -237,12 +233,6 @@ function FormFieldGroup(props: FormFieldGroupProps): Render {
       onInput: (e) => props.onInput(e.target as HTMLInputElement),
       onBlur: props.onBlur,
     });
-    props.errorRef.bind(yield* p(renderEmptyError()));
+    props.onSlotReady(yield* p(() => []));
   });
-}
-
-function renderEmptyError(): () => Render {
-  return function* () {
-    // empty - no error initially
-  };
 }

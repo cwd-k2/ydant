@@ -1,7 +1,8 @@
 import type { Component, Builder, Render } from "@ydant/core";
-import { createSlotRef, div, h1, h2, p, span, button, cn } from "@ydant/base";
+import type { Slot } from "@ydant/base";
+import { refresh, div, h1, h2, p, span, button, cn } from "@ydant/base";
 import {
-  createTransition,
+  Transition,
   createTransitionGroupRefresher,
   type TransitionHandle,
 } from "@ydant/transition";
@@ -13,9 +14,8 @@ const TOAST_COLORS: Record<Toast["type"], string[]> = {
   info: ["bg-blue-500", "text-white"],
 };
 
-// Section: Simple toggle with createTransition (supports leave animation)
+// Section: Simple toggle with Transition (supports leave animation)
 function ToggleSection(): Render {
-  const sectionRef = createSlotRef();
   let fadeTransition: TransitionHandle;
 
   const renderSection = function* () {
@@ -39,7 +39,7 @@ function ToggleSection(): Render {
       "Toggle Content",
     );
 
-    fadeTransition = yield* createTransition({
+    fadeTransition = yield* Transition({
       enter: "fade-enter",
       enterFrom: "fade-enter-from",
       enterTo: "fade-enter-to",
@@ -51,7 +51,7 @@ function ToggleSection(): Render {
           yield* p("This content fades in and out!");
           yield* p(
             { class: cn("text-sm", "text-blue-400", "mt-2") },
-            "The createTransition API handles enter AND leave animations.",
+            "The Transition API handles enter AND leave animations.",
           );
         }),
     });
@@ -59,15 +59,12 @@ function ToggleSection(): Render {
 
   return div(function* () {
     yield* h2({ class: cn("text-xl", "font-semibold", "mb-4") }, "Fade Transition");
-    sectionRef.bind(
-      yield* div({ class: cn("p-4", "bg-slate-800", "rounded-lg") }, renderSection as Builder),
-    );
+    yield* div({ class: cn("p-4", "bg-slate-800", "rounded-lg") }, renderSection as Builder);
   });
 }
 
-// Section: Slide transition with createTransition
+// Section: Slide transition with Transition
 function SlideSection(): Render {
-  const sectionRef = createSlotRef();
   let slideTransition: TransitionHandle;
 
   const renderSection = function* () {
@@ -90,7 +87,7 @@ function SlideSection(): Render {
       "Toggle Panel",
     );
 
-    slideTransition = yield* createTransition({
+    slideTransition = yield* Transition({
       enter: "slide-enter",
       enterFrom: "slide-enter-from",
       enterTo: "slide-enter-to",
@@ -104,9 +101,7 @@ function SlideSection(): Render {
 
   return div(function* () {
     yield* h2({ class: cn("text-xl", "font-semibold", "mb-4") }, "Slide Transition");
-    sectionRef.bind(
-      yield* div({ class: cn("p-4", "bg-slate-800", "rounded-lg") }, renderSection as Builder),
-    );
+    yield* div({ class: cn("p-4", "bg-slate-800", "rounded-lg") }, renderSection as Builder);
   });
 }
 
@@ -114,7 +109,7 @@ function SlideSection(): Render {
 function ToastSection(): Render {
   let toasts: Toast[] = [];
   let nextId = 1;
-  const toastListRef = createSlotRef();
+  let toastListSlot: Slot;
 
   // TransitionGroup refresher — handles enter/leave animations per item
   const refresher = createTransitionGroupRefresher<Toast>({
@@ -152,8 +147,7 @@ function ToastSection(): Render {
   });
 
   function updateList() {
-    const slot = toastListRef.current;
-    if (slot) refresher(slot, toasts);
+    if (toastListSlot) refresher(toastListSlot, toasts);
   }
 
   const addToast = (type: Toast["type"]) => {
@@ -211,7 +205,7 @@ function ToastSection(): Render {
       );
     });
 
-    toastListRef.bind(yield* div({ class: cn("space-y-2", "min-h-[120px]") }));
+    toastListSlot = yield* div({ class: cn("space-y-2", "min-h-[120px]") });
   });
 }
 
@@ -225,7 +219,7 @@ export const App: Component = () =>
 
     yield* p(
       { class: cn("text-center", "text-gray-400", "text-sm", "mb-6") },
-      "createTransition for single elements, createTransitionGroupRefresher for lists.",
+      "Transition for single elements, createTransitionGroupRefresher for lists.",
     );
 
     // Toggle section (fade)
@@ -249,7 +243,7 @@ export const App: Component = () =>
       function* () {
         yield* h2({ class: cn("font-semibold", "mb-2") }, "@ydant/transition APIs:");
         yield* p(
-          "createTransition — returns a handle with setShow(boolean) for single element enter/leave. " +
+          "Transition — returns a handle with setShow(boolean) for single element enter/leave. " +
             "createTransitionGroupRefresher — manages a keyed list with automatic enter/leave per item.",
         );
       },

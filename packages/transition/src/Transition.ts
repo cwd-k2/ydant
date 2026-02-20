@@ -2,11 +2,11 @@
  * Transition component
  *
  * Applies CSS transitions when elements are shown or hidden.
+ * Returns a handle with `setShow()` for full enter/leave animation support.
  *
  * @example
  * ```typescript
- * yield* Transition({
- *   show: isVisible,
+ * const { setShow } = yield* Transition({
  *   enter: "transition-opacity duration-300",
  *   enterFrom: "opacity-0",
  *   enterTo: "opacity-100",
@@ -15,17 +15,23 @@
  *   leaveTo: "opacity-0",
  *   content: () => div(() => [text("Content")]),
  * });
+ *
+ * // Show with animation
+ * await setShow(true);
+ *
+ * // Hide with animation
+ * await setShow(false);
  * ```
  */
 
 import type { Builder, Render } from "@ydant/core";
 import type { Slot, Element } from "@ydant/base";
-import { div, onMount } from "@ydant/base";
+import { div, refresh } from "@ydant/base";
 import { runTransition } from "./utils";
 
 export interface TransitionProps {
-  /** Whether to show the element */
-  show: boolean;
+  /** Initial visibility state (defaults to false) */
+  show?: boolean;
   /** Base classes applied during the entire enter transition */
   enter?: string;
   /** Classes applied at the start of the enter transition */
@@ -52,81 +58,8 @@ async function leaveTransition(el: HTMLElement, props: TransitionProps): Promise
   return runTransition(el, { base: props.leave, from: props.leaveFrom, to: props.leaveTo });
 }
 
-// WeakMap to persist transition state across renders
-const transitionStates = new WeakMap<
-  HTMLElement,
-  {
-    isShowing: boolean;
-    isAnimating: boolean;
-    childSlot: Slot<HTMLElement> | null;
-  }
->();
-
 /**
- * Transition component
- *
- * Runs an enter animation in response to changes in `show`.
- *
- * Note: The current implementation only supports enter animations.
- * For leave animation support, use `createTransition` instead.
- *
- * @see createTransition - Alternative API that supports leave animations
- */
-export function Transition(props: TransitionProps): Render {
-  const { show, content } = props;
-
-  return div(function* () {
-    // Create a container div (always present in the DOM)
-    const containerSlot = yield* div(function* () {
-      // Only render content when show is true
-      if (show) {
-        yield* content();
-      }
-    });
-
-    yield* onMount(() => {
-      const container = containerSlot.node as HTMLElement;
-
-      // Retrieve or initialize transition state
-      let state = transitionStates.get(container);
-      if (!state) {
-        state = {
-          isShowing: false,
-          isAnimating: false,
-          childSlot: null,
-        };
-        transitionStates.set(container, state);
-      }
-
-      const child = container.firstElementChild as HTMLElement | null;
-
-      if (show && !state.isShowing) {
-        // Enter: false -> true
-        state.isShowing = true;
-        if (child) {
-          enterTransition(child, props);
-        }
-      } else if (!show && state.isShowing && !state.isAnimating) {
-        // Leave: true -> false
-        // The child element has already been removed (cleared by refresh),
-        // so restoring it for animation would require architectural changes.
-        // Instead, we simply update the state here.
-        state.isShowing = false;
-      }
-
-      // Clean up state on unmount
-      return () => {
-        transitionStates.delete(container);
-      };
-    });
-  });
-}
-
-/**
- * Handle returned by `createTransition`, providing control over the transition state.
- *
- * Supports leave animations by providing a dedicated `setShow` function
- * that manages the animation lifecycle.
+ * Handle returned by `Transition`, providing control over the transition state.
  */
 export interface TransitionHandle {
   /** The Slot representing the transition container */
@@ -135,35 +68,20 @@ export interface TransitionHandle {
   setShow: (show: boolean) => Promise<void>;
 }
 
-/** Return type of `createTransition`. Use with `yield*` to obtain a TransitionHandle. */
+/** Return type of `Transition`. Use with `yield*` to obtain a TransitionHandle. */
 export type TransitionInstruction = Generator<Element, TransitionHandle, Slot>;
 
 /**
- * Create a stateful Transition with full enter/leave animation support
+ * Transition with full enter/leave animation support.
  *
- * @example
- * ```typescript
- * const transition = yield* createTransition({
- *   enter: "fade-enter",
- *   enterFrom: "fade-enter-from",
- *   enterTo: "fade-enter-to",
- *   leave: "fade-leave",
- *   leaveFrom: "fade-leave-from",
- *   leaveTo: "fade-leave-to",
- *   content: () => div(() => [text("Content")]),
- * });
- *
- * // Show with animation
- * await transition.setShow(true);
- *
- * // Hide with animation
- * await transition.setShow(false);
- * ```
+ * Creates a container element and manages visibility transitions.
+ * The `show` prop controls the initial visibility (defaults to `false`).
+ * Use the returned `setShow` function to toggle visibility with animations.
  */
-export function* createTransition(props: Omit<TransitionProps, "show">): TransitionInstruction {
-  const { content } = props;
+export function* Transition(props: TransitionProps): TransitionInstruction {
+  const { content, show: initialShow = false } = props;
 
-  let isShowing = false;
+  let isShowing = initialShow;
   let isAnimating = false;
 
   const renderContent: Builder = function* () {
@@ -175,37 +93,30 @@ export function* createTransition(props: Omit<TransitionProps, "show">): Transit
   const containerSlot = (yield* div(renderContent)) as Slot<HTMLElement>;
 
   const setShow = async (show: boolean): Promise<void> => {
-    if (show === isShowing || isAnimating) {
-      return;
-    }
+    if (show === isShowing || isAnimating) return;
 
     isAnimating = true;
 
     if (show) {
-      // Enter
       isShowing = true;
-      containerSlot.refresh(renderContent);
+      refresh(containerSlot, renderContent);
 
       const child = containerSlot.node.firstElementChild as HTMLElement | null;
       if (child) {
-        await enterTransition(child, props as TransitionProps);
+        await enterTransition(child, props);
       }
     } else {
-      // Leave
       const child = containerSlot.node.firstElementChild as HTMLElement | null;
       if (child) {
-        await leaveTransition(child, props as TransitionProps);
+        await leaveTransition(child, props);
       }
 
       isShowing = false;
-      containerSlot.refresh(renderContent);
+      refresh(containerSlot, renderContent);
     }
 
     isAnimating = false;
   };
 
-  return {
-    slot: containerSlot,
-    setShow,
-  };
+  return { slot: containerSlot, setShow };
 }

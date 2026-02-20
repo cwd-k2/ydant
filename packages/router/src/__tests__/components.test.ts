@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { scope, type Component } from "@ydant/core";
-import { createBasePlugin, createDOMBackend, div, p, text } from "@ydant/base";
+import { createBasePlugin, createDOMBackend, div, p, text, refresh } from "@ydant/base";
 import type { RouteComponentProps } from "../types";
 import { RouterLink } from "../RouterLink";
 import { RouterView } from "../RouterView";
@@ -210,7 +210,7 @@ describe("RouterLink", () => {
     expect(link.getAttribute("class")).toBeNull();
 
     // Unmount RouterLink by replacing parent content
-    parentSlot.refresh(() => [text("Replaced")]);
+    refresh(parentSlot, () => [text("Replaced")]);
 
     // After unmount, route change should not affect the old link
     setLocationPathname("/test");
@@ -542,7 +542,7 @@ describe("RouterView", () => {
     expect(container.textContent).toContain("Home");
 
     // Unmount RouterView by replacing with different content
-    parentSlot.refresh(() => [text("Replaced")]);
+    refresh(parentSlot, () => [text("Replaced")]);
     expect(container.textContent).toContain("Replaced");
 
     // After unmount, route change events should not re-render the old RouterView

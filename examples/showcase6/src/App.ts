@@ -1,5 +1,6 @@
 import type { Component, Render } from "@ydant/core";
-import { createSlotRef, div, h1, h2, h3, p, ul, li, button, cn } from "@ydant/base";
+import type { Slot } from "@ydant/base";
+import { refresh, div, h1, h2, h3, p, ul, li, button, cn } from "@ydant/base";
 import { createResource, Suspense, ErrorBoundary } from "@ydant/async";
 import type { Post, User } from "./types";
 import { fetchPosts, fetchUsers } from "./api";
@@ -60,7 +61,7 @@ function UsersSection(): Render {
 
 // Section: Error handling demo
 function ErrorDemoSection(): Render {
-  const errorRef = createSlotRef();
+  let errorSlot: Slot;
   let showError = false;
 
   const renderContent = function* () {
@@ -72,7 +73,7 @@ function ErrorDemoSection(): Render {
             class: cn("px-4", "py-2", "bg-red-500", "text-white", "rounded", "hover:bg-red-600"),
             onClick: () => {
               showError = true;
-              errorRef.refresh(renderContent);
+              refresh(errorSlot, renderContent);
             },
           },
           "Trigger Error",
@@ -85,7 +86,7 @@ function ErrorDemoSection(): Render {
             error,
             onRetry: () => {
               showError = false;
-              errorRef.refresh(renderContent);
+              refresh(errorSlot, renderContent);
             },
           }),
         content: function* () {
@@ -98,13 +99,13 @@ function ErrorDemoSection(): Render {
 
   return div(function* () {
     yield* h2({ class: cn("text-xl", "font-semibold", "mb-4") }, "ErrorBoundary Demo");
-    errorRef.bind(yield* div({ class: cn("p-4", "bg-slate-800", "rounded-lg") }, renderContent));
+    errorSlot = yield* div({ class: cn("p-4", "bg-slate-800", "rounded-lg") }, renderContent);
   });
 }
 
 // Section: Manual loading state (alternative pattern)
 function ManualLoadingSection(): Render {
-  const dataRef = createSlotRef();
+  let dataSlot: Slot;
   let isLoading = false;
   let error: Error | null = null;
   let data: Post[] | null = null;
@@ -112,7 +113,7 @@ function ManualLoadingSection(): Render {
   const loadData = async () => {
     isLoading = true;
     error = null;
-    dataRef.refresh(renderContent);
+    refresh(dataSlot, renderContent);
 
     try {
       data = await fetchPosts(3);
@@ -120,7 +121,7 @@ function ManualLoadingSection(): Render {
       error = e as Error;
     } finally {
       isLoading = false;
-      dataRef.refresh(renderContent);
+      refresh(dataSlot, renderContent);
     }
   };
 
@@ -165,7 +166,7 @@ function ManualLoadingSection(): Render {
       { class: cn("text-sm", "text-gray-400", "mb-4") },
       "Alternative to Suspense: explicitly manage loading/error/data states.",
     );
-    dataRef.bind(yield* div({ class: cn("p-4", "bg-slate-800", "rounded-lg") }, renderContent));
+    dataSlot = yield* div({ class: cn("p-4", "bg-slate-800", "rounded-lg") }, renderContent);
   });
 }
 

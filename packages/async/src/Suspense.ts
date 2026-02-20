@@ -19,7 +19,7 @@
  */
 
 import type { Spell, Render } from "@ydant/core";
-import { div } from "@ydant/base";
+import { div, refresh } from "@ydant/base";
 import { boundary } from "./boundary";
 
 /** Props for the Suspense component. */
@@ -40,7 +40,7 @@ export function* Suspense(props: SuspenseProps): Spell<"element"> {
   const { fallback, content } = props;
 
   const containerSlot = yield* div(function* () {
-    const retry = () => containerSlot.refresh(renderWithBoundary);
+    const retry = () => refresh(containerSlot, renderWithBoundary);
     const safeRetry = () => {
       try {
         retry();
@@ -54,7 +54,7 @@ export function* Suspense(props: SuspenseProps): Spell<"element"> {
       if (!(error instanceof Promise)) return false;
 
       try {
-        containerSlot.refresh(function* () {
+        refresh(containerSlot, function* () {
           yield* boundary(suspenseHandler);
           yield* fallback();
         });

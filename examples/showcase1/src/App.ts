@@ -1,5 +1,6 @@
 import type { Component, Render } from "@ydant/core";
-import { html, slotRef } from "@ydant/base";
+import type { Slot } from "@ydant/base";
+import { html, refresh } from "@ydant/base";
 import { CounterSection } from "./components/Counter";
 import { Dialog } from "./components/Dialog";
 
@@ -41,8 +42,8 @@ function* DialogSection() {
 
   let isDialogOpen = false;
 
-  // ダイアログコンテナ - slotRef を使用
-  const dialogContainer = slotRef(yield* div({ class: "dialog-container" }));
+  // ダイアログコンテナ
+  const dialogSlot = yield* div({ class: "dialog-container" });
 
   // ダイアログを開くボタン
   yield* div({ class: "text-center" }, function* () {
@@ -52,14 +53,14 @@ function* DialogSection() {
         onClick: () => {
           if (!isDialogOpen) {
             isDialogOpen = true;
-            dialogContainer.refresh(function* () {
+            refresh(dialogSlot, function* () {
               yield* Dialog({
                 title: "Welcome!",
                 content:
                   "This dialog is now a simple function. Click outside or press a button to close.",
                 onClose: () => {
                   isDialogOpen = false;
-                  dialogContainer.refresh(() => []);
+                  refresh(dialogSlot, () => []);
                 },
               });
             });

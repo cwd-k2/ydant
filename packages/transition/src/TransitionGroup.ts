@@ -22,7 +22,7 @@
 
 import type { Spell } from "@ydant/core";
 import type { Slot } from "@ydant/base";
-import { div, keyed, onMount } from "@ydant/base";
+import { div, keyed, onMount, refresh } from "@ydant/base";
 import { runTransition } from "./utils";
 
 export interface TransitionGroupProps<T> {
@@ -149,7 +149,7 @@ export function createTransitionGroupRefresher<T>(
     }
 
     // Refresh with the new items
-    slot.refresh(function* () {
+    refresh(slot, function* () {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         const itemKey = keyFn(item);

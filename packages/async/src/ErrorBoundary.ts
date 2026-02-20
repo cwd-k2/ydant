@@ -21,7 +21,7 @@
  */
 
 import type { Spell, Render } from "@ydant/core";
-import { div } from "@ydant/base";
+import { div, refresh } from "@ydant/base";
 import { boundary } from "./boundary";
 
 /** Props for the ErrorBoundary component. */
@@ -42,14 +42,14 @@ export function* ErrorBoundary(props: ErrorBoundaryProps): Spell<"element"> {
   const { fallback, content } = props;
 
   const containerSlot = yield* div(function* () {
-    const reset = () => containerSlot.refresh(renderWithBoundary);
+    const reset = () => refresh(containerSlot, renderWithBoundary);
 
     const errorHandler = (error: unknown): boolean => {
       // Let Suspense handle Promises
       if (error instanceof Promise) return false;
 
       try {
-        containerSlot.refresh(function* () {
+        refresh(containerSlot, function* () {
           yield* boundary(errorHandler);
           yield* fallback(error as Error, reset);
         });

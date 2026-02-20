@@ -1,5 +1,6 @@
 import type { Component } from "@ydant/core";
-import { div, h1, p, span, button, input, createSlotRef } from "@ydant/base";
+import type { Slot } from "@ydant/base";
+import { div, h1, p, span, button, input, refresh } from "@ydant/base";
 import type { Todo, Filter } from "./types";
 import { loadTodos, saveTodos } from "./storage";
 import { TodoItem } from "./components/TodoItem";
@@ -11,10 +12,10 @@ export const App: Component = () => {
   let filter: Filter = "all";
   let nextId = todos.length > 0 ? Math.max(...todos.map((t) => t.id)) + 1 : 1;
 
-  // SlotRef references
-  const filterRef = createSlotRef();
-  const todoListRef = createSlotRef();
-  const statsRef = createSlotRef();
+  // Slot references
+  let filterSlot: Slot;
+  let todoListSlot: Slot;
+  let statsSlot: Slot;
 
   // Helper functions
   const getFilteredTodos = (): Todo[] => {
@@ -46,8 +47,8 @@ export const App: Component = () => {
         isActive: filter === f.key,
         onClick: () => {
           filter = f.key;
-          filterRef.refresh(renderFilterButtons);
-          todoListRef.refresh(renderTodoList);
+          refresh(filterSlot, renderFilterButtons);
+          refresh(todoListSlot, renderTodoList);
         },
       });
     }
@@ -72,14 +73,14 @@ export const App: Component = () => {
           onToggle: () => {
             todo.completed = !todo.completed;
             saveTodos(todos);
-            todoListRef.refresh(renderTodoList);
-            statsRef.refresh(renderStats);
+            refresh(todoListSlot, renderTodoList);
+            refresh(statsSlot, renderStats);
           },
           onDelete: () => {
             todos = todos.filter((t) => t.id !== todo.id);
             saveTodos(todos);
-            todoListRef.refresh(renderTodoList);
-            statsRef.refresh(renderStats);
+            refresh(todoListSlot, renderTodoList);
+            refresh(statsSlot, renderStats);
           },
         });
       }
@@ -99,8 +100,8 @@ export const App: Component = () => {
           onClick: () => {
             todos = todos.filter((t) => !t.completed);
             saveTodos(todos);
-            todoListRef.refresh(renderTodoList);
-            statsRef.refresh(renderStats);
+            refresh(todoListSlot, renderTodoList);
+            refresh(statsSlot, renderStats);
           },
         },
         "Clear completed",
@@ -114,35 +115,33 @@ export const App: Component = () => {
 
     // Input section
     let inputValue = "";
-    const inputRef = createSlotRef();
+    let inputSlot: Slot;
 
     yield* div({ class: "flex gap-2 mb-6" }, function* () {
       // Text input
-      inputRef.bind(
-        yield* input({
-          type: "text",
-          placeholder: "What needs to be done?",
-          class:
-            "flex-1 px-4 py-2 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
-          onInput: (e) => {
-            inputValue = (e.target as HTMLInputElement).value;
-          },
-          onKeypress: (e) => {
-            if ((e as KeyboardEvent).key === "Enter" && inputValue.trim()) {
-              todos.push({
-                id: nextId++,
-                text: inputValue.trim(),
-                completed: false,
-              });
-              saveTodos(todos);
-              (inputRef.node as HTMLInputElement).value = "";
-              inputValue = "";
-              todoListRef.refresh(renderTodoList);
-              statsRef.refresh(renderStats);
-            }
-          },
-        }),
-      );
+      inputSlot = yield* input({
+        type: "text",
+        placeholder: "What needs to be done?",
+        class:
+          "flex-1 px-4 py-2 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+        onInput: (e) => {
+          inputValue = (e.target as HTMLInputElement).value;
+        },
+        onKeypress: (e) => {
+          if ((e as KeyboardEvent).key === "Enter" && inputValue.trim()) {
+            todos.push({
+              id: nextId++,
+              text: inputValue.trim(),
+              completed: false,
+            });
+            saveTodos(todos);
+            (inputSlot.node as HTMLInputElement).value = "";
+            inputValue = "";
+            refresh(todoListSlot, renderTodoList);
+            refresh(statsSlot, renderStats);
+          }
+        },
+      });
 
       // Add button
       yield* button(
@@ -157,10 +156,10 @@ export const App: Component = () => {
                 completed: false,
               });
               saveTodos(todos);
-              (inputRef.node as HTMLInputElement).value = "";
+              (inputSlot.node as HTMLInputElement).value = "";
               inputValue = "";
-              todoListRef.refresh(renderTodoList);
-              statsRef.refresh(renderStats);
+              refresh(todoListSlot, renderTodoList);
+              refresh(statsSlot, renderStats);
             }
           },
         },
@@ -169,19 +168,18 @@ export const App: Component = () => {
     });
 
     // Filter buttons
-    filterRef.bind(yield* div({ class: "flex gap-2 mb-4 justify-center" }, renderFilterButtons));
+    filterSlot = yield* div({ class: "flex gap-2 mb-4 justify-center" }, renderFilterButtons);
 
     // Todo list
-    todoListRef.bind(
-      yield* div(
-        { class: "border border-slate-700 rounded-lg overflow-hidden mb-4" },
-        renderTodoList,
-      ),
+    todoListSlot = yield* div(
+      { class: "border border-slate-700 rounded-lg overflow-hidden mb-4" },
+      renderTodoList,
     );
 
     // Stats
-    statsRef.bind(
-      yield* div({ class: "flex justify-between items-center text-sm text-gray-400" }, renderStats),
+    statsSlot = yield* div(
+      { class: "flex justify-between items-center text-sm text-gray-400" },
+      renderStats,
     );
 
     // Footer info

@@ -5,6 +5,7 @@ import { createBasePlugin } from "../plugin";
 import { createDOMBackend } from "../capabilities";
 import { div, span, button } from "../elements/html";
 import { text, keyed, onMount, onUnmount } from "../primitives";
+import { refresh } from "..";
 import type { Slot } from "../types";
 
 describe("createBasePlugin", () => {
@@ -163,7 +164,7 @@ describe("createBasePlugin", () => {
       expect(unmountCallback).not.toHaveBeenCalled();
     });
 
-    it("calls onUnmount callbacks when Slot.refresh() is called", () => {
+    it("calls onUnmount callbacks when refresh() is called", () => {
       const unmountCallback = vi.fn();
       let slot: Slot | undefined;
 
@@ -183,7 +184,7 @@ describe("createBasePlugin", () => {
       vi.runAllTimers();
 
       // Refresh should call onUnmount for removed children
-      slot?.refresh(() => [text("New Content")]);
+      if (slot) refresh(slot, () => [text("New Content")]);
 
       expect(unmountCallback).toHaveBeenCalledTimes(1);
     });
@@ -226,7 +227,7 @@ describe("createBasePlugin", () => {
 
       expect(cleanupFn).not.toHaveBeenCalled();
 
-      slot?.refresh(() => [text("New Content")]);
+      if (slot) refresh(slot, () => [text("New Content")]);
 
       expect(cleanupFn).toHaveBeenCalledTimes(1);
     });
@@ -248,7 +249,7 @@ describe("createBasePlugin", () => {
 
       vi.runAllTimers();
 
-      slot?.refresh(() => []);
+      if (slot) refresh(slot, () => []);
 
       expect(calls).toContain("outer");
       expect(calls).toContain("inner");
@@ -332,11 +333,10 @@ describe("createBasePlugin", () => {
       expect(slot).toBeDefined();
       expect(slot?.node).toBeInstanceOf(HTMLElement);
       expect((slot?.node as HTMLElement).tagName).toBe("SPAN");
-      expect(typeof slot?.refresh).toBe("function");
     });
   });
 
-  describe("Slot.refresh", () => {
+  describe("refresh()", () => {
     it("clears and rebuilds children", () => {
       let slot: Slot | undefined;
 
@@ -348,7 +348,7 @@ describe("createBasePlugin", () => {
 
       expect((slot?.node as HTMLElement).textContent).toBe("Original");
 
-      slot?.refresh(() => [text("Updated"), text(" Content")]);
+      if (slot) refresh(slot, () => [text("Updated"), text(" Content")]);
 
       expect((slot?.node as HTMLElement).textContent).toBe("Updated Content");
     });
@@ -364,7 +364,8 @@ describe("createBasePlugin", () => {
 
       expect((slot?.node as HTMLElement).querySelector("span")?.textContent).toBe("Child");
 
-      slot?.refresh(() => [span(() => [text("New Child 1")]), span(() => [text("New Child 2")])]);
+      if (slot)
+        refresh(slot, () => [span(() => [text("New Child 1")]), span(() => [text("New Child 2")])]);
 
       const spans = (slot?.node as HTMLElement).querySelectorAll("span");
       expect(spans?.length).toBe(2);
@@ -383,7 +384,7 @@ describe("createBasePlugin", () => {
 
       expect((slot?.node as HTMLElement).querySelectorAll("span").length).toBe(2);
 
-      slot?.refresh(() => []);
+      if (slot) refresh(slot, () => []);
 
       expect((slot?.node as HTMLElement).querySelectorAll("span").length).toBe(0);
       expect((slot?.node as HTMLElement).textContent).toBe("");
@@ -402,13 +403,14 @@ describe("createBasePlugin", () => {
 
       vi.runAllTimers();
 
-      slot?.refresh(() => [
-        span(() => [
-          onMount(() => {
-            mountCallback();
-          }),
-        ]),
-      ]);
+      if (slot)
+        refresh(slot, () => [
+          span(() => [
+            onMount(() => {
+              mountCallback();
+            }),
+          ]),
+        ]);
 
       expect(mountCallback).not.toHaveBeenCalled();
 
@@ -432,9 +434,10 @@ describe("createBasePlugin", () => {
       );
 
       // Refresh to trigger element reuse
-      slot?.refresh(function* () {
-        yield* keyed("btn", button)({ onClick: handler }, "Click Again");
-      });
+      if (slot)
+        refresh(slot, function* () {
+          yield* keyed("btn", button)({ onClick: handler }, "Click Again");
+        });
 
       const btn = container.querySelector("button");
       btn?.click();

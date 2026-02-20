@@ -1,13 +1,14 @@
 import type { Render } from "@ydant/core";
-import { nav, span, button, text, createSlotRef } from "@ydant/base";
+import type { Slot } from "@ydant/base";
+import { nav, span, button, text, refresh } from "@ydant/base";
 import { RouterLink, navigate } from "@ydant/router";
 import { isLoggedIn, getUser, logout } from "../auth";
 import { basePath } from "../App";
 
-const authRef = createSlotRef();
+let authSlot: Slot;
 
 export function refreshNavAuth(): void {
-  authRef.refresh(renderAuthSection);
+  refresh(authSlot, renderAuthSection);
 }
 
 function renderAuthSection(): Render {
@@ -51,7 +52,7 @@ export function NavBar(): Render {
 
       yield* span({ class: "ml-auto" });
 
-      authRef.bind(yield* span(renderAuthSection));
+      authSlot = yield* span(renderAuthSection);
     },
   );
 }

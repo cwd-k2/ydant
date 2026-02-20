@@ -1,4 +1,4 @@
-import { html, slotRef } from "@ydant/base";
+import { html, refresh } from "@ydant/base";
 import { text } from "@ydant/base";
 
 const { div, h3, p, span, button } = html;
@@ -18,8 +18,8 @@ export function* CounterSection() {
 
   let counter = 0;
 
-  // カウンター表示 - slotRef を使用して再レンダリング
-  const counterRef = slotRef(yield* p({ class: COUNTER_CLASSES }, `Count: ${counter}`));
+  // カウンター表示
+  const counterSlot = yield* p({ class: COUNTER_CLASSES }, `Count: ${counter}`);
 
   // ボタン群
   yield* div({ class: "text-center mb-8" }, function* () {
@@ -29,7 +29,7 @@ export function* CounterSection() {
         class: "counter-btn mr-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600",
         onClick: () => {
           counter++;
-          counterRef.refresh(() => [text(`Count: ${counter}`)]);
+          refresh(counterSlot, () => [text(`Count: ${counter}`)]);
         },
       },
       "Increment",
@@ -41,7 +41,7 @@ export function* CounterSection() {
         class: "counter-btn px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700",
         onClick: () => {
           counter = 0;
-          counterRef.refresh(() => [
+          refresh(counterSlot, () => [
             span({ class: "text-red-500" }, "RESET: "),
             text(`${counter}`),
           ]);

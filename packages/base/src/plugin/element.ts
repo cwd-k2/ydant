@@ -2,7 +2,7 @@
  * @ydant/base - Element processing
  */
 
-import type { Render, RenderContext } from "@ydant/core";
+import type { Render, RenderContext, Builder } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 import type { Response } from "@ydant/core";
 import type { Element, SvgElement, Attribute, Listener, Slot } from "../types";
@@ -183,37 +183,47 @@ function applyDecorations(
 // Slot
 // =============================================================================
 
-/** Creates a {@link Slot} that can re-render its children and manage unmount callbacks. */
+/** Maps a Slot to its refresh closure (set during createSlot). */
+const refreshFns = new WeakMap<Slot, (builder: Builder) => void>();
+
+/** Creates a {@link Slot} and registers its refresh closure. */
 export function createSlot(
   node: unknown,
   childCtx: RenderContext,
   unmountCallbacksRef: Array<() => void>,
 ): Slot {
-  return {
-    node,
-    refresh(builder) {
-      // Get current unmount callbacks (includes cleanup functions added by executeMount)
-      const currentUnmountCallbacks = childCtx.unmountCallbacks;
+  const slot: Slot = { node };
 
-      // Run all unmount callbacks (both initial and cleanup functions), deduplicated
-      const allCallbacks = new Set([...unmountCallbacksRef, ...currentUnmountCallbacks]);
-      for (const callback of allCallbacks) {
-        callback();
-      }
-      unmountCallbacksRef.length = 0;
+  refreshFns.set(slot, (builder) => {
+    // Get current unmount callbacks (includes cleanup functions added by executeMount)
+    const currentUnmountCallbacks = childCtx.unmountCallbacks;
 
-      // Remove all child nodes
-      childCtx.tree.clearChildren(node);
+    // Run all unmount callbacks (both initial and cleanup functions), deduplicated
+    const allCallbacks = new Set([...unmountCallbacksRef, ...currentUnmountCallbacks]);
+    for (const callback of allCallbacks) {
+      callback();
+    }
+    unmountCallbacksRef.length = 0;
 
-      // Render new children
-      childCtx.processChildren(builder, { parent: node });
+    // Remove all child nodes
+    childCtx.tree.clearChildren(node);
 
-      // Collect new unmount callbacks from the fresh render
-      const newUnmountCallbacks = childCtx.unmountCallbacks;
-      unmountCallbacksRef.push(...newUnmountCallbacks);
+    // Render new children
+    childCtx.processChildren(builder, { parent: node });
 
-      // Schedule mount callbacks
-      executeMount(childCtx);
-    },
-  };
+    // Collect new unmount callbacks from the fresh render
+    const newUnmountCallbacks = childCtx.unmountCallbacks;
+    unmountCallbacksRef.push(...newUnmountCallbacks);
+
+    // Schedule mount callbacks
+    executeMount(childCtx);
+  });
+
+  return slot;
+}
+
+/** Replaces a Slot's children by running a new Builder. */
+export function refresh(slot: Slot, builder: Builder): void {
+  const fn = refreshFns.get(slot);
+  if (fn) fn(builder);
 }

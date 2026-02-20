@@ -1,5 +1,6 @@
 import type { Component } from "@ydant/core";
-import { div, h1, p, span, text, createSlotRef, onUnmount, onMount } from "@ydant/base";
+import type { Slot } from "@ydant/base";
+import { div, h1, p, span, text, refresh, onUnmount, onMount } from "@ydant/base";
 import { Suspense } from "@ydant/async";
 import { createResource } from "@ydant/async";
 import { fetchMetrics } from "../api";
@@ -18,15 +19,15 @@ export const DashboardPage: Component = () =>
     // Resource with auto-refetch every 5 seconds
     const metricsResource = createResource(fetchMetrics, { refetchInterval: 5000 });
 
-    // SlotRef for polling UI updates
-    const metricsRef = createSlotRef();
-    const statusRef = createSlotRef();
+    // Slot references for polling UI updates
+    let metricsSlot: Slot;
+    let statusSlot: Slot;
     let pollTimer: ReturnType<typeof setInterval> | null = null;
 
     function renderMetrics(): void {
       try {
         const m = metricsResource.peek();
-        metricsRef.refresh(function* () {
+        refresh(metricsSlot, function* () {
           yield* MetricCard({ label: "Active Users", value: String(m.activeUsers), color: "blue" });
           yield* MetricCard({
             label: "Requests/min",
@@ -53,7 +54,7 @@ export const DashboardPage: Component = () =>
           });
           yield* MetricCard({ label: "Uptime", value: m.uptime, color: "gray" });
         });
-        statusRef.refresh(function* () {
+        refresh(statusSlot, function* () {
           yield* text(`Last updated: ${new Date().toLocaleTimeString()}`);
         });
       } catch {
@@ -71,45 +72,41 @@ export const DashboardPage: Component = () =>
         const m = metricsResource();
 
         // Initial render
-        metricsRef.bind(
-          yield* div({ class: "grid grid-cols-2 md:grid-cols-3 gap-4" }, function* () {
-            yield* MetricCard({
-              label: "Active Users",
-              value: String(m.activeUsers),
-              color: "blue",
-            });
-            yield* MetricCard({
-              label: "Requests/min",
-              value: String(m.requestsPerMin),
-              color: "green",
-            });
-            yield* MetricCard({
-              label: "Error Rate",
-              value: `${m.errorRate}`,
-              unit: "%",
-              color: "red",
-            });
-            yield* MetricCard({
-              label: "CPU Usage",
-              value: `${m.cpuUsage}`,
-              unit: "%",
-              color: "purple",
-            });
-            yield* MetricCard({
-              label: "Memory",
-              value: `${m.memoryUsage}`,
-              unit: "%",
-              color: "yellow",
-            });
-            yield* MetricCard({ label: "Uptime", value: m.uptime, color: "gray" });
-          }),
-        );
+        metricsSlot = yield* div({ class: "grid grid-cols-2 md:grid-cols-3 gap-4" }, function* () {
+          yield* MetricCard({
+            label: "Active Users",
+            value: String(m.activeUsers),
+            color: "blue",
+          });
+          yield* MetricCard({
+            label: "Requests/min",
+            value: String(m.requestsPerMin),
+            color: "green",
+          });
+          yield* MetricCard({
+            label: "Error Rate",
+            value: `${m.errorRate}`,
+            unit: "%",
+            color: "red",
+          });
+          yield* MetricCard({
+            label: "CPU Usage",
+            value: `${m.cpuUsage}`,
+            unit: "%",
+            color: "purple",
+          });
+          yield* MetricCard({
+            label: "Memory",
+            value: `${m.memoryUsage}`,
+            unit: "%",
+            color: "yellow",
+          });
+          yield* MetricCard({ label: "Uptime", value: m.uptime, color: "gray" });
+        });
 
-        statusRef.bind(
-          yield* p(
-            { class: "text-xs text-gray-400" },
-            `Last updated: ${new Date().toLocaleTimeString()}`,
-          ),
+        statusSlot = yield* p(
+          { class: "text-xs text-gray-400" },
+          `Last updated: ${new Date().toLocaleTimeString()}`,
         );
 
         // Start polling for UI updates (resource auto-refetches data)

@@ -4,6 +4,7 @@ import { createBasePlugin } from "../plugin";
 import { createDOMBackend } from "../capabilities";
 import { div, button } from "../elements/html";
 import { text, keyed, onMount } from "../primitives";
+import { refresh } from "..";
 import type { Slot } from "../types";
 
 describe("keyed element reuse", () => {
@@ -20,7 +21,7 @@ describe("keyed element reuse", () => {
     vi.useRealTimers();
   });
 
-  it("reuses DOM node on Slot.refresh()", () => {
+  it("reuses DOM node on refresh()", () => {
     let slot: Slot | undefined;
 
     scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
@@ -34,7 +35,7 @@ describe("keyed element reuse", () => {
     const nodeBefore = (slot!.node as HTMLElement).firstElementChild;
     expect(nodeBefore).not.toBeNull();
 
-    slot!.refresh(function* () {
+    refresh(slot!, function* () {
       yield* keyed("stable", div)(() => [text("updated")]);
     });
 
@@ -55,7 +56,7 @@ describe("keyed element reuse", () => {
       }),
     );
 
-    slot!.refresh(function* () {
+    refresh(slot!, function* () {
       yield* keyed("btn", button)({ onClick: handler }, "Click Again");
     });
 
@@ -80,7 +81,7 @@ describe("keyed element reuse", () => {
     vi.advanceTimersToNextFrame();
     expect(mountCallback).toHaveBeenCalledTimes(1);
 
-    slot!.refresh(function* () {
+    refresh(slot!, function* () {
       yield* keyed("item", div)(() => [onMount(mountCallback), text("new content")]);
     });
 

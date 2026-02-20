@@ -1,17 +1,6 @@
 import type { Component } from "@ydant/core";
-import {
-  div,
-  h1,
-  h2,
-  p,
-  span,
-  button,
-  cn,
-  circle,
-  onUnmount,
-  createSlotRef,
-  svg,
-} from "@ydant/base";
+import type { Slot } from "@ydant/base";
+import { div, h1, h2, p, span, button, cn, circle, onUnmount, refresh, svg } from "@ydant/base";
 import type { TimerMode, TimerState } from "./types";
 import { DURATIONS, MODE_LABELS, MODE_COLORS } from "./constants";
 import { formatTime } from "./utils";
@@ -28,12 +17,12 @@ export const App: Component = () => {
 
   let timerInterval: ReturnType<typeof setInterval> | null = null;
 
-  // SlotRef references
-  const modeRef = createSlotRef();
-  const timerRef = createSlotRef();
-  const progressRingRef = createSlotRef();
-  const controlsRef = createSlotRef();
-  const sessionsRef = createSlotRef();
+  // Slot references
+  let modeSlot: Slot;
+  let timerSlot: Slot;
+  let progressRingSlot: Slot;
+  let controlsSlot: Slot;
+  let sessionsSlot: Slot;
 
   // Render functions
   const renderModeButtons = function* () {
@@ -88,15 +77,13 @@ export const App: Component = () => {
     yield* div({ class: "flex items-center justify-center" }, function* () {
       // SVG progress ring
       yield* div({ class: "absolute inset-0 flex items-center justify-center" }, function* () {
-        progressRingRef.bind(
-          yield* svg.svg(
-            {
-              class: "transform -rotate-90",
-              width: String(RING_RADIUS * 2),
-              height: String(RING_RADIUS * 2),
-            },
-            renderProgressRing,
-          ),
+        progressRingSlot = yield* svg.svg(
+          {
+            class: "transform -rotate-90",
+            width: String(RING_RADIUS * 2),
+            height: String(RING_RADIUS * 2),
+          },
+          renderProgressRing,
         );
       });
 
@@ -187,8 +174,8 @@ export const App: Component = () => {
     if (timerInterval) return;
 
     state.isRunning = true;
-    timerRef.refresh(renderTimer);
-    controlsRef.refresh(renderControls);
+    refresh(timerSlot, renderTimer);
+    refresh(controlsSlot, renderControls);
 
     timerInterval = setInterval(() => {
       state.timeLeft--;
@@ -219,10 +206,10 @@ export const App: Component = () => {
           // Ignore audio errors
         }
 
-        sessionsRef.refresh(renderSessions);
+        refresh(sessionsSlot, renderSessions);
       }
 
-      timerRef.refresh(renderTimer);
+      refresh(timerSlot, renderTimer);
     }, 1000);
   };
 
@@ -232,21 +219,21 @@ export const App: Component = () => {
       timerInterval = null;
     }
     state.isRunning = false;
-    controlsRef.refresh(renderControls);
+    refresh(controlsSlot, renderControls);
   };
 
   const resetTimer = () => {
     stopTimer();
     state.timeLeft = DURATIONS[state.mode];
-    timerRef.refresh(renderTimer);
+    refresh(timerSlot, renderTimer);
   };
 
   const switchMode = (mode: TimerMode) => {
     stopTimer();
     state.mode = mode;
     state.timeLeft = DURATIONS[mode];
-    modeRef.refresh(renderModeButtons);
-    timerRef.refresh(renderTimer);
+    refresh(modeSlot, renderModeButtons);
+    refresh(timerSlot, renderTimer);
   };
 
   return div({ class: "flex flex-col items-center" }, function* () {
@@ -264,20 +251,18 @@ export const App: Component = () => {
     yield* p({ class: "text-gray-400 mb-8 text-center" }, "Stay focused and productive!");
 
     // Mode selector
-    modeRef.bind(yield* div({ class: "flex gap-2 mb-8" }, renderModeButtons));
+    modeSlot = yield* div({ class: "flex gap-2 mb-8" }, renderModeButtons);
 
     // Timer display with progress ring
-    timerRef.bind(yield* div({ class: "relative mb-8" }, renderTimer));
+    timerSlot = yield* div({ class: "relative mb-8" }, renderTimer);
 
     // Control buttons
-    controlsRef.bind(yield* div({ class: "flex gap-4 mb-8" }, renderControls));
+    controlsSlot = yield* div({ class: "flex gap-4 mb-8" }, renderControls);
 
     // Sessions completed
-    sessionsRef.bind(
-      yield* div(
-        { class: "flex flex-col items-center p-4 bg-slate-800 rounded-xl w-full" },
-        renderSessions,
-      ),
+    sessionsSlot = yield* div(
+      { class: "flex flex-col items-center p-4 bg-slate-800 rounded-xl w-full" },
+      renderSessions,
     );
 
     // Tips

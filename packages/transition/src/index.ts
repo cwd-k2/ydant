@@ -13,5 +13,5 @@ export type { TransitionProps, TransitionHandle, TransitionInstruction } from ".
 export type { TransitionGroupProps } from "./TransitionGroup";
 
 // ─── Runtime ───
-export { Transition, createTransition } from "./Transition";
+export { Transition } from "./Transition";
 export { TransitionGroup, createTransitionGroupRefresher } from "./TransitionGroup";
