@@ -269,6 +269,17 @@ cross-scope embed を非同期（target engine にキューイング）にする
    - 関数は唯一の使用箇所に移動する（例: `executeMount` → `element.ts`）
    - `import type` のみの循環は安全だが、型の共存関係を示すシグナルとして扱う
 
+### ランタイム関連
+
+1. **Set iteration 中の delete+re-add は無限ループになる**
+   - Signal の subscriber 通知ループで、subscriber が `clearDependencies`（Set.delete）→ `runWithSubscriber`（Set.add）を行うと、re-add された要素が再度 visit される
+   - 対策: 通知前に `const snapshot = [...subscribers]` でスナップショットを取り、snapshot を iterate する
+   - JavaScript の Set 仕様（[ECMA-262 §24.2.5.4](https://tc39.es/ecma262/#sec-set.prototype.foreach)）に由来する一般的な罠だが、dependency tracking と組み合わせると特に顕在化する
+
+2. **createSlot の refresh は unmountCallbacks を必ずクリアする**
+   - `childCtx.unmountCallbacks` は refresh のたびに蓄積する。クリアしないと前回の cleanup callback が残り、stale な `removeChild` が発生する（既に除去されたマーカーノードの再除去など）
+   - reactive plugin 側の idempotent cleanup（`active` フラグ）と組み合わせて二重防御する
+
 ### 設計関連
 
 1. **グローバル状態排除の手法は状態の「真の所有者」で選ぶ**
