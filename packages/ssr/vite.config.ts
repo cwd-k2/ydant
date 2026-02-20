@@ -12,7 +12,7 @@ export default defineConfig({
       fileName: (format) => `index.${format}.js`,
     },
     rollupOptions: {
-      external: ["@ydant/core", "@ydant/base"],
+      external: ["@ydant/core", "@ydant/base", "@ydant/base/internals"],
       output: {
         globals: {
           "@ydant/core": "YdantCore",

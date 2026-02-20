@@ -3,7 +3,7 @@
  */
 
 import type { Render } from "@ydant/core";
-import { toRender } from "@ydant/core";
+import { toRender } from "@ydant/core/internals";
 import type { Attribute, Listener, ElementProps, StyleValue } from "../types";
 import { text } from "../primitives";
 

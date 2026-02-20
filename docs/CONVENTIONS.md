@@ -189,6 +189,7 @@ export { create*Plugin };
 ```
 packages/<name>/src/
 ├── index.ts          # 公開 API エクスポート（必須）
+├── internals.ts      # プラグイン/バックエンド作者向け内部 API（core, base のみ）
 ├── types.ts          # 型定義
 ├── plugin.ts         # プラグイン実装（create*Plugin）
 ├── global.d.ts       # module augmentation（core 拡張時）
@@ -470,9 +471,39 @@ TypeScript 5.0+ の `customConditions` と `moduleResolution: "bundler"` を使�
         "default": "./src/index.ts"
       },
       "import": "./dist/index.es.js",
-      "require": "./dist/index.umd.js"
+      "require": "./dist/index.cjs"
     }
   }
+}
+```
+
+**subpath を持つパッケージ（core, base）:**
+
+```json
+{
+  "exports": {
+    ".": { ... },
+    "./internals": {
+      "types": "./dist/internals.d.ts",
+      "@ydant/dev": {
+        "types": "./src/internals.ts",
+        "default": "./src/internals.ts"
+      },
+      "import": "./dist/internals.es.js",
+      "require": "./dist/internals.cjs"
+    }
+  }
+}
+```
+
+vitest alias では `/internals` を通常パスより**前**に配置する（prefix matching 対策）:
+
+```typescript
+alias: {
+  "@ydant/core/internals": path.resolve(__dirname, "packages/core/src/internals"),
+  "@ydant/base/internals": path.resolve(__dirname, "packages/base/src/internals"),
+  "@ydant/core": path.resolve(__dirname, "packages/core/src"),
+  "@ydant/base": path.resolve(__dirname, "packages/base/src"),
 }
 ```
 

@@ -21,7 +21,8 @@ import type {
   Request,
 } from "@ydant/core";
 import { scope, isTagged } from "@ydant/core";
-import { createDOMBackend, createBasePlugin, executeMount, createSlot } from "@ydant/base";
+import { createDOMBackend, createBasePlugin } from "@ydant/base";
+import { executeMount, createSlot } from "@ydant/base/internals";
 import type { Element, SvgElement } from "@ydant/base";
 import { createDOMNodeResolver } from "./resolver";
 

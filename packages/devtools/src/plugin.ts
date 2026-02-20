@@ -6,14 +6,8 @@
  * is opt-in through this plugin.
  */
 
-import type {
-  Plugin,
-  RenderContext,
-  Engine,
-  Hub,
-  ExecutionScope,
-  EngineOptions,
-} from "@ydant/core";
+import type { Plugin, RenderContext, Engine, Hub } from "@ydant/core";
+import type { ExecutionScope, EngineOptions } from "@ydant/core/internals";
 import type { DevtoolsEvent } from "./events";
 
 /** Options for {@link createDevtoolsPlugin}. */

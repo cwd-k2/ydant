@@ -204,6 +204,14 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - **Props 設計**: `class` は文字列（`cn()` で条件付き構築）、`style` は `string | object`、`on*` は `HTMLElementEventMap` から型推論
 - **showcase 移行**: showcase1, 3, 4, 14 を新 Props 構文に移行し実用性を検証
 
+### Phase 17: API 簡素化 — subpath exports + convenience mount
+
+- **subpath exports**: `@ydant/core/internals` と `@ydant/base/internals` を新設。プラグイン/バックエンド作者向けの内部 API（`createHub`, `toRender`, `ExecutionScope`, `processNode`, `createSlot` 等）をメインエントリから分離
+- **convenience mount**: `mount(target, app, options?)` を `@ydant/base` に追加。CSS セレクタ or Element を受け取り、DOM Backend + Base Plugin を自動構築。CapabilityCheck を型レベルで保持
+- **multi-entry build**: Vite の `lib.entry` にオブジェクトを渡す multi-entry 化。UMD → ES/CJS に変更
+- **showcase 移行**: showcase 1-7, 9, 10, 12 を `mount()` に移行（3 import + 7 行 → 1 import + 1 行）
+- **DOMContentLoaded 不要化**: Vite の `<script type="module">` は defer 相当のため、ラッパーが不要に
+
 ### Phase 16: Decoration Primitive 廃止 — Props 統一
 
 - **廃止した API**: `attr()`, `classes()`, `on()`, `style()` プリミティブを削除。属性・クラス・スタイル・イベントはすべて要素ファクトリの Props で指定

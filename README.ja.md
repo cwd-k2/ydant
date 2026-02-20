@@ -73,34 +73,20 @@ scope(createDOMBackend(document.getElementById("app")!), [createBasePlugin()]).m
 ## クイックスタート
 
 ```typescript
-import { scope } from "@ydant/core";
-import {
-  createBasePlugin,
-  createDOMBackend,
-  div,
-  text,
-  classes,
-  type Component,
-} from "@ydant/base";
+import { mount, div, p, type Component } from "@ydant/base";
 
-const App: Component = () => div(() => [classes("app"), text("Hello, Ydant!")]);
+const App: Component = () =>
+  div({ class: "app" }, function* () {
+    yield* p("Hello, Ydant!");
+  });
 
-scope(createDOMBackend(document.getElementById("root")!), [createBasePlugin()]).mount(App);
+mount("#root", App);
 ```
 
 ### プラグインを使用
 
 ```typescript
-import { scope } from "@ydant/core";
-import {
-  createBasePlugin,
-  createDOMBackend,
-  div,
-  button,
-  text,
-  on,
-  type Component,
-} from "@ydant/base";
+import { mount, div, button, type Component } from "@ydant/base";
 import { createReactivePlugin, signal, reactive } from "@ydant/reactive";
 import { createContextPlugin } from "@ydant/context";
 
@@ -108,16 +94,16 @@ const count = signal(0);
 
 const App: Component = () =>
   div(function* () {
-    yield* reactive(() => [text(`Count: ${count()}`)]);
-    yield* button(() => [on("click", () => count.update((n) => n + 1)), text("+1")]);
+    yield* reactive(() => [div(`Count: ${count()}`)]);
+    yield* button({ onClick: () => count.update((n) => n + 1) }, "+1");
   });
 
-scope(createDOMBackend(document.getElementById("root")!), [
-  createBasePlugin(),
-  createReactivePlugin(),
-  createContextPlugin(),
-]).mount(App);
+mount("#root", App, {
+  plugins: [createReactivePlugin(), createContextPlugin()],
+});
 ```
+
+> Canvas、SSR、embed など高度なユースケースには `@ydant/core` の `scope()` を直接使用してください。
 
 ## 実装例
 

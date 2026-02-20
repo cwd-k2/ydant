@@ -40,41 +40,19 @@ export type {
 // Plugin System
 // =============================================================================
 
-export type {
-  Backend,
-  ExecutionScope,
-  Plugin,
-  RenderContext,
-  Scheduler,
-  Message,
-  EngineOptions,
-  Engine,
-  Hub,
-} from "./plugin";
+export type { Backend, Plugin, RenderContext, Scheduler, Engine, Hub } from "./plugin";
 
 // =============================================================================
 // Utilities
 // =============================================================================
 
-export { isTagged, toRender } from "./utils";
-
-// =============================================================================
-// Embed (type only — createEmbedPlugin is auto-registered by scope())
-// =============================================================================
-
-export type { Embed } from "./embed";
+export { isTagged } from "./utils";
 
 // =============================================================================
 // Scheduler
 // =============================================================================
 
 export { sync, microtask, animFrame } from "./scheduler";
-
-// =============================================================================
-// Hub
-// =============================================================================
-
-export { createHub } from "./hub";
 
 // =============================================================================
 // Scope Builder
@@ -84,7 +62,7 @@ export type { ScopeBuilder } from "./scope";
 export { scope } from "./scope";
 
 // =============================================================================
-// Mount (types only — use scope().mount() instead)
+// Mount (types only — use mount() from @ydant/base or scope().mount())
 // =============================================================================
 
 export type { MountHandle } from "./mount";

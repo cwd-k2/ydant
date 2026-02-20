@@ -8,7 +8,7 @@
 
 import type { Builder, Spell } from "@ydant/core";
 import type { Slot, ElementProps } from "@ydant/base";
-import { parseFactoryArgs } from "@ydant/base";
+import { parseFactoryArgs } from "@ydant/base/internals";
 import type { Shape } from "./types";
 
 /** Canvas shape factory with Props overloads. */

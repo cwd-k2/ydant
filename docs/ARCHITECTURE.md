@@ -271,7 +271,22 @@ Hub
 
 ---
 
-## scope() — エントリーポイント
+## エントリーポイント
+
+### mount() — 便利な DOM マウント
+
+```typescript
+import { mount } from "@ydant/base";
+
+mount("#app", App);
+mount("#app", App, { plugins: [createReactivePlugin()] });
+```
+
+`mount()` は DOM Backend + Base Plugin を自動構築する convenience 関数。大半のアプリケーションはこれで十分。内部で `scope()` を呼んでいる。
+
+### scope() — 高度なユースケース
+
+Canvas、SSR、embed など複数の Backend や scope 切り替えが必要な場合に直接使う:
 
 ```typescript
 scope(createDOMBackend(root), [createBasePlugin(), createReactivePlugin()]).mount(App);
@@ -389,6 +404,19 @@ suspenseHandler:
 ```
 
 ErrorBoundary は Error をキャッチし Promise を素通り。Suspense は Promise をキャッチし Error を素通り。チェーンにより正しい boundary に到達する。
+
+---
+
+## Subpath Exports
+
+公開 API の対象（アプリ開発者 vs プラグイン/バックエンド作者）を明確にするため、`@ydant/core` と `@ydant/base` は internals subpath を持つ:
+
+| Import path             | 対象                              | 内容                                                    |
+| ----------------------- | --------------------------------- | ------------------------------------------------------- |
+| `@ydant/core`           | アプリ開発者、プラグイン作者      | scope, types, schedulers, isTagged                      |
+| `@ydant/core/internals` | プラグイン/バックエンド作者       | createHub, toRender, ExecutionScope, Embed 等           |
+| `@ydant/base`           | アプリ開発者                      | mount, 要素ファクトリ, プリミティブ, refresh            |
+| `@ydant/base/internals` | 拡張プラグイン作者（SSR, Canvas） | processNode, createSlot, executeMount, parseFactoryArgs |
 
 ---
 

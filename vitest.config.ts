@@ -15,6 +15,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      "@ydant/core/internals": path.resolve(__dirname, "packages/core/src/internals"),
+      "@ydant/base/internals": path.resolve(__dirname, "packages/base/src/internals"),
       "@ydant/core": path.resolve(__dirname, "packages/core/src"),
       "@ydant/base": path.resolve(__dirname, "packages/base/src"),
       "@ydant/reactive": path.resolve(__dirname, "packages/reactive/src"),

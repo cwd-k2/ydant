@@ -15,7 +15,7 @@ import type {
 } from "@ydant/core";
 
 /** The capabilities provided by the DOM backend. */
-type DOMCapabilityNames = "tree" | "decorate" | "interact" | "schedule";
+export type DOMCapabilityNames = "tree" | "decorate" | "interact" | "schedule";
 
 export interface DOMBackendOptions {
   /** Skip clearing root content in beforeRender. Used by hydration to preserve SSR content. */

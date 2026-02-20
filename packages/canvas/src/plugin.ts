@@ -7,7 +7,7 @@
 
 import type { Plugin, Request, Response, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
-import { processNode } from "@ydant/base";
+import { processNode } from "@ydant/base/internals";
 import type { Attribute, Listener } from "@ydant/base";
 import type { Shape } from "./types";
 

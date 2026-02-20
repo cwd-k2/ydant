@@ -24,11 +24,16 @@ pnpm add @ydant/core
 
 ## Usage
 
+Most applications should use the convenience `mount()` from `@ydant/base`. Use `@ydant/core` directly for advanced use cases like Canvas embedding or SSR:
+
 ```typescript
 import { scope } from "@ydant/core";
-import { createDOMBackend, createBasePlugin, div, text, type Component } from "@ydant/base";
+import { createDOMBackend, createBasePlugin, div, p, type Component } from "@ydant/base";
 
-const App: Component = () => div(() => [text("Hello!")]);
+const App: Component = () =>
+  div(function* () {
+    yield* p("Hello!");
+  });
 
 scope(createDOMBackend(document.getElementById("app")!), [createBasePlugin()]).mount(App);
 ```
@@ -152,10 +157,27 @@ interface RenderContext {
 
 ### Utilities
 
-| Function               | Description                                       |
-| ---------------------- | ------------------------------------------------- |
-| `isTagged(value, tag)` | Type guard for tagged union types                 |
-| `toRender(result)`     | Normalize `Render \| Render[]` to single `Render` |
+| Function               | Description                       |
+| ---------------------- | --------------------------------- |
+| `isTagged(value, tag)` | Type guard for tagged union types |
+
+### `@ydant/core/internals`
+
+Internal APIs for plugin and backend authors. Not needed by application code.
+
+```typescript
+import { createHub, toRender } from "@ydant/core/internals";
+import type { ExecutionScope, EngineOptions, Message, Embed } from "@ydant/core/internals";
+```
+
+| Export           | Kind     | Description                                     |
+| ---------------- | -------- | ----------------------------------------------- |
+| `createHub`      | function | Create a Hub for Engine orchestration           |
+| `toRender`       | function | Normalize `Render \| MaybeRender[]` to `Render` |
+| `ExecutionScope` | type     | Backend + plugin dispatch table bundle          |
+| `EngineOptions`  | type     | Options for Engine creation                     |
+| `Message`        | type     | Inter-engine message type                       |
+| `Embed`          | type     | Embed spell request type                        |
 
 ## Creating Plugins
 

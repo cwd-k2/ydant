@@ -25,15 +25,14 @@ pnpm add @ydant/base
 ## Usage
 
 ```typescript
-import { scope, type Component } from "@ydant/core";
-import { createDOMBackend, createBasePlugin, div, p } from "@ydant/base";
+import { mount, div, p, type Component } from "@ydant/base";
 
 const Greeting: Component = () =>
   div({ class: "greeting" }, function* () {
     yield* p("Hello World!");
   });
 
-scope(createDOMBackend(document.getElementById("app")!), [createBasePlugin()]).mount(Greeting);
+mount("#app", Greeting);
 ```
 
 ## API
@@ -174,3 +173,57 @@ Use for static structures:
 ```typescript
 yield * div({ class: "container" }, () => [text("Static content")]);
 ```
+
+## mount()
+
+Convenience function that sets up DOM backend and base plugin automatically:
+
+```typescript
+function mount(target: string | Element, app: Component, options?: MountOptions): MountHandle;
+```
+
+| Parameter  | Type                | Description                                    |
+| ---------- | ------------------- | ---------------------------------------------- |
+| `target`   | `string \| Element` | CSS selector or DOM Element                    |
+| `app`      | `Component`         | Root component function                        |
+| `options?` | `MountOptions`      | Additional plugins, scheduler, backend options |
+
+```typescript
+interface MountOptions {
+  plugins?: Plugin[];
+  scheduler?: Scheduler;
+  backend?: DOMBackendOptions;
+}
+```
+
+Examples:
+
+```typescript
+// Minimal
+mount("#app", App);
+
+// With plugins
+mount("#app", App, {
+  plugins: [createReactivePlugin(), createContextPlugin()],
+});
+```
+
+For advanced use cases (Canvas, SSR, embed), use `scope()` from `@ydant/core` directly.
+
+## `@ydant/base/internals`
+
+Internal APIs for extension plugin authors (SSR hydration, Canvas plugin, etc.). Not needed by application code.
+
+```typescript
+import { processNode, createSlot, executeMount, parseFactoryArgs } from "@ydant/base/internals";
+import type { ProcessNodeOptions, ParsedFactoryArgs } from "@ydant/base/internals";
+```
+
+| Export               | Kind     | Description                            |
+| -------------------- | -------- | -------------------------------------- |
+| `processNode`        | function | Shared element processing for plugins  |
+| `createSlot`         | function | Create a Slot with refresh capability  |
+| `executeMount`       | function | Schedule mount callbacks for a context |
+| `parseFactoryArgs`   | function | Parse element factory arguments        |
+| `ProcessNodeOptions` | type     | Options for `processNode`              |
+| `ParsedFactoryArgs`  | type     | Parsed result of factory arguments     |

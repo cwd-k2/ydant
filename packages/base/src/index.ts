@@ -89,14 +89,15 @@ export { htmlElements as html, svgElements as svg };
 export { createHTMLElement, createSVGElement } from "./elements/factory";
 
 // Backend
-export type { DOMBackendOptions } from "./capabilities";
+export type { DOMBackendOptions, DOMCapabilityNames } from "./capabilities";
 export { createDOMBackend } from "./capabilities";
 
 // Plugin
 export { createBasePlugin } from "./plugin/index";
 
-// Building blocks (for extension plugins like @ydant/ssr hydration)
-export { createSlot, executeMount, processNode, refresh } from "./plugin/element";
-export type { ProcessNodeOptions } from "./plugin/element";
-export { parseFactoryArgs } from "./elements/props";
-export type { ParsedFactoryArgs } from "./elements/props";
+// Slot refresh (user-facing API)
+export { refresh } from "./plugin/element";
+
+// Convenience mount
+export type { MountOptions } from "./mount";
+export { mount } from "./mount";

@@ -8,7 +8,7 @@ export default defineConfig({
       tsconfigPath: "./tsconfig.build.json",
       copyDtsFiles: true,
       beforeWriteFile: (filePath, content) => {
-        if (filePath.endsWith("index.d.ts")) {
+        if (filePath.endsWith("index.d.ts") || filePath.endsWith("internals.d.ts")) {
           return { content: `/// <reference path="./global.d.ts" />\n${content}` };
         }
       },
@@ -17,12 +17,15 @@ export default defineConfig({
   build: {
     outDir: "dist",
     lib: {
-      entry: path.resolve(__dirname, "src/index.ts"),
-      name: "YdantBase",
-      fileName: (format) => `index.${format}.js`,
+      entry: {
+        index: path.resolve(__dirname, "src/index.ts"),
+        internals: path.resolve(__dirname, "src/internals.ts"),
+      },
+      fileName: (format, name) => (format === "es" ? `${name}.es.js` : `${name}.cjs`),
+      formats: ["es", "cjs"],
     },
     rollupOptions: {
-      external: ["@ydant/core"],
+      external: ["@ydant/core", "@ydant/core/internals"],
       output: {
         globals: {
           "@ydant/core": "YdantCore",

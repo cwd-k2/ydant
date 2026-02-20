@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createHub } from "@ydant/core";
 import { sync, microtask } from "@ydant/core";
-import type { Backend, ExecutionScope, Hub, RenderContext } from "@ydant/core";
+import type { Backend, Hub, RenderContext } from "@ydant/core";
+import { createHub } from "@ydant/core/internals";
+import type { ExecutionScope } from "@ydant/core/internals";
 import { createDevtoolsPlugin } from "../index";
 
 // ---------------------------------------------------------------------------
