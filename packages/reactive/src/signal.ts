@@ -13,7 +13,7 @@
  */
 
 import type { Subscriber, Readable } from "./types";
-import { getCurrentSubscriber } from "./tracking";
+import { getCurrentSubscriber, trackDependency } from "./tracking";
 import { scheduleEffect } from "./batch";
 
 /** A read-write reactive value. Extends {@link Readable} with `set` and `update`. */
@@ -51,6 +51,7 @@ export function signal<T>(initialValue: T): Signal<T> {
     const subscriber = getCurrentSubscriber();
     if (subscriber) {
       subscribers.add(subscriber);
+      trackDependency(subscriber, subscribers);
     }
     return value;
   }) as Signal<T>;
@@ -58,8 +59,10 @@ export function signal<T>(initialValue: T): Signal<T> {
   read.set = (newValue: T) => {
     if (!Object.is(value, newValue)) {
       value = newValue;
-      // Notify all subscribers (deferred during batch)
-      for (const sub of subscribers) {
+      // Snapshot to avoid infinite loop when a subscriber clears and re-adds
+      // itself during notification (e.g., effect with clearDependencies)
+      const snapshot = [...subscribers];
+      for (const sub of snapshot) {
         // Queue for deferred execution if inside a batch
         const scheduled = scheduleEffect(sub);
         if (!scheduled) {

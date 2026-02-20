@@ -18,7 +18,7 @@
  * ```
  */
 
-import { runWithSubscriber } from "./tracking";
+import { runWithSubscriber, clearDependencies } from "./tracking";
 import { getActiveScope, runInScope } from "./scope";
 
 /**
@@ -62,6 +62,9 @@ export function effect(fn: () => void | (() => void)): () => void {
       cleanup = undefined;
     }
 
+    // Clear previous dependency subscriptions before re-tracking
+    clearDependencies(execute);
+
     // Execute while tracking dependencies, within the captured scope
     runInScope(scope, () => {
       cleanup = runWithSubscriber(execute, fn);
@@ -75,6 +78,7 @@ export function effect(fn: () => void | (() => void)): () => void {
   return () => {
     if (!isDisposed) {
       isDisposed = true;
+      clearDependencies(execute);
       if (cleanup) {
         try {
           cleanup();

@@ -145,6 +145,28 @@ describe("computed", () => {
       condition.set(false);
       expect(result()).toBe(20);
     });
+
+    it("cleans up stale dependencies when branches change", () => {
+      const condition = signal(true);
+      const a = signal(1);
+      const b = signal(2);
+      const computeFn = vi.fn(() => (condition() ? a() : b()));
+
+      const result = computed(computeFn);
+
+      result(); // initial compute
+      expect(computeFn).toHaveBeenCalledTimes(1);
+
+      // Switch branch
+      condition.set(false);
+      result(); // recompute
+      expect(computeFn).toHaveBeenCalledTimes(2);
+
+      // a should no longer trigger recompute
+      a.set(999);
+      result(); // should use cached value (not dirty)
+      expect(computeFn).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe("subscriber notification", () => {

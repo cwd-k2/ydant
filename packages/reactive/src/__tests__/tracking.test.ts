@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getCurrentSubscriber, runWithSubscriber, __resetForTesting__ } from "../tracking";
+import {
+  getCurrentSubscriber,
+  runWithSubscriber,
+  trackDependency,
+  clearDependencies,
+  __resetForTesting__,
+} from "../tracking";
 
 describe("getCurrentSubscriber", () => {
   beforeEach(() => {
@@ -125,5 +131,50 @@ describe("runWithSubscriber", () => {
     });
 
     expect(captured).toEqual([subs[0], subs[1], subs[2], subs[3], subs[2], subs[1], subs[0]]);
+  });
+});
+
+describe("trackDependency / clearDependencies", () => {
+  it("removes subscriber from all tracked sets on clearDependencies", () => {
+    const subscriber = vi.fn();
+    const setA = new Set<() => void>();
+    const setB = new Set<() => void>();
+
+    setA.add(subscriber);
+    setB.add(subscriber);
+    trackDependency(subscriber, setA);
+    trackDependency(subscriber, setB);
+
+    expect(setA.has(subscriber)).toBe(true);
+    expect(setB.has(subscriber)).toBe(true);
+
+    clearDependencies(subscriber);
+
+    expect(setA.has(subscriber)).toBe(false);
+    expect(setB.has(subscriber)).toBe(false);
+  });
+
+  it("is safe to call clearDependencies with no tracked dependencies", () => {
+    const subscriber = vi.fn();
+    expect(() => clearDependencies(subscriber)).not.toThrow();
+  });
+
+  it("can re-track after clearing", () => {
+    const subscriber = vi.fn();
+    const setA = new Set<() => void>();
+
+    setA.add(subscriber);
+    trackDependency(subscriber, setA);
+
+    clearDependencies(subscriber);
+    expect(setA.has(subscriber)).toBe(false);
+
+    // Re-add and re-track
+    setA.add(subscriber);
+    trackDependency(subscriber, setA);
+    expect(setA.has(subscriber)).toBe(true);
+
+    clearDependencies(subscriber);
+    expect(setA.has(subscriber)).toBe(false);
   });
 });

@@ -12,7 +12,12 @@
  */
 
 import type { Subscriber, Readable } from "./types";
-import { getCurrentSubscriber, runWithSubscriber } from "./tracking";
+import {
+  getCurrentSubscriber,
+  runWithSubscriber,
+  trackDependency,
+  clearDependencies,
+} from "./tracking";
 import { getActiveScope, runInScope } from "./scope";
 
 /** A read-only reactive derived value. See {@link computed}. */
@@ -59,9 +64,12 @@ export function computed<T>(fn: () => T): Computed<T> {
     const currentSub = getCurrentSubscriber();
     if (currentSub) {
       subscribers.add(currentSub);
+      trackDependency(currentSub, subscribers);
     }
 
     if (isDirty) {
+      // Clear previous dependency subscriptions before recomputing
+      clearDependencies(recompute);
       // Recompute while tracking dependencies, within the captured scope
       runInScope(scope, () => {
         cachedValue = runWithSubscriber(recompute, fn);

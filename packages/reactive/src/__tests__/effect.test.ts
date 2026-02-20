@@ -191,6 +191,29 @@ describe("effect", () => {
       // Now b is tracked
       b.set(30);
       expect(effectFn).toHaveBeenCalledTimes(4);
+
+      // a should no longer be tracked after the switch
+      a.set(999);
+      expect(effectFn).toHaveBeenCalledTimes(4); // No change
+    });
+  });
+
+  describe("subscriber cleanup", () => {
+    it("removes subscriber from signal on dispose", () => {
+      const count = signal(0);
+      const effectFn = vi.fn(() => {
+        count();
+      });
+
+      const dispose = effect(effectFn);
+      expect(effectFn).toHaveBeenCalledTimes(1);
+
+      dispose();
+
+      // Signal should no longer trigger the disposed effect
+      count.set(1);
+      count.set(2);
+      expect(effectFn).toHaveBeenCalledTimes(1);
     });
   });
 });
