@@ -26,6 +26,8 @@ import { executeMount, createSlot } from "@ydant/base/internals";
 import type { Element, SvgElement } from "@ydant/base";
 import { createDOMNodeResolver } from "./resolver";
 
+// Hydration mismatch warnings are DEV-only (tree-shaken in production builds).
+// Other packages (async, router) omit DEV guards for warnings that should always surface.
 declare const process: undefined | { env?: { NODE_ENV?: string } };
 const DEV = typeof process !== "undefined" && process.env?.NODE_ENV !== "production";
 

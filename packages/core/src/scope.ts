@@ -18,11 +18,11 @@
  */
 
 import type { Spell, Builder, Render, CapabilityCheck } from "./types";
-import type { Backend, Plugin, Scheduler } from "./plugin";
+import type { Backend, Engine, Plugin, Scheduler } from "./plugin";
 import type { Embed } from "./embed";
 import { createEmbedPlugin } from "./embed";
 import { createExecutionScope, mountWithScope } from "./mount";
-import type { MountHandle } from "./mount";
+import type { ExecutionScopeOptions, MountHandle } from "./mount";
 
 /** Type-level helper: extract the app param type with capability checking. */
 type AppParam<G extends Render, C extends string> = () => G & CapabilityCheck<G, Backend<C>>;
@@ -44,13 +44,18 @@ export interface ScopeBuilder<C extends string = string> {
  *
  * @param backend - The rendering backend.
  * @param plugins - Plugins for this scope.
+ * @param options - Scope creation options (e.g., strict dependency checking).
  */
-export function scope<C extends string>(backend: Backend<C>, plugins: Plugin[]): ScopeBuilder<C> {
+export function scope<C extends string>(
+  backend: Backend<C>,
+  plugins: Plugin[],
+  options?: ExecutionScopeOptions,
+): ScopeBuilder<C> {
   // Auto-register embed plugin if not already present
   const hasEmbed = plugins.some((p) => p.name === "embed");
   const allPlugins = hasEmbed ? plugins : [createEmbedPlugin(), ...plugins];
 
-  const execScope = createExecutionScope(backend, allPlugins);
+  const execScope = createExecutionScope(backend, allPlugins, options);
 
   return {
     mount(app, options?) {
@@ -63,7 +68,7 @@ export function scope<C extends string>(backend: Backend<C>, plugins: Plugin[]):
         scope: execScope,
         content,
         scheduler: options?.scheduler,
-      } as Embed) as any;
+      } as Embed) as Engine;
     },
   };
 }

@@ -65,4 +65,4 @@ export { scope } from "./scope";
 // Mount (types only — use mount() from @ydant/base or scope().mount())
 // =============================================================================
 
-export type { MountHandle } from "./mount";
+export type { ExecutionScopeOptions, MountHandle } from "./mount";

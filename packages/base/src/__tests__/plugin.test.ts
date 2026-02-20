@@ -420,6 +420,53 @@ describe("createBasePlugin", () => {
     });
   });
 
+  describe("unmountCallbacks lifecycle", () => {
+    it("does not accumulate unmountCallbacks across multiple refreshes", () => {
+      const unmountCallback = vi.fn();
+      let slot: Slot | undefined;
+
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* div(() => [span(() => [onUnmount(unmountCallback), text("v1")])]);
+        }),
+      );
+
+      vi.runAllTimers();
+
+      // First refresh — callback should fire once
+      if (slot) refresh(slot, () => [span(() => [onUnmount(unmountCallback), text("v2")])]);
+      expect(unmountCallback).toHaveBeenCalledTimes(1);
+
+      vi.runAllTimers();
+      unmountCallback.mockClear();
+
+      // Second refresh — callback should fire once again, not accumulate
+      if (slot) refresh(slot, () => [span(() => [onUnmount(unmountCallback), text("v3")])]);
+      expect(unmountCallback).toHaveBeenCalledTimes(1);
+    });
+
+    it("deduplicates identical unmount callbacks via Set", () => {
+      const sharedCallback = vi.fn();
+      let slot: Slot | undefined;
+
+      scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
+        div(function* () {
+          slot = yield* div(() => [
+            // Same callback reference registered in two places
+            onUnmount(sharedCallback),
+            span(() => [onUnmount(sharedCallback), text("Child")]),
+          ]);
+        }),
+      );
+
+      vi.runAllTimers();
+
+      // Refresh triggers cleanup — identical callback should only fire once (Set dedup)
+      if (slot) refresh(slot, () => [text("New")]);
+      expect(sharedCallback).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe("listener on reused element", () => {
     it("does not duplicate listeners on element reuse", () => {
       const handler = vi.fn();
@@ -460,10 +507,14 @@ describe("createBasePlugin", () => {
             createElement: (tag: string) => document.createElement(tag),
             createElementNS: (ns: string, tag: string) => document.createElementNS(ns, tag),
             createTextNode: (content: string) => document.createTextNode(content),
+            createMarker: () => document.createComment(""),
             appendChild: (parent: unknown, child: unknown) =>
               (parent as Node).appendChild(child as Node),
             removeChild: (parent: unknown, child: unknown) =>
               (parent as Node).removeChild(child as Node),
+            insertBefore: (parent: unknown, child: unknown, ref: unknown) =>
+              (parent as Node).insertBefore(child as Node, ref as Node),
+            nextSibling: (_parent: unknown, node: unknown) => (node as Node).nextSibling,
             clearChildren: (parent: unknown) => {
               (parent as Element).textContent = "";
             },

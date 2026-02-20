@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { scope } from "../scope";
 import { createEmbedPlugin } from "../embed";
 import { sync } from "../scheduler";
@@ -195,6 +195,57 @@ describe("scope()", () => {
       // mount should work without errors (no duplicate plugin)
       const handle = builder.mount(asApp(function* () {}));
       expect(handle).toBeDefined();
+    });
+  });
+
+  describe("strict dependency checking", () => {
+    it("throws on missing dependency when strict: true", () => {
+      const backend = createMockBackend("dom");
+      const plugin: Plugin = {
+        name: "dependent",
+        types: ["dep"],
+        dependencies: ["missing-plugin"],
+      };
+
+      expect(() => {
+        scope(backend, [plugin], { strict: true });
+      }).toThrow(
+        '[ydant] Plugin "dependent" depends on "missing-plugin", but "missing-plugin" is not registered.',
+      );
+    });
+
+    it("warns but does not throw when strict is false (default)", () => {
+      const backend = createMockBackend("dom");
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const plugin: Plugin = {
+        name: "dependent",
+        types: ["dep"],
+        dependencies: ["missing-plugin"],
+      };
+
+      expect(() => {
+        scope(backend, [plugin]);
+      }).not.toThrow();
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[ydant] Plugin "dependent" depends on "missing-plugin", but "missing-plugin" is not registered.',
+      );
+      warnSpy.mockRestore();
+    });
+
+    it("does not throw when all dependencies are satisfied", () => {
+      const backend = createMockBackend("dom");
+      const base: Plugin = { name: "base", types: [] };
+      const dependent: Plugin = {
+        name: "dependent",
+        types: ["dep"],
+        dependencies: ["base"],
+      };
+
+      expect(() => {
+        scope(backend, [base, dependent], { strict: true });
+      }).not.toThrow();
     });
   });
 

@@ -18,6 +18,10 @@ import { parseFactoryArgs } from "./props";
  * - `div({ class: "..." }, builder)` — Props + Builder
  */
 export function createHTMLElement(tag: string): HTMLElementFactory {
+  // The inner generator has a single variadic signature, while HTMLElementFactory
+  // is an interface with multiple overloads (props, builder, text shorthand, etc.).
+  // TypeScript cannot directly assign a generator to an overloaded interface,
+  // so `as unknown as` bridges this intentional gap.
   return function* (...args: unknown[]): Spell<"element"> {
     const { children, decorations, key } = parseFactoryArgs(args);
     return (yield { type: "element", tag, children, decorations, key } as Element) as Slot;
@@ -31,6 +35,7 @@ export function createHTMLElement(tag: string): HTMLElementFactory {
  * processed via `createElementNS` with the SVG namespace.
  */
 export function createSVGElement(tag: string): SVGElementFactory {
+  // Same `as unknown as` bridge as createHTMLElement — see comment above.
   return function* (...args: unknown[]): Spell<"svg"> {
     const { children, decorations, key } = parseFactoryArgs(args);
     return (yield { type: "svg", tag, children, decorations, key } as SvgElement) as Slot;

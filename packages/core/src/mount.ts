@@ -15,6 +15,12 @@ export interface MountHandle {
   dispose(): void;
 }
 
+/** Options for creating an execution scope. */
+export interface ExecutionScopeOptions {
+  /** When true, throw on missing plugin dependencies instead of warning. */
+  strict?: boolean;
+}
+
 /** Options for the internal mount function. */
 export type MountOptions<G extends Render = Render, B extends Backend = Backend> = {
   /** The rendering backend that provides platform-specific capabilities. */
@@ -23,6 +29,8 @@ export type MountOptions<G extends Render = Render, B extends Backend = Backend>
   plugins?: Plugin[];
   /** Override the scheduler for the primary engine (defaults to backend.defaultScheduler, then sync). */
   scheduler?: Scheduler;
+  /** When true, throw on missing plugin dependencies instead of warning. */
+  strict?: boolean;
 } & CapabilityCheck<G, B>;
 
 /**
@@ -36,6 +44,7 @@ export type MountOptions<G extends Render = Render, B extends Backend = Backend>
 export function createExecutionScope(
   backend: Backend,
   pluginList: readonly Plugin[],
+  options?: ExecutionScopeOptions,
 ): ExecutionScope {
   const pluginMap = new Map<string, Plugin>();
   const pluginNames = new Set<string>();
@@ -52,9 +61,11 @@ export function createExecutionScope(
     if (plugin.dependencies) {
       for (const dep of plugin.dependencies) {
         if (!pluginNames.has(dep)) {
-          console.warn(
-            `[ydant] Plugin "${plugin.name}" depends on "${dep}", but "${dep}" is not registered.`,
-          );
+          const message = `[ydant] Plugin "${plugin.name}" depends on "${dep}", but "${dep}" is not registered.`;
+          if (options?.strict) {
+            throw new Error(message);
+          }
+          console.warn(message);
         }
       }
     }
@@ -118,8 +129,8 @@ export function mount<G extends Render, B extends Backend>(
   app: () => G,
   options: MountOptions<G, B>,
 ): MountHandle {
-  const { backend, plugins: pluginList, scheduler } = options;
+  const { backend, plugins: pluginList, scheduler, strict } = options;
   const allPlugins = pluginList ?? [];
-  const execScope = createExecutionScope(backend, allPlugins);
+  const execScope = createExecutionScope(backend, allPlugins, { strict });
   return mountWithScope(execScope, app, scheduler);
 }
