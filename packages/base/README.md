@@ -8,8 +8,8 @@ Element factories, primitives, and base plugin for Ydant.
 
 While `@ydant/core` is a pure engine, base provides everything users need:
 
-- Element factories (`div`, `span`, etc.)
-- Primitives (`text`, `attr`, `on`, `style`, etc.)
+- Element factories (`div`, `span`, etc.) with Props syntax
+- Primitives (`text`, `cn`, `keyed`, etc.)
 - DOM operations (`appendChild`, `setCurrentElement`)
 - Lifecycle management (`onMount`, `onUnmount`)
 - Keyed element diffing
@@ -26,12 +26,11 @@ pnpm add @ydant/base
 
 ```typescript
 import { scope, type Component } from "@ydant/core";
-import { createDOMBackend, createBasePlugin, div, p, text, classes } from "@ydant/base";
+import { createDOMBackend, createBasePlugin, div, p } from "@ydant/base";
 
 const Greeting: Component = () =>
-  div(function* () {
-    yield* classes("greeting");
-    yield* p(() => [text("Hello World!")]);
+  div({ class: "greeting" }, function* () {
+    yield* p("Hello World!");
   });
 
 scope(createDOMBackend(document.getElementById("app")!), [createBasePlugin()]).mount(Greeting);
@@ -74,53 +73,40 @@ Custom elements can be created with factory helpers:
 
 ### Primitives
 
-| Function              | Description                           |
-| --------------------- | ------------------------------------- |
-| `text(content)`       | Create a text node                    |
-| `attr(key, value)`    | Set an HTML attribute                 |
-| `classes(...names)`   | Set class attribute                   |
-| `on(event, handler)`  | Add event listener                    |
-| `style(styles)`       | Set inline styles                     |
-| `keyed(key, factory)` | Wrap a factory with a key for diffing |
-| `onMount(callback)`   | Lifecycle hook for mount              |
-| `onUnmount(callback)` | Lifecycle hook for unmount            |
+| Function              | Description                              |
+| --------------------- | ---------------------------------------- |
+| `text(content)`       | Create a text node                       |
+| `cn(...items)`        | Join class names, filtering falsy values |
+| `keyed(key, factory)` | Wrap a factory with a key for diffing    |
+| `onMount(callback)`   | Lifecycle hook for mount                 |
+| `onUnmount(callback)` | Lifecycle hook for unmount               |
 
-#### `on()` Type Overloads
-
-`on()` provides type-safe overloads for known DOM event types:
+Attributes, classes, styles, and event handlers are set via element Props:
 
 ```typescript
-// Type-safe: handler receives MouseEvent
 yield *
-  on("click", (e) => {
-    /* e: MouseEvent */
-  });
-
-// Type-safe: handler receives KeyboardEvent
-yield *
-  on("keydown", (e) => {
-    /* e: KeyboardEvent */
-  });
-
-// Generic fallback for custom events
-yield *
-  on("my-event", (e) => {
-    /* e: Event */
-  });
+  div(
+    {
+      class: cn("container", isActive && "active"),
+      style: { padding: "16px" },
+      onClick: (e) => {
+        /* e: MouseEvent */
+      },
+    },
+    "Content",
+  );
 ```
 
 ### Types
 
-| Type         | Description                                                   |
-| ------------ | ------------------------------------------------------------- |
-| `Slot`       | `{ readonly node: HTMLElement, refresh: (children) => void }` |
-| `SlotRef`    | Reference holder for a `Slot`, created by `createSlotRef()`   |
-| `Element`    | Tagged type for HTML/SVG elements                             |
-| `Attribute`  | Tagged type for attributes                                    |
-| `Listener`   | Tagged type for event listeners                               |
-| `Text`       | Tagged type for text nodes                                    |
-| `Lifecycle`  | Tagged type for lifecycle hooks                               |
-| `Decoration` | Union type `Attribute \| Listener`                            |
+| Type        | Description                                                   |
+| ----------- | ------------------------------------------------------------- |
+| `Slot`      | `{ readonly node: HTMLElement, refresh: (children) => void }` |
+| `SlotRef`   | Reference holder for a `Slot`, created by `createSlotRef()`   |
+| `Element`   | Tagged type for HTML/SVG elements                             |
+| `Text`      | Tagged type for text nodes                                    |
+| `Lifecycle` | Tagged type for lifecycle hooks                               |
+| `ClassItem` | `string \| false \| null \| undefined \| 0 \| ""`             |
 
 > `Render`, `Component` types are defined in `@ydant/core`.
 
@@ -182,11 +168,11 @@ Use when you need the `Slot` return value:
 const slot =
   yield *
   div(function* () {
-    yield* text("Content");
+    yield* p("Content");
   });
 
 // Later: update the content
-slot.refresh(() => [text("Updated!")]);
+slot.refresh(() => [p("Updated!")]);
 ```
 
 ### Array Syntax
@@ -194,5 +180,5 @@ slot.refresh(() => [text("Updated!")]);
 Use for static structures:
 
 ```typescript
-yield * div(() => [classes("container"), text("Static content")]);
+yield * div({ class: "container" }, () => [text("Static content")]);
 ```

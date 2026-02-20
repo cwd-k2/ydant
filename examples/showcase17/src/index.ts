@@ -12,14 +12,7 @@
  */
 
 import { scope } from "@ydant/core";
-import {
-  createDOMBackend,
-  createBasePlugin,
-  createHTMLElement,
-  html,
-  text,
-  attr,
-} from "@ydant/base";
+import { createDOMBackend, createBasePlugin, createHTMLElement, html } from "@ydant/base";
 import { createCanvasBackend, createCanvasPlugin } from "@ydant/canvas";
 import { signal, reactive, createReactivePlugin } from "@ydant/reactive";
 
@@ -53,19 +46,19 @@ const App = () =>
   div(function* () {
     yield* h1("Master-Detail Messaging");
     yield* p(
-      { classes: ["subtitle"] },
+      { class: "subtitle" },
       "DOM \u2194 Canvas communication via hub.dispatch() + engine.on()",
     );
 
-    yield* div({ classes: ["layout"] }, function* () {
+    yield* div({ class: "layout" }, function* () {
       // Left: DOM color list
-      yield* div({ classes: ["panel"] }, function* () {
+      yield* div({ class: "panel" }, function* () {
         yield* ColorList();
       });
 
       // Right: Canvas visualization
-      yield* div({ classes: ["panel"] }, function* () {
-        yield* div({ classes: ["panel-title"] }, "Visualization");
+      yield* div({ class: "panel" }, function* () {
+        yield* div({ class: "panel-title" }, "Visualization");
 
         const slot = yield* canvas({ width: "560", height: "360" });
         const ctx2d = (slot.node as HTMLCanvasElement).getContext("2d")!;
@@ -114,32 +107,28 @@ const App = () =>
 
         // Stats
         yield* reactive(() => [
-          div({ classes: ["stats"] }, `Shapes: ${shapeCount()} | Paint: ${paintTime()}ms`),
+          div({ class: "stats" }, `Shapes: ${shapeCount()} | Paint: ${paintTime()}ms`),
         ]);
       });
 
       // Bottom: Message log
-      yield* div({ classes: ["panel", "msg-log"] }, function* () {
-        yield* div({ classes: ["panel-title"] }, "Message Log");
+      yield* div({ class: "panel msg-log" }, function* () {
+        yield* div({ class: "panel-title" }, "Message Log");
 
         yield* reactive(() =>
           messageLog()
             .slice()
             .reverse()
             .map((entry) =>
-              div(function* () {
-                yield* attr("class", "msg-entry");
+              div({ class: "msg-entry" }, function* () {
                 yield* span(
                   {
-                    classes: [
-                      "msg-dir",
-                      entry.direction === "dom" ? "msg-dir-dom" : "msg-dir-canvas",
-                    ],
+                    class: `msg-dir ${entry.direction === "dom" ? "msg-dir-dom" : "msg-dir-canvas"}`,
                   },
                   entry.direction === "dom" ? "DOM \u2192 Canvas" : "Canvas \u2192 DOM",
                 );
-                yield* span({ classes: ["msg-type"] }, entry.type);
-                yield* span({ classes: ["msg-payload"] }, entry.payload);
+                yield* span({ class: "msg-type" }, entry.type);
+                yield* span({ class: "msg-payload" }, entry.payload);
               }),
             ),
         );

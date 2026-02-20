@@ -1,15 +1,12 @@
 import type { Component } from "@ydant/core";
 import {
-  text,
   div,
   h1,
   h2,
   p,
   span,
   button,
-  classes,
-  on,
-  attr,
+  cn,
   circle,
   onUnmount,
   createSlotRef,
@@ -40,8 +37,6 @@ export const App: Component = () => {
 
   // Render functions
   const renderModeButtons = function* () {
-    yield* classes("flex", "gap-2", "mb-8");
-
     const modes: TimerMode[] = ["work", "break", "long-break"];
     for (const mode of modes) {
       yield* ModeButton({
@@ -64,166 +59,125 @@ export const App: Component = () => {
     const strokeDashoffset = RING_CIRCUMFERENCE - (progress / 100) * RING_CIRCUMFERENCE;
     const ringColor = MODE_COLORS[state.mode].ring;
 
-    yield* classes("transform", "-rotate-90");
-    yield* attr("width", String(RING_RADIUS * 2));
-    yield* attr("height", String(RING_RADIUS * 2));
-
     // 背景の円
-    yield* circle(() => [
-      attr("stroke", "#334155"),
-      attr("fill", "transparent"),
-      attr("stroke-width", String(RING_STROKE)),
-      attr("r", String(RING_NORMALIZED_RADIUS)),
-      attr("cx", String(RING_RADIUS)),
-      attr("cy", String(RING_RADIUS)),
-    ]);
+    yield* circle({
+      stroke: "#334155",
+      fill: "transparent",
+      "stroke-width": String(RING_STROKE),
+      r: String(RING_NORMALIZED_RADIUS),
+      cx: String(RING_RADIUS),
+      cy: String(RING_RADIUS),
+    });
 
     // プログレスの円
-    yield* circle(() => [
-      classes("progress-ring"),
-      attr("stroke", ringColor),
-      attr("fill", "transparent"),
-      attr("stroke-width", String(RING_STROKE)),
-      attr("stroke-linecap", "round"),
-      attr("stroke-dasharray", `${RING_CIRCUMFERENCE} ${RING_CIRCUMFERENCE}`),
-      attr("stroke-dashoffset", String(strokeDashoffset)),
-      attr("r", String(RING_NORMALIZED_RADIUS)),
-      attr("cx", String(RING_RADIUS)),
-      attr("cy", String(RING_RADIUS)),
-    ]);
+    yield* circle({
+      class: "progress-ring",
+      stroke: ringColor,
+      fill: "transparent",
+      "stroke-width": String(RING_STROKE),
+      "stroke-linecap": "round",
+      "stroke-dasharray": `${RING_CIRCUMFERENCE} ${RING_CIRCUMFERENCE}`,
+      "stroke-dashoffset": String(strokeDashoffset),
+      r: String(RING_NORMALIZED_RADIUS),
+      cx: String(RING_RADIUS),
+      cy: String(RING_RADIUS),
+    });
   };
 
   const renderTimer = function* () {
-    yield* classes("relative", "mb-8");
-
-    yield* div(function* () {
-      yield* classes("flex", "items-center", "justify-center");
-
+    yield* div({ class: "flex items-center justify-center" }, function* () {
       // SVG progress ring
-      yield* div(function* () {
-        yield* classes("absolute", "inset-0", "flex", "items-center", "justify-center");
-        progressRingRef.bind(yield* svg.svg(renderProgressRing));
+      yield* div({ class: "absolute inset-0 flex items-center justify-center" }, function* () {
+        progressRingRef.bind(
+          yield* svg.svg(
+            {
+              class: "transform -rotate-90",
+              width: String(RING_RADIUS * 2),
+              height: String(RING_RADIUS * 2),
+            },
+            renderProgressRing,
+          ),
+        );
       });
 
       // Timer text overlay
-      yield* div(function* () {
-        yield* classes(
-          "relative",
-          "z-10",
-          "w-60",
-          "h-60",
-          "flex",
-          "flex-col",
-          "items-center",
-          "justify-center",
-        );
-
-        yield* span(function* () {
-          yield* classes(
-            "timer-display",
-            MODE_COLORS[state.mode].text,
-            ...(state.isRunning ? ["timer-running"] : []),
+      yield* div(
+        { class: "relative z-10 w-60 h-60 flex flex-col items-center justify-center" },
+        function* () {
+          yield* span(
+            {
+              class: cn(
+                "timer-display",
+                MODE_COLORS[state.mode].text,
+                state.isRunning && "timer-running",
+              ),
+            },
+            formatTime(state.timeLeft),
           );
-          yield* text(formatTime(state.timeLeft));
-        });
 
-        yield* span(() => [
-          classes("text-gray-400", "text-lg", "mt-2"),
-          text(MODE_LABELS[state.mode]),
-        ]);
-      });
+          yield* span({ class: "text-gray-400 text-lg mt-2" }, MODE_LABELS[state.mode]);
+        },
+      );
     });
   };
 
   const renderControls = function* () {
-    yield* classes("flex", "gap-4", "mb-8");
-
     if (!state.isRunning) {
       // Start button
-      yield* button(function* () {
-        yield* classes(
-          "btn-control",
-          "px-8",
-          "py-3",
-          MODE_COLORS[state.mode].bg,
-          "text-white",
-          "rounded-full",
-          "font-semibold",
-          "text-lg",
-          "shadow-lg",
-        );
-        yield* on("click", startTimer);
-        yield* text("Start");
-      });
+      yield* button(
+        {
+          class: cn(
+            "btn-control",
+            "px-8",
+            "py-3",
+            MODE_COLORS[state.mode].bg,
+            "text-white",
+            "rounded-full",
+            "font-semibold",
+            "text-lg",
+            "shadow-lg",
+          ),
+          onClick: startTimer,
+        },
+        "Start",
+      );
     } else {
       // Pause button
-      yield* button(function* () {
-        yield* classes(
-          "btn-control",
-          "px-8",
-          "py-3",
-          "bg-yellow-500",
-          "text-white",
-          "rounded-full",
-          "font-semibold",
-          "text-lg",
-          "shadow-lg",
-        );
-        yield* on("click", stopTimer);
-        yield* text("Pause");
-      });
+      yield* button(
+        {
+          class:
+            "btn-control px-8 py-3 bg-yellow-500 text-white rounded-full font-semibold text-lg shadow-lg",
+          onClick: stopTimer,
+        },
+        "Pause",
+      );
     }
 
     // Reset button
-    yield* button(function* () {
-      yield* classes(
-        "btn-control",
-        "px-8",
-        "py-3",
-        "bg-slate-700",
-        "text-gray-300",
-        "rounded-full",
-        "font-semibold",
-        "text-lg",
-        "hover:bg-slate-600",
-      );
-      yield* on("click", resetTimer);
-      yield* text("Reset");
-    });
+    yield* button(
+      {
+        class:
+          "btn-control px-8 py-3 bg-slate-700 text-gray-300 rounded-full font-semibold text-lg hover:bg-slate-600",
+        onClick: resetTimer,
+      },
+      "Reset",
+    );
   };
 
   const renderSessions = function* () {
-    yield* classes(
-      "flex",
-      "flex-col",
-      "items-center",
-      "p-4",
-      "bg-slate-800",
-      "rounded-xl",
-      "w-full",
-    );
+    yield* h2({ class: "text-sm font-medium text-gray-400 mb-2" }, "Sessions Completed");
 
-    yield* h2(() => [
-      classes("text-sm", "font-medium", "text-gray-400", "mb-2"),
-      text("Sessions Completed"),
-    ]);
-
-    yield* div(function* () {
-      yield* classes("flex", "gap-2");
-
+    yield* div({ class: "flex gap-2" }, function* () {
       // Show pomodoro icons for completed sessions (max 8)
       const displayCount = Math.min(state.sessionsCompleted, 8);
       for (let i = 0; i < displayCount; i++) {
-        yield* span(() => [classes("text-2xl"), text("🍅")]);
+        yield* span({ class: "text-2xl" }, "🍅");
       }
 
       if (state.sessionsCompleted === 0) {
-        yield* span(() => [classes("text-gray-400"), text("No sessions yet")]);
+        yield* span({ class: "text-gray-400" }, "No sessions yet");
       } else if (state.sessionsCompleted > 8) {
-        yield* span(() => [
-          classes("text-gray-400", "font-medium"),
-          text(`+${state.sessionsCompleted - 8} more`),
-        ]);
+        yield* span({ class: "text-gray-400 font-medium" }, `+${state.sessionsCompleted - 8} more`);
       }
     });
   };
@@ -295,9 +249,7 @@ export const App: Component = () => {
     timerRef.refresh(renderTimer);
   };
 
-  return div(function* () {
-    yield* classes("flex", "flex-col", "items-center");
-
+  return div({ class: "flex flex-col items-center" }, function* () {
     // ライフサイクルフック: アンマウント時にタイマーをクリア
     yield* onUnmount(() => {
       if (timerInterval) {
@@ -307,33 +259,31 @@ export const App: Component = () => {
     });
 
     // Title
-    yield* h1(() => [
-      classes("text-3xl", "font-bold", "text-gray-100", "mb-2"),
-      text("Pomodoro Timer"),
-    ]);
+    yield* h1({ class: "text-3xl font-bold text-gray-100 mb-2" }, "Pomodoro Timer");
 
-    yield* p(() => [
-      classes("text-gray-400", "mb-8", "text-center"),
-      text("Stay focused and productive!"),
-    ]);
+    yield* p({ class: "text-gray-400 mb-8 text-center" }, "Stay focused and productive!");
 
     // Mode selector
-    modeRef.bind(yield* div(renderModeButtons));
+    modeRef.bind(yield* div({ class: "flex gap-2 mb-8" }, renderModeButtons));
 
     // Timer display with progress ring
-    timerRef.bind(yield* div(renderTimer));
+    timerRef.bind(yield* div({ class: "relative mb-8" }, renderTimer));
 
     // Control buttons
-    controlsRef.bind(yield* div(renderControls));
+    controlsRef.bind(yield* div({ class: "flex gap-4 mb-8" }, renderControls));
 
     // Sessions completed
-    sessionsRef.bind(yield* div(renderSessions));
+    sessionsRef.bind(
+      yield* div(
+        { class: "flex flex-col items-center p-4 bg-slate-800 rounded-xl w-full" },
+        renderSessions,
+      ),
+    );
 
     // Tips
-    yield* div(() => [
-      classes("mt-6", "text-center", "text-xs", "text-gray-400"),
-      p(() => [text("25 min work → 5 min break → repeat")]),
-      p(() => [text("Every 4 sessions, take a 15 min long break")]),
-    ]);
+    yield* div({ class: "mt-6 text-center text-xs text-gray-400" }, function* () {
+      yield* p("25 min work → 5 min break → repeat");
+      yield* p("Every 4 sessions, take a 15 min long break");
+    });
   });
 };

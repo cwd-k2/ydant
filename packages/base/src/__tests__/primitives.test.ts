@@ -1,126 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { attr, classes, on, text, style, onMount, onUnmount } from "../primitives";
+import { text, onMount, onUnmount, cn } from "../primitives";
 import type { Lifecycle } from "../types";
-
-describe("attr", () => {
-  it("yields an Attribute with correct type, key, and value", () => {
-    const gen = attr("href", "https://example.com");
-    const result = gen.next();
-
-    expect(result.done).toBe(false);
-    expect(result.value).toEqual({
-      type: "attribute",
-      key: "href",
-      value: "https://example.com",
-    });
-
-    expect(gen.next().done).toBe(true);
-  });
-});
-
-describe("classes", () => {
-  it("yields an Attribute with class key and joined class names", () => {
-    const gen = classes("container", "flex", "items-center");
-    const result = gen.next();
-
-    expect(result.done).toBe(false);
-    expect(result.value).toEqual({
-      type: "attribute",
-      key: "class",
-      value: "container flex items-center",
-    });
-  });
-
-  it("handles spread array", () => {
-    const dynamicClasses = ["container", "flex", "items-center"];
-    const gen = classes(...dynamicClasses);
-    const result = gen.next();
-
-    expect(result.value).toEqual({
-      type: "attribute",
-      key: "class",
-      value: "container flex items-center",
-    });
-  });
-
-  it("handles no arguments", () => {
-    const gen = classes();
-    const result = gen.next();
-
-    expect(result.value).toEqual({
-      type: "attribute",
-      key: "class",
-      value: "",
-    });
-  });
-
-  it("handles single class", () => {
-    const gen = classes("single");
-    const result = gen.next();
-
-    expect(result.value).toEqual({
-      type: "attribute",
-      key: "class",
-      value: "single",
-    });
-  });
-
-  it("filters out falsy values", () => {
-    const isActive = false;
-    const isVisible = true;
-
-    const gen = classes("base", isActive && "active", isVisible && "visible", null, undefined, 0);
-    const result = gen.next();
-
-    expect(result.value).toEqual({
-      type: "attribute",
-      key: "class",
-      value: "base visible",
-    });
-  });
-
-  it("handles all falsy values", () => {
-    const gen = classes(false, null, undefined, 0, "");
-    const result = gen.next();
-
-    expect(result.value).toEqual({
-      type: "attribute",
-      key: "class",
-      value: "",
-    });
-  });
-});
-
-describe("on", () => {
-  it("yields a Listener with correct type, key, and handler", () => {
-    const handler = vi.fn();
-    const gen = on("click", handler);
-    const result = gen.next();
-
-    expect(result.done).toBe(false);
-    expect(result.value).toEqual({
-      type: "listener",
-      key: "click",
-      value: handler,
-    });
-  });
-
-  it("supports various event types", () => {
-    const events = ["input", "change", "submit", "keydown"];
-
-    for (const event of events) {
-      const handler = vi.fn();
-      const gen = on(event, handler);
-      const result = gen.next();
-
-      expect(result.value).toEqual({
-        type: "listener",
-        key: event,
-        value: handler,
-      });
-    }
-  });
-});
 
 describe("text", () => {
   it("yields a Text with correct content", () => {
@@ -155,60 +35,30 @@ describe("text", () => {
   });
 });
 
-describe("style", () => {
-  it("yields an Attribute with style key and CSS string", () => {
-    const gen = style({
-      padding: "16px",
-      display: "flex",
-      gap: "8px",
-    });
-    const result = gen.next();
-
-    expect(result.done).toBe(false);
-    expect(result.value).toEqual({
-      type: "attribute",
-      key: "style",
-      value: "padding: 16px; display: flex; gap: 8px",
-    });
+describe("cn", () => {
+  it("joins class names with spaces", () => {
+    expect(cn("container", "flex", "items-center")).toBe("container flex items-center");
   });
 
-  it("handles CSS custom properties (variables)", () => {
-    const gen = style({
-      "--primary-color": "#3b82f6",
-      backgroundColor: "var(--primary-color)",
-    });
-    const result = gen.next();
+  it("filters out falsy values", () => {
+    const isActive = false;
+    const isVisible = true;
 
-    expect(result.value).toEqual({
-      type: "attribute",
-      key: "style",
-      value: "--primary-color: #3b82f6; background-color: var(--primary-color)",
-    });
+    expect(cn("base", isActive && "active", isVisible && "visible", null, undefined, 0)).toBe(
+      "base visible",
+    );
   });
 
-  it("handles empty style object", () => {
-    const gen = style({});
-    const result = gen.next();
-
-    expect(result.value).toEqual({
-      type: "attribute",
-      key: "style",
-      value: "",
-    });
+  it("returns empty string for no arguments", () => {
+    expect(cn()).toBe("");
   });
 
-  it("converts camelCase to kebab-case", () => {
-    const gen = style({
-      fontSize: "16px",
-      marginTop: "8px",
-    });
-    const result = gen.next();
+  it("returns empty string for all falsy values", () => {
+    expect(cn(false, null, undefined, 0, "")).toBe("");
+  });
 
-    expect(result.value).toEqual({
-      type: "attribute",
-      key: "style",
-      value: "font-size: 16px; margin-top: 8px",
-    });
+  it("handles single class", () => {
+    expect(cn("single")).toBe("single");
   });
 });
 

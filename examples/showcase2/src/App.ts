@@ -1,17 +1,5 @@
 import type { Component } from "@ydant/core";
-import {
-  text,
-  div,
-  h1,
-  p,
-  span,
-  button,
-  input,
-  classes,
-  on,
-  attr,
-  createSlotRef,
-} from "@ydant/base";
+import { div, h1, p, span, button, input, createSlotRef } from "@ydant/base";
 import type { Todo, Filter } from "./types";
 import { loadTodos, saveTodos } from "./storage";
 import { TodoItem } from "./components/TodoItem";
@@ -46,8 +34,6 @@ export const App: Component = () => {
 
   // Render functions for refreshing
   const renderFilterButtons = function* () {
-    yield* classes("flex", "gap-2", "mb-4", "justify-center");
-
     const filters: { key: Filter; label: string }[] = [
       { key: "all", label: "All" },
       { key: "active", label: "Active" },
@@ -68,21 +54,17 @@ export const App: Component = () => {
   };
 
   const renderTodoList = function* () {
-    yield* classes("border", "border-slate-700", "rounded-lg", "overflow-hidden", "mb-4");
-
     const filteredTodos = getFilteredTodos();
 
     if (filteredTodos.length === 0) {
-      yield* div(() => [
-        classes("p-8", "text-center", "text-gray-400"),
-        text(
-          filter === "all"
-            ? "No todos yet. Add one above!"
-            : filter === "active"
-              ? "No active todos."
-              : "No completed todos.",
-        ),
-      ]);
+      yield* div(
+        { class: "p-8 text-center text-gray-400" },
+        filter === "all"
+          ? "No todos yet. Add one above!"
+          : filter === "active"
+            ? "No active todos."
+            : "No completed todos.",
+      );
     } else {
       for (const todo of filteredTodos) {
         yield* TodoItem({
@@ -105,64 +87,47 @@ export const App: Component = () => {
   };
 
   const renderStats = function* () {
-    yield* classes("flex", "justify-between", "items-center", "text-sm", "text-gray-400");
-
     const activeCount = getActiveCount();
     const completedCount = todos.length - activeCount;
 
-    yield* span(() => [text(`${activeCount} item${activeCount !== 1 ? "s" : ""} left`)]);
+    yield* span(`${activeCount} item${activeCount !== 1 ? "s" : ""} left`);
 
     if (completedCount > 0) {
-      yield* button(function* () {
-        yield* classes("text-red-500", "hover:text-red-400", "hover:underline");
-        yield* on("click", () => {
-          todos = todos.filter((t) => !t.completed);
-          saveTodos(todos);
-          todoListRef.refresh(renderTodoList);
-          statsRef.refresh(renderStats);
-        });
-        yield* text("Clear completed");
-      });
+      yield* button(
+        {
+          class: "text-red-500 hover:text-red-400 hover:underline",
+          onClick: () => {
+            todos = todos.filter((t) => !t.completed);
+            saveTodos(todos);
+            todoListRef.refresh(renderTodoList);
+            statsRef.refresh(renderStats);
+          },
+        },
+        "Clear completed",
+      );
     }
   };
 
-  return div(function* () {
-    yield* classes("container", "mx-auto");
-
+  return div({ class: "container mx-auto" }, function* () {
     // Title
-    yield* h1(() => [
-      classes("text-2xl", "font-bold", "text-center", "text-purple-300", "mb-6"),
-      text("ToDo App"),
-    ]);
+    yield* h1({ class: "text-2xl font-bold text-center text-purple-300 mb-6" }, "ToDo App");
 
     // Input section
     let inputValue = "";
     const inputRef = createSlotRef();
 
-    yield* div(function* () {
-      yield* classes("flex", "gap-2", "mb-6");
-
+    yield* div({ class: "flex gap-2 mb-6" }, function* () {
       // Text input
       inputRef.bind(
-        yield* input(function* () {
-          yield* attr("type", "text");
-          yield* attr("placeholder", "What needs to be done?");
-          yield* classes(
-            "flex-1",
-            "px-4",
-            "py-2",
-            "border",
-            "border-slate-600",
-            "rounded-lg",
-            "focus:outline-none",
-            "focus:ring-2",
-            "focus:ring-blue-500",
-            "focus:border-transparent",
-          );
-          yield* on("input", (e) => {
+        yield* input({
+          type: "text",
+          placeholder: "What needs to be done?",
+          class:
+            "flex-1 px-4 py-2 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+          onInput: (e) => {
             inputValue = (e.target as HTMLInputElement).value;
-          });
-          yield* on("keypress", (e) => {
+          },
+          onKeypress: (e) => {
             if ((e as KeyboardEvent).key === "Enter" && inputValue.trim()) {
               todos.push({
                 id: nextId++,
@@ -175,53 +140,54 @@ export const App: Component = () => {
               todoListRef.refresh(renderTodoList);
               statsRef.refresh(renderStats);
             }
-          });
+          },
         }),
       );
 
       // Add button
-      yield* button(function* () {
-        yield* classes(
-          "btn-add",
-          "px-6",
-          "py-2",
-          "bg-blue-500",
-          "text-white",
-          "rounded-lg",
-          "hover:bg-blue-600",
-          "font-semibold",
-        );
-        yield* on("click", () => {
-          if (inputValue.trim()) {
-            todos.push({
-              id: nextId++,
-              text: inputValue.trim(),
-              completed: false,
-            });
-            saveTodos(todos);
-            (inputRef.node as HTMLInputElement).value = "";
-            inputValue = "";
-            todoListRef.refresh(renderTodoList);
-            statsRef.refresh(renderStats);
-          }
-        });
-        yield* text("Add");
-      });
+      yield* button(
+        {
+          class:
+            "btn-add px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold",
+          onClick: () => {
+            if (inputValue.trim()) {
+              todos.push({
+                id: nextId++,
+                text: inputValue.trim(),
+                completed: false,
+              });
+              saveTodos(todos);
+              (inputRef.node as HTMLInputElement).value = "";
+              inputValue = "";
+              todoListRef.refresh(renderTodoList);
+              statsRef.refresh(renderStats);
+            }
+          },
+        },
+        "Add",
+      );
     });
 
     // Filter buttons
-    filterRef.bind(yield* div(renderFilterButtons));
+    filterRef.bind(yield* div({ class: "flex gap-2 mb-4 justify-center" }, renderFilterButtons));
 
     // Todo list
-    todoListRef.bind(yield* div(renderTodoList));
+    todoListRef.bind(
+      yield* div(
+        { class: "border border-slate-700 rounded-lg overflow-hidden mb-4" },
+        renderTodoList,
+      ),
+    );
 
     // Stats
-    statsRef.bind(yield* div(renderStats));
+    statsRef.bind(
+      yield* div({ class: "flex justify-between items-center text-sm text-gray-400" }, renderStats),
+    );
 
     // Footer info
-    yield* p(() => [
-      classes("text-center", "text-xs", "text-gray-400", "mt-6"),
-      text("Double-click to edit a todo (not implemented). Data is saved to localStorage."),
-    ]);
+    yield* p(
+      { class: "text-center text-xs text-gray-400 mt-6" },
+      "Double-click to edit a todo (not implemented). Data is saved to localStorage.",
+    );
   });
 };

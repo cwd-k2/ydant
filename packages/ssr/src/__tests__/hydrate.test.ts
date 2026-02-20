@@ -1,6 +1,6 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
 import type { Component } from "@ydant/core";
-import { div, span, p, button, text, attr, classes, on, onMount } from "@ydant/base";
+import { div, span, p, button, text, onMount } from "@ydant/base";
 import type { Slot } from "@ydant/base";
 import { renderToString } from "../render";
 import { hydrate } from "../hydrate";
@@ -27,7 +27,7 @@ describe("hydrate", () => {
   }
 
   test("preserves existing DOM structure", () => {
-    const App: Component = () => div(() => [text("Hello")]);
+    const App: Component = () => div("Hello");
 
     ssrAndHydrate(App);
 
@@ -36,7 +36,7 @@ describe("hydrate", () => {
 
   test("attaches event listeners to existing elements", () => {
     const handler = vi.fn();
-    const App: Component = () => button(() => [on("click", handler), text("Click me")]);
+    const App: Component = () => button({ onClick: handler }, "Click me");
 
     ssrAndHydrate(App);
 
@@ -49,8 +49,7 @@ describe("hydrate", () => {
   });
 
   test("preserves attributes from SSR", () => {
-    const App: Component = () =>
-      div(() => [attr("id", "main"), classes("container"), text("content")]);
+    const App: Component = () => div({ id: "main", class: "container" }, "content");
 
     ssrAndHydrate(App);
 
@@ -62,7 +61,7 @@ describe("hydrate", () => {
 
   test("handles nested components", () => {
     function* Inner() {
-      yield* span(() => [text("inner")]);
+      yield* span("inner");
     }
 
     const App: Component = function* () {
@@ -83,10 +82,7 @@ describe("hydrate", () => {
     const innerHandler = vi.fn();
 
     const App: Component = () =>
-      div(() => [
-        on("click", outerHandler),
-        button(() => [on("click", innerHandler), text("Click")]),
-      ]);
+      div({ onClick: outerHandler }, () => [button({ onClick: innerHandler }, "Click")]);
 
     ssrAndHydrate(App);
 
@@ -146,8 +142,8 @@ describe("hydrate", () => {
     const handler2 = vi.fn();
 
     const App: Component = function* () {
-      yield* p(() => [on("click", handler1), text("A")]);
-      yield* p(() => [on("click", handler2), text("B")]);
+      yield* p({ onClick: handler1 }, "A");
+      yield* p({ onClick: handler2 }, "B");
     };
 
     ssrAndHydrate(App);
@@ -167,7 +163,7 @@ describe("hydrate", () => {
 
       // SSR renders a <span>, but hydration expects a <div>
       container.innerHTML = "<span>Hello</span>";
-      const App: Component = () => div(() => [text("Hello")]);
+      const App: Component = () => div("Hello");
       hydrate(App, container);
 
       expect(warnSpy).toHaveBeenCalledWith(
@@ -181,7 +177,7 @@ describe("hydrate", () => {
 
       // SSR renders nothing, but hydration expects a <div>
       container.innerHTML = "";
-      const App: Component = () => div(() => [text("Hello")]);
+      const App: Component = () => div("Hello");
       hydrate(App, container);
 
       expect(warnSpy).toHaveBeenCalledWith(
@@ -212,7 +208,7 @@ describe("hydrate", () => {
       const App: Component = function* () {
         yield* div(function* () {
           yield* text("Hello");
-          yield* span(() => []);
+          yield* span();
         });
       };
       hydrate(App, container);

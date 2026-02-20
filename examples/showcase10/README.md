@@ -39,8 +39,7 @@ errorRefs.username.refresh(renderError(field.error));
 function renderError(error: string | null): () => Render {
   return function* () {
     if (error) {
-      yield* text(error);
-      yield* classes("text-red-500", "text-sm", "mt-1");
+      yield* span({ class: "text-red-500 text-sm mt-1" }, error);
     }
   };
 }

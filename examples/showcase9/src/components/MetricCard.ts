@@ -1,5 +1,5 @@
 import type { Render } from "@ydant/core";
-import { div, span, text, classes } from "@ydant/base";
+import { div, span, text } from "@ydant/base";
 
 interface MetricCardProps {
   label: string;
@@ -10,15 +10,13 @@ interface MetricCardProps {
 
 export function MetricCard(props: MetricCardProps): Render {
   const color = props.color ?? "blue";
-  return div(function* () {
-    yield* classes("bg-slate-800", "rounded-lg", "border", "border-slate-700", "p-4");
-    yield* span(() => [classes("text-sm", "text-gray-400"), text(props.label)]);
-    yield* div(function* () {
-      yield* classes("mt-1", "flex", "items-baseline", "gap-1");
-      yield* span(() => [classes("text-2xl", "font-bold", `text-${color}-600`), text(props.value)]);
+  return div({ class: "bg-slate-800 rounded-lg border border-slate-700 p-4" }, function* () {
+    yield* span({ class: "text-sm text-gray-400" }, props.label);
+    yield* div({ class: "mt-1 flex items-baseline gap-1" }, function* () {
+      yield* span({ class: `text-2xl font-bold text-${color}-600` }, props.value);
       const unit = props.unit;
       if (unit) {
-        yield* span(() => [classes("text-sm", "text-gray-400"), text(unit)]);
+        yield* span({ class: "text-sm text-gray-400" }, unit);
       }
     });
   });

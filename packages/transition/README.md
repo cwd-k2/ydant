@@ -16,7 +16,7 @@ For simple show/hide with enter animation:
 
 ```typescript
 import { type Component } from "@ydant/core";
-import { div, button, text, on, type Slot } from "@ydant/base";
+import { div, button, text, type Slot } from "@ydant/base";
 import { Transition } from "@ydant/transition";
 
 const App: Component = () => {
@@ -24,21 +24,23 @@ const App: Component = () => {
   let transitionSlot: Slot;
 
   return div(function* () {
-    yield* button(() => [
-      on("click", () => {
-        show = !show;
-        transitionSlot.refresh(() =>
-          Transition({
-            show,
-            enter: "transition-opacity duration-300",
-            enterFrom: "opacity-0",
-            enterTo: "opacity-100",
-            content: () => div(() => [text("Fade me!")]),
-          }),
-        );
-      }),
-      text("Toggle"),
-    ]);
+    yield* button(
+      {
+        onClick: () => {
+          show = !show;
+          transitionSlot.refresh(() =>
+            Transition({
+              show,
+              enter: "transition-opacity duration-300",
+              enterFrom: "opacity-0",
+              enterTo: "opacity-100",
+              content: () => div(() => [text("Fade me!")]),
+            }),
+          );
+        },
+      },
+      "Toggle",
+    );
 
     transitionSlot = yield* div(() =>
       Transition({
@@ -59,20 +61,22 @@ For full enter/leave animation support with programmatic control:
 
 ```typescript
 import { type Component } from "@ydant/core";
-import { div, button, text, on } from "@ydant/base";
+import { div, button, text } from "@ydant/base";
 import { createTransition, type TransitionHandle } from "@ydant/transition";
 
 const App: Component = () => {
   let fadeTransition: TransitionHandle;
 
   return div(function* () {
-    yield* button(function* () {
-      yield* on("click", async () => {
-        const isVisible = fadeTransition.slot.node.firstElementChild !== null;
-        await fadeTransition.setShow(!isVisible);
-      });
-      yield* text("Toggle");
-    });
+    yield* button(
+      {
+        onClick: async () => {
+          const isVisible = fadeTransition.slot.node.firstElementChild !== null;
+          await fadeTransition.setShow(!isVisible);
+        },
+      },
+      "Toggle",
+    );
 
     fadeTransition = yield* createTransition({
       enter: "fade-enter",

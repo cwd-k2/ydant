@@ -6,9 +6,7 @@
  */
 
 import { group, rect, circle, canvasText } from "@ydant/canvas";
-import { attr } from "@ydant/base";
-import { reactive } from "@ydant/reactive";
-import { signal } from "@ydant/reactive";
+import { reactive, signal } from "@ydant/reactive";
 import type { ColorInfo } from "./palette";
 import { ALL_COLORS, appendLog } from "./palette";
 
@@ -43,15 +41,7 @@ export const Visualization = () =>
       const shapes = [];
 
       // Background
-      shapes.push(
-        rect(() => [
-          attr("x", "0"),
-          attr("y", "0"),
-          attr("width", String(W)),
-          attr("height", String(H)),
-          attr("fill", "#0f172a"),
-        ]),
-      );
+      shapes.push(rect({ x: "0", y: "0", width: String(W), height: String(H), fill: "#0f172a" }));
 
       // Main color circle
       const cx = 180;
@@ -60,46 +50,39 @@ export const Visualization = () =>
 
       // Shadow
       shapes.push(
-        circle(() => [
-          attr("cx", String(cx + 4)),
-          attr("cy", String(cy + 4)),
-          attr("r", String(r)),
-          attr("fill", "rgba(0,0,0,0.3)"),
-        ]),
+        circle({
+          cx: String(cx + 4),
+          cy: String(cy + 4),
+          r: String(r),
+          fill: "rgba(0,0,0,0.3)",
+        }),
       );
 
       // Main circle
-      shapes.push(
-        circle(() => [
-          attr("cx", String(cx)),
-          attr("cy", String(cy)),
-          attr("r", String(r)),
-          attr("fill", color.hex),
-        ]),
-      );
+      shapes.push(circle({ cx: String(cx), cy: String(cy), r: String(r), fill: color.hex }));
 
       // Color name
       shapes.push(
-        canvasText(() => [
-          attr("x", String(cx)),
-          attr("y", String(cy + r + 24)),
-          attr("content", color.name),
-          attr("font", "bold 16px Inter, sans-serif"),
-          attr("fill", "#e2e8f0"),
-          attr("textAlign", "center"),
-        ]),
+        canvasText({
+          x: String(cx),
+          y: String(cy + r + 24),
+          content: color.name,
+          font: "bold 16px Inter, sans-serif",
+          fill: "#e2e8f0",
+          textAlign: "center",
+        }),
       );
 
       // Hex value
       shapes.push(
-        canvasText(() => [
-          attr("x", String(cx)),
-          attr("y", String(cy + r + 44)),
-          attr("content", color.hex),
-          attr("font", "13px monospace"),
-          attr("fill", "#94a3b8"),
-          attr("textAlign", "center"),
-        ]),
+        canvasText({
+          x: String(cx),
+          y: String(cy + r + 44),
+          content: color.hex,
+          font: "13px monospace",
+          fill: "#94a3b8",
+          textAlign: "center",
+        }),
       );
 
       // RGB bars
@@ -119,35 +102,35 @@ export const Visualization = () =>
 
         // Label
         shapes.push(
-          canvasText(() => [
-            attr("x", String(barX)),
-            attr("y", String(y - 6)),
-            attr("content", `${ch.label}: ${ch.value}`),
-            attr("font", "12px monospace"),
-            attr("fill", "#94a3b8"),
-          ]),
+          canvasText({
+            x: String(barX),
+            y: String(y - 6),
+            content: `${ch.label}: ${ch.value}`,
+            font: "12px monospace",
+            fill: "#94a3b8",
+          }),
         );
 
         // Track
         shapes.push(
-          rect(() => [
-            attr("x", String(barX)),
-            attr("y", String(y)),
-            attr("width", String(barW)),
-            attr("height", String(barH)),
-            attr("fill", "#1e293b"),
-          ]),
+          rect({
+            x: String(barX),
+            y: String(y),
+            width: String(barW),
+            height: String(barH),
+            fill: "#1e293b",
+          }),
         );
 
         // Fill
         shapes.push(
-          rect(() => [
-            attr("x", String(barX)),
-            attr("y", String(y)),
-            attr("width", String(w)),
-            attr("height", String(barH)),
-            attr("fill", ch.color),
-          ]),
+          rect({
+            x: String(barX),
+            y: String(y),
+            width: String(w),
+            height: String(barH),
+            fill: ch.color,
+          }),
         );
       }
 
@@ -158,22 +141,15 @@ export const Visualization = () =>
       const compHex = `#${((1 << 24) + (compR << 16) + (compG << 8) + compB).toString(16).slice(1)}`;
 
       shapes.push(
-        canvasText(() => [
-          attr("x", String(barX)),
-          attr("y", "260"),
-          attr("content", `Complement: ${compHex}`),
-          attr("font", "12px monospace"),
-          attr("fill", "#94a3b8"),
-        ]),
+        canvasText({
+          x: String(barX),
+          y: "260",
+          content: `Complement: ${compHex}`,
+          font: "12px monospace",
+          fill: "#94a3b8",
+        }),
       );
-      shapes.push(
-        circle(() => [
-          attr("cx", String(barX + 160)),
-          attr("cy", "254"),
-          attr("r", "12"),
-          attr("fill", compHex),
-        ]),
-      );
+      shapes.push(circle({ cx: String(barX + 160), cy: "254", r: "12", fill: compHex }));
 
       // Mini palette at bottom with highlight
       const miniY = H - 40;
@@ -189,22 +165,22 @@ export const Visualization = () =>
 
         if (isHl || isSel) {
           shapes.push(
-            circle(() => [
-              attr("cx", String(startX + i * miniGap)),
-              attr("cy", String(miniY)),
-              attr("r", String(cr + 2)),
-              attr("fill", isHl ? "#7dd3fc" : "#475569"),
-            ]),
+            circle({
+              cx: String(startX + i * miniGap),
+              cy: String(miniY),
+              r: String(cr + 2),
+              fill: isHl ? "#7dd3fc" : "#475569",
+            }),
           );
         }
 
         shapes.push(
-          circle(() => [
-            attr("cx", String(startX + i * miniGap)),
-            attr("cy", String(miniY)),
-            attr("r", String(cr)),
-            attr("fill", c.hex),
-          ]),
+          circle({
+            cx: String(startX + i * miniGap),
+            cy: String(miniY),
+            r: String(cr),
+            fill: c.hex,
+          }),
         );
       }
 

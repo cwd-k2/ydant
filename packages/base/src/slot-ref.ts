@@ -37,13 +37,12 @@ export interface SlotRef<TNode = unknown> {
  *
  * counter.bind(yield* div(function* () {
  *   yield* text(`Count: ${count}`);
- *   yield* button(function* () {
- *     yield* on("click", () => {
+ *   yield* button({
+ *     onClick: () => {
  *       count++;
  *       counter.refresh(() => [text(`Count: ${count}`)]);
- *     });
- *     yield* text("Increment");
- *   });
+ *     },
+ *   }, "Increment");
  * }));
  * ```
  */

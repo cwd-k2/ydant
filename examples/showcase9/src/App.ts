@@ -1,5 +1,5 @@
 import type { Component } from "@ydant/core";
-import { div, h1, p, button, text, classes, on } from "@ydant/base";
+import { div, h1, p, button, text } from "@ydant/base";
 import { RouterView, navigate } from "@ydant/router";
 import { NavBar } from "./components/NavBar";
 import { LoginPage } from "./pages/LoginPage";
@@ -14,29 +14,31 @@ import { isLoggedIn } from "./auth";
 export const basePath = window.location.pathname.includes("/showcase9") ? "/showcase9" : "";
 
 const HomePage: Component = () =>
-  div(function* () {
-    yield* classes("p-6", "text-center");
-    yield* h1(() => [classes("text-2xl", "font-bold", "mb-4"), text("Admin Dashboard Demo")]);
-    yield* p(() => [
-      classes("text-gray-400", "mb-6"),
-      text("This demo shows Route Guards (sync/async) and createResource with refetchInterval."),
-    ]);
-    yield* button(function* () {
-      yield* classes("px-4", "py-2", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600");
-      yield* on("click", () => navigate(`${basePath}/login`));
-      yield* text("Go to Login");
-    });
+  div({ class: "p-6 text-center" }, function* () {
+    yield* h1({ class: "text-2xl font-bold mb-4" }, "Admin Dashboard Demo");
+    yield* p(
+      { class: "text-gray-400 mb-6" },
+      "This demo shows Route Guards (sync/async) and createResource with refetchInterval.",
+    );
+    yield* button(
+      {
+        class: "px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600",
+        onClick: () => navigate(`${basePath}/login`),
+      },
+      "Go to Login",
+    );
   });
 
 const NotFoundPage: Component = () =>
-  div(function* () {
-    yield* classes("p-6", "text-center");
-    yield* h1(() => [classes("text-2xl", "font-bold", "mb-4"), text("404 - Not Found")]);
-    yield* button(function* () {
-      yield* classes("text-blue-500", "underline");
-      yield* on("click", () => navigate(`${basePath}/`));
-      yield* text("Back to Home");
-    });
+  div({ class: "p-6 text-center" }, function* () {
+    yield* h1({ class: "text-2xl font-bold mb-4" }, "404 - Not Found");
+    yield* button(
+      {
+        class: "text-blue-500 underline",
+        onClick: () => navigate(`${basePath}/`),
+      },
+      "Back to Home",
+    );
   });
 
 /**
@@ -49,9 +51,7 @@ const NotFoundPage: Component = () =>
  * The login redirect is done manually via navigate().
  */
 export const App: Component = () =>
-  div(function* () {
-    yield* classes("min-h-screen", "bg-slate-900");
-
+  div({ class: "min-h-screen bg-slate-900" }, function* () {
     yield* NavBar();
 
     yield* RouterView({

@@ -12,7 +12,7 @@
  */
 
 import { scope } from "@ydant/core";
-import { createDOMBackend, createBasePlugin, html, text, attr } from "@ydant/base";
+import { createDOMBackend, createBasePlugin, html, text } from "@ydant/base";
 import { reactive, createReactivePlugin } from "@ydant/reactive";
 
 import { Editor } from "./Editor";
@@ -37,12 +37,12 @@ const App = () =>
   div(function* () {
     yield* h1("Collaborative Editing");
     yield* p(
-      { classes: ["subtitle"] },
+      { class: "subtitle" },
       "2 DOM Engines — conflict detection \u2192 pause \u2192 resolve \u2192 resume",
     );
 
     // Controls
-    yield* div({ classes: ["controls"] }, function* () {
+    yield* div({ class: "controls" }, function* () {
       yield* html.button({ onClick: () => simulateEdit("A") }, "Edit as A");
       yield* html.button({ onClick: () => simulateEdit("B") }, "Edit as B");
       yield* html.button({ onClick: toggleAutoPlay }, function* () {
@@ -51,15 +51,15 @@ const App = () =>
     });
 
     // Editor panels
-    yield* div({ classes: ["editors"] }, function* () {
+    yield* div({ class: "editors" }, function* () {
       // Editor A panel — embed a separate DOM backend
-      const slotA = yield* div({ classes: ["editor-panel"] });
+      const slotA = yield* div({ class: "editor-panel" });
       const backendA = createDOMBackend(slotA.node as HTMLElement);
       const builderA = scope(backendA, [createBasePlugin(), createReactivePlugin()]);
       const engineA = yield* builderA.embed(() => Editor({ editor: "A" }));
 
       // Editor B panel — embed a separate DOM backend
-      const slotB = yield* div({ classes: ["editor-panel"] });
+      const slotB = yield* div({ class: "editor-panel" });
       const backendB = createDOMBackend(slotB.node as HTMLElement);
       const builderB = scope(backendB, [createBasePlugin(), createReactivePlugin()]);
       const engineB = yield* builderB.embed(() => Editor({ editor: "B" }));
@@ -79,25 +79,25 @@ const App = () =>
     });
 
     // Bottom panels
-    yield* div({ classes: ["bottom-panel"] }, function* () {
+    yield* div({ class: "bottom-panel" }, function* () {
       // Engine state
-      yield* div({ classes: ["status-panel"] }, function* () {
-        yield* div({ classes: ["panel-title"] }, "Engine State");
+      yield* div({ class: "status-panel" }, function* () {
+        yield* div({ class: "panel-title" }, "Engine State");
         yield* reactive(() => {
           return [
-            div({ classes: ["engine-state"] }, function* () {
+            div({ class: "engine-state" }, function* () {
               yield* div(function* () {
-                yield* span({ classes: ["state-label"] }, "Edits: ");
+                yield* span({ class: "state-label" }, "Edits: ");
                 yield* span(String(editCount()));
               });
               yield* div(function* () {
-                yield* span({ classes: ["state-label"] }, "Conflicts: ");
+                yield* span({ class: "state-label" }, "Conflicts: ");
                 yield* span(String(conflictCount()));
               });
               yield* div(function* () {
-                yield* span({ classes: ["state-label"] }, "Auto-play: ");
+                yield* span({ class: "state-label" }, "Auto-play: ");
                 yield* span(
-                  { classes: [autoPlaying() ? "state-active" : "state-paused"] },
+                  { class: autoPlaying() ? "state-active" : "state-paused" },
                   autoPlaying() ? "ON" : "OFF",
                 );
               });
@@ -107,8 +107,8 @@ const App = () =>
       });
 
       // Event log
-      yield* div({ classes: ["log-panel"] }, function* () {
-        yield* div({ classes: ["panel-title"] }, "Event Log");
+      yield* div({ class: "log-panel" }, function* () {
+        yield* div({ class: "panel-title" }, "Event Log");
         yield* reactive(() =>
           eventLog()
             .slice()
@@ -116,10 +116,7 @@ const App = () =>
             .map((entry) => {
               const isError = entry.includes("ERROR");
               const cls = isError ? "log-entry log-error" : "log-entry";
-              return div(function* () {
-                yield* attr("class", cls);
-                yield* text(entry);
-              });
+              return div({ class: cls }, entry);
             }),
         );
       });

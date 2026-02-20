@@ -201,8 +201,17 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - **要素ファクトリの Props オーバーロード**: `div({ classes: [...], onClick: handler }, "text")` 形式を追加。6 つの呼び出しパターン（空、Builder、テキスト、Props、Props+テキスト、Props+Builder）を `typeof` による実行時判別 + TypeScript オーバーロードで実現
 - **`html` / `svg` 名前空間 export**: flat export と共存。`svg` 要素ファクトリ（`<svg>` タグ用）は名前空間との衝突回避のため flat export から除外
 - **`slotRef()` 便利関数**: `createSlotRef()` + `bind()` の 2 ステップを 1 ステップに短縮
-- **Props 設計**: `classes` は配列のみ（`classes()` プリミティブと一致）、`style` は `string | object`、`on*` は `HTMLElementEventMap` から型推論
+- **Props 設計**: `class` は文字列（`cn()` で条件付き構築）、`style` は `string | object`、`on*` は `HTMLElementEventMap` から型推論
 - **showcase 移行**: showcase1, 3, 4, 14 を新 Props 構文に移行し実用性を検証
+
+### Phase 16: Decoration Primitive 廃止 — Props 統一
+
+- **廃止した API**: `attr()`, `classes()`, `on()`, `style()` プリミティブを削除。属性・クラス・スタイル・イベントはすべて要素ファクトリの Props で指定
+- **`classes` → `class` リネーム**: Props の `classes: string[]` を `class: string` に変更。HTML 標準の属性名に合わせる
+- **`cn()` ユーティリティ追加**: `cn(...items: ClassItem[]): string` — falsy 値をフィルタして結合。条件付きクラス構築に使用
+- **SpellSchema 整理**: `attribute` / `listener` spell type を削除。内部の `Attribute` / `Listener` 型は decorations 処理で引き続き使用
+- **boolean 属性**: `disabled: true` → `setAttribute("disabled", "")` に変更（HTML 標準準拠）
+- **全 showcase 移行**: 全 18 showcase を Props 統一構文に移行
 
 ---
 

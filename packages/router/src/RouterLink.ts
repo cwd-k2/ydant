@@ -17,7 +17,7 @@
  */
 
 import type { Render } from "@ydant/core";
-import { a, on, attr, onMount } from "@ydant/base";
+import { a, onMount } from "@ydant/base";
 import type { RouterLinkProps } from "./types";
 import { navigate } from "./navigation";
 import { ROUTE_CHANGE_EVENT } from "./state";
@@ -39,21 +39,17 @@ export function RouterLink(props: RouterLinkProps): Render {
   const { href, children, activeClass } = props;
 
   return (function* () {
-    const slot = yield* a(function* () {
-      yield* attr("href", href);
-
-      // Apply the active class on initial render if matching
-      if (activeClass && window.location.pathname === href) {
-        yield* attr("class", activeClass);
-      }
-
-      yield* on("click", (e: Event) => {
-        e.preventDefault();
-        navigate(href);
-      });
-
-      yield* children();
-    });
+    const slot = yield* a(
+      {
+        href,
+        class: activeClass && window.location.pathname === href ? activeClass : undefined,
+        onClick: (e: Event) => {
+          e.preventDefault();
+          navigate(href);
+        },
+      },
+      children,
+    );
 
     // Listen for route changes to reactively update the active class
     if (activeClass) {

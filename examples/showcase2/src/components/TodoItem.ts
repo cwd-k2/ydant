@@ -1,5 +1,5 @@
 import type { Component } from "@ydant/core";
-import { div, input, span, button, classes, on, attr, text } from "@ydant/base";
+import { div, input, span, button, cn } from "@ydant/base";
 import type { Todo } from "../types";
 
 export interface TodoItemProps {
@@ -11,36 +11,35 @@ export interface TodoItemProps {
 export const TodoItem: Component<TodoItemProps> = (props) => {
   const { todo, onToggle, onDelete } = props;
 
-  return div(() => [
-    classes("todo-item", "flex", "items-center", "gap-3", "p-3", "border-b", "border-slate-700"),
+  return div(
+    {
+      class: "todo-item flex items-center gap-3 p-3 border-b border-slate-700",
+    },
+    function* () {
+      // Checkbox
+      yield* input({
+        type: "checkbox",
+        ...(todo.completed ? { checked: "checked" } : {}),
+        class: "w-5 h-5 rounded border-slate-600 cursor-pointer",
+        onChange: onToggle,
+      });
 
-    // Checkbox
-    input(() => [
-      attr("type", "checkbox"),
-      ...(todo.completed ? [attr("checked", "checked")] : []),
-      classes("w-5", "h-5", "rounded", "border-slate-600", "cursor-pointer"),
-      on("change", onToggle),
-    ]),
+      // Todo text
+      yield* span(
+        {
+          class: cn("flex-1 text-gray-200", todo.completed && "todo-completed"),
+        },
+        todo.text,
+      );
 
-    // Todo text
-    span(() => [
-      classes("flex-1", "text-gray-200", ...(todo.completed ? ["todo-completed"] : [])),
-      text(todo.text),
-    ]),
-
-    // Delete button
-    button(() => [
-      classes(
-        "btn-delete",
-        "px-2",
-        "py-1",
-        "text-red-500",
-        "hover:text-red-700",
-        "hover:bg-red-900/30",
-        "rounded",
-      ),
-      on("click", onDelete),
-      text("×"),
-    ]),
-  ]);
+      // Delete button
+      yield* button(
+        {
+          class: "btn-delete px-2 py-1 text-red-500 hover:text-red-700 hover:bg-red-900/30 rounded",
+          onClick: onDelete,
+        },
+        "\u00d7",
+      );
+    },
+  );
 };

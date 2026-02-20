@@ -3,7 +3,7 @@ import { scope } from "@ydant/core";
 import { createBasePlugin } from "../plugin";
 import { createDOMBackend } from "../capabilities";
 import { div, button } from "../elements/html";
-import { on, text, keyed, onMount } from "../primitives";
+import { text, keyed, onMount } from "../primitives";
 import type { Slot } from "../types";
 
 describe("keyed element reuse", () => {
@@ -50,13 +50,13 @@ describe("keyed element reuse", () => {
     scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
       div(function* () {
         slot = yield* div(function* () {
-          yield* keyed("btn", button)(() => [on("click", handler), text("Click")]);
+          yield* keyed("btn", button)({ onClick: handler }, "Click");
         });
       }),
     );
 
     slot!.refresh(function* () {
-      yield* keyed("btn", button)(() => [on("click", handler), text("Click Again")]);
+      yield* keyed("btn", button)({ onClick: handler }, "Click Again");
     });
 
     const btn = container.querySelector("button");

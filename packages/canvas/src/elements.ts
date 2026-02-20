@@ -7,15 +7,23 @@
  */
 
 import type { Builder, Spell } from "@ydant/core";
-import { toRender } from "@ydant/core";
-import type { Slot } from "@ydant/base";
+import type { Slot, ElementProps } from "@ydant/base";
+import { parseFactoryArgs } from "@ydant/base";
 import type { Shape } from "./types";
 
-function createShapeElement(tag: string): (builder: Builder) => Spell<"shape"> {
-  return function* (builder: Builder): Spell<"shape"> {
-    const children = toRender(builder());
-    return (yield { type: "shape", tag, children } as Shape) as Slot;
-  };
+/** Canvas shape factory with Props overloads. */
+export interface ShapeFactory {
+  (builder: Builder): Spell<"shape">;
+  (): Spell<"shape">;
+  (props: ElementProps): Spell<"shape">;
+  (props: ElementProps, builder: Builder): Spell<"shape">;
+}
+
+function createShapeElement(tag: string): ShapeFactory {
+  return function* (...args: unknown[]): Spell<"shape"> {
+    const { children, decorations, key } = parseFactoryArgs(args);
+    return (yield { type: "shape", tag, children, decorations, key } as Shape) as Slot;
+  } as ShapeFactory;
 }
 
 /** A group container — positions children relative to itself. */

@@ -8,16 +8,7 @@
  * are declared in @ydant/core's global.d.ts.
  */
 
-import type {
-  Element,
-  SvgElement,
-  Attribute,
-  Listener,
-  Text,
-  Lifecycle,
-  Slot,
-  KeyedNode,
-} from "./types";
+import type { Element, SvgElement, Text, Lifecycle, Slot, KeyedNode } from "./types";
 
 declare module "@ydant/core" {
   interface RenderContext {
@@ -38,8 +29,6 @@ declare module "@ydant/core" {
   interface SpellSchema {
     element: { request: Element; response: Slot; capabilities: "tree" | "decorate" };
     svg: { request: SvgElement; response: Slot; capabilities: "tree" | "decorate" };
-    attribute: { request: Attribute; capabilities: "decorate" };
-    listener: { request: Listener; capabilities: "interact" };
     text: { request: Text; capabilities: "tree" };
     lifecycle: { request: Lifecycle; capabilities: "schedule" };
   }

@@ -65,32 +65,32 @@ const App = () =>
   div(function* () {
     yield* h1("Multi-Target Dashboard");
     yield* p(
-      { classes: ["subtitle"] },
+      { class: "subtitle" },
       "DOM (microtask) + Canvas (animFrame) + SSR (sync) — 3 Engines, 1 Hub",
     );
 
-    yield* div({ classes: ["dashboard"] }, function* () {
+    yield* div({ class: "dashboard" }, function* () {
       // ── Left panel: DOM Controls ──
-      yield* div({ classes: ["panel"] }, function* () {
-        yield* div({ classes: ["panel-title"] }, function* () {
-          yield* span({ classes: ["badge", "badge-dom"] }, "DOM");
+      yield* div({ class: "panel" }, function* () {
+        yield* div({ class: "panel-title" }, function* () {
+          yield* span({ class: "badge badge-dom" }, "DOM");
           yield* text(" Controls");
         });
 
         // Data list (reactive)
         yield* reactive(() => [
-          ul({ classes: ["data-list"] }, function* () {
+          ul({ class: "data-list" }, function* () {
             for (const dp of dataPoints()) {
               yield* li(function* () {
-                yield* span({ classes: ["label"] }, dp.label);
-                yield* span({ classes: ["value"] }, String(dp.value));
+                yield* span({ class: "label" }, dp.label);
+                yield* span({ class: "value" }, String(dp.value));
               });
             }
           }),
         ]);
 
         // Controls
-        yield* div({ classes: ["controls"] }, function* () {
+        yield* div({ class: "controls" }, function* () {
           yield* btn({ onClick: randomizeData }, "Randomize");
           yield* btn({ onClick: addBar }, "+ Bar");
           yield* btn({ onClick: removeBar }, "- Bar");
@@ -110,9 +110,9 @@ const App = () =>
       });
 
       // ── Center panel: Canvas Chart ──
-      yield* div({ classes: ["panel"] }, function* () {
-        yield* div({ classes: ["panel-title"] }, function* () {
-          yield* span({ classes: ["badge", "badge-canvas"] }, "Canvas");
+      yield* div({ class: "panel" }, function* () {
+        yield* div({ class: "panel-title" }, function* () {
+          yield* span({ class: "badge badge-canvas" }, "Canvas");
           yield* text(" Bar Chart");
         });
 
@@ -133,9 +133,9 @@ const App = () =>
       });
 
       // ── Right panel: SSR Preview ──
-      yield* div({ classes: ["panel"] }, function* () {
-        yield* div({ classes: ["panel-title"] }, function* () {
-          yield* span({ classes: ["badge", "badge-ssr"] }, "SSR");
+      yield* div({ class: "panel" }, function* () {
+        yield* div({ class: "panel-title" }, function* () {
+          yield* span({ class: "badge badge-ssr" }, "SSR");
           yield* text(" HTML Preview");
         });
 
@@ -152,14 +152,14 @@ const App = () =>
         htmlPreview.set(ssrBackend.toHTML());
 
         // Reactive HTML preview display
-        yield* reactive(() => [pre({ classes: ["html-preview"] }, htmlPreview())]);
+        yield* reactive(() => [pre({ class: "html-preview" }, htmlPreview())]);
       });
     });
 
     // ── Status bar ──
     yield* reactive(() => [
       p(
-        { classes: ["status"] },
+        { class: "status" },
         `DOM flush: ${domFlushCount()} | Canvas flush: ${canvasFlushCount()} | SSR flush: ${ssrFlushCount()} | Bars: ${dataPoints().length}`,
       ),
     ]);

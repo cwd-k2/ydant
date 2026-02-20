@@ -5,7 +5,7 @@
  * editor パラメータで色分けとラベルを切り替える。
  */
 
-import { html, attr } from "@ydant/base";
+import { html } from "@ydant/base";
 import { reactive } from "@ydant/reactive";
 import { lines } from "./document";
 import { conflictState } from "./conflicts";
@@ -18,9 +18,9 @@ export interface EditorProps {
 
 export const Editor = (props: EditorProps) =>
   div(function* () {
-    yield* div({ classes: ["editor-title"] }, function* () {
+    yield* div({ class: "editor-title" }, function* () {
       yield* span(
-        { classes: [props.editor === "A" ? "badge-a" : "badge-b"] },
+        { class: props.editor === "A" ? "badge-a" : "badge-b" },
         `Editor ${props.editor}`,
       );
     });
@@ -31,7 +31,7 @@ export const Editor = (props: EditorProps) =>
       if (!conflict) return [];
       return [
         div(
-          { classes: ["conflict-banner"] },
+          { class: "conflict-banner" },
           `Conflict on line ${conflict.lineIndex + 1}: ${conflict.editorA} vs ${conflict.editorB} — resolving...`,
         ),
       ];
@@ -51,11 +51,10 @@ export const Editor = (props: EditorProps) =>
         else if (isEditing) lineClass += ` editing-${props.editor.toLowerCase()}`;
         else if (isOtherEditing) lineClass += ` editing-${line.lastEditor!.toLowerCase()}`;
 
-        return div(function* () {
-          yield* attr("class", lineClass);
-          yield* span({ classes: ["line-num"] }, String(i + 1));
-          yield* span({ classes: ["line-content"] }, line.content || "\u00a0");
-          yield* span({ classes: ["line-editor"] }, line.lastEditor ?? "");
+        return div({ class: lineClass }, function* () {
+          yield* span({ class: "line-num" }, String(i + 1));
+          yield* span({ class: "line-content" }, line.content || "\u00a0");
+          yield* span({ class: "line-editor" }, line.lastEditor ?? "");
         });
       });
     });

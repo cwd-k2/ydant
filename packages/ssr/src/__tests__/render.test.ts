@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { Component } from "@ydant/core";
-import { attr, button, classes, div, h1, li, on, p, text, ul } from "@ydant/base";
+import { button, div, h1, li, p, text, ul } from "@ydant/base";
 import { renderToString } from "../render";
 
 describe("renderToString", () => {
@@ -11,25 +11,24 @@ describe("renderToString", () => {
 
   test("uses createBasePlugin by default", () => {
     // Attributes and elements work without explicitly passing plugins
-    const App: Component = () => div(() => [attr("id", "root"), classes("app"), text("works")]);
+    const App: Component = () => div({ id: "root", class: "app" }, "works");
     expect(renderToString(App)).toBe('<div id="root" class="app">works</div>');
   });
 
   test("complex component tree", () => {
     function* Header() {
-      yield* h1(() => [classes("title"), text("My App")]);
+      yield* h1({ class: "title" }, "My App");
     }
 
     function* Nav() {
-      yield* ul(() => [li(() => [text("Home")]), li(() => [text("About")])]);
+      yield* ul(() => [li("Home"), li("About")]);
     }
 
     const App: Component = function* () {
-      yield* div(function* () {
-        yield* classes("container");
+      yield* div({ class: "container" }, function* () {
         yield* Header();
         yield* Nav();
-        yield* p(() => [text("Welcome!")]);
+        yield* p("Welcome!");
       });
     };
 
@@ -43,7 +42,7 @@ describe("renderToString", () => {
   });
 
   test("event handlers are silently ignored", () => {
-    const App: Component = () => button(() => [on("click", () => {}), text("Click me")]);
+    const App: Component = () => button({ onClick: () => {} }, "Click me");
     expect(renderToString(App)).toBe("<button>Click me</button>");
   });
 
@@ -54,11 +53,10 @@ describe("renderToString", () => {
 
   test("component with props pattern", () => {
     function* Card(props: { title: string; body: string }) {
-      yield* div(() => [
-        classes("card"),
-        h1(() => [text(props.title)]),
-        p(() => [text(props.body)]),
-      ]);
+      yield* div({ class: "card" }, function* () {
+        yield* h1(props.title);
+        yield* p(props.body);
+      });
     }
 
     const App: Component = function* () {

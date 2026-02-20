@@ -16,7 +16,7 @@ Ydant プロジェクトにおける命名規則、型の使い分け、コー�
 - **PascalCase**: `yield*` で使い、内部で DOM 構造を生成するコンポーネント
   （例: `Suspense`, `ErrorBoundary`, `Transition`, `RouterView`）
 - **lowercase**: `yield*` で使うプリミティブ（単一の命令を発行）、および要素ファクトリ
-  （例: `text`, `attr`, `on`, `classes`, `reactive`, `provide`, `inject`, `div`, `span`）
+  （例: `text`, `keyed`, `reactive`, `provide`, `inject`, `div`, `span`）
 
 ### ファイル命名
 
@@ -46,7 +46,7 @@ Ydant プロジェクトにおける命名規則、型の使い分け、コー�
 ```ts
 export function MyComponent(): Render {
   return div(function* () {
-    yield* text("Hello");
+    yield* p("Hello");
   });
 }
 ```
@@ -56,7 +56,7 @@ export function MyComponent(): Render {
 ```ts
 export const MyComponent: Component<Props> = (props) => {
   return div(function* () {
-    yield* text(props.message);
+    yield* p(props.message);
   });
 };
 ```
@@ -66,9 +66,8 @@ export const MyComponent: Component<Props> = (props) => {
 要素内の子要素はジェネレーター構文を推奨:
 
 ```ts
-div(function* () {
-  yield* text("hello");
-  yield* classes("foo");
+div({ class: "foo" }, function* () {
+  yield* p("hello");
 });
 ```
 
@@ -77,34 +76,37 @@ div(function* () {
 単純な静的コンテンツの場合は許容:
 
 ```ts
-div(() => [classes("border"), text("simple")]);
+div({ class: "border" }, () => [text("simple")]);
 ```
 
 ### Props 構文
 
-要素ファクトリは Props オブジェクトによる宣言的な呼び出しをサポート:
+要素ファクトリは Props オブジェクトによる宣言的な呼び出しをサポート。属性、クラス、スタイル、イベントハンドラはすべて Props で指定する:
 
 ```ts
 // Props + テキスト
-yield * button({ classes: ["btn", "primary"], onClick: handler }, "Click me");
+yield * button({ class: "btn primary", onClick: handler }, "Click me");
 
 // Props + Builder
 yield *
-  div({ classes: ["container"], style: { padding: "16px" } }, function* () {
+  div({ class: "container", style: { padding: "16px" } }, function* () {
     yield* p("Hello");
   });
 
 // Props のみ
-yield * input({ type: "text", classes: ["field"] });
+yield * input({ type: "text", class: "field" });
 
 // テキストのみ
 yield * p("Simple text");
+
+// 条件付きクラス（cn() ユーティリティ）
+yield * div({ class: cn("base", isActive && "active", isPrimary && "primary") }, "Content");
 ```
 
 **設計判断**:
 
-- **`classes` は配列のみ**: `classes()` プリミティブと一致させる。条件付きクラス `[isActive && "active"]` が自然に書ける
-- **`class` ではなく `classes`**: DSL プリミティブ `classes()` との命名一貫性を優先
+- **`class` は文字列**: HTML 標準の `class` 属性に合わせる。条件付きクラスは `cn()` ユーティリティで構築
+- **`cn()` ユーティリティ**: `cn(...items: ClassItem[]): string` — falsy 値をフィルタして結合。`ClassItem = string | false | null | undefined | 0 | ""`
 - **`style` は `string | object`**: オブジェクト形式は camelCase→kebab-case 変換あり、CSS カスタムプロパティ (`--primary`) もサポート
 - **`on*` イベントハンドラ**: `onClick`, `onInput` 等は `HTMLElementEventMap` から型推論。内部で `addEventListener` のイベント名（全小文字）に変換
 - **`key`**: Props 内で指定可能。`keyed()` ラッパーの代替（コンポーネント包装には `keyed()` が引き続き必要）
@@ -316,11 +318,9 @@ export function* text(content: string): Spell<"text"> {
   yield { type: "text", content };
 }
 
-export function* style(properties: Partial<CSSStyleDeclaration>): Spell<"attribute"> {
-  const styleValue = Object.entries(properties)
-    .map(([k, v]) => `${toKebab(k)}: ${v}`)
-    .join("; ");
-  yield { type: "attribute", key: "style", value: styleValue };
+/** Joins class names, filtering out falsy values. */
+export function cn(...items: ClassItem[]): string {
+  return items.filter(Boolean).join(" ");
 }
 ```
 

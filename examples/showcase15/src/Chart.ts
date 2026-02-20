@@ -6,7 +6,6 @@
  */
 
 import { group, rect, canvasText } from "@ydant/canvas";
-import { attr } from "@ydant/base";
 import { reactive } from "@ydant/reactive";
 import { dataPoints, chartTitle, showGrid } from "./signals";
 
@@ -36,27 +35,27 @@ export const Chart = () =>
         for (let i = 0; i <= 4; i++) {
           const y = PAD_TOP + (barHeight * i) / 4;
           shapes.push(
-            rect(() => [
-              attr("x", String(PAD_LEFT)),
-              attr("y", String(Math.round(y))),
-              attr("width", String(barArea)),
-              attr("height", "1"),
-              attr("fill", "#334155"),
-            ]),
+            rect({
+              x: String(PAD_LEFT),
+              y: String(Math.round(y)),
+              width: String(barArea),
+              height: "1",
+              fill: "#334155",
+            }),
           );
         }
       }
 
       // Title
       shapes.push(
-        canvasText(() => [
-          attr("x", String(W / 2)),
-          attr("y", "16"),
-          attr("content", title),
-          attr("font", "bold 13px Inter, sans-serif"),
-          attr("fill", "#94a3b8"),
-          attr("textAlign", "center"),
-        ]),
+        canvasText({
+          x: String(W / 2),
+          y: "16",
+          content: title,
+          font: "bold 13px Inter, sans-serif",
+          fill: "#94a3b8",
+          textAlign: "center",
+        }),
       );
 
       // Bars
@@ -67,37 +66,37 @@ export const Chart = () =>
         const y = PAD_TOP + barHeight - h;
 
         shapes.push(
-          rect(() => [
-            attr("x", String(x)),
-            attr("y", String(y)),
-            attr("width", String(barW)),
-            attr("height", String(h)),
-            attr("fill", dp.color),
-          ]),
+          rect({
+            x: String(x),
+            y: String(y),
+            width: String(barW),
+            height: String(h),
+            fill: dp.color,
+          }),
         );
 
         // Value label
         shapes.push(
-          canvasText(() => [
-            attr("x", String(x + barW / 2)),
-            attr("y", String(y - 4)),
-            attr("content", String(dp.value)),
-            attr("font", "11px monospace"),
-            attr("fill", "#94a3b8"),
-            attr("textAlign", "center"),
-          ]),
+          canvasText({
+            x: String(x + barW / 2),
+            y: String(y - 4),
+            content: String(dp.value),
+            font: "11px monospace",
+            fill: "#94a3b8",
+            textAlign: "center",
+          }),
         );
 
         // Category label
         shapes.push(
-          canvasText(() => [
-            attr("x", String(x + barW / 2)),
-            attr("y", String(H - 6)),
-            attr("content", dp.label),
-            attr("font", "11px Inter, sans-serif"),
-            attr("fill", "#64748b"),
-            attr("textAlign", "center"),
-          ]),
+          canvasText({
+            x: String(x + barW / 2),
+            y: String(H - 6),
+            content: dp.label,
+            font: "11px Inter, sans-serif",
+            fill: "#64748b",
+            textAlign: "center",
+          }),
         );
       }
 

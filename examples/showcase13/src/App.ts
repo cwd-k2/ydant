@@ -6,62 +6,63 @@
  */
 
 import type { Component } from "@ydant/core";
-import { div, button, h2, p, span, attr, on, text, style } from "@ydant/base";
+import { div, button, h2, p, span, text } from "@ydant/base";
 
 export const App: Component = () =>
-  div(() => [
-    attr("class", "app-content"),
+  div({ class: "app-content" }, function* () {
+    yield* h2("Interactive Counter");
 
-    h2(() => [text("Interactive Counter")]),
+    yield* p(function* () {
+      yield* text("Count: ");
+      yield* span(
+        { id: "count-display", style: { fontWeight: "bold", fontSize: "1.2em", color: "#4f46e5" } },
+        "0",
+      );
+    });
 
-    p(() => [
-      text("Count: "),
-      span(() => [
-        attr("id", "count-display"),
-        style({ fontWeight: "bold", fontSize: "1.2em", color: "#4f46e5" }),
-        text("0"),
-      ]),
-    ]),
+    yield* div({ style: { display: "flex", gap: "8px" } }, function* () {
+      yield* button(
+        {
+          class: "btn btn-primary",
+          id: "btn-increment",
+          onClick: () => {
+            updateCount(1);
+            log("Increment clicked");
+          },
+        },
+        "+1",
+      );
 
-    div(() => [
-      style({ display: "flex", gap: "8px" }),
+      yield* button(
+        {
+          class: "btn btn-secondary",
+          id: "btn-decrement",
+          onClick: () => {
+            updateCount(-1);
+            log("Decrement clicked");
+          },
+        },
+        "-1",
+      );
 
-      button(() => [
-        attr("class", "btn btn-primary"),
-        attr("id", "btn-increment"),
-        on("click", () => {
-          updateCount(1);
-          log("Increment clicked");
-        }),
-        text("+1"),
-      ]),
+      yield* button(
+        {
+          class: "btn btn-secondary",
+          id: "btn-reset",
+          onClick: () => {
+            resetCount();
+            log("Reset clicked");
+          },
+        },
+        "Reset",
+      );
+    });
 
-      button(() => [
-        attr("class", "btn btn-secondary"),
-        attr("id", "btn-decrement"),
-        on("click", () => {
-          updateCount(-1);
-          log("Decrement clicked");
-        }),
-        text("-1"),
-      ]),
-
-      button(() => [
-        attr("class", "btn btn-secondary"),
-        attr("id", "btn-reset"),
-        on("click", () => {
-          resetCount();
-          log("Reset clicked");
-        }),
-        text("Reset"),
-      ]),
-    ]),
-
-    p(() => [
-      style({ marginTop: "12px", fontSize: "0.9em", color: "#6b7280" }),
-      text("This UI was rendered on the server. Buttons became interactive after hydration."),
-    ]),
-  ]);
+    yield* p(
+      { style: { marginTop: "12px", fontSize: "0.9em", color: "#6b7280" } },
+      "This UI was rendered on the server. Buttons became interactive after hydration.",
+    );
+  });
 
 // Client-side state (only active after hydration)
 let count = 0;

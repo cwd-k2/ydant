@@ -34,15 +34,15 @@ export const ContactPage: Component = () => {
     formState.set(form.getState());
   });
 
-  return div({ classes: ["p-6", "max-w-md"] }, function* () {
-    yield* h1({ classes: ["text-2xl", "font-bold", "mb-4"] }, "Contact");
+  return div({ class: "p-6 max-w-md" }, function* () {
+    yield* h1({ class: "text-2xl font-bold mb-4" }, "Contact");
 
     yield* p(
-      { classes: ["text-sm", "text-gray-500", "dark:text-gray-400", "mb-4"] },
+      { class: "text-sm text-gray-500 dark:text-gray-400 mb-4" },
       "This form uses user-implemented validation (not a library).",
     );
 
-    yield* div({ classes: ["space-y-4"] }, function* () {
+    yield* div({ class: "space-y-4" }, function* () {
       // Name field
       yield* FormField({
         labelText: "Name",
@@ -85,16 +85,8 @@ export const ContactPage: Component = () => {
       // Submit button
       yield* button(
         {
-          classes: [
-            "w-full",
-            "px-4",
-            "py-2",
-            "bg-blue-500",
-            "text-white",
-            "rounded",
-            "hover:bg-blue-600",
-            "disabled:opacity-50",
-          ],
+          class:
+            "w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50",
           onClick: () => form.submit(),
         },
         function* () {
@@ -119,20 +111,12 @@ const FormField: Component<FormFieldProps> = (props) => {
   const { labelText, type, getValue, setValue, onBlur, getError } = props;
 
   return div(function* () {
-    yield* label({ classes: ["block", "font-medium", "mb-1"] }, labelText);
+    yield* label({ class: "block font-medium mb-1" }, labelText);
     yield* input({
       type,
       value: getValue(),
-      classes: [
-        "w-full",
-        "px-3",
-        "py-2",
-        "border",
-        "rounded",
-        "dark:bg-slate-700",
-        "dark:border-slate-600",
-        "dark:text-gray-200",
-      ],
+      class:
+        "w-full px-3 py-2 border rounded dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200",
       onInput: (e: Event) => {
         setValue((e.target as HTMLInputElement).value);
       },
@@ -140,7 +124,7 @@ const FormField: Component<FormFieldProps> = (props) => {
     });
     yield* reactive(() => {
       const error = getError();
-      return error ? [span({ classes: ["text-red-500", "text-sm"] }, error)] : [];
+      return error ? [span({ class: "text-red-500 text-sm" }, error)] : [];
     });
   });
 };

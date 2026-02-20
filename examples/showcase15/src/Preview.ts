@@ -7,16 +7,14 @@
  * その結果が htmlPreview signal 経由で DOM 側に反映される。
  */
 
-import { html, attr, text } from "@ydant/base";
+import { html, text } from "@ydant/base";
 import { reactive } from "@ydant/reactive";
 import { dataPoints, chartTitle } from "./signals";
 
 const { div, h2, table, thead, tbody, tr, th, td } = html;
 
 export const Preview = () =>
-  div(function* () {
-    yield* attr("class", "card");
-
+  div({ class: "card" }, function* () {
     yield* reactive(() => {
       const title = chartTitle();
       const points = dataPoints();

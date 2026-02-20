@@ -15,7 +15,7 @@ export type {
   Text,
   Lifecycle,
   ElementProps,
-  ClassValue,
+  ClassItem,
   StyleValue,
   EventHandlerProps,
   HTMLElementFactory,
@@ -23,7 +23,7 @@ export type {
 } from "./types";
 
 // Primitives
-export { attr, classes, on, text, onMount, onUnmount, style, keyed } from "./primitives";
+export { text, onMount, onUnmount, keyed, cn } from "./primitives";
 
 // HTML Elements
 export {
@@ -102,3 +102,5 @@ export { createBasePlugin } from "./plugin/index";
 // Building blocks (for extension plugins like @ydant/ssr hydration)
 export { createSlot, executeMount, processNode } from "./plugin/element";
 export type { ProcessNodeOptions } from "./plugin/element";
+export { parseFactoryArgs } from "./elements/props";
+export type { ParsedFactoryArgs } from "./elements/props";

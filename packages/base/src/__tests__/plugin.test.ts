@@ -4,7 +4,7 @@ import type { RenderContext } from "@ydant/core";
 import { createBasePlugin } from "../plugin";
 import { createDOMBackend } from "../capabilities";
 import { div, span, button } from "../elements/html";
-import { attr, on, text, keyed, onMount, onUnmount } from "../primitives";
+import { text, keyed, onMount, onUnmount } from "../primitives";
 import type { Slot } from "../types";
 
 describe("createBasePlugin", () => {
@@ -26,14 +26,7 @@ describe("createBasePlugin", () => {
       const plugin = createBasePlugin();
 
       expect(plugin.name).toBe("base");
-      expect(plugin.types).toEqual([
-        "element",
-        "svg",
-        "text",
-        "attribute",
-        "listener",
-        "lifecycle",
-      ]);
+      expect(plugin.types).toEqual(["element", "svg", "text", "lifecycle"]);
     });
   });
 
@@ -66,10 +59,10 @@ describe("createBasePlugin", () => {
     });
   });
 
-  describe("processAttribute", () => {
-    it("sets attribute on element", () => {
+  describe("attributes via props", () => {
+    it("sets attribute on element via props", () => {
       scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
-        div(() => [attr("id", "my-div"), attr("data-test", "value")]),
+        div({ id: "my-div", "data-test": "value" }),
       );
 
       const divEl = container.querySelector("div");
@@ -77,9 +70,9 @@ describe("createBasePlugin", () => {
       expect(divEl?.getAttribute("data-test")).toBe("value");
     });
 
-    it("handles class attribute", () => {
+    it("handles class attribute via props", () => {
       scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
-        div(() => [attr("class", "container flex")]),
+        div({ class: "container flex" }),
       );
 
       const divEl = container.querySelector("div");
@@ -87,12 +80,12 @@ describe("createBasePlugin", () => {
     });
   });
 
-  describe("processListener", () => {
-    it("adds event listener to element", () => {
+  describe("event handlers via props", () => {
+    it("adds event listener via props", () => {
       const handler = vi.fn();
 
       scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
-        button(() => [on("click", handler), text("Click me")]),
+        button({ onClick: handler }, "Click me"),
       );
 
       const btn = container.querySelector("button");
@@ -105,7 +98,7 @@ describe("createBasePlugin", () => {
       const handler = vi.fn();
 
       scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
-        button(() => [on("click", handler)]),
+        button({ onClick: handler }),
       );
 
       const btn = container.querySelector("button");
@@ -139,8 +132,7 @@ describe("createBasePlugin", () => {
       let domReady = false;
 
       scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
-        div(() => [
-          attr("id", "test-element"),
+        div({ id: "test-element" }, () => [
           onMount(() => {
             // DOM should be ready when onMount is called
             domReady = document.getElementById("test-element") !== null;
@@ -197,10 +189,6 @@ describe("createBasePlugin", () => {
     });
 
     it("onMount cleanup function is added asynchronously via requestAnimationFrame", () => {
-      // NOTE: onMount の cleanup function は requestAnimationFrame で非同期に登録される。
-      // Slot.refresh() 時に cleanup を呼ぶには、onUnmount を直接使用することを推奨する。
-      // このテストは現在の仕様（cleanup が非同期に追加される）を検証する。
-
       const cleanupFn = vi.fn();
 
       scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
@@ -211,18 +199,11 @@ describe("createBasePlugin", () => {
         ]),
       );
 
-      // cleanup function は requestAnimationFrame 後に unmountCallbacks に追加される
-      // ここでは timer を進めていないので、まだ追加されていない
       expect(cleanupFn).not.toHaveBeenCalled();
 
       vi.runAllTimers();
 
-      // timer を進めても cleanup は呼ばれない（unmount されていないため）
       expect(cleanupFn).not.toHaveBeenCalled();
-
-      // NOTE: cleanup function が実際に呼ばれるのは、親要素が DOM から削除された時。
-      // 現在の実装では Slot.refresh() 内での cleanup 呼び出しには対応していない。
-      // cleanup が必要な場合は onUnmount を直接使用する。
     });
 
     it("calls onUnmount for cleanup (recommended pattern)", () => {
@@ -243,10 +224,8 @@ describe("createBasePlugin", () => {
 
       vi.runAllTimers();
 
-      // Cleanup function should not be called yet
       expect(cleanupFn).not.toHaveBeenCalled();
 
-      // Refresh should call the cleanup function
       slot?.refresh(() => [text("New Content")]);
 
       expect(cleanupFn).toHaveBeenCalledTimes(1);
@@ -271,7 +250,6 @@ describe("createBasePlugin", () => {
 
       slot?.refresh(() => []);
 
-      // Both callbacks should be called
       expect(calls).toContain("outer");
       expect(calls).toContain("inner");
     });
@@ -448,14 +426,14 @@ describe("createBasePlugin", () => {
       scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
         div(function* () {
           slot = yield* div(function* () {
-            yield* keyed("btn", button)(() => [on("click", handler), text("Click")]);
+            yield* keyed("btn", button)({ onClick: handler }, "Click");
           });
         }),
       );
 
       // Refresh to trigger element reuse
       slot?.refresh(function* () {
-        yield* keyed("btn", button)(() => [on("click", handler), text("Click Again")]);
+        yield* keyed("btn", button)({ onClick: handler }, "Click Again");
       });
 
       const btn = container.querySelector("button");
@@ -499,13 +477,13 @@ describe("createBasePlugin", () => {
       };
     }
 
-    it("silently ignores inline listeners when interact is not provided", () => {
+    it("silently ignores event handler props when interact is not provided", () => {
       const handler = vi.fn();
 
       expect(() => {
         scope(createDOMBackendWithoutInteract(container), [createBasePlugin()]).mount(() =>
           div(function* () {
-            yield* button(() => [on("click", handler), text("Click")]);
+            yield* button({ onClick: handler }, "Click");
           }),
         );
       }).not.toThrow();
@@ -516,19 +494,6 @@ describe("createBasePlugin", () => {
       expect(btn?.textContent).toBe("Click");
       btn?.click();
       expect(handler).not.toHaveBeenCalled();
-    });
-
-    it("silently ignores standalone listener primitives when interact is not provided", () => {
-      const handler = vi.fn();
-
-      expect(() => {
-        scope(createDOMBackendWithoutInteract(container), [createBasePlugin()]).mount(() =>
-          div(function* () {
-            yield* on("click", handler);
-            yield* text("Content");
-          }),
-        );
-      }).not.toThrow();
     });
   });
 

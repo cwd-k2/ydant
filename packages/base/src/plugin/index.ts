@@ -5,16 +5,16 @@
 import type { Request, Response, Plugin, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 import { processElement, processSvg } from "./element";
-import { processAttribute, processListener, processText, processLifecycle } from "./primitives";
+import { processText, processLifecycle } from "./primitives";
 
 /**
  * Creates the base plugin that handles core DOM operations:
- * element creation, text nodes, attributes, event listeners, and lifecycle hooks.
+ * element creation, text nodes, and lifecycle hooks.
  */
 export function createBasePlugin(): Plugin {
   return {
     name: "base",
-    types: ["element", "svg", "text", "attribute", "listener", "lifecycle"],
+    types: ["element", "svg", "text", "lifecycle"],
 
     initContext(ctx: RenderContext, parentCtx?: RenderContext) {
       if (parentCtx && ctx.parent === parentCtx.parent) {
@@ -52,14 +52,6 @@ export function createBasePlugin(): Plugin {
       }
       if (isTagged(request, "text")) {
         processText(request, ctx);
-        return;
-      }
-      if (isTagged(request, "attribute")) {
-        processAttribute(request, ctx);
-        return;
-      }
-      if (isTagged(request, "listener")) {
-        processListener(request, ctx);
         return;
       }
       if (isTagged(request, "lifecycle")) {

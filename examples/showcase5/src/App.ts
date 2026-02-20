@@ -1,20 +1,5 @@
 import type { Component } from "@ydant/core";
-import {
-  createSlotRef,
-  div,
-  h1,
-  h2,
-  p,
-  button,
-  input,
-  select,
-  option,
-  text,
-  classes,
-  attr,
-  on,
-  keyed,
-} from "@ydant/base";
+import { createSlotRef, div, h1, h2, p, button, input, select, option, keyed } from "@ydant/base";
 import type { ListItem, SortOrder } from "./types";
 import { ListItemView } from "./components/ListItemView";
 
@@ -66,13 +51,11 @@ export const App: Component = () => {
   };
 
   const renderList = function* () {
-    yield* classes("space-y-2");
-
     if (items.length === 0) {
-      yield* div(() => [
-        classes("p-8", "text-center", "text-gray-400", "border", "rounded-lg", "border-dashed"),
-        text("No items. Add one above!"),
-      ]);
+      yield* div(
+        { class: "p-8 text-center text-gray-400 border rounded-lg border-dashed" },
+        "No items. Add one above!",
+      );
     } else {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
@@ -99,94 +82,81 @@ export const App: Component = () => {
   };
 
   const renderStats = function* () {
-    yield* classes("flex", "gap-4", "text-sm", "text-gray-400");
-
     const high = items.filter((i) => i.priority === "high").length;
     const medium = items.filter((i) => i.priority === "medium").length;
     const low = items.filter((i) => i.priority === "low").length;
 
-    yield* div(() => [
-      classes("flex", "gap-2"),
-      div(() => [classes("text-red-400"), text(`High: ${high}`)]),
-      div(() => [classes("text-yellow-400"), text(`Medium: ${medium}`)]),
-      div(() => [classes("text-green-400"), text(`Low: ${low}`)]),
-    ]);
+    yield* div({ class: "flex gap-2" }, function* () {
+      yield* div({ class: "text-red-400" }, `High: ${high}`);
+      yield* div({ class: "text-yellow-400" }, `Medium: ${medium}`);
+      yield* div({ class: "text-green-400" }, `Low: ${low}`);
+    });
 
-    yield* div(() => [classes("ml-auto"), text(`Total: ${items.length}`)]);
+    yield* div({ class: "ml-auto" }, `Total: ${items.length}`);
   };
 
-  return div(function* () {
-    yield* classes("space-y-6");
-
+  return div({ class: "space-y-6" }, function* () {
     // Header
-    yield* h1(() => [
-      classes("text-2xl", "font-bold", "text-center", "text-purple-300"),
-      text("Sortable List with keyed()"),
-    ]);
+    yield* h1(
+      { class: "text-2xl font-bold text-center text-purple-300" },
+      "Sortable List with keyed()",
+    );
 
-    yield* p(() => [
-      classes("text-center", "text-gray-400", "text-sm"),
-      text(
-        "Demonstrates keyed() for efficient DOM updates. " +
-          "Move items around and watch DOM IDs stay stable.",
-      ),
-    ]);
+    yield* p(
+      { class: "text-center text-gray-400 text-sm" },
+      "Demonstrates keyed() for efficient DOM updates. " +
+        "Move items around and watch DOM IDs stay stable.",
+    );
 
     // Add item form
-    yield* div(function* () {
-      yield* classes("flex", "gap-2", "p-4", "bg-slate-800", "rounded-lg");
-
-      yield* input(function* () {
-        yield* attr("type", "text");
-        yield* attr("placeholder", "New item text...");
-        yield* classes(
-          "flex-1",
-          "px-3",
-          "py-2",
-          "border",
-          "rounded",
-          "focus:outline-none",
-          "focus:ring-2",
-          "focus:ring-blue-500",
-        );
-        yield* on("input", (e) => {
+    yield* div({ class: "flex gap-2 p-4 bg-slate-800 rounded-lg" }, function* () {
+      yield* input({
+        type: "text",
+        placeholder: "New item text...",
+        class:
+          "flex-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500",
+        onInput: (e) => {
           newItemText = (e.target as HTMLInputElement).value;
-        });
+        },
       });
 
-      yield* select(function* () {
-        yield* classes("px-3", "py-2", "border", "rounded");
-        yield* on("change", (e) => {
-          newItemPriority = (e.target as HTMLSelectElement).value as ListItem["priority"];
-        });
+      yield* select(
+        {
+          class: "px-3 py-2 border rounded",
+          onChange: (e) => {
+            newItemPriority = (e.target as HTMLSelectElement).value as ListItem["priority"];
+          },
+        },
+        function* () {
+          yield* option({ value: "high" }, "High");
+          yield* option({ value: "medium", selected: "" }, "Medium");
+          yield* option({ value: "low" }, "Low");
+        },
+      );
 
-        yield* option(() => [attr("value", "high"), text("High")]);
-        yield* option(() => [attr("value", "medium"), attr("selected", ""), text("Medium")]);
-        yield* option(() => [attr("value", "low"), text("Low")]);
-      });
-
-      yield* button(function* () {
-        yield* classes("px-4", "py-2", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600");
-        yield* on("click", () => {
-          if (newItemText.trim()) {
-            items.push({
-              id: nextId++,
-              text: newItemText.trim(),
-              priority: newItemPriority,
-            });
-            newItemText = "";
-            listRef.refresh(renderList);
-            statsRef.refresh(renderStats);
-          }
-        });
-        yield* text("Add");
-      });
+      yield* button(
+        {
+          class: "px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600",
+          onClick: () => {
+            if (newItemText.trim()) {
+              items.push({
+                id: nextId++,
+                text: newItemText.trim(),
+                priority: newItemPriority,
+              });
+              newItemText = "";
+              listRef.refresh(renderList);
+              statsRef.refresh(renderStats);
+            }
+          },
+        },
+        "Add",
+      );
     });
 
     // Sort controls
-    yield* div(function* () {
-      yield* classes("flex", "gap-2", "items-center");
-      yield* h2(() => [classes("text-sm", "font-medium", "text-gray-300"), text("Sort by:")]);
+    yield* div({ class: "flex gap-2 items-center" }, function* () {
+      yield* h2({ class: "text-sm font-medium text-gray-300" }, "Sort by:");
 
       const sortButtons: { order: SortOrder; label: string }[] = [
         { order: "id", label: "ID" },
@@ -195,38 +165,31 @@ export const App: Component = () => {
       ];
 
       for (const btn of sortButtons) {
-        yield* button(function* () {
-          yield* classes(
-            "px-3",
-            "py-1",
-            "text-sm",
-            "rounded",
-            "bg-slate-700",
-            "hover:bg-slate-600",
-          );
-          yield* on("click", () => sortItemsBy(btn.order));
-          yield* text(btn.label);
-        });
+        yield* button(
+          {
+            class: "px-3 py-1 text-sm rounded bg-slate-700 hover:bg-slate-600",
+            onClick: () => sortItemsBy(btn.order),
+          },
+          btn.label,
+        );
       }
     });
 
     // List
-    listRef.bind(yield* div(renderList));
+    listRef.bind(yield* div({ class: "space-y-2" }, renderList));
 
     // Stats
-    statsRef.bind(yield* div(renderStats));
+    statsRef.bind(yield* div({ class: "flex gap-4 text-sm text-gray-400" }, renderStats));
 
     // Info
-    yield* div(() => [
-      classes("mt-4", "p-4", "bg-blue-900/30", "rounded-lg", "text-sm"),
-      h2(() => [classes("font-semibold", "mb-2"), text("How keyed() works:")]),
-      p(() => [
-        text(
-          "The keyed() wrapper tells the renderer to reuse existing DOM nodes " +
-            "when refreshing a list. Without keyed(), all items would be recreated. " +
-            "With keyed(), only the order changes - watch the DOM inspector!",
-        ),
-      ]),
-    ]);
+    yield* div({ class: "mt-4 p-4 bg-blue-900/30 rounded-lg text-sm" }, function* () {
+      yield* h2({ class: "font-semibold mb-2" }, "How keyed() works:");
+      yield* p(
+        {},
+        "The keyed() wrapper tells the renderer to reuse existing DOM nodes " +
+          "when refreshing a list. Without keyed(), all items would be recreated. " +
+          "With keyed(), only the order changes - watch the DOM inspector!",
+      );
+    });
   });
 };

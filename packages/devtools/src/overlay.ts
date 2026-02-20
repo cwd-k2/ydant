@@ -16,7 +16,7 @@
 
 import { scope } from "@ydant/core";
 import type { Hub, MountHandle } from "@ydant/core";
-import { createDOMBackend, createBasePlugin, div, span, text, attr, on } from "@ydant/base";
+import { createDOMBackend, createBasePlugin, div, span, text } from "@ydant/base";
 import { signal, reactive, createReactivePlugin } from "@ydant/reactive";
 import { createDevtoolsPlugin } from "./plugin";
 import type { DevtoolsPlugin } from "./plugin";
@@ -58,24 +58,13 @@ export function createDevtoolsOverlay(): DevtoolsOverlay {
   let styleEl: HTMLStyleElement | undefined;
 
   // ── Overlay Ydant App ──
-  const button = (label: string, onClick: () => void) =>
-    // Using createHTMLElement would require extra import; inline generator is cleaner
-    span(function* () {
-      yield* attr("role", "button");
-      yield* attr("tabindex", "0");
-      yield* attr("class", "yd-dt-btn");
-      yield* on("click", onClick);
-      yield* text(label);
-    });
+  const dtButton = (label: string, onClick: () => void) =>
+    span({ role: "button", tabindex: 0, class: "yd-dt-btn", onClick }, label);
 
   const OverlayApp = () =>
-    div(function* () {
-      yield* attr("class", "yd-dt-root");
-
+    div({ class: "yd-dt-root" }, function* () {
       // Toggle button
-      yield* div(function* () {
-        yield* attr("class", "yd-dt-toggle");
-        yield* on("click", () => visible.update((v) => !v));
+      yield* div({ class: "yd-dt-toggle", onClick: () => visible.update((v) => !v) }, function* () {
         yield* reactive(() => [text(`YD ${eventCount()}`)]);
       });
 
@@ -83,37 +72,31 @@ export function createDevtoolsOverlay(): DevtoolsOverlay {
       yield* reactive(() => {
         if (!visible()) return [];
         return [
-          div(function* () {
-            yield* attr("class", "yd-dt-panel");
-
+          div({ class: "yd-dt-panel" }, function* () {
             // Header
-            yield* div(function* () {
-              yield* attr("class", "yd-dt-header");
-              yield* span(() => [text("Ydant DevTools")]);
-              yield* button("\u00d7", () => visible.set(false));
+            yield* div({ class: "yd-dt-header" }, function* () {
+              yield* span("Ydant DevTools");
+              yield* dtButton("\u00d7", () => visible.set(false));
             });
 
             // Event log
-            yield* div(function* () {
-              yield* attr("class", "yd-dt-log");
+            yield* div({ class: "yd-dt-log" }, function* () {
               yield* reactive(() =>
                 recentEvents()
                   .slice()
                   .reverse()
                   .map((e) =>
-                    div(function* () {
-                      yield* attr("class", `yd-dt-ev yd-dt-ev-${e.type.split(":")[0]}`);
-                      yield* span(() => [attr("class", "yd-dt-ev-type"), text(e.type)]);
-                      yield* span(() => [attr("class", "yd-dt-ev-id"), text(e.engineId)]);
+                    div({ class: `yd-dt-ev yd-dt-ev-${e.type.split(":")[0]}` }, function* () {
+                      yield* span({ class: "yd-dt-ev-type" }, e.type);
+                      yield* span({ class: "yd-dt-ev-id" }, e.engineId);
                     }),
                   ),
               );
             });
 
             // Controls
-            yield* div(function* () {
-              yield* attr("class", "yd-dt-controls");
-              yield* button("Clear", () => {
+            yield* div({ class: "yd-dt-controls" }, function* () {
+              yield* dtButton("Clear", () => {
                 devtoolsPlugin.clearEvents();
                 recentEvents.set([]);
                 eventCount.set(0);

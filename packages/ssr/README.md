@@ -17,15 +17,11 @@ pnpm add @ydant/ssr
 
 ```typescript
 import type { Component } from "@ydant/core";
-import { div, h1, p, text, classes } from "@ydant/base";
+import { div, h1, p } from "@ydant/base";
 import { renderToString } from "@ydant/ssr";
 
 const App: Component = () =>
-  div(() => [
-    classes("container"),
-    h1(() => [text("Hello, SSR!")]),
-    p(() => [text("Rendered on the server.")]),
-  ]);
+  div({ class: "container" }, () => [h1(() => [p("Hello, SSR!")]), p("Rendered on the server.")]);
 
 const html = renderToString(App);
 // '<div class="container"><h1>Hello, SSR!</h1><p>Rendered on the server.</p></div>'
@@ -135,8 +131,8 @@ Hydration works by **reinterpreting** the same DSL requests differently:
 | --------------------------------- | -------------------------------- | --------------------------- |
 | Element (`yield* div(...)`)       | `createElement` + `appendChild`  | Walk to next existing child |
 | Text (`yield* text(...)`)         | `createTextNode` + `appendChild` | Advance cursor (skip)       |
-| Attribute (`yield* attr(...)`)    | `setAttribute`                   | Skip (already set by SSR)   |
-| Listener (`yield* on(...)`)       | `addEventListener`               | `addEventListener`          |
+| Props (attributes)                | `setAttribute`                   | Skip (already set by SSR)   |
+| Props (event handlers)            | `addEventListener`               | `addEventListener`          |
 | Lifecycle (`yield* onMount(...)`) | Register callback                | Register callback           |
 
 ### ResolveCapability Layer

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { Builder } from "@ydant/core";
 import { scope } from "@ydant/core";
 import type { Slot } from "@ydant/base";
-import { createBasePlugin, createDOMBackend, div, text, classes } from "@ydant/base";
+import { createBasePlugin, createDOMBackend, div, text } from "@ydant/base";
 import { Transition, createTransition } from "../Transition";
 import { runTransition } from "../utils";
 
@@ -107,7 +107,7 @@ describe("Transition", () => {
         enter: "transition-all",
         enterFrom: "opacity-0 scale-95",
         enterTo: "opacity-100 scale-100",
-        content: () => div(() => [classes("content-box"), text("Content")]),
+        content: () => div({ class: "content-box" }, () => [text("Content")]),
       }),
     );
 
@@ -136,7 +136,7 @@ describe("Transition", () => {
         enter: "transition-opacity",
         enterFrom: "opacity-0",
         enterTo: "opacity-100",
-        content: () => div(() => [classes("fade-target"), text("Fading")]),
+        content: () => div({ class: "fade-target" }, () => [text("Fading")]),
       }),
     );
 
@@ -166,7 +166,7 @@ describe("Transition", () => {
         enter: "transition-opacity",
         enterFrom: "opacity-0",
         enterTo: "opacity-100",
-        content: () => div(() => [classes("event-target"), text("Content")]),
+        content: () => div({ class: "event-target" }, () => [text("Content")]),
       }),
     );
 
@@ -380,7 +380,7 @@ describe("createTransition", () => {
           enter: "fade-enter",
           enterFrom: "fade-enter-from",
           enterTo: "fade-enter-to",
-          content: () => div(() => [classes("transition-child"), text("Content")]),
+          content: () => div({ class: "transition-child" }, () => [text("Content")]),
         });
       } as Builder),
     );
@@ -410,7 +410,7 @@ describe("createTransition", () => {
           leave: "fade-leave",
           leaveFrom: "fade-leave-from",
           leaveTo: "fade-leave-to",
-          content: () => div(() => [classes("transition-child"), text("Content")]),
+          content: () => div({ class: "transition-child" }, () => [text("Content")]),
         });
       } as Builder),
     );
@@ -473,7 +473,7 @@ describe("createTransition", () => {
       div(function* () {
         handle = yield* createTransition({
           enter: "fade-enter",
-          content: () => div(() => [classes("child"), text("Content")]),
+          content: () => div({ class: "child" }, () => [text("Content")]),
         });
       } as Builder),
     );

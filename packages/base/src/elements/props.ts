@@ -4,7 +4,7 @@
 
 import type { Render } from "@ydant/core";
 import { toRender } from "@ydant/core";
-import type { Attribute, Listener, ElementProps, ClassValue, StyleValue } from "../types";
+import type { Attribute, Listener, ElementProps, StyleValue } from "../types";
 import { text } from "../primitives";
 
 /** Parsed result of factory arguments. */
@@ -16,11 +16,6 @@ export interface ParsedFactoryArgs {
 
 /** Empty render generator. */
 function* emptyRender(): Render {}
-
-/** Converts a ClassValue array to a class attribute string. */
-function resolveClass(value: ClassValue): string {
-  return value.filter(Boolean).join(" ");
-}
 
 /** Converts a StyleValue to a style attribute string. */
 function resolveStyle(value: StyleValue): string {
@@ -52,10 +47,9 @@ function propsToElementFields(props: ElementProps): {
 
     if (k === "key") {
       key = v as string | number;
-    } else if (k === "classes") {
-      const resolved = resolveClass(v as ClassValue);
-      if (resolved) {
-        decorations.push({ type: "attribute", key: "class", value: resolved });
+    } else if (k === "class") {
+      if (v) {
+        decorations.push({ type: "attribute", key: "class", value: String(v) });
       }
     } else if (k === "style") {
       const resolved = resolveStyle(v as StyleValue);
@@ -66,6 +60,9 @@ function propsToElementFields(props: ElementProps): {
       // onClick → click, onMouseDown → mousedown
       const eventName = k.slice(2).toLowerCase();
       decorations.push({ type: "listener", key: eventName, value: v as (e: Event) => void });
+    } else if (v === true) {
+      // Boolean HTML attribute: true → ""
+      decorations.push({ type: "attribute", key: k, value: "" });
     } else {
       // Plain attribute
       decorations.push({ type: "attribute", key: k, value: String(v) });

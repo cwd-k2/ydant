@@ -5,7 +5,6 @@ import {
   createDOMBackend,
   createSlotRef,
   div,
-  attr,
   text,
   onMount,
   onUnmount,
@@ -19,9 +18,7 @@ describe("Portal plugin", () => {
 
     function* App() {
       yield* div(() => [text("Main content")]);
-      yield* portal(portalTarget, () => [
-        div(() => [attr("class", "modal"), text("Portal content")]),
-      ]);
+      yield* portal(portalTarget, () => [div({ class: "modal" }, () => [text("Portal content")])]);
     }
 
     scope(createDOMBackend(root), [createBasePlugin(), createPortalPlugin()]).mount(App);

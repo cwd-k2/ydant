@@ -3,33 +3,7 @@
  */
 
 import type { Spell, Render, SpellSchema } from "@ydant/core";
-import type { Slot, HTMLElementFactory, SVGElementFactory } from "./types";
-
-/** Sets an HTML attribute on the current element. Use with `yield*`. */
-export function* attr(key: string, value: string): Spell<"attribute"> {
-  yield { type: "attribute", key, value };
-}
-
-/** Sets the `class` attribute by joining all arguments. Falsy values are filtered out. */
-export function* classes(
-  ...classNames: (string | false | null | undefined | 0 | "")[]
-): Spell<"attribute"> {
-  const value = classNames.filter(Boolean).join(" ");
-  yield { type: "attribute", key: "class", value };
-}
-
-/** Attaches a DOM event listener. Infers the event type from {@link HTMLElementEventMap}. */
-export function on<K extends keyof HTMLElementEventMap>(
-  key: K,
-  handler: (e: HTMLElementEventMap[K]) => void,
-): Spell<"listener">;
-/** Attaches a DOM event listener for custom event names. */
-export function on(key: string, handler: (e: Event) => void): Spell<"listener">;
-export function on(key: string, handler: (e: Event) => void): Spell<"listener"> {
-  return (function* () {
-    yield { type: "listener" as const, key, value: handler };
-  })();
-}
+import type { Slot, ClassItem, HTMLElementFactory, SVGElementFactory } from "./types";
 
 /** Creates a text node and appends it to the current parent. Use with `yield*`. */
 export function* text(content: string): Spell<"text"> {
@@ -67,31 +41,9 @@ export function* onUnmount(callback: () => void): Spell<"lifecycle"> {
   yield { type: "lifecycle", event: "unmount", callback };
 }
 
-/**
- * Sets inline styles on the current element.
- *
- * Accepts camelCase properties (auto-converted to kebab-case) and CSS custom properties.
- *
- * @example
- * ```typescript
- * yield* style({
- *   padding: "16px",
- *   display: "flex",
- *   "--primary-color": "#3b82f6",
- * });
- * ```
- */
-export function* style(
-  properties: Partial<CSSStyleDeclaration> & Record<`--${string}`, string>,
-): Spell<"attribute"> {
-  const styleValue = Object.entries(properties as Record<string, string>)
-    .map(([k, v]) => {
-      // Convert camelCase to kebab-case (skip CSS custom properties)
-      const prop = k.startsWith("--") ? k : k.replace(/([A-Z])/g, "-$1").toLowerCase();
-      return `${prop}: ${v}`;
-    })
-    .join("; ");
-  yield { type: "attribute", key: "style", value: styleValue };
+/** Joins class names, filtering out falsy values. */
+export function cn(...items: ClassItem[]): string {
+  return items.filter(Boolean).join(" ");
 }
 
 /**

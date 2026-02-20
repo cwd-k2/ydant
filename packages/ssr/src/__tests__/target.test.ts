@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { Component } from "@ydant/core";
 import { scope } from "@ydant/core";
-import { attr, classes, createBasePlugin, div, on, p, span, text } from "@ydant/base";
+import { createBasePlugin, div, p, span, text } from "@ydant/base";
 import { createSSRBackend } from "../target";
 
 function renderHTML(app: Component): string {
@@ -23,15 +23,14 @@ describe("createSSRBackend", () => {
     expect(renderHTML(App)).toBe("<div>Hello</div>");
   });
 
-  test("attributes", () => {
-    const App: Component = () =>
-      div(() => [attr("id", "main"), classes("container"), text("content")]);
+  test("attributes via props", () => {
+    const App: Component = () => div({ id: "main", class: "container" }, "content");
     expect(renderHTML(App)).toBe('<div id="main" class="container">content</div>');
   });
 
   test("nested components", () => {
     function* Inner() {
-      yield* span(() => [text("inner")]);
+      yield* span("inner");
     }
 
     const App: Component = function* () {
@@ -44,22 +43,22 @@ describe("createSSRBackend", () => {
     expect(renderHTML(App)).toBe("<div>before <span>inner</span> after</div>");
   });
 
-  test("event listeners are silently ignored", () => {
-    const App: Component = () => div(() => [on("click", () => {}), text("clickable")]);
+  test("event handler props are silently ignored", () => {
+    const App: Component = () => div({ onClick: () => {} }, "clickable");
     // Should not throw, events are no-op in SSR
     expect(renderHTML(App)).toBe("<div>clickable</div>");
   });
 
   test("multiple top-level elements", () => {
     const App: Component = function* () {
-      yield* p(() => [text("A")]);
-      yield* p(() => [text("B")]);
+      yield* p("A");
+      yield* p("B");
     };
     expect(renderHTML(App)).toBe("<p>A</p><p>B</p>");
   });
 
   test("deeply nested structure", () => {
-    const App: Component = () => div(() => [div(() => [span(() => [text("deep")])])]);
+    const App: Component = () => div(() => [div(() => [span("deep")])]);
     expect(renderHTML(App)).toBe("<div><div><span>deep</span></div></div>");
   });
 });

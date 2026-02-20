@@ -7,20 +7,7 @@
  */
 
 import { scope, type Component } from "@ydant/core";
-import {
-  createDOMBackend,
-  createBasePlugin,
-  div,
-  button,
-  h1,
-  h2,
-  p,
-  span,
-  attr,
-  on,
-  text,
-  style,
-} from "@ydant/base";
+import { createDOMBackend, createBasePlugin, div, button, h1, h2, p, span } from "@ydant/base";
 import { createPortalPlugin, portal } from "@ydant/portal";
 
 const modalRoot = document.getElementById("modal-root")!;
@@ -36,66 +23,63 @@ function closeModal() {
 }
 
 const App: Component = () =>
-  div(() => [
-    h1(() => [text("Portal Demo")]),
-    p(() => [text("Click the button to open a modal rendered via portal.")]),
+  div(function* () {
+    yield* h1("Portal Demo");
+    yield* p("Click the button to open a modal rendered via portal.");
 
-    p(() => [
-      text("The modal escapes this container's "),
-      span(() => [
-        style({ fontWeight: "bold", color: "#4f46e5" }),
-        text("overflow and stacking context"),
-      ]),
-      text(" because it renders into a separate DOM target."),
-    ]),
+    yield* p({}, function* () {
+      yield* span("The modal escapes this container's ");
+      yield* span(
+        { style: { fontWeight: "bold", color: "#4f46e5" } },
+        "overflow and stacking context",
+      );
+      yield* span(" because it renders into a separate DOM target.");
+    });
 
     // Button opens the modal
-    button(() => [
-      attr("class", "btn btn-primary"),
-      on("click", () => openModal()),
-      text("Open Modal"),
-    ]),
+    yield* button({ class: "btn btn-primary", onClick: () => openModal() }, "Open Modal");
 
     // Render the modal into #modal-root via portal
-    portal(modalRoot, () => [
-      div(() => [
-        attr("class", "modal-overlay"),
-        attr("id", "modal-overlay"),
-        style({ display: "none" }),
-        on("click", (e) => {
-          if ((e.target as HTMLElement).id === "modal-overlay") {
-            closeModal();
-          }
-        }),
-        div(() => [
-          attr("class", "modal-content"),
-          h2(() => [text("Modal Title")]),
-          p(() => [
-            text("This modal is rendered via "),
-            span(() => [
-              style({
-                fontFamily: "monospace",
-                background: "#f3f4f6",
-                padding: "2px 6px",
-                borderRadius: "4px",
-              }),
-              text("@ydant/portal"),
-            ]),
-            text(" into a separate DOM target."),
-          ]),
-          p(() => [
-            text("It lives outside the #app container in the DOM tree, "),
-            text("but is declared inline with the component logic."),
-          ]),
-          button(() => [
-            attr("class", "btn btn-secondary"),
-            on("click", () => closeModal()),
-            text("Close"),
-          ]),
-        ]),
-      ]),
-    ]),
-  ]);
+    yield* portal(modalRoot, () => [
+      div(
+        {
+          class: "modal-overlay",
+          id: "modal-overlay",
+          style: { display: "none" },
+          onClick: (e: Event) => {
+            if ((e.target as HTMLElement).id === "modal-overlay") {
+              closeModal();
+            }
+          },
+        },
+        function* () {
+          yield* div({ class: "modal-content" }, function* () {
+            yield* h2("Modal Title");
+            yield* p({}, function* () {
+              yield* span("This modal is rendered via ");
+              yield* span(
+                {
+                  style: {
+                    fontFamily: "monospace",
+                    background: "#f3f4f6",
+                    padding: "2px 6px",
+                    borderRadius: "4px",
+                  },
+                },
+                "@ydant/portal",
+              );
+              yield* span(" into a separate DOM target.");
+            });
+            yield* p(
+              "It lives outside the #app container in the DOM tree, " +
+                "but is declared inline with the component logic.",
+            );
+            yield* button({ class: "btn btn-secondary", onClick: () => closeModal() }, "Close");
+          });
+        },
+      ),
+    ]);
+  });
 
 scope(createDOMBackend(document.getElementById("app")!), [
   createBasePlugin(),

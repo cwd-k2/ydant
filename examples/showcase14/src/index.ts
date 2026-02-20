@@ -15,7 +15,7 @@
 
 import { scope } from "@ydant/core";
 import { createDevtoolsOverlay } from "@ydant/devtools";
-import { createDOMBackend, createBasePlugin, createHTMLElement, html, attr } from "@ydant/base";
+import { createDOMBackend, createBasePlugin, createHTMLElement, html } from "@ydant/base";
 import {
   createCanvasBackend,
   createCanvasPlugin,
@@ -51,49 +51,37 @@ const Scene = () =>
   group(function* () {
     // Static background grid
     for (let x = 0; x <= 600; x += 50) {
-      yield* rect(() => [
-        attr("x", String(x)),
-        attr("y", "0"),
-        attr("width", "1"),
-        attr("height", "400"),
-        attr("fill", "#1a3a5c"),
-      ]);
+      yield* rect({ x: String(x), y: "0", width: "1", height: "400", fill: "#1a3a5c" });
     }
     for (let y = 0; y <= 400; y += 50) {
-      yield* rect(() => [
-        attr("x", "0"),
-        attr("y", String(y)),
-        attr("width", "600"),
-        attr("height", "1"),
-        attr("fill", "#1a3a5c"),
-      ]);
+      yield* rect({ x: "0", y: String(y), width: "600", height: "1", fill: "#1a3a5c" });
     }
 
     // Reactive shape — tracks cx, cy, radius, colorIndex signals
     yield* reactive(() => [
       // Shadow
-      circle(() => [
-        attr("cx", String(cx() + 4)),
-        attr("cy", String(cy() + 4)),
-        attr("r", String(radius())),
-        attr("fill", "rgba(0,0,0,0.3)"),
-      ]),
+      circle({
+        cx: String(cx() + 4),
+        cy: String(cy() + 4),
+        r: String(radius()),
+        fill: "rgba(0,0,0,0.3)",
+      }),
       // Main circle
-      circle(() => [
-        attr("cx", String(cx())),
-        attr("cy", String(cy())),
-        attr("r", String(radius())),
-        attr("fill", color()),
-      ]),
+      circle({
+        cx: String(cx()),
+        cy: String(cy()),
+        r: String(radius()),
+        fill: color(),
+      }),
       // Label
-      canvasText(() => [
-        attr("x", String(cx())),
-        attr("y", String(cy() + radius() + 20)),
-        attr("content", `(${cx()}, ${cy()}) r=${radius()}`),
-        attr("font", "12px monospace"),
-        attr("fill", "#aaa"),
-        attr("textAlign", "center"),
-      ]),
+      canvasText({
+        x: String(cx()),
+        y: String(cy() + radius() + 20),
+        content: `(${cx()}, ${cy()}) r=${radius()}`,
+        font: "12px monospace",
+        fill: "#aaa",
+        textAlign: "center",
+      }),
     ]);
   });
 
@@ -111,12 +99,9 @@ const canvasBuilder = scope(canvasBackend, [
 let canvasCtx2d: CanvasRenderingContext2D;
 
 const App = () =>
-  div({ classes: ["container"] }, function* () {
+  div({ class: "container" }, function* () {
     yield* h1("Reactive Canvas");
-    yield* p(
-      { classes: ["subtitle"] },
-      "Signal changes auto-repaint the Canvas via Engine.onFlush()",
-    );
+    yield* p({ class: "subtitle" }, "Signal changes auto-repaint the Canvas via Engine.onFlush()");
 
     // Canvas element (DOM)
     const slot = yield* canvas({ width: "600", height: "400" });
@@ -138,7 +123,7 @@ const App = () =>
     const step = 20;
     const btn = (label: string, handler: () => void) => html.button({ onClick: handler }, label);
 
-    yield* div({ classes: ["controls"] }, function* () {
+    yield* div({ class: "controls" }, function* () {
       yield* btn("\u2191", () => cy.update((v) => Math.max(radius(), v - step)));
       yield* btn("\u2190", () => cx.update((v) => Math.max(radius(), v - step)));
       yield* btn("\u2192", () => cx.update((v) => Math.min(600 - radius(), v + step)));
@@ -158,7 +143,7 @@ const App = () =>
     // Status (DOM reactive)
     yield* reactive(() => [
       p(
-        { classes: ["status"] },
+        { class: "status" },
         `pos=(${cx()}, ${cy()})  r=${radius()}  color=${color()}  paints=${paintCount}`,
       ),
     ]);

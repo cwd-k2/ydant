@@ -97,8 +97,8 @@ export type SvgElement = Tagged<
 // Element Props Types
 // =============================================================================
 
-/** Class attribute value. An array of class names with falsy filtering. */
-export type ClassValue = (string | false | null | undefined | 0 | "")[];
+/** A single class item for {@link cn}. Falsy values are filtered out. */
+export type ClassItem = string | false | null | undefined | 0 | "";
 
 /** Style attribute value. A string or a CSSStyleDeclaration-like object with CSS custom properties. */
 export type StyleValue = string | (Partial<CSSStyleDeclaration> & Record<`--${string}`, string>);
@@ -108,10 +108,19 @@ export type EventHandlerProps = {
   [K in keyof HTMLElementEventMap as `on${Capitalize<K>}`]?: (e: HTMLElementEventMap[K]) => void;
 };
 
-/** Props for element factories. Combines event handlers, class/style shorthands, and arbitrary attributes. */
+/** Props for element factories. Combines global HTML attributes, event handlers, and arbitrary attributes. */
 export type ElementProps = EventHandlerProps & {
-  classes?: ClassValue;
+  class?: string;
+  id?: string;
   style?: StyleValue;
+  title?: string;
+  lang?: string;
+  dir?: "ltr" | "rtl" | "auto";
+  tabindex?: number;
+  hidden?: boolean;
+  draggable?: boolean;
+  contenteditable?: "" | "true" | "false" | "plaintext-only";
+  role?: string;
   key?: string | number;
   [key: string]: unknown;
 };

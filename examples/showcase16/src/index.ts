@@ -67,12 +67,12 @@ const App = () =>
   div(function* () {
     yield* h1("Priority-Based Rendering");
     yield* p(
-      { classes: ["subtitle"] },
+      { class: "subtitle" },
       "pause()/resume() for frame budget management \u2014 low priority pauses when overloaded",
     );
 
     // Top controls
-    yield* div({ classes: ["top-controls"] }, function* () {
+    yield* div({ class: "top-controls" }, function* () {
       yield* label(function* () {
         yield* text("Frame Budget: ");
         yield* reactive(() => [span(String(frameBudget()) + "ms")]);
@@ -92,11 +92,11 @@ const App = () =>
     });
 
     // Canvases
-    yield* div({ classes: ["canvases"] }, function* () {
+    yield* div({ class: "canvases" }, function* () {
       // High priority
-      yield* div({ classes: ["canvas-panel"] }, function* () {
-        yield* div({ classes: ["panel-title"] }, function* () {
-          yield* span({ classes: ["badge", "badge-high"] }, "HIGH");
+      yield* div({ class: "canvas-panel" }, function* () {
+        yield* div({ class: "panel-title" }, function* () {
+          yield* span({ class: "badge badge-high" }, "HIGH");
           yield* text(" Priority \u2014 Always Active");
         });
 
@@ -118,13 +118,13 @@ const App = () =>
       });
 
       // Low priority
-      yield* div({ classes: ["canvas-panel"] }, function* () {
-        yield* div({ classes: ["panel-title"] }, function* () {
-          yield* span({ classes: ["badge", "badge-low"] }, "LOW");
+      yield* div({ class: "canvas-panel" }, function* () {
+        yield* div({ class: "panel-title" }, function* () {
+          yield* span({ class: "badge badge-low" }, "LOW");
           yield* text(" Priority \u2014 ");
           yield* reactive(() => [
             span(
-              { classes: lowPaused() ? ["badge", "badge-paused"] : [] },
+              { class: lowPaused() ? "badge badge-paused" : "" },
               lowPaused() ? "PAUSED" : "Active",
             ),
           ]);
@@ -149,22 +149,22 @@ const App = () =>
     });
 
     // Stats
-    yield* div({ classes: ["stats-bar"] }, function* () {
-      yield* div({ classes: ["stat-card"] }, function* () {
-        yield* div({ classes: ["stat-label"] }, "High Flush");
-        yield* reactive(() => [div({ classes: ["stat-value", "high"] }, `${highFlushTime()}ms`)]);
+    yield* div({ class: "stats-bar" }, function* () {
+      yield* div({ class: "stat-card" }, function* () {
+        yield* div({ class: "stat-label" }, "High Flush");
+        yield* reactive(() => [div({ class: "stat-value high" }, `${highFlushTime()}ms`)]);
       });
-      yield* div({ classes: ["stat-card"] }, function* () {
-        yield* div({ classes: ["stat-label"] }, "Low Flush");
-        yield* reactive(() => [div({ classes: ["stat-value", "low"] }, `${lowFlushTime()}ms`)]);
+      yield* div({ class: "stat-card" }, function* () {
+        yield* div({ class: "stat-label" }, "Low Flush");
+        yield* reactive(() => [div({ class: "stat-value low" }, `${lowFlushTime()}ms`)]);
       });
-      yield* div({ classes: ["stat-card"] }, function* () {
-        yield* div({ classes: ["stat-label"] }, "Budget");
-        yield* reactive(() => [div({ classes: ["stat-value", "budget"] }, `${frameBudget()}ms`)]);
+      yield* div({ class: "stat-card" }, function* () {
+        yield* div({ class: "stat-label" }, "Budget");
+        yield* reactive(() => [div({ class: "stat-value budget" }, `${frameBudget()}ms`)]);
       });
-      yield* div({ classes: ["stat-card"] }, function* () {
-        yield* div({ classes: ["stat-label"] }, "Pauses");
-        yield* reactive(() => [div({ classes: ["stat-value", "paused"] }, String(pauseCount()))]);
+      yield* div({ class: "stat-card" }, function* () {
+        yield* div({ class: "stat-label" }, "Pauses");
+        yield* reactive(() => [div({ class: "stat-value paused" }, String(pauseCount()))]);
       });
     });
   });

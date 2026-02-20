@@ -13,36 +13,28 @@ const { nav, span, button } = html;
 export function NavBar(): Render {
   return nav(
     {
-      classes: [
-        "flex",
-        "gap-4",
-        "p-4",
-        "bg-gray-100",
-        "dark:bg-slate-800",
-        "border-b",
-        "dark:border-slate-700",
-      ],
+      class: "flex gap-4 p-4 bg-gray-100 dark:bg-slate-800 border-b dark:border-slate-700",
     },
     function* () {
       yield* RouterLink({
         href: `${basePath}/`,
-        children: () => span({ classes: ["hover:underline", "cursor-pointer"] }, "Home"),
+        children: () => span({ class: "hover:underline cursor-pointer" }, "Home"),
       });
 
       yield* RouterLink({
         href: `${basePath}/users`,
-        children: () => span({ classes: ["hover:underline", "cursor-pointer"] }, "Users"),
+        children: () => span({ class: "hover:underline cursor-pointer" }, "Users"),
       });
 
       yield* RouterLink({
         href: `${basePath}/contact`,
-        children: () => span({ classes: ["hover:underline", "cursor-pointer"] }, "Contact"),
+        children: () => span({ class: "hover:underline cursor-pointer" }, "Contact"),
       });
 
       // テーマ切り替えボタン
       yield* button(
         {
-          classes: ["ml-auto", "px-3", "py-1", "bg-gray-200", "dark:bg-slate-700", "rounded"],
+          class: "ml-auto px-3 py-1 bg-gray-200 dark:bg-slate-700 rounded",
           onClick: toggleTheme,
         },
         function* () {

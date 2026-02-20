@@ -1,5 +1,5 @@
 import type { Component } from "@ydant/core";
-import { div, h1, p, span, text, classes, createSlotRef, onUnmount, onMount } from "@ydant/base";
+import { div, h1, p, span, text, createSlotRef, onUnmount, onMount } from "@ydant/base";
 import { Suspense } from "@ydant/async";
 import { createResource } from "@ydant/async";
 import { fetchMetrics } from "../api";
@@ -7,15 +7,13 @@ import { getUser } from "../auth";
 import { MetricCard } from "../components/MetricCard";
 
 export const DashboardPage: Component = () =>
-  div(function* () {
-    yield* classes("p-6");
-
+  div({ class: "p-6" }, function* () {
     const user = getUser();
-    yield* h1(() => [classes("text-2xl", "font-bold", "mb-2"), text(`Dashboard`)]);
-    yield* p(() => [
-      classes("text-gray-400", "mb-6"),
-      text(`Welcome, ${user?.name ?? "User"} (${user?.role ?? "unknown"})`),
-    ]);
+    yield* h1({ class: "text-2xl font-bold mb-2" }, "Dashboard");
+    yield* p(
+      { class: "text-gray-400 mb-6" },
+      `Welcome, ${user?.name ?? "User"} (${user?.role ?? "unknown"})`,
+    );
 
     // Resource with auto-refetch every 5 seconds
     const metricsResource = createResource(fetchMetrics, { refetchInterval: 5000 });
@@ -29,7 +27,6 @@ export const DashboardPage: Component = () =>
       try {
         const m = metricsResource.peek();
         metricsRef.refresh(function* () {
-          yield* classes("grid", "grid-cols-2", "md:grid-cols-3", "gap-4");
           yield* MetricCard({ label: "Active Users", value: String(m.activeUsers), color: "blue" });
           yield* MetricCard({
             label: "Requests/min",
@@ -57,7 +54,6 @@ export const DashboardPage: Component = () =>
           yield* MetricCard({ label: "Uptime", value: m.uptime, color: "gray" });
         });
         statusRef.refresh(function* () {
-          yield* classes("text-xs", "text-gray-400");
           yield* text(`Last updated: ${new Date().toLocaleTimeString()}`);
         });
       } catch {
@@ -68,17 +64,15 @@ export const DashboardPage: Component = () =>
     // Initial render via Suspense, then poll for updates
     yield* Suspense({
       fallback: () =>
-        div(() => [
-          classes("flex", "items-center", "justify-center", "py-12"),
-          span(() => [classes("text-gray-400"), text("Loading metrics...")]),
+        div({ class: "flex items-center justify-center py-12" }, () => [
+          span({ class: "text-gray-400" }, "Loading metrics..."),
         ]),
       content: function* () {
         const m = metricsResource();
 
         // Initial render
         metricsRef.bind(
-          yield* div(function* () {
-            yield* classes("grid", "grid-cols-2", "md:grid-cols-3", "gap-4");
+          yield* div({ class: "grid grid-cols-2 md:grid-cols-3 gap-4" }, function* () {
             yield* MetricCard({
               label: "Active Users",
               value: String(m.activeUsers),
@@ -112,10 +106,10 @@ export const DashboardPage: Component = () =>
         );
 
         statusRef.bind(
-          yield* p(function* () {
-            yield* classes("text-xs", "text-gray-400");
-            yield* text(`Last updated: ${new Date().toLocaleTimeString()}`);
-          }),
+          yield* p(
+            { class: "text-xs text-gray-400" },
+            `Last updated: ${new Date().toLocaleTimeString()}`,
+          ),
         );
 
         // Start polling for UI updates (resource auto-refetches data)
@@ -125,10 +119,7 @@ export const DashboardPage: Component = () =>
       },
     });
 
-    yield* p(() => [
-      classes("mt-4", "text-sm", "text-gray-400"),
-      text("Metrics auto-refresh every 5 seconds"),
-    ]);
+    yield* p({ class: "mt-4 text-sm text-gray-400" }, "Metrics auto-refresh every 5 seconds");
 
     // Cleanup
     yield* onUnmount(() => {

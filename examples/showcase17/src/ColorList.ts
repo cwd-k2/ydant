@@ -6,7 +6,7 @@
  */
 
 import type { Engine, Hub } from "@ydant/core";
-import { html, attr, on } from "@ydant/base";
+import { html } from "@ydant/base";
 import { reactive } from "@ydant/reactive";
 import { filter, filteredColors, selectedIndex, highlightIndex, appendLog } from "./palette";
 
@@ -34,11 +34,11 @@ function dispatchToCanvas(type: string, payload: Record<string, unknown>) {
 
 export const ColorList = () =>
   div(function* () {
-    yield* div({ classes: ["panel-title"] }, "Color Palette");
+    yield* div({ class: "panel-title" }, "Color Palette");
 
     // Filter input
     yield* input({
-      classes: ["filter-input"],
+      class: "filter-input",
       placeholder: "Filter colors...",
       onInput: (e: Event) => {
         filter.set((e.target as HTMLInputElement).value);
@@ -52,34 +52,34 @@ export const ColorList = () =>
       const hlIdx = highlightIndex();
 
       return [
-        ul({ classes: ["color-list"] }, function* () {
+        ul({ class: "color-list" }, function* () {
           for (let i = 0; i < colors.length; i++) {
             const color = colors[i];
             const isActive = i === selIdx;
             const classStr = `color-item${isActive ? " active" : ""}`;
 
-            yield* li(function* () {
-              yield* attr("class", classStr);
-              yield* on("click", () => {
-                selectedIndex.set(i);
-                dispatchToCanvas("color:select", { color });
-              });
-              yield* on("mouseenter", () => {
-                highlightIndex.set(i);
-                dispatchToCanvas("color:highlight", { index: i });
-              });
-              yield* on("mouseleave", () => {
-                highlightIndex.set(null);
-                dispatchToCanvas("color:highlight", { index: null });
-              });
-
-              yield* span(function* () {
-                yield* attr("class", "color-swatch");
-                yield* attr("style", `background: ${color.hex}`);
-              });
-              yield* span({ classes: ["color-name"] }, color.name);
-              yield* span({ classes: ["color-hex"] }, color.hex);
-            });
+            yield* li(
+              {
+                class: classStr,
+                onClick: () => {
+                  selectedIndex.set(i);
+                  dispatchToCanvas("color:select", { color });
+                },
+                onMouseenter: () => {
+                  highlightIndex.set(i);
+                  dispatchToCanvas("color:highlight", { index: i });
+                },
+                onMouseleave: () => {
+                  highlightIndex.set(null);
+                  dispatchToCanvas("color:highlight", { index: null });
+                },
+              },
+              function* () {
+                yield* span({ class: "color-swatch", style: `background: ${color.hex}` });
+                yield* span({ class: "color-name" }, color.name);
+                yield* span({ class: "color-hex" }, color.hex);
+              },
+            );
           }
         }),
       ];

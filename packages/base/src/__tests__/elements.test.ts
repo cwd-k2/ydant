@@ -51,7 +51,7 @@ import {
   svgText,
   tspan,
 } from "../elements/svg";
-import { text, attr } from "../primitives";
+import { text } from "../primitives";
 import type { Element, SvgElement } from "../types";
 
 /** Helper to collect all items from an iterator */
@@ -168,7 +168,7 @@ describe("SVG element factories", () => {
   });
 
   it("includes children from builder", () => {
-    const gen = svg(() => [circle(() => [attr("cx", "50"), attr("cy", "50"), attr("r", "40")])]);
+    const gen = svg(() => [circle({ cx: "50", cy: "50", r: "40" })]);
     const result = gen.next();
     const element = result.value as SvgElement;
 

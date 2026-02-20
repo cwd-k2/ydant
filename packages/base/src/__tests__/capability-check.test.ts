@@ -13,7 +13,7 @@ import type {
   ProvidedCapabilities,
   CapabilityCheck,
 } from "@ydant/core";
-import { text, on, onMount } from "../primitives";
+import { text, onMount } from "../primitives";
 import { createHTMLElement } from "../elements/factory";
 
 // ---------------------------------------------------------------------------
@@ -60,15 +60,15 @@ describe("RequiredCapabilities", () => {
     expectTypeOf<RequiredCapabilities<ReturnType<typeof app>>>().toEqualTypeOf<"tree">();
   });
 
-  it("extracts union from generator yielding multiple spell types", () => {
+  it("extracts union from generator yielding element and lifecycle", () => {
     const el = createHTMLElement("div");
     function* app() {
       yield* el(() => []);
-      yield* on("click", () => {});
+      yield* onMount(() => {});
     }
 
     expectTypeOf<RequiredCapabilities<ReturnType<typeof app>>>().toEqualTypeOf<
-      "tree" | "decorate" | "interact"
+      "tree" | "decorate" | "schedule"
     >();
   });
 
@@ -112,10 +112,10 @@ describe("CapabilityCheck", () => {
     const el = createHTMLElement("div");
     function* app() {
       yield* el(() => []);
-      yield* on("click", () => {});
+      yield* onMount(() => {});
     }
 
-    // Only tree | decorate provided, but interact is also required
+    // Only tree | decorate provided, but schedule is also required
     type Result = CapabilityCheck<ReturnType<typeof app>, Backend<"tree" | "decorate">>;
     expectTypeOf<Result>().toHaveProperty("__capabilityError");
   });

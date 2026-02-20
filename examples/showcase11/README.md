@@ -18,12 +18,7 @@ DOM レンダリングの中に `scope().embed()` で Canvas scope を埋め込�
 const canvasBackend = createCanvasBackend();
 
 // DOM 要素として <canvas> を配置
-const slot =
-  yield *
-  canvas(function* () {
-    yield* attr("width", "600");
-    yield* attr("height", "400");
-  });
+const slot = yield * canvas({ width: "600", height: "400" });
 
 // Canvas scope に切り替え — VShape ツリーを構築
 yield * scope(canvasBackend, [createBasePlugin()]).embed(NightScene);

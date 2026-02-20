@@ -18,20 +18,12 @@ SVG 要素は専用のファクトリ関数を使用（namespace 自動設定）
 import { svg, circle, path } from "@ydant/base";
 
 yield *
-  svg(function* () {
-    yield* attr("width", "240");
-    yield* attr("height", "240");
-
-    yield* circle(() => [
-      attr("cx", "120"),
-      attr("cy", "120"),
-      attr("r", "100"),
-      attr("stroke", "#e5e7eb"),
-    ]);
+  svg.svg({ width: "240", height: "240" }, function* () {
+    yield* circle({ cx: "120", cy: "120", r: "100", stroke: "#e5e7eb" });
   });
 ```
 
-**注意**: SVG の `<text>` 要素は `svgText` として提供（`text` プリミティブとの衝突回避）。
+**注意**: SVG の `<text>` 要素は `svgText` として提供（`text` プリミティブとの衝突回避）。SVG の `<svg>` ルート要素は `svg.svg()` でアクセスする。
 
 ### ライフサイクルフック
 

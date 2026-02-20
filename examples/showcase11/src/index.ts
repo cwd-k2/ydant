@@ -9,16 +9,7 @@
  */
 
 import { scope } from "@ydant/core";
-import {
-  createDOMBackend,
-  createBasePlugin,
-  createHTMLElement,
-  div,
-  h1,
-  p,
-  text,
-  attr,
-} from "@ydant/base";
+import { createDOMBackend, createBasePlugin, createHTMLElement, div, h1, p } from "@ydant/base";
 import {
   createCanvasBackend,
   createCanvasPlugin,
@@ -38,52 +29,34 @@ const canvas = createHTMLElement("canvas");
 const NightScene = () =>
   group(() => [
     // Sky
-    rect(() => [
-      attr("x", "0"),
-      attr("y", "0"),
-      attr("width", "600"),
-      attr("height", "400"),
-      attr("fill", "#0f3460"),
-    ]),
+    rect({ x: "0", y: "0", width: "600", height: "400", fill: "#0f3460" }),
 
     // Stars
     ...Array.from({ length: 30 }, (_, i) => {
       const x = String(((i * 137 + 50) % 580) + 10);
       const y = String(((i * 97 + 20) % 300) + 10);
       const r = String(1 + (i % 3));
-      return circle(() => [
-        attr("cx", x),
-        attr("cy", y),
-        attr("r", r),
-        attr("fill", "#e0e0e0"),
-        attr("opacity", String(0.4 + (i % 5) * 0.15)),
-      ]);
+      return circle({
+        cx: x,
+        cy: y,
+        r,
+        fill: "#e0e0e0",
+        opacity: String(0.4 + (i % 5) * 0.15),
+      });
     }),
 
     // Moon (crescent)
-    circle(() => [attr("cx", "480"), attr("cy", "80"), attr("r", "40"), attr("fill", "#f5e6ca")]),
-    circle(() => [attr("cx", "500"), attr("cy", "70"), attr("r", "35"), attr("fill", "#0f3460")]),
+    circle({ cx: "480", cy: "80", r: "40", fill: "#f5e6ca" }),
+    circle({ cx: "500", cy: "70", r: "35", fill: "#0f3460" }),
 
     // Mountains
-    rect(() => [
-      attr("x", "0"),
-      attr("y", "280"),
-      attr("width", "600"),
-      attr("height", "120"),
-      attr("fill", "#1a1a2e"),
-    ]),
+    rect({ x: "0", y: "280", width: "600", height: "120", fill: "#1a1a2e" }),
     ...mountainPeak(100, 200, 180),
     ...mountainPeak(250, 180, 200),
     ...mountainPeak(420, 220, 160),
 
     // Ground
-    rect(() => [
-      attr("x", "0"),
-      attr("y", "340"),
-      attr("width", "600"),
-      attr("height", "60"),
-      attr("fill", "#16213e"),
-    ]),
+    rect({ x: "0", y: "340", width: "600", height: "60", fill: "#16213e" }),
 
     // Trees
     ...tree(80, 320),
@@ -92,14 +65,14 @@ const NightScene = () =>
     ...tree(500, 325),
 
     // Caption
-    canvasText(() => [
-      attr("x", "300"),
-      attr("y", "380"),
-      attr("content", "Rendered with @ydant/canvas via embed()"),
-      attr("font", "14px monospace"),
-      attr("fill", "#666"),
-      attr("textAlign", "center"),
-    ]),
+    canvasText({
+      x: "300",
+      y: "380",
+      content: "Rendered with @ydant/canvas via embed()",
+      font: "14px monospace",
+      fill: "#666",
+      textAlign: "center",
+    }),
   ]);
 
 function mountainPeak(cx: number, top: number, width: number) {
@@ -107,40 +80,35 @@ function mountainPeak(cx: number, top: number, width: number) {
   const right = cx + width / 2;
   const base = 340;
   return [
-    line(() => [
-      attr("x1", String(left)),
-      attr("y1", String(base)),
-      attr("x2", String(cx)),
-      attr("y2", String(top)),
-      attr("stroke", "#533483"),
-      attr("lineWidth", "2"),
-    ]),
-    line(() => [
-      attr("x1", String(cx)),
-      attr("y1", String(top)),
-      attr("x2", String(right)),
-      attr("y2", String(base)),
-      attr("stroke", "#533483"),
-      attr("lineWidth", "2"),
-    ]),
+    line({
+      x1: String(left),
+      y1: String(base),
+      x2: String(cx),
+      y2: String(top),
+      stroke: "#533483",
+      lineWidth: "2",
+    }),
+    line({
+      x1: String(cx),
+      y1: String(top),
+      x2: String(right),
+      y2: String(base),
+      stroke: "#533483",
+      lineWidth: "2",
+    }),
   ];
 }
 
 function tree(x: number, y: number) {
   return [
-    rect(() => [
-      attr("x", String(x - 3)),
-      attr("y", String(y - 20)),
-      attr("width", "6"),
-      attr("height", "20"),
-      attr("fill", "#5c3d2e"),
-    ]),
-    circle(() => [
-      attr("cx", String(x)),
-      attr("cy", String(y - 30)),
-      attr("r", "12"),
-      attr("fill", "#2d6a4f"),
-    ]),
+    rect({
+      x: String(x - 3),
+      y: String(y - 20),
+      width: "6",
+      height: "20",
+      fill: "#5c3d2e",
+    }),
+    circle({ cx: String(x), cy: String(y - 30), r: "12", fill: "#2d6a4f" }),
   ];
 }
 
@@ -149,21 +117,16 @@ function tree(x: number, y: number) {
 // =============================================================================
 
 const App = () =>
-  div(function* () {
-    yield* attr("class", "container");
-
-    yield* h1(() => [text("Canvas Embed")]);
-    yield* p(() => [
-      attr("class", "subtitle"),
-      text("DOM content above — the canvas below is rendered via embed() with a Canvas backend"),
-    ]);
+  div({ class: "container" }, function* () {
+    yield* h1("Canvas Embed");
+    yield* p(
+      { class: "subtitle" },
+      "DOM content above — the canvas below is rendered via embed() with a Canvas backend",
+    );
 
     // 1. Create a <canvas> DOM element
     const canvasBackend = createCanvasBackend();
-    const slot = yield* canvas(function* () {
-      yield* attr("width", "600");
-      yield* attr("height", "400");
-    });
+    const slot = yield* canvas({ width: "600", height: "400" });
     const canvasEl = slot.node as HTMLCanvasElement;
 
     // 2. Embed Canvas scope — builds VShape tree synchronously
@@ -172,10 +135,7 @@ const App = () =>
     // 3. Paint the virtual tree onto the real <canvas>
     canvasBackend.paint(canvasEl.getContext("2d")!);
 
-    yield* p(() => [
-      attr("class", "subtitle"),
-      text("DOM content below — everything is part of the same mount()"),
-    ]);
+    yield* p({ class: "subtitle" }, "DOM content below — everything is part of the same mount()");
   });
 
 // =============================================================================

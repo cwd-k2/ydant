@@ -17,13 +17,15 @@
 let countSlot: Slot; // 先に宣言
 
 return div(function* () {
-  yield* button(function* () {
-    yield* on("click", () => {
-      count++;
-      countSlot.refresh(() => [text(`Count: ${count}`)]); // ここで使用
-    });
-    yield* text("+1");
-  });
+  yield* button(
+    {
+      onClick: () => {
+        count++;
+        countSlot.refresh(() => [text(`Count: ${count}`)]); // ここで使用
+      },
+    },
+    "+1",
+  );
 
   countSlot = yield* div(() => [text(`Count: ${count}`)]); // 後から代入
 });

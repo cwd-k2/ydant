@@ -9,6 +9,6 @@ import type { Slot } from "@ydant/base";
 
 declare module "@ydant/core" {
   interface SpellSchema {
-    shape: { request: Shape; response: Slot; capabilities: "tree" };
+    shape: { request: Shape; response: Slot; capabilities: "tree" | "decorate" };
   }
 }

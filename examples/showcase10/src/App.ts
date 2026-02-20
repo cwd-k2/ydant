@@ -1,20 +1,6 @@
 import type { Component, Render } from "@ydant/core";
 import type { FormField, PasswordStrength } from "./types";
-import {
-  div,
-  h1,
-  span,
-  p,
-  button,
-  input,
-  label,
-  form,
-  text,
-  classes,
-  on,
-  attr,
-  createSlotRef,
-} from "@ydant/base";
+import { div, h1, span, p, button, input, label, form, createSlotRef } from "@ydant/base";
 import {
   validateUsername,
   validateEmail,
@@ -44,9 +30,8 @@ const STRENGTH_WIDTH: Record<PasswordStrength, string> = {
  * reactive プラグインなし、base パッケージのみの最小構成。
  */
 export const App: Component = () =>
-  div(function* () {
-    yield* classes("max-w-md", "mx-auto", "p-6");
-    yield* h1(() => [classes("text-2xl", "font-bold", "mb-6"), text("User Registration")]);
+  div({ class: "max-w-md mx-auto p-6" }, function* () {
+    yield* h1({ class: "text-2xl font-bold mb-6" }, "User Registration");
 
     // --- Field State ---
     const fields: Record<string, FormField> = {
@@ -113,8 +98,7 @@ export const App: Component = () =>
     function renderError(error: string | null): () => Render {
       return function* () {
         if (error) {
-          yield* text(error);
-          yield* classes("text-red-500", "text-sm", "mt-1");
+          yield* span({ class: "text-red-500 text-sm mt-1" }, error);
         }
       };
     }
@@ -124,136 +108,111 @@ export const App: Component = () =>
       const w = STRENGTH_WIDTH[strength];
       return function* () {
         if (!fields.password.value) return;
-        yield* classes("mt-2");
-        yield* div(() => [
-          classes("h-2", "bg-slate-700", "rounded-full", "overflow-hidden"),
-          div(() => [
-            classes("h-full", "rounded-full", "transition-all", "duration-300", c.bar, w),
-          ]),
-        ]);
-        yield* span(() => [classes("text-xs", "text-gray-400", "mt-1"), text(c.label)]);
+        yield* div({ class: "h-2 bg-slate-700 rounded-full overflow-hidden mt-2" }, function* () {
+          yield* div({ class: `h-full rounded-full transition-all duration-300 ${c.bar} ${w}` });
+        });
+        yield* span({ class: "text-xs text-gray-400 mt-1" }, c.label);
       };
     }
 
     // --- Form ---
-    yield* form(function* () {
-      yield* classes(
-        "space-y-5",
-        "bg-slate-800",
-        "p-6",
-        "rounded-lg",
-        "border",
-        "border-slate-700",
-      );
-      yield* on("submit", (e) => {
-        e.preventDefault();
-        const valid = validateAll();
-        if (valid) {
-          summaryRef.refresh(function* () {
-            yield* classes("p-4", "bg-green-900/30", "border", "border-green-700", "rounded");
-            yield* p(() => [
-              classes("text-green-400", "font-medium"),
-              text("Registration successful!"),
-            ]);
-          });
-        } else {
-          const errors = Object.entries(fields)
-            .filter(([, f]) => f.error)
-            .map(([name, f]) => `${name}: ${f.error}`);
-          summaryRef.refresh(function* () {
-            yield* classes("p-4", "bg-red-900/30", "border", "border-red-700", "rounded");
-            yield* p(() => [
-              classes("text-red-400", "font-medium", "mb-2"),
-              text("Please fix the following errors:"),
-            ]);
-            for (const err of errors) {
-              yield* p(() => [classes("text-red-300", "text-sm"), text(err)]);
-            }
-          });
-        }
-      });
-
-      // Username
-      yield* FormFieldGroup({
-        label: "Username",
-        type: "text",
-        placeholder: "Enter username",
-        errorRef: errorRefs.username,
-        onInput: (el) => handleInput("username", validateUsername, el),
-        onBlur: () => handleBlur("username", validateUsername),
-      });
-
-      // Email
-      yield* FormFieldGroup({
-        label: "Email",
-        type: "email",
-        placeholder: "Enter email",
-        errorRef: errorRefs.email,
-        onInput: (el) => handleInput("email", validateEmail, el),
-        onBlur: () => handleBlur("email", validateEmail),
-      });
-
-      // Password
-      yield* div(function* () {
-        yield* label(() => [
-          classes("block", "text-sm", "font-medium", "text-gray-300", "mb-1"),
-          text("Password"),
-        ]);
-        yield* input(function* () {
-          yield* attr("type", "password");
-          yield* attr("placeholder", "Enter password (8+ characters)");
-          yield* classes(
-            "w-full",
-            "px-3",
-            "py-2",
-            "border",
-            "border-slate-600",
-            "bg-slate-700",
-            "text-gray-200",
-            "rounded",
-            "focus:outline-none",
-            "focus:ring-2",
-            "focus:ring-blue-300",
-          );
-          yield* on("input", (e) =>
-            handleInput("password", validatePassword, e.target as HTMLInputElement),
-          );
-          yield* on("blur", () => handleBlur("password", validatePassword));
+    yield* form(
+      {
+        class: "space-y-5 bg-slate-800 p-6 rounded-lg border border-slate-700",
+        onSubmit: (e) => {
+          e.preventDefault();
+          const valid = validateAll();
+          if (valid) {
+            summaryRef.refresh(function* () {
+              yield* p(
+                { class: "p-4 bg-green-900/30 border border-green-700 rounded" },
+                function* () {
+                  yield* span({ class: "text-green-400 font-medium" }, "Registration successful!");
+                },
+              );
+            });
+          } else {
+            const errors = Object.entries(fields)
+              .filter(([, f]) => f.error)
+              .map(([name, f]) => `${name}: ${f.error}`);
+            summaryRef.refresh(function* () {
+              yield* div(
+                { class: "p-4 bg-red-900/30 border border-red-700 rounded" },
+                function* () {
+                  yield* p(
+                    { class: "text-red-400 font-medium mb-2" },
+                    "Please fix the following errors:",
+                  );
+                  for (const err of errors) {
+                    yield* p({ class: "text-red-300 text-sm" }, err);
+                  }
+                },
+              );
+            });
+          }
+        },
+      },
+      function* () {
+        // Username
+        yield* FormFieldGroup({
+          label: "Username",
+          type: "text",
+          placeholder: "Enter username",
+          errorRef: errorRefs.username,
+          onInput: (el) => handleInput("username", validateUsername, el),
+          onBlur: () => handleBlur("username", validateUsername),
         });
-        errorRefs.password.bind(yield* p(renderError(null)));
-        strengthRef.bind(yield* div(renderStrength("weak")));
-      });
 
-      // Confirm Password
-      yield* FormFieldGroup({
-        label: "Confirm Password",
-        type: "password",
-        placeholder: "Re-enter password",
-        errorRef: errorRefs.confirm,
-        onInput: (el) =>
-          handleInput("confirm", (v) => validateConfirm(v, fields.password.value), el),
-        onBlur: () => handleBlur("confirm", (v) => validateConfirm(v, fields.password.value)),
-      });
+        // Email
+        yield* FormFieldGroup({
+          label: "Email",
+          type: "email",
+          placeholder: "Enter email",
+          errorRef: errorRefs.email,
+          onInput: (el) => handleInput("email", validateEmail, el),
+          onBlur: () => handleBlur("email", validateEmail),
+        });
 
-      // Submit
-      yield* button(function* () {
-        yield* attr("type", "submit");
-        yield* classes(
-          "w-full",
-          "py-2",
-          "bg-blue-500",
-          "text-white",
-          "rounded",
-          "font-medium",
-          "hover:bg-blue-600",
-          "transition-colors",
+        // Password
+        yield* div({}, function* () {
+          yield* label({ class: "block text-sm font-medium text-gray-300 mb-1" }, "Password");
+          yield* input({
+            type: "password",
+            placeholder: "Enter password (8+ characters)",
+            class:
+              "w-full px-3 py-2 border border-slate-600 bg-slate-700 text-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-300",
+            onInput: (e) => handleInput("password", validatePassword, e.target as HTMLInputElement),
+            onBlur: () => handleBlur("password", validatePassword),
+          });
+          errorRefs.password.bind(yield* p(renderError(null)));
+          strengthRef.bind(yield* div(renderStrength("weak")));
+        });
+
+        // Confirm Password
+        yield* FormFieldGroup({
+          label: "Confirm Password",
+          type: "password",
+          placeholder: "Re-enter password",
+          errorRef: errorRefs.confirm,
+          onInput: (el) =>
+            handleInput("confirm", (v) => validateConfirm(v, fields.password.value), el),
+          onBlur: () => handleBlur("confirm", (v) => validateConfirm(v, fields.password.value)),
+        });
+
+        // Submit
+        yield* button(
+          {
+            type: "submit",
+            class:
+              "w-full py-2 bg-blue-500 text-white rounded font-medium hover:bg-blue-600 transition-colors",
+          },
+          "Register",
         );
-        yield* text("Register");
-      });
 
-      // Summary
-      summaryRef.bind(yield* div(() => []));
-    });
+        // Summary
+        summaryRef.bind(yield* div(() => []));
+      },
+    );
   });
 
 // --- Reusable Form Field ---
@@ -268,29 +227,15 @@ interface FormFieldGroupProps {
 }
 
 function FormFieldGroup(props: FormFieldGroupProps): Render {
-  return div(function* () {
-    yield* label(() => [
-      classes("block", "text-sm", "font-medium", "text-gray-300", "mb-1"),
-      text(props.label),
-    ]);
-    yield* input(function* () {
-      yield* attr("type", props.type);
-      yield* attr("placeholder", props.placeholder);
-      yield* classes(
-        "w-full",
-        "px-3",
-        "py-2",
-        "border",
-        "border-slate-600",
-        "bg-slate-700",
-        "text-gray-200",
-        "rounded",
-        "focus:outline-none",
-        "focus:ring-2",
-        "focus:ring-blue-300",
-      );
-      yield* on("input", (e) => props.onInput(e.target as HTMLInputElement));
-      yield* on("blur", props.onBlur);
+  return div({}, function* () {
+    yield* label({ class: "block text-sm font-medium text-gray-300 mb-1" }, props.label);
+    yield* input({
+      type: props.type,
+      placeholder: props.placeholder,
+      class:
+        "w-full px-3 py-2 border border-slate-600 bg-slate-700 text-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-300",
+      onInput: (e) => props.onInput(e.target as HTMLInputElement),
+      onBlur: props.onBlur,
     });
     props.errorRef.bind(yield* p(renderEmptyError()));
   });

@@ -4,7 +4,7 @@ import { createBasePlugin } from "../plugin";
 import { createDOMBackend } from "../capabilities";
 import { div, button, p, a } from "../elements/html";
 import { svg, circle, rect } from "../elements/svg";
-import { text, attr, keyed } from "../primitives";
+import { text, keyed, cn } from "../primitives";
 import type { Element, SvgElement, Attribute } from "../types";
 import { parseFactoryArgs } from "../elements/props";
 
@@ -57,7 +57,7 @@ describe("parseFactoryArgs", () => {
   });
 
   it("handles props only", () => {
-    const result = parseFactoryArgs([{ classes: ["foo"], id: "bar" }]);
+    const result = parseFactoryArgs([{ class: "foo", id: "bar" }]);
     expect(collectIterator(result.children)).toEqual([]);
     expect(result.decorations).toEqual([
       { type: "attribute", key: "class", value: "foo" },
@@ -66,7 +66,7 @@ describe("parseFactoryArgs", () => {
   });
 
   it("handles props with text", () => {
-    const result = parseFactoryArgs([{ classes: ["foo"] }, "hello"]);
+    const result = parseFactoryArgs([{ class: "foo" }, "hello"]);
     const children = collectIterator(result.children);
     expect(children).toHaveLength(1);
     expect(children[0]).toEqual({ type: "text", content: "hello" });
@@ -74,7 +74,7 @@ describe("parseFactoryArgs", () => {
   });
 
   it("handles props with builder", () => {
-    const result = parseFactoryArgs([{ classes: ["foo"] }, () => [text("hello")]]);
+    const result = parseFactoryArgs([{ class: "foo" }, () => [text("hello")]]);
     const children = collectIterator(result.children);
     expect(children).toHaveLength(1);
     expect(result.decorations).toEqual([{ type: "attribute", key: "class", value: "foo" }]);
@@ -88,15 +88,13 @@ describe("parseFactoryArgs", () => {
       expect(result.decorations).toEqual([]);
     });
 
-    it("converts classes array to string, filtering falsy values", () => {
-      const result = parseFactoryArgs([
-        { classes: ["a", false, "b", null, "c", undefined, "", 0] },
-      ]);
+    it("passes class string through", () => {
+      const result = parseFactoryArgs([{ class: "a b c" }]);
       expect(result.decorations).toEqual([{ type: "attribute", key: "class", value: "a b c" }]);
     });
 
-    it("skips empty classes array", () => {
-      const result = parseFactoryArgs([{ classes: [] }]);
+    it("skips empty class string", () => {
+      const result = parseFactoryArgs([{ class: "" }]);
       expect(result.decorations).toEqual([]);
     });
 
@@ -150,13 +148,13 @@ describe("parseFactoryArgs", () => {
     });
 
     it("skips null and false values", () => {
-      const result = parseFactoryArgs([{ id: null, disabled: false, classes: null }]);
+      const result = parseFactoryArgs([{ id: null, disabled: false, class: null }]);
       expect(result.decorations).toEqual([]);
     });
 
-    it("converts boolean true to string", () => {
+    it("converts boolean true to empty string (HTML boolean attribute)", () => {
       const result = parseFactoryArgs([{ disabled: true }]);
-      expect(result.decorations).toEqual([{ type: "attribute", key: "disabled", value: "true" }]);
+      expect(result.decorations).toEqual([{ type: "attribute", key: "disabled", value: "" }]);
     });
 
     it("converts number to string", () => {
@@ -192,7 +190,7 @@ describe("HTML element factory overloads", () => {
   });
 
   it("creates element with props only", () => {
-    const gen = div({ classes: ["container"], id: "main" });
+    const gen = div({ class: "container", id: "main" });
     const result = gen.next();
     const element = result.value as Element;
 
@@ -204,18 +202,18 @@ describe("HTML element factory overloads", () => {
   });
 
   it("creates element with props and text", () => {
-    const gen = button({ classes: ["btn"], onClick: () => {} }, "Click");
+    const gen = button({ class: "btn", onClick: () => {} }, "Click");
     const result = gen.next();
     const element = result.value as Element;
 
     const children = collectIterator(element.children);
     expect(children).toHaveLength(1);
     expect(children[0]).toEqual({ type: "text", content: "Click" });
-    expect(element.decorations).toHaveLength(2); // classes + onClick
+    expect(element.decorations).toHaveLength(2); // class + onClick
   });
 
   it("creates element with props and builder", () => {
-    const gen = div({ classes: ["wrapper"] }, function* () {
+    const gen = div({ class: "wrapper" }, function* () {
       yield* text("inner");
     });
     const result = gen.next();
@@ -228,7 +226,7 @@ describe("HTML element factory overloads", () => {
   });
 
   it("creates element with key in props", () => {
-    const gen = div({ key: "item-1", classes: ["list-item"] });
+    const gen = div({ key: "item-1", class: "list-item" });
     const result = gen.next();
     const element = result.value as Element;
 
@@ -249,14 +247,13 @@ describe("HTML element factory overloads", () => {
   it("preserves backward compatibility with generator builder", () => {
     const gen = div(function* () {
       yield* text("First");
-      yield* attr("id", "test");
       yield* text("Second");
     });
     const result = gen.next();
     const element = result.value as Element;
 
     const children = collectIterator(element.children);
-    expect(children).toHaveLength(3);
+    expect(children).toHaveLength(2);
   });
 });
 
@@ -286,7 +283,7 @@ describe("SVG element factory overloads", () => {
   });
 
   it("creates SVG element with props and builder", () => {
-    const gen = svg({ viewBox: "0 0 100 100" }, () => [circle(() => [attr("r", "40")])]);
+    const gen = svg({ viewBox: "0 0 100 100" }, () => [circle({ r: "40" })]);
     const result = gen.next();
     const element = result.value as SvgElement;
 
@@ -324,9 +321,9 @@ describe("Props DOM integration", () => {
     vi.useRealTimers();
   });
 
-  it("renders element with classes prop", () => {
+  it("renders element with class prop", () => {
     scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
-      div({ classes: ["container", "mx-auto"] }),
+      div({ class: cn("container", "mx-auto") }),
     );
 
     const el = container.querySelector("div");
@@ -341,7 +338,7 @@ describe("Props DOM integration", () => {
 
   it("renders element with props and text", () => {
     scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
-      button({ classes: ["btn"] }, "Click me"),
+      button({ class: "btn" }, "Click me"),
     );
 
     const btn = container.querySelector("button");
@@ -379,12 +376,12 @@ describe("Props DOM integration", () => {
     expect(el?.getAttribute("style")).toBe("color: red");
   });
 
-  it("renders element with classes array filtering falsy", () => {
+  it("renders element with cn() filtering falsy values", () => {
     const isActive = true;
     const isDisabled = false;
 
     scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
-      div({ classes: ["base", isActive && "active", isDisabled && "disabled"] }),
+      div({ class: cn("base", isActive && "active", isDisabled && "disabled") }),
     );
 
     const el = container.querySelector("div");
@@ -411,8 +408,8 @@ describe("Props DOM integration", () => {
 
   it("renders nested elements with props", () => {
     scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
-      div({ classes: ["outer"] }, function* () {
-        yield* p({ classes: ["inner"] }, "Content");
+      div({ class: "outer" }, function* () {
+        yield* p({ class: "inner" }, "Content");
       }),
     );
 
@@ -426,7 +423,7 @@ describe("Props DOM integration", () => {
   it("works with keyed() wrapper", () => {
     scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
       div(function* () {
-        yield* keyed(1, div)({ classes: ["keyed"] }, () => [text("Keyed content")]);
+        yield* keyed(1, div)({ class: "keyed" }, () => [text("Keyed content")]);
       }),
     );
 
@@ -439,7 +436,7 @@ describe("Props DOM integration", () => {
   it("works with props key for keyed elements", () => {
     scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
       div(function* () {
-        yield* div({ key: "stable", classes: ["first"] }, "A");
+        yield* div({ key: "stable", class: "first" }, "A");
         yield* div({ key: "other" }, "B");
       }),
     );
@@ -450,10 +447,9 @@ describe("Props DOM integration", () => {
     expect(outerDiv.children[0].textContent).toBe("A");
   });
 
-  it("renders with props and builder mixing old-style primitives", () => {
+  it("renders with props and builder", () => {
     scope(createDOMBackend(container), [createBasePlugin()]).mount(() =>
-      div({ classes: ["container"] }, function* () {
-        yield* attr("data-testid", "root");
+      div({ class: "container", "data-testid": "root" }, function* () {
         yield* text("mixed content");
       }),
     );

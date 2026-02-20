@@ -18,27 +18,24 @@ export const basePath = window.location.pathname.includes("/showcase4") ? "/show
  * メインアプリケーションコンポーネント
  */
 export const App: Component = () =>
-  div(
-    { classes: ["min-h-screen", "bg-white", "dark:bg-slate-900", "dark:text-gray-100"] },
-    function* () {
-      // テーマに応じてダークモードクラスを適用
-      yield* onMount(() => {
-        applyThemeToDocument();
-        const interval = setInterval(applyThemeToDocument, 100);
-        return () => clearInterval(interval);
-      });
+  div({ class: "min-h-screen bg-white dark:bg-slate-900 dark:text-gray-100" }, function* () {
+    // テーマに応じてダークモードクラスを適用
+    yield* onMount(() => {
+      applyThemeToDocument();
+      const interval = setInterval(applyThemeToDocument, 100);
+      return () => clearInterval(interval);
+    });
 
-      yield* NavBar();
+    yield* NavBar();
 
-      yield* RouterView({
-        base: basePath,
-        routes: [
-          { path: "/", component: HomePage },
-          { path: "/users", component: UsersPage },
-          { path: "/users/:id", component: UserDetailPage },
-          { path: "/contact", component: ContactPage },
-          { path: "*", component: NotFoundPage },
-        ],
-      });
-    },
-  );
+    yield* RouterView({
+      base: basePath,
+      routes: [
+        { path: "/", component: HomePage },
+        { path: "/users", component: UsersPage },
+        { path: "/users/:id", component: UserDetailPage },
+        { path: "/contact", component: ContactPage },
+        { path: "*", component: NotFoundPage },
+      ],
+    });
+  });

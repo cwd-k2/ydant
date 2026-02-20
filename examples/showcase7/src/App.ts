@@ -1,5 +1,5 @@
 import type { Component, Builder, Render } from "@ydant/core";
-import { createSlotRef, div, h1, h2, p, span, button, text, classes, on } from "@ydant/base";
+import { createSlotRef, div, h1, h2, p, span, button, cn } from "@ydant/base";
 import {
   createTransition,
   createTransitionGroupRefresher,
@@ -19,25 +19,25 @@ function ToggleSection(): Render {
   let fadeTransition: TransitionHandle;
 
   const renderSection = function* () {
-    yield* classes("p-4", "bg-slate-800", "rounded-lg");
-
-    yield* button(function* () {
-      yield* classes(
-        "px-4",
-        "py-2",
-        "bg-blue-500",
-        "text-white",
-        "rounded",
-        "hover:bg-blue-600",
-        "mb-4",
-      );
-      yield* on("click", async () => {
-        // Toggle visibility with animation
-        const isVisible = (fadeTransition.slot.node as HTMLElement).firstElementChild !== null;
-        await fadeTransition.setShow(!isVisible);
-      });
-      yield* text("Toggle Content");
-    });
+    yield* button(
+      {
+        class: cn(
+          "px-4",
+          "py-2",
+          "bg-blue-500",
+          "text-white",
+          "rounded",
+          "hover:bg-blue-600",
+          "mb-4",
+        ),
+        onClick: async () => {
+          // Toggle visibility with animation
+          const isVisible = (fadeTransition.slot.node as HTMLElement).firstElementChild !== null;
+          await fadeTransition.setShow(!isVisible);
+        },
+      },
+      "Toggle Content",
+    );
 
     fadeTransition = yield* createTransition({
       enter: "fade-enter",
@@ -47,20 +47,21 @@ function ToggleSection(): Render {
       leaveFrom: "fade-leave-from",
       leaveTo: "fade-leave-to",
       content: () =>
-        div(() => [
-          classes("p-4", "bg-blue-900/30", "rounded-lg"),
-          p(() => [text("This content fades in and out!")]),
-          p(() => [
-            classes("text-sm", "text-blue-400", "mt-2"),
-            text("The createTransition API handles enter AND leave animations."),
-          ]),
-        ]),
+        div({ class: cn("p-4", "bg-blue-900/30", "rounded-lg") }, function* () {
+          yield* p("This content fades in and out!");
+          yield* p(
+            { class: cn("text-sm", "text-blue-400", "mt-2") },
+            "The createTransition API handles enter AND leave animations.",
+          );
+        }),
     });
   };
 
   return div(function* () {
-    yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Fade Transition")]);
-    sectionRef.bind(yield* div(renderSection as Builder));
+    yield* h2({ class: cn("text-xl", "font-semibold", "mb-4") }, "Fade Transition");
+    sectionRef.bind(
+      yield* div({ class: cn("p-4", "bg-slate-800", "rounded-lg") }, renderSection as Builder),
+    );
   });
 }
 
@@ -70,24 +71,24 @@ function SlideSection(): Render {
   let slideTransition: TransitionHandle;
 
   const renderSection = function* () {
-    yield* classes("p-4", "bg-slate-800", "rounded-lg");
-
-    yield* button(function* () {
-      yield* classes(
-        "px-4",
-        "py-2",
-        "bg-green-500",
-        "text-white",
-        "rounded",
-        "hover:bg-green-600",
-        "mb-4",
-      );
-      yield* on("click", async () => {
-        const isVisible = (slideTransition.slot.node as HTMLElement).firstElementChild !== null;
-        await slideTransition.setShow(!isVisible);
-      });
-      yield* text("Toggle Panel");
-    });
+    yield* button(
+      {
+        class: cn(
+          "px-4",
+          "py-2",
+          "bg-green-500",
+          "text-white",
+          "rounded",
+          "hover:bg-green-600",
+          "mb-4",
+        ),
+        onClick: async () => {
+          const isVisible = (slideTransition.slot.node as HTMLElement).firstElementChild !== null;
+          await slideTransition.setShow(!isVisible);
+        },
+      },
+      "Toggle Panel",
+    );
 
     slideTransition = yield* createTransition({
       enter: "slide-enter",
@@ -97,16 +98,15 @@ function SlideSection(): Render {
       leaveFrom: "slide-leave-from",
       leaveTo: "slide-leave-to",
       content: () =>
-        div(() => [
-          classes("p-4", "bg-green-900/30", "rounded-lg"),
-          p(() => [text("This panel slides in and out!")]),
-        ]),
+        div({ class: cn("p-4", "bg-green-900/30", "rounded-lg") }, "This panel slides in and out!"),
     });
   };
 
   return div(function* () {
-    yield* h2(() => [classes("text-xl", "font-semibold", "mb-4"), text("Slide Transition")]);
-    sectionRef.bind(yield* div(renderSection as Builder));
+    yield* h2({ class: cn("text-xl", "font-semibold", "mb-4") }, "Slide Transition");
+    sectionRef.bind(
+      yield* div({ class: cn("p-4", "bg-slate-800", "rounded-lg") }, renderSection as Builder),
+    );
   });
 }
 
@@ -126,23 +126,29 @@ function ToastSection(): Render {
     leaveFrom: "scale-leave-from",
     leaveTo: "scale-leave-to",
     content: (toast) =>
-      div(function* () {
-        yield* classes(
-          "flex",
-          "items-center",
-          "justify-between",
-          "p-3",
-          "rounded-lg",
-          "shadow",
-          ...TOAST_COLORS[toast.type],
-        );
-        yield* span(() => [text(toast.message)]);
-        yield* button(function* () {
-          yield* classes("ml-2", "hover:opacity-75");
-          yield* on("click", () => removeToast(toast.id));
-          yield* text("×");
-        });
-      }),
+      div(
+        {
+          class: cn(
+            "flex",
+            "items-center",
+            "justify-between",
+            "p-3",
+            "rounded-lg",
+            "shadow",
+            ...TOAST_COLORS[toast.type],
+          ),
+        },
+        function* () {
+          yield* span(toast.message);
+          yield* button(
+            {
+              class: cn("ml-2", "hover:opacity-75"),
+              onClick: () => removeToast(toast.id),
+            },
+            "×",
+          );
+        },
+      ),
   });
 
   function updateList() {
@@ -174,87 +180,78 @@ function ToastSection(): Render {
   };
 
   return div(function* () {
-    yield* h2(() => [
-      classes("text-xl", "font-semibold", "mb-4"),
-      text("Toast Notifications (TransitionGroup)"),
-    ]);
+    yield* h2(
+      { class: cn("text-xl", "font-semibold", "mb-4") },
+      "Toast Notifications (TransitionGroup)",
+    );
 
-    yield* div(function* () {
-      yield* classes("flex", "gap-2", "mb-4");
+    yield* div({ class: cn("flex", "gap-2", "mb-4") }, function* () {
+      yield* button(
+        {
+          class: cn("px-4", "py-2", "bg-green-500", "text-white", "rounded", "hover:bg-green-600"),
+          onClick: () => addToast("success"),
+        },
+        "Success Toast",
+      );
 
-      yield* button(function* () {
-        yield* classes(
-          "px-4",
-          "py-2",
-          "bg-green-500",
-          "text-white",
-          "rounded",
-          "hover:bg-green-600",
-        );
-        yield* on("click", () => addToast("success"));
-        yield* text("Success Toast");
-      });
+      yield* button(
+        {
+          class: cn("px-4", "py-2", "bg-red-500", "text-white", "rounded", "hover:bg-red-600"),
+          onClick: () => addToast("error"),
+        },
+        "Error Toast",
+      );
 
-      yield* button(function* () {
-        yield* classes("px-4", "py-2", "bg-red-500", "text-white", "rounded", "hover:bg-red-600");
-        yield* on("click", () => addToast("error"));
-        yield* text("Error Toast");
-      });
-
-      yield* button(function* () {
-        yield* classes("px-4", "py-2", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600");
-        yield* on("click", () => addToast("info"));
-        yield* text("Info Toast");
-      });
+      yield* button(
+        {
+          class: cn("px-4", "py-2", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600"),
+          onClick: () => addToast("info"),
+        },
+        "Info Toast",
+      );
     });
 
-    toastListRef.bind(
-      yield* div(function* () {
-        yield* classes("space-y-2", "min-h-[120px]");
-      }),
-    );
+    toastListRef.bind(yield* div({ class: cn("space-y-2", "min-h-[120px]") }));
   });
 }
 
 export const App: Component = () =>
-  div(function* () {
-    yield* classes("space-y-8");
-
+  div({ class: "space-y-8" }, function* () {
     // Header
-    yield* h1(() => [
-      classes("text-2xl", "font-bold", "text-center", "text-purple-300", "mb-2"),
-      text("CSS Transitions"),
-    ]);
+    yield* h1(
+      { class: cn("text-2xl", "font-bold", "text-center", "text-purple-300", "mb-2") },
+      "CSS Transitions",
+    );
 
-    yield* p(() => [
-      classes("text-center", "text-gray-400", "text-sm", "mb-6"),
-      text("createTransition for single elements, createTransitionGroupRefresher for lists."),
-    ]);
+    yield* p(
+      { class: cn("text-center", "text-gray-400", "text-sm", "mb-6") },
+      "createTransition for single elements, createTransitionGroupRefresher for lists.",
+    );
 
     // Toggle section (fade)
     yield* ToggleSection();
 
     // Divider
-    yield* div(() => [classes("border-t", "border-slate-700", "my-6")]);
+    yield* div({ class: cn("border-t", "border-slate-700", "my-6") });
 
     // Slide section
     yield* SlideSection();
 
     // Divider
-    yield* div(() => [classes("border-t", "border-slate-700", "my-6")]);
+    yield* div({ class: cn("border-t", "border-slate-700", "my-6") });
 
     // Toast section
     yield* ToastSection();
 
     // Info
-    yield* div(() => [
-      classes("mt-6", "p-4", "bg-blue-900/30", "rounded-lg", "text-sm"),
-      h2(() => [classes("font-semibold", "mb-2"), text("@ydant/transition APIs:")]),
-      p(() => [
-        text(
+    yield* div(
+      { class: cn("mt-6", "p-4", "bg-blue-900/30", "rounded-lg", "text-sm") },
+      function* () {
+        yield* h2({ class: cn("font-semibold", "mb-2") }, "@ydant/transition APIs:");
+        yield* p(
           "createTransition — returns a handle with setShow(boolean) for single element enter/leave. " +
             "createTransitionGroupRefresher — manages a keyed list with automatic enter/leave per item.",
-        ),
-      ]),
-    ]);
+        );
+      },
+    );
   });
