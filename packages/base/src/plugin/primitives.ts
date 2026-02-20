@@ -8,7 +8,11 @@ import type { Text, Lifecycle } from "../types";
 /** Creates a text node from a {@link Text} instruction and appends it to the parent. */
 export function processText(text: Text, ctx: RenderContext): void {
   const textNode = ctx.tree.createTextNode(text.content);
-  ctx.tree.appendChild(ctx.parent, textNode);
+  if (ctx.insertionRef !== undefined) {
+    ctx.tree.insertBefore(ctx.parent, textNode, ctx.insertionRef);
+  } else {
+    ctx.tree.appendChild(ctx.parent, textNode);
+  }
 }
 
 /** Registers a {@link Lifecycle} callback (mount or unmount). Skipped when the element is reused. */

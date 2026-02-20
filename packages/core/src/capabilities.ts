@@ -19,8 +19,11 @@ export interface TreeCapability {
   createElement(tag: string): unknown;
   createElementNS(ns: string, tag: string): unknown;
   createTextNode(content: string): unknown;
+  createMarker(): unknown;
   appendChild(parent: unknown, child: unknown): void;
+  insertBefore(parent: unknown, child: unknown, reference: unknown): void;
   removeChild(parent: unknown, child: unknown): void;
+  nextSibling(parent: unknown, node: unknown): unknown | null;
   clearChildren(parent: unknown): void;
 }
 

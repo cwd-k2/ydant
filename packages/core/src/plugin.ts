@@ -82,6 +82,8 @@ export interface Backend<Capabilities extends string = string> {
 export interface RenderContext {
   /** The node that children are appended to. */
   parent: unknown;
+  /** When set, child nodes are inserted before this reference node instead of appended. */
+  insertionRef?: unknown;
   /** The execution scope (backend + plugins) for this context. */
   scope: ExecutionScope;
   /** The engine managing this context's execution scope. */

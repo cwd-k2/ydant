@@ -39,8 +39,12 @@ export function createDOMBackend(
     createElement: (tag) => document.createElement(tag),
     createElementNS: (ns, tag) => document.createElementNS(ns, tag),
     createTextNode: (content) => document.createTextNode(content),
+    createMarker: () => document.createComment(""),
     appendChild: (parent, child) => (parent as Node).appendChild(child as Node),
+    insertBefore: (parent, child, reference) =>
+      (parent as Node).insertBefore(child as Node, reference as Node),
     removeChild: (parent, child) => (parent as Node).removeChild(child as Node),
+    nextSibling: (_parent, node) => (node as Node).nextSibling,
     clearChildren: (parent) => {
       (parent as globalThis.Element).innerHTML = "";
     },

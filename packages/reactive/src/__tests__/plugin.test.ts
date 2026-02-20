@@ -1,16 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { Plugin, RenderContext } from "@ydant/core";
 import { scope, sync } from "@ydant/core";
-import {
-  createBasePlugin,
-  createDOMBackend,
-  div,
-  li,
-  text,
-  onMount,
-  onUnmount,
-  keyed,
-} from "@ydant/base";
+import { createBasePlugin, createDOMBackend, div, li, text, onUnmount, keyed } from "@ydant/base";
 import { signal } from "../signal";
 import { reactive } from "../reactive";
 import { createReactivePlugin } from "../plugin";
@@ -68,7 +59,7 @@ describe("createReactivePlugin", () => {
     expect(container.textContent).toContain("Count: 5");
   });
 
-  it("creates a span container with data-reactive attribute", () => {
+  it("uses comment markers instead of span container", () => {
     scope(createDOMBackend(container), [createBasePlugin(), createReactivePlugin()]).mount(
       () =>
         div(function* () {
@@ -77,9 +68,15 @@ describe("createReactivePlugin", () => {
       { scheduler: sync },
     );
 
+    // No span wrapper
     const reactiveSpan = container.querySelector("[data-reactive]");
-    expect(reactiveSpan).not.toBeNull();
-    expect(reactiveSpan?.tagName).toBe("SPAN");
+    expect(reactiveSpan).toBeNull();
+
+    // Comment markers exist around the content
+    const outerDiv = container.querySelector("div")!;
+    const children = Array.from(outerDiv.childNodes);
+    const comments = children.filter((n) => n.nodeType === Node.COMMENT_NODE);
+    expect(comments.length).toBe(2);
   });
 
   it("clears and rebuilds content on signal change", () => {
@@ -371,10 +368,11 @@ describe("reactive keyed() support", () => {
       { scheduler: sync },
     );
 
-    // Capture DOM node references
-    const reactiveSpan = container.querySelector("[data-reactive]")!;
-    const firstLi = reactiveSpan.children[0];
-    const secondLi = reactiveSpan.children[1];
+    // Content is directly inside the outer div (between comment markers)
+    const outerDiv = container.querySelector("div")!;
+    const liElements = outerDiv.querySelectorAll("li");
+    const firstLi = liElements[0];
+    const secondLi = liElements[1];
     expect(firstLi.textContent).toBe("A");
     expect(secondLi.textContent).toBe("B");
 
@@ -385,8 +383,9 @@ describe("reactive keyed() support", () => {
     ]);
 
     // DOM nodes should be reused (same reference)
-    expect(reactiveSpan.children[0]).toBe(firstLi);
-    expect(reactiveSpan.children[1]).toBe(secondLi);
+    const updatedLis = outerDiv.querySelectorAll("li");
+    expect(updatedLis[0]).toBe(firstLi);
+    expect(updatedLis[1]).toBe(secondLi);
     expect(firstLi.textContent).toBe("A updated");
     expect(secondLi.textContent).toBe("B updated");
   });
@@ -406,10 +405,11 @@ describe("reactive keyed() support", () => {
       { scheduler: sync },
     );
 
-    const reactiveSpan = container.querySelector("[data-reactive]")!;
-    const originalFirst = reactiveSpan.children[0];
-    const originalSecond = reactiveSpan.children[1];
-    const originalThird = reactiveSpan.children[2];
+    const outerDiv = container.querySelector("div")!;
+    const liElements = outerDiv.querySelectorAll("li");
+    const originalFirst = liElements[0];
+    const originalSecond = liElements[1];
+    const originalThird = liElements[2];
 
     // Reverse order
     items.set([
@@ -419,9 +419,10 @@ describe("reactive keyed() support", () => {
     ]);
 
     // Nodes should be reused and reordered
-    expect(reactiveSpan.children[0]).toBe(originalThird);
-    expect(reactiveSpan.children[1]).toBe(originalFirst);
-    expect(reactiveSpan.children[2]).toBe(originalSecond);
+    const reorderedLis = outerDiv.querySelectorAll("li");
+    expect(reorderedLis[0]).toBe(originalThird);
+    expect(reorderedLis[1]).toBe(originalFirst);
+    expect(reorderedLis[2]).toBe(originalSecond);
   });
 });
 

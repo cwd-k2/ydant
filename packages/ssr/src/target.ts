@@ -16,7 +16,7 @@ import type {
   ScheduleCapability,
 } from "@ydant/core";
 import { toHTML } from "./serialize";
-import type { VContainer, VElement, VNode, VRoot, VText } from "./vnode";
+import type { VContainer, VElement, VMarker, VNode, VRoot, VText } from "./vnode";
 
 /** The capabilities provided by the SSR backend. */
 type SSRCapabilityNames = "tree" | "decorate" | "interact" | "schedule";
@@ -43,13 +43,30 @@ export function createSSRBackend(): SSRBackend {
     createTextNode(content: string): VText {
       return { kind: "text", content };
     },
+    createMarker(): VMarker {
+      return { kind: "marker" };
+    },
     appendChild(parent: unknown, child: unknown): void {
       (parent as VContainer).children.push(child as VNode);
+    },
+    insertBefore(parent: unknown, child: unknown, reference: unknown): void {
+      const container = parent as VContainer;
+      const index = container.children.indexOf(reference as VNode);
+      if (index !== -1) {
+        container.children.splice(index, 0, child as VNode);
+      } else {
+        container.children.push(child as VNode);
+      }
     },
     removeChild(parent: unknown, child: unknown): void {
       const container = parent as VContainer;
       const index = container.children.indexOf(child as VNode);
       if (index !== -1) container.children.splice(index, 1);
+    },
+    nextSibling(parent: unknown, node: unknown): VNode | null {
+      const children = (parent as VContainer).children;
+      const idx = children.indexOf(node as VNode);
+      return idx !== -1 && idx + 1 < children.length ? children[idx + 1] : null;
     },
     clearChildren(parent: unknown): void {
       (parent as VContainer).children = [];

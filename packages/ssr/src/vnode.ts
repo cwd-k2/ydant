@@ -23,5 +23,9 @@ export interface VRoot {
   children: VNode[];
 }
 
-export type VNode = VElement | VText;
+export interface VMarker {
+  kind: "marker";
+}
+
+export type VNode = VElement | VText | VMarker;
 export type VContainer = VElement | VRoot;

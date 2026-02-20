@@ -51,6 +51,7 @@ function serializeElement(node: VElement): string {
 }
 
 function serializeNode(node: VNode): string {
+  if (node.kind === "marker") return "";
   return node.kind === "text" ? serializeText(node) : serializeElement(node);
 }
 

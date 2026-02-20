@@ -66,7 +66,11 @@ export function processNode(options: ProcessNodeOptions, ctx: RenderContext): Re
   }
 
   // Append to parent (moves the node if reused)
-  ctx.tree.appendChild(ctx.parent, node);
+  if (ctx.insertionRef !== undefined) {
+    ctx.tree.insertBefore(ctx.parent, node, ctx.insertionRef);
+  } else {
+    ctx.tree.appendChild(ctx.parent, node);
+  }
 
   // Apply inline decorations (attributes, listeners)
   options.applyDecorations?.(node, isReused, ctx);
@@ -204,6 +208,7 @@ export function createSlot(
       callback();
     }
     unmountCallbacksRef.length = 0;
+    currentUnmountCallbacks.length = 0;
 
     // Remove all child nodes
     childCtx.tree.clearChildren(node);

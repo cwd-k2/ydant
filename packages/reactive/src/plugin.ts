@@ -27,7 +27,7 @@ import type { Request, Response, Plugin, RenderContext } from "@ydant/core";
 import { isTagged } from "@ydant/core";
 // Ensure module augmentation from @ydant/base is loaded
 import "@ydant/base";
-import { runWithSubscriber } from "./tracking";
+import { runWithSubscriber, clearDependencies } from "./tracking";
 import { createReactiveScope, runInScope } from "./scope";
 
 /** Creates the reactive plugin. Depends on the base plugin. */
@@ -46,10 +46,16 @@ export function createReactivePlugin(): Plugin {
       const builder = request.builder;
       const scope = ctx.reactiveScope;
 
-      // Create a container element for the reactive block
-      const container = ctx.tree.createElement("span");
-      ctx.decorate.setAttribute(container, "data-reactive", "");
-      ctx.tree.appendChild(ctx.parent, container);
+      // Create marker boundaries (replaces <span data-reactive="">)
+      const startMarker = ctx.tree.createMarker();
+      const endMarker = ctx.tree.createMarker();
+      if (ctx.insertionRef !== undefined) {
+        ctx.tree.insertBefore(ctx.parent, startMarker, ctx.insertionRef);
+        ctx.tree.insertBefore(ctx.parent, endMarker, ctx.insertionRef);
+      } else {
+        ctx.tree.appendChild(ctx.parent, startMarker);
+        ctx.tree.appendChild(ctx.parent, endMarker);
+      }
 
       // Active flag — set to false on unmount to prevent stale subscriptions
       let active = true;
@@ -58,9 +64,22 @@ export function createReactivePlugin(): Plugin {
       // Keyed nodes preserved across rerenders for DOM node reuse
       let savedKeyedNodes: RenderContext["keyedNodes"] | undefined;
 
+      // Remove all nodes between start and end markers
+      const clearBetweenMarkers = () => {
+        let current = ctx.tree.nextSibling(ctx.parent, startMarker);
+        while (current && current !== endMarker) {
+          const next = ctx.tree.nextSibling(ctx.parent, current);
+          ctx.tree.removeChild(ctx.parent, current);
+          current = next;
+        }
+      };
+
       // Actual re-render logic
       const rerender = () => {
         if (!active) return;
+
+        // Clear previous signal subscriptions before re-tracking
+        clearDependencies(subscriber);
 
         // Run previous unmount callbacks
         for (const callback of unmountCallbacks) {
@@ -68,8 +87,8 @@ export function createReactivePlugin(): Plugin {
         }
         unmountCallbacks = [];
 
-        // Clear container and rebuild
-        ctx.tree.clearChildren(container);
+        // Clear content between markers and rebuild
+        clearBetweenMarkers();
 
         // Record the current length so we can splice off child-added callbacks
         const beforeLength = ctx.unmountCallbacks.length;
@@ -80,13 +99,12 @@ export function createReactivePlugin(): Plugin {
           runInScope(scope, () => {
             runWithSubscriber(subscriber, () => {
               ctx.processChildren(builder, {
-                parent: container,
+                parent: ctx.parent,
                 contextInit: (childCtx) => {
+                  // Insert new nodes before end marker
+                  childCtx.insertionRef = endMarker;
                   // Restore keyed nodes from previous render for DOM node reuse
-                  if (savedKeyedNodes) {
-                    childCtx.keyedNodes = savedKeyedNodes;
-                  }
-                  // Save reference for next rerender (Map is mutable, entries added during processing are visible)
+                  childCtx.keyedNodes = savedKeyedNodes ?? childCtx.keyedNodes;
                   savedKeyedNodes = childCtx.keyedNodes;
                 },
               });
@@ -112,9 +130,14 @@ export function createReactivePlugin(): Plugin {
       // Initial render (synchronous — does not go through engine queue)
       rerender();
 
-      // Cleanup on unmount
+      // Cleanup on unmount (idempotent — may be called more than once via Slot refresh)
       ctx.unmountCallbacks.push(() => {
+        if (!active) return;
         active = false;
+        clearDependencies(subscriber);
+        clearBetweenMarkers();
+        ctx.tree.removeChild(ctx.parent, startMarker);
+        ctx.tree.removeChild(ctx.parent, endMarker);
         for (const callback of unmountCallbacks) {
           callback();
         }

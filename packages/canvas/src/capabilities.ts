@@ -40,13 +40,30 @@ export function createCanvasBackend(): CanvasBackend {
     createTextNode(content: string): VShape {
       return { kind: "shape", tag: "text", props: new Map([["content", content]]), children: [] };
     },
+    createMarker(): VShape {
+      return { kind: "shape", tag: "__marker__", props: new Map(), children: [] };
+    },
     appendChild(parent: unknown, child: unknown): void {
       (parent as VShapeContainer).children.push(child as VShape);
+    },
+    insertBefore(parent: unknown, child: unknown, reference: unknown): void {
+      const container = parent as VShapeContainer;
+      const index = container.children.indexOf(reference as VShape);
+      if (index !== -1) {
+        container.children.splice(index, 0, child as VShape);
+      } else {
+        container.children.push(child as VShape);
+      }
     },
     removeChild(parent: unknown, child: unknown): void {
       const container = parent as VShapeContainer;
       const index = container.children.indexOf(child as VShape);
       if (index !== -1) container.children.splice(index, 1);
+    },
+    nextSibling(parent: unknown, node: unknown): VShape | null {
+      const children = (parent as VShapeContainer).children;
+      const idx = children.indexOf(node as VShape);
+      return idx !== -1 && idx + 1 < children.length ? children[idx + 1] : null;
     },
     clearChildren(parent: unknown): void {
       (parent as VShapeContainer).children = [];
