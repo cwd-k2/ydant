@@ -12,16 +12,14 @@ pnpm add @ydant/portal
 
 ```typescript
 import { scope } from "@ydant/core";
-import { createDOMBackend, createBasePlugin, div, attr, text } from "@ydant/base";
+import { createDOMBackend, createBasePlugin, div, text } from "@ydant/base";
 import { createPortalPlugin, portal } from "@ydant/portal";
 
 const modalContainer = document.getElementById("modals")!;
 
 function* App() {
-  yield* div(() => [text("Main content")]);
-  yield* portal(modalContainer, () => [
-    div(() => [attr("class", "modal"), text("I render outside the main tree!")]),
-  ]);
+  yield* div("Main content");
+  yield* portal(modalContainer, () => [div({ class: "modal" }, "I render outside the main tree!")]);
 }
 
 scope(createDOMBackend(document.getElementById("app")!), [

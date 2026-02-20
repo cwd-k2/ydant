@@ -199,7 +199,7 @@ E2E テストは examples/ が実質的にその役割を担う。
 
 ```typescript
 const handler = vi.fn();
-on("click", handler);
+// ... button({ onClick: handler }) など ...
 element.click();
 expect(handler).toHaveBeenCalledTimes(1);
 ```

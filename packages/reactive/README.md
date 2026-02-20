@@ -42,7 +42,7 @@ dispose(); // Stop tracking
 
 ```typescript
 import { scope, type Component } from "@ydant/core";
-import { createDOMBackend, createBasePlugin, div, button, text, on } from "@ydant/base";
+import { createDOMBackend, createBasePlugin, div, button } from "@ydant/base";
 import { signal, reactive, createReactivePlugin } from "@ydant/reactive";
 
 const count = signal(0);
@@ -50,9 +50,9 @@ const count = signal(0);
 const Counter: Component = () =>
   div(function* () {
     // Auto-update on signal change
-    yield* reactive(() => [text(`Count: ${count()}`)]);
+    yield* reactive(() => [div(`Count: ${count()}`)]);
 
-    yield* button(() => [on("click", () => count.update((n) => n + 1)), text("Increment")]);
+    yield* button({ onClick: () => count.update((n) => n + 1) }, "Increment");
   });
 
 scope(createDOMBackend(document.getElementById("app")!), [

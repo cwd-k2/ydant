@@ -10,33 +10,24 @@ Ydant は、JavaScript のジェネレーターをドメイン固有言語とし
 
 ```typescript
 import { scope } from "@ydant/core";
-import {
-  createDOMBackend,
-  createBasePlugin,
-  div,
-  button,
-  text,
-  classes,
-  on,
-  type Slot,
-} from "@ydant/base";
+import { createDOMBackend, createBasePlugin, div, button, text, type Slot } from "@ydant/base";
 
 function Counter(initial: number) {
   let count = initial;
   let countSlot: Slot;
 
-  return div(function* () {
-    yield* classes("counter");
-
+  return div({ class: "counter" }, function* () {
     countSlot = yield* div(() => [text(`Count: ${count}`)]);
 
-    yield* button(function* () {
-      yield* on("click", () => {
-        count++;
-        countSlot.refresh(() => [text(`Count: ${count}`)]);
-      });
-      yield* text("+1");
-    });
+    yield* button(
+      {
+        onClick: () => {
+          count++;
+          countSlot.refresh(() => [text(`Count: ${count}`)]);
+        },
+      },
+      "+1",
+    );
   });
 }
 
@@ -107,20 +98,25 @@ mount("#root", App, {
 
 ## 実装例
 
-| サンプル                             | 説明                                            |
-| ------------------------------------ | ----------------------------------------------- |
-| [showcase1](./examples/showcase1/)   | カウンター、ダイアログ - 基本的な Slot の使い方 |
-| [showcase2](./examples/showcase2/)   | ToDo アプリ - CRUD、localStorage                |
-| [showcase3](./examples/showcase3/)   | ポモドーロタイマー - SVG、ライフサイクル        |
-| [showcase4](./examples/showcase4/)   | SPA - Router、Context、プラグイン               |
-| [showcase5](./examples/showcase5/)   | ソート可能リスト - keyed() による効率的な更新   |
-| [showcase6](./examples/showcase6/)   | 非同期 - Suspense、ErrorBoundary                |
-| [showcase7](./examples/showcase7/)   | トランジション - enter/leave アニメーション     |
-| [showcase9](./examples/showcase9/)   | 管理ダッシュボード - Router、認証、Context      |
-| [showcase10](./examples/showcase10/) | フォームバリデーション - 動的ルール             |
-| [showcase11](./examples/showcase11/) | Canvas embed - DOM + Canvas2D ハイブリッド      |
-| [showcase12](./examples/showcase12/) | ポータル（モーダルダイアログ）                  |
-| [showcase13](./examples/showcase13/) | SSR + Hydration                                 |
+| サンプル                             | 説明                                             |
+| ------------------------------------ | ------------------------------------------------ |
+| [showcase1](./examples/showcase1/)   | カウンター、ダイアログ - 基本的な Slot の使い方  |
+| [showcase2](./examples/showcase2/)   | ToDo アプリ - CRUD、localStorage                 |
+| [showcase3](./examples/showcase3/)   | ポモドーロタイマー - SVG、ライフサイクル         |
+| [showcase4](./examples/showcase4/)   | SPA - Router、Context、プラグイン                |
+| [showcase5](./examples/showcase5/)   | ソート可能リスト - keyed() による効率的な更新    |
+| [showcase6](./examples/showcase6/)   | 非同期 - Suspense、ErrorBoundary                 |
+| [showcase7](./examples/showcase7/)   | トランジション - enter/leave アニメーション      |
+| [showcase9](./examples/showcase9/)   | 管理ダッシュボード - Router、認証、Context       |
+| [showcase10](./examples/showcase10/) | フォームバリデーション - 動的ルール              |
+| [showcase11](./examples/showcase11/) | Canvas embed - DOM + Canvas2D ハイブリッド       |
+| [showcase12](./examples/showcase12/) | ポータル（モーダルダイアログ）                   |
+| [showcase13](./examples/showcase13/) | SSR + Hydration                                  |
+| [showcase14](./examples/showcase14/) | Reactive Canvas - Signal 駆動の再描画            |
+| [showcase15](./examples/showcase15/) | マルチターゲット ダッシュボード (DOM/Canvas/SSR) |
+| [showcase16](./examples/showcase16/) | 優先度ベースレンダリング - Engine 制御           |
+| [showcase17](./examples/showcase17/) | Engine 間メッセージング (Hub)                    |
+| [showcase18](./examples/showcase18/) | マルチ Engine 協調編集                           |
 
 各サンプルには実装のヒントを含む README があります。全サンプルを実行:
 

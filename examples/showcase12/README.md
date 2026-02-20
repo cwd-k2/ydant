@@ -19,8 +19,8 @@ const modalRoot = document.getElementById("modal-root")!;
 
 const App: Component = () =>
   div(() => [
-    button(() => [on("click", () => openModal()), text("Open Modal")]),
-    portal(modalRoot, () => [div(() => [attr("class", "modal-overlay") /* ... */])]),
+    button({ onClick: () => openModal() }, "Open Modal"),
+    portal(modalRoot, () => [div({ class: "modal-overlay" } /* ... */)]),
   ]);
 ```
 

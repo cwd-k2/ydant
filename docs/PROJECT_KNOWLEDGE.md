@@ -17,9 +17,8 @@ JavaScript のジェネレーターを DSL（ドメイン固有言語）とし�
 ```typescript
 // ジェネレーターが yield* で DOM 命令を発行
 function* () {
-  yield* div(function* () {
+  yield* div({ class: "container" }, function* () {
     yield* text("Hello");
-    yield* classes("container");
   });
 }
 ```
@@ -399,7 +398,7 @@ Signal 変更 → reactive rerender（VShape 再構築）→ engine flush → on
 
 **実装上の発見**:
 
-- reactive plugin の `<span data-reactive="">` container は Canvas では VShape(tag: "span") になり、paint engine が未知タグを group として扱うため透明なグループとして機能する
+- reactive plugin は Comment ノードの start/end マーカーで範囲を管理する（以前の `<span data-reactive="">` container から移行済み）。Canvas では `__marker__` タグの VShape がマーカーとして機能し、paint engine が未知タグを group として扱うため透明に動作する
 - Signal は scope を跨いで共有される。subscriber は各 scope の engine に enqueue する
 
 #### Phase C: DevTools plugin ✅

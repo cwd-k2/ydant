@@ -10,33 +10,24 @@ Ydant is an experimental UI library that uses JavaScript generators as a domain-
 
 ```typescript
 import { scope } from "@ydant/core";
-import {
-  createDOMBackend,
-  createBasePlugin,
-  div,
-  button,
-  text,
-  classes,
-  on,
-  type Slot,
-} from "@ydant/base";
+import { createDOMBackend, createBasePlugin, div, button, text, type Slot } from "@ydant/base";
 
 function Counter(initial: number) {
   let count = initial;
   let countSlot: Slot;
 
-  return div(function* () {
-    yield* classes("counter");
-
+  return div({ class: "counter" }, function* () {
     countSlot = yield* div(() => [text(`Count: ${count}`)]);
 
-    yield* button(function* () {
-      yield* on("click", () => {
-        count++;
-        countSlot.refresh(() => [text(`Count: ${count}`)]);
-      });
-      yield* text("+1");
-    });
+    yield* button(
+      {
+        onClick: () => {
+          count++;
+          countSlot.refresh(() => [text(`Count: ${count}`)]);
+        },
+      },
+      "+1",
+    );
   });
 }
 
@@ -121,6 +112,11 @@ mount("#root", App, {
 | [showcase11](./examples/showcase11/) | Canvas embed - DOM + Canvas2D hybrid          |
 | [showcase12](./examples/showcase12/) | Portal for modal dialogs                      |
 | [showcase13](./examples/showcase13/) | SSR + Hydration                               |
+| [showcase14](./examples/showcase14/) | Reactive Canvas - signal-driven repaint       |
+| [showcase15](./examples/showcase15/) | Multi-target dashboard (DOM/Canvas/SSR)       |
+| [showcase16](./examples/showcase16/) | Priority-based rendering with Engine control  |
+| [showcase17](./examples/showcase17/) | Inter-engine messaging via Hub                |
+| [showcase18](./examples/showcase18/) | Multi-engine collaborative editing            |
 
 Each example has a README with implementation tips. Run all examples:
 

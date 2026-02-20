@@ -12,21 +12,15 @@ pnpm add @ydant/canvas
 
 ```typescript
 import { scope } from "@ydant/core";
-import { createBasePlugin, attr } from "@ydant/base";
+import { createBasePlugin } from "@ydant/base";
 import { createCanvasBackend, group, rect, circle } from "@ydant/canvas";
 
 const canvas = createCanvasBackend();
 
 scope(canvas, [createBasePlugin()]).mount(() =>
   group(() => [
-    rect(() => [
-      attr("x", "10"),
-      attr("y", "20"),
-      attr("width", "100"),
-      attr("height", "50"),
-      attr("fill", "#ff0000"),
-    ]),
-    circle(() => [attr("cx", "200"), attr("cy", "100"), attr("r", "30"), attr("fill", "#0000ff")]),
+    rect({ x: "10", y: "20", width: "100", height: "50", fill: "#ff0000" }),
+    circle({ cx: "200", cy: "100", r: "30", fill: "#0000ff" }),
   ]),
 );
 
@@ -57,7 +51,7 @@ Creates a rendering backend for Canvas2D.
 
 ### Shape Factories
 
-All shape factories take a `Builder` and return a `Spell<"element">`. Use `attr()` from `@ydant/base` to set shape properties.
+All shape factories accept an optional `Props` object as the first argument and a `Builder` as the last. Props are string key-value pairs for shape attributes.
 
 | Factory               | Tag         | Props                                                                                 |
 | --------------------- | ----------- | ------------------------------------------------------------------------------------- |
@@ -97,6 +91,6 @@ type VShapeContainer = VShape | VShapeRoot;
 
 ## Limitations
 
-- **No event handling** — `interact` capability is not provided. Using `on()` inside a canvas shape has no effect at runtime, and causes a compile-time error when the generator type is narrow enough for `CapabilityCheck` to detect it. Hit-testing could be added in the future.
-- **All props are strings** — Numeric values are passed as strings via `attr()` and parsed internally during paint.
+- **No event handling** — `interact` capability is not provided. Event listeners inside a canvas shape have no effect at runtime, and cause a compile-time error when the generator type is narrow enough for `CapabilityCheck` to detect it. Hit-testing could be added in the future.
+- **All props are strings** — Numeric values are passed as strings and parsed internally during paint.
 - **No incremental updates** — Each `paint()` call clears the entire canvas and redraws. For animations, call `paint()` in a `requestAnimationFrame` loop.
