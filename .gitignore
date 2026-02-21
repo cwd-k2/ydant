@@ -153,3 +153,6 @@ IMPLEMENTATION-PLAN.md
 
 # E2E test artifacts
 e2e/tmp/
+
+# Experiments (local scratch files)
+experiments/
