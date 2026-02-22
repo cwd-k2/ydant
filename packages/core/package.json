@@ -1,6 +1,6 @@
 {
   "name": "@ydant/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Generator-based DOM rendering DSL",
   "keywords": [
     "dsl",

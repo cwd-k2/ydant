@@ -1,6 +1,6 @@
 {
   "name": "@ydant/devtools",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Developer tools plugin for Ydant — opt-in Engine lifecycle observation",
   "keywords": [
     "debug",

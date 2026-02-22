@@ -1,6 +1,6 @@
 {
   "name": "@ydant/portal",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Portal spell for rendering into alternate DOM targets",
   "keywords": [
     "portal",
