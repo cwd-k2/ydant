@@ -5,6 +5,8 @@
  * Portal spell for rendering content into alternate DOM targets.
  */
 
+import "@ydant/base";
+
 // Types
 export type { Portal } from "./types";
 

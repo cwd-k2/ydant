@@ -11,7 +11,7 @@
  * within the embedded scope can use it.
  */
 
-import type { Tagged, Spell, Builder } from "./types";
+import type { Tagged, Builder } from "./types";
 import type { Engine, ExecutionScope, Plugin, RenderContext, Scheduler } from "./plugin";
 
 // =============================================================================
@@ -33,7 +33,7 @@ export function* embed(
   scope: ExecutionScope,
   content: Builder,
   options?: { scheduler?: Scheduler },
-): Spell<"embed"> {
+): Generator<Embed, Engine, Engine> {
   return (yield {
     type: "embed",
     scope,

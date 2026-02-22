@@ -17,7 +17,7 @@
  * ```
  */
 
-import type { Spell, Builder, Render, CapabilityCheck } from "./types";
+import type { Builder, Render, CapabilityCheck } from "./types";
 import type { Backend, Engine, Plugin, Scheduler } from "./plugin";
 import type { Embed } from "./embed";
 import { createEmbedPlugin } from "./embed";
@@ -33,7 +33,7 @@ export interface ScopeBuilder<C extends string = string> {
   mount<G extends Render>(app: AppParam<G, C>, options?: { scheduler?: Scheduler }): MountHandle;
 
   /** Embeds content under this scope. Use with `yield*` to get the Engine. */
-  embed(content: Builder, options?: { scheduler?: Scheduler }): Spell<"embed">;
+  embed(content: Builder, options?: { scheduler?: Scheduler }): Generator<Embed, Engine, Engine>;
 }
 
 /**
@@ -62,7 +62,10 @@ export function scope<C extends string>(
       return mountWithScope(execScope, app as () => Render, options?.scheduler);
     },
 
-    *embed(content: Builder, options?: { scheduler?: Scheduler }): Spell<"embed"> {
+    *embed(
+      content: Builder,
+      options?: { scheduler?: Scheduler },
+    ): Generator<Embed, Engine, Engine> {
       return (yield {
         type: "embed",
         scope: execScope,
