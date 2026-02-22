@@ -182,7 +182,7 @@ Transition with enter/leave animation support. Returns a `TransitionHandle` for 
 ### TransitionGroup
 
 ```typescript
-function* TransitionGroup<T>(props: TransitionGroupProps<T>): ElementRender;
+function* TransitionGroup<T>(props: TransitionGroupProps<T>): Spell<"element">;
 
 interface TransitionGroupProps<T> {
   items: T[];
@@ -193,7 +193,7 @@ interface TransitionGroupProps<T> {
   leave?: string;
   leaveFrom?: string;
   leaveTo?: string;
-  content: (item: T, index: number) => ElementRender;
+  content: (item: T, index: number) => Spell<"element">;
 }
 ```
 
@@ -207,15 +207,8 @@ function createTransitionGroupRefresher<T>(
 
 Creates a stateful refresher that applies enter/leave transitions when updating items.
 
-### Low-level APIs
-
-```typescript
-function enterTransition(el: HTMLElement, props: TransitionProps): Promise<void>;
-function leaveTransition(el: HTMLElement, props: TransitionProps): Promise<void>;
-```
-
 ## Module Structure
 
-- `Transition.ts` - Transition, enterTransition, leaveTransition
+- `Transition.ts` - Transition component
 - `TransitionGroup.ts` - TransitionGroup, createTransitionGroupRefresher
 - `utils.ts` - CSS class helpers (addClasses, removeClasses, waitForTransition)

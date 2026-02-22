@@ -10,7 +10,15 @@ Ydant は、JavaScript のジェネレーターをドメイン固有言語とし
 
 ```typescript
 import { scope } from "@ydant/core";
-import { createDOMBackend, createBasePlugin, div, button, text, type Slot } from "@ydant/base";
+import {
+  createDOMBackend,
+  createBasePlugin,
+  div,
+  button,
+  text,
+  refresh,
+  type Slot,
+} from "@ydant/base";
 
 function Counter(initial: number) {
   let count = initial;
@@ -23,7 +31,7 @@ function Counter(initial: number) {
       {
         onClick: () => {
           count++;
-          countSlot.refresh(() => [text(`Count: ${count}`)]);
+          refresh(countSlot, () => [text(`Count: ${count}`)]);
         },
       },
       "+1",
@@ -60,6 +68,7 @@ scope(createDOMBackend(document.getElementById("app")!), [createBasePlugin()]).m
 | **@ydant/canvas**     | Canvas2D レンダリング                    | [詳細](./packages/canvas/README.md)     |
 | **@ydant/portal**     | 別ターゲットへのレンダリング             | [詳細](./packages/portal/README.md)     |
 | **@ydant/ssr**        | サーバーサイドレンダリング + Hydration   | [詳細](./packages/ssr/README.md)        |
+| **@ydant/devtools**   | Engine ライフサイクル観測                | [詳細](./packages/devtools/README.md)   |
 
 ## クイックスタート
 

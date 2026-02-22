@@ -121,6 +121,34 @@ interface HydrateOptions {
 
 Walks existing DOM nodes and attaches behavior. Returns a mount handle for disposal.
 
+### createDOMNodeResolver
+
+```typescript
+function createDOMNodeResolver(): ResolveCapability;
+```
+
+Creates a `ResolveCapability` backed by the browser DOM. Each parent node has its own cursor position (tracked via WeakMap). Successive calls to `nextChild(parent)` return `childNodes[0]`, `childNodes[1]`, etc.
+
+Used internally by `hydrate()`, but exported for building custom hydration strategies.
+
+### createHydrationPlugin
+
+```typescript
+function createHydrationPlugin(resolver: ResolveCapability): Plugin;
+```
+
+Creates a plugin that wraps the base plugin with hydration behavior. During the initial render pass:
+
+- **Element requests**: acquire existing DOM node via resolver (skip create + append)
+- **Text requests**: advance resolver cursor (skip create + append)
+- **Attribute requests**: skip (already set by SSR)
+- **Listener requests**: apply (this is the purpose of hydration)
+- **Lifecycle requests**: apply (mount hooks may initialize state)
+
+After the initial render completes (via `setup()`), all subsequent requests delegate to the base plugin for normal DOM rendering. This enables Slot.refresh() to work normally after hydration.
+
+Used internally by `hydrate()`, but exported for building custom hydration pipelines with `scope()` directly.
+
 ## Architecture
 
 ### DSL Reinterpretation

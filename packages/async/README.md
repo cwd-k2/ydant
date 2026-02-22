@@ -10,6 +10,19 @@ pnpm add @ydant/async
 
 ## Usage
 
+```typescript
+import { scope } from "@ydant/core";
+import { createDOMBackend, createBasePlugin } from "@ydant/base";
+import { createAsyncPlugin } from "@ydant/async";
+
+scope(createDOMBackend(document.getElementById("app")!), [
+  createBasePlugin(),
+  createAsyncPlugin(),
+]).mount(App);
+```
+
+`createAsyncPlugin()` is required for `chunked` to work and for `ErrorBoundary` / `Suspense` error handling during async re-renders (e.g., reactive updates).
+
 ### Suspense
 
 ```typescript
@@ -112,8 +125,88 @@ interface Resource<T> {
 
 Creates a resource that suspends while loading.
 
+### createAsyncPlugin
+
+```typescript
+function createAsyncPlugin(): Plugin;
+```
+
+Plugin that processes `boundary` and `chunked` spell requests. Required for:
+
+- **ErrorBoundary / Suspense**: manages the `handleRenderError` chain on `RenderContext`, enabling error boundaries to catch errors from async render updates (e.g., reactive re-renders).
+- **chunked**: renders a list in chunks, deferring later chunks to avoid blocking the main thread.
+
+Depends on the base plugin (`dependencies: ["base"]`).
+
+### Lazy
+
+```typescript
+function* Lazy(props: LazyProps): Spell<"element">;
+
+interface LazyProps {
+  /** Content to render when the trigger fires. */
+  content: () => Render;
+  /** Optional fallback to display while waiting. */
+  fallback?: () => Render;
+  /**
+   * When to trigger rendering.
+   * - "visible" — when the container enters the viewport (IntersectionObserver)
+   * - "idle" — when the browser is idle (requestIdleCallback)
+   * @default "visible"
+   */
+  trigger?: "visible" | "idle";
+  /** IntersectionObserver rootMargin option. Only used with trigger: "visible". */
+  rootMargin?: string;
+  /** IntersectionObserver threshold option. Only used with trigger: "visible". */
+  threshold?: number | number[];
+}
+```
+
+Defers subtree evaluation until a trigger condition is met. Wraps content in a container element. The content is not evaluated until the trigger fires (viewport visibility or browser idle). An optional fallback is shown while waiting.
+
+```typescript
+yield *
+  Lazy({
+    content: function* () {
+      yield* HeavyComponent();
+    },
+    fallback: function* () {
+      yield* text("Loading...");
+    },
+    trigger: "visible",
+    rootMargin: "200px",
+  });
+```
+
+### chunked
+
+```typescript
+function* chunked<T>(
+  items: readonly T[],
+  chunkSize: number,
+  each: (item: T, index: number) => Render,
+  options?: { schedule?: (callback: () => void) => () => void },
+): Spell<"chunked">;
+```
+
+Renders a list of items in chunks, deferring later chunks to avoid blocking the main thread during initial render. The first chunk is rendered synchronously; remaining chunks are deferred via a scheduler callback (`requestIdleCallback` by default).
+
+Requires `createAsyncPlugin()` to be registered.
+
+```typescript
+yield *
+  ul(function* () {
+    yield* chunked(items, 50, function* (item) {
+      yield* li(() => [text(item.name)]);
+    });
+  });
+```
+
 ## Module Structure
 
 - `Suspense.ts` - Suspense component
 - `ErrorBoundary.ts` - ErrorBoundary component
 - `resource.ts` - createResource
+- `Lazy.ts` - Lazy component (IntersectionObserver / requestIdleCallback)
+- `chunked.ts` - chunked spell
+- `plugin.ts` - createAsyncPlugin

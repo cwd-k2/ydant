@@ -13,11 +13,11 @@ pnpm add @ydant/canvas
 ```typescript
 import { scope } from "@ydant/core";
 import { createBasePlugin } from "@ydant/base";
-import { createCanvasBackend, group, rect, circle } from "@ydant/canvas";
+import { createCanvasBackend, createCanvasPlugin, group, rect, circle } from "@ydant/canvas";
 
 const canvas = createCanvasBackend();
 
-scope(canvas, [createBasePlugin()]).mount(() =>
+scope(canvas, [createBasePlugin(), createCanvasPlugin()]).mount(() =>
   group(() => [
     rect({ x: "10", y: "20", width: "100", height: "50", fill: "#ff0000" }),
     circle({ cx: "200", cy: "100", r: "30", fill: "#0000ff" }),
@@ -48,6 +48,32 @@ Creates a rendering backend for Canvas2D.
 
 - `root` — The virtual root node (managed internally by the backend).
 - `paint(ctx)` — Clears the canvas and draws all shapes. Call this after mounting or on each animation frame.
+
+### `createCanvasPlugin()`
+
+```typescript
+function createCanvasPlugin(): Plugin;
+```
+
+Plugin that processes `"shape"` spell requests for Canvas rendering. Delegates to the shared `processNode` utility, creating nodes via `ctx.tree.createElement` and applying decorations.
+
+Required alongside `createBasePlugin()` when using canvas shape factories.
+
+### `Shape`
+
+```typescript
+type Shape = Tagged<
+  "shape",
+  {
+    tag: string;
+    children: Render;
+    decorations?: Array<Attribute | Listener>;
+    key?: string | number;
+  }
+>;
+```
+
+The DSL request type for canvas shapes. Created internally by shape factories (`rect`, `circle`, etc.) and processed by `createCanvasPlugin()`.
 
 ### Shape Factories
 

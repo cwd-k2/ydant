@@ -71,7 +71,7 @@ interface SpellSchema {
   boundary: { request: Boundary; capabilities: never };
   "context-provide": { request: ContextProvide; capabilities: never };
   embed: { request: Embed; response: Engine; capabilities: never };
-  // ... attribute, listener, lifecycle, svg, shape, portal, transition 等
+  // ... lifecycle, svg, shape, portal, transition, chunked 等
 }
 ```
 
@@ -171,7 +171,7 @@ RenderContext（per-scope-position）
 ├── parent: Node              ← 子要素の追加先
 ├── scope: ExecutionScope     ← 実行環境
 ├── engine: Engine            ← タスクキュー
-├── processChildren(builder)  ← 子コンテキスト生成 + iterator 実行
+├── processChildren(builder, options?)  ← 子コンテキスト生成 + iterator 実行
 ├── createChildContext(parent)
 │
 │ ── Backend injected (via initContext) ──
@@ -193,11 +193,13 @@ RenderContext（per-scope-position）
 **子コンテキスト生成の流れ:**
 
 ```
-ctx.processChildren(builder, { parent?, scope? })
+ctx.processChildren(builder, { parent?, scope?, contextInit? })
   │
   ├── childCtx = createRenderContext(scope, parent, ctx)
   │     ├── backend.initContext(childCtx)
   │     └── plugins.forEach(p => p.initContext(childCtx, ctx))
+  │
+  ├── contextInit?.(childCtx, ctx)      ← 呼び出し元によるコンテキスト上書き
   │
   ├── processIterator(builder(), childCtx)
   │

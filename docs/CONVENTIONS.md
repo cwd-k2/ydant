@@ -335,17 +335,17 @@ export function cn(...items: ClassItem[]): string {
 export function keyed<Args extends unknown[]>(
   key: string | number,
   factory: (...args: Args) => Render,
-): (...args: Args) => ElementRender {
+): (...args: Args) => Spell<"element"> {
   return (...args: Args) => {
-    return (function* (): ElementRender {
-      const inner = factory(...args) as ElementRender;
+    return (function* (): Spell<"element"> {
+      const inner = factory(...args) as Spell<"element">;
       const first = inner.next();
       if (first.done) return first.value;
       const element = first.value;
       const slot = (yield { ...element, key }) as Slot;
       inner.next(slot);
       return slot;
-    })() as ElementRender;
+    })() as Spell<"element">;
   };
 }
 ```
@@ -353,7 +353,8 @@ export function keyed<Args extends unknown[]>(
 ポイント:
 
 - **`<Args extends unknown[]>`** で引数をジェネリック化し、要素ファクトリ `(builder: Builder) => ...` もコンポーネント `(props: P) => ...` も同一 API で扱える
-- factory が `Render` を返す宣言でも `ElementRender` を返す宣言でも受け付ける（`ElementRender extends Render`）
+- factory が `Render` を返す宣言でも `Spell<"element">` を返す宣言でも受け付ける
+- `HTMLElementFactory` / `SVGElementFactory` 専用オーバーロードにより、`keyed(key, div)()` で引数推論が正しく動作する
 - ジェネレーターの `next()` でインターセプトし、yield される値を加工してから親に再 yield する
 
 使用例:
@@ -381,7 +382,7 @@ export interface SuspenseProps {
   content: () => Render;
 }
 
-export function* Suspense(props: SuspenseProps): ElementRender {
+export function* Suspense(props: SuspenseProps): Spell<"element"> {
   // 実装
 }
 ```

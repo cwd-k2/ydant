@@ -18,16 +18,11 @@ export default defineConfig({
     outDir: "dist",
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),
-      name: "YdantContext",
-      fileName: (format) => `index.${format}.js`,
+      fileName: (format) => (format === "es" ? "index.es.js" : "index.cjs"),
+      formats: ["es", "cjs"],
     },
     rollupOptions: {
-      external: ["@ydant/core"],
-      output: {
-        globals: {
-          "@ydant/core": "YdantCore",
-        },
-      },
+      external: ["@ydant/core", "@ydant/base"],
     },
   },
 });

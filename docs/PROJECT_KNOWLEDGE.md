@@ -109,7 +109,7 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 
 - RenderContext を拡張可能に
 - Component<P> 型の統合
-- createSlotRef の導入
+- createSlotRef の導入（後に廃止）
 - 型エイリアスの整備
 
 ### Phase 5: 品質改善
@@ -197,19 +197,11 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 
 ### Phase 15: Props オーバーロード + 名前空間 export
 
-- **要素ファクトリの Props オーバーロード**: `div({ classes: [...], onClick: handler }, "text")` 形式を追加。6 つの呼び出しパターン（空、Builder、テキスト、Props、Props+テキスト、Props+Builder）を `typeof` による実行時判別 + TypeScript オーバーロードで実現
+- **要素ファクトリの Props オーバーロード**: `div({ class: "...", onClick: handler }, "text")` 形式を追加。6 つの呼び出しパターン（空、Builder、テキスト、Props、Props+テキスト、Props+Builder）を `typeof` による実行時判別 + TypeScript オーバーロードで実現
 - **`html` / `svg` 名前空間 export**: flat export と共存。`svg` 要素ファクトリ（`<svg>` タグ用）は名前空間との衝突回避のため flat export から除外
-- **`slotRef()` 便利関数**: `createSlotRef()` + `bind()` の 2 ステップを 1 ステップに短縮
+- **`slotRef()` 便利関数**（廃止済み）: `createSlotRef()` + `bind()` の 2 ステップを 1 ステップに短縮する関数だったが、後に API 整理で削除
 - **Props 設計**: `class` は文字列（`cn()` で条件付き構築）、`style` は `string | object`、`on*` は `HTMLElementEventMap` から型推論
 - **showcase 移行**: showcase1, 3, 4, 14 を新 Props 構文に移行し実用性を検証
-
-### Phase 17: API 簡素化 — subpath exports + convenience mount
-
-- **subpath exports**: `@ydant/core/internals` と `@ydant/base/internals` を新設。プラグイン/バックエンド作者向けの内部 API（`createHub`, `toRender`, `ExecutionScope`, `processNode`, `createSlot` 等）をメインエントリから分離
-- **convenience mount**: `mount(target, app, options?)` を `@ydant/base` に追加。CSS セレクタ or Element を受け取り、DOM Backend + Base Plugin を自動構築。CapabilityCheck を型レベルで保持
-- **multi-entry build**: Vite の `lib.entry` にオブジェクトを渡す multi-entry 化。UMD → ES/CJS に変更
-- **showcase 移行**: showcase 1-7, 9, 10, 12 を `mount()` に移行（3 import + 7 行 → 1 import + 1 行）
-- **DOMContentLoaded 不要化**: Vite の `<script type="module">` は defer 相当のため、ラッパーが不要に
 
 ### Phase 16: Decoration Primitive 廃止 — Props 統一
 
@@ -219,6 +211,20 @@ countSlot.refresh(() => [text(`Count: ${newCount}`)]);
 - **SpellSchema 整理**: `attribute` / `listener` spell type を削除。内部の `Attribute` / `Listener` 型は decorations 処理で引き続き使用
 - **boolean 属性**: `disabled: true` → `setAttribute("disabled", "")` に変更（HTML 標準準拠）
 - **全 showcase 移行**: 全 18 showcase を Props 統一構文に移行
+
+### Phase 17: lazy() + chunked() — 遅延・チャンク分割レンダリング
+
+- **lazy()** — IntersectionObserver / requestIdleCallback による遅延レンダリング。Component パターン（`Lazy` コンポーネント）として実装。ビューポート外のコンテンツを遅延ロードし、初期レンダリングコストを削減
+- **chunked()** — チャンク分割レンダリング。Spell + Plugin パターン（`chunked` spell + `createAsyncPlugin` が処理）。reactive の splice パターンを踏襲し、大量リストを段階的にレンダリング
+- **createAsyncPlugin**: `boundary` と `chunked` spell を処理するプラグイン。Suspense / ErrorBoundary に加え、chunked レンダリングのスケジューリングを担当
+
+### Phase 18: API 簡素化 — subpath exports + convenience mount
+
+- **subpath exports**: `@ydant/core/internals` と `@ydant/base/internals` を新設。プラグイン/バックエンド作者向けの内部 API（`createHub`, `toRender`, `ExecutionScope`, `processNode`, `createSlot` 等）をメインエントリから分離
+- **convenience mount**: `mount(target, app, options?)` を `@ydant/base` に追加。CSS セレクタ or Element を受け取り、DOM Backend + Base Plugin を自動構築。CapabilityCheck を型レベルで保持
+- **multi-entry build**: Vite の `lib.entry` にオブジェクトを渡す multi-entry 化。UMD → ES/CJS に変更
+- **showcase 移行**: showcase 1-7, 9, 10, 12 を `mount()` に移行（3 import + 7 行 → 1 import + 1 行）
+- **DOMContentLoaded 不要化**: Vite の `<script type="module">` は defer 相当のため、ラッパーが不要に
 
 ---
 
@@ -339,12 +345,14 @@ pnpm typecheck            # 型チェック
 
 各バックエンドは必要な能力だけを実装:
 
-| バックエンド | Tree | Decorate | Interact | Schedule | Resolve |
-| ------------ | ---- | -------- | -------- | -------- | ------- |
-| DOM          | ✓    | ✓        | ✓        | ✓        |         |
-| SSR          | ✓    | ✓        | no-op    | no-op    |         |
-| Hydration    |      |          | ✓        | ✓        | ✓       |
-| Canvas       | ✓    | ✓        | no-op    | no-op    |         |
+| バックエンド          | Tree | Decorate | Interact | Schedule | Resolve |
+| --------------------- | ---- | -------- | -------- | -------- | ------- |
+| DOM                   | ✓    | ✓        | ✓        | ✓        |         |
+| SSR                   | ✓    | ✓        | no-op    | no-op    |         |
+| Hydration（SSR 機能） |      |          | ✓        | ✓        | ✓       |
+| Canvas                | ✓    | ✓        | no-op    | no-op    |         |
+
+> **Note**: Hydration は独立したバックエンドではなく、`@ydant/ssr` の `hydrate()` 関数として提供される。DOM Backend + HydrationPlugin の組み合わせで、SSR 出力済みの既存 DOM にイベントリスナーや Slot 参照をアタッチする。
 
 `scope().mount()` はコンパイル時に「Generator が必要とする能力 ⊆ Backend が提供する能力」を検証する
 （`CapabilityCheck` 型、`SpellSchema` の `capabilities` フィールド、`Backend<Capabilities>` phantom 型）。

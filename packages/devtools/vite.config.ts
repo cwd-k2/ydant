@@ -12,18 +12,11 @@ export default defineConfig({
     outDir: "dist",
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),
-      name: "YdantDevtools",
-      fileName: (format) => `index.${format}.js`,
+      fileName: (format) => (format === "es" ? "index.es.js" : "index.cjs"),
+      formats: ["es", "cjs"],
     },
     rollupOptions: {
       external: ["@ydant/core", "@ydant/core/internals", "@ydant/base", "@ydant/reactive"],
-      output: {
-        globals: {
-          "@ydant/core": "YdantCore",
-          "@ydant/base": "YdantBase",
-          "@ydant/reactive": "YdantReactive",
-        },
-      },
     },
   },
 });

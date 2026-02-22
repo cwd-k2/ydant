@@ -10,7 +10,15 @@ Ydant is an experimental UI library that uses JavaScript generators as a domain-
 
 ```typescript
 import { scope } from "@ydant/core";
-import { createDOMBackend, createBasePlugin, div, button, text, type Slot } from "@ydant/base";
+import {
+  createDOMBackend,
+  createBasePlugin,
+  div,
+  button,
+  text,
+  refresh,
+  type Slot,
+} from "@ydant/base";
 
 function Counter(initial: number) {
   let count = initial;
@@ -23,7 +31,7 @@ function Counter(initial: number) {
       {
         onClick: () => {
           count++;
-          countSlot.refresh(() => [text(`Count: ${count}`)]);
+          refresh(countSlot, () => [text(`Count: ${count}`)]);
         },
       },
       "+1",
@@ -60,6 +68,7 @@ scope(createDOMBackend(document.getElementById("app")!), [createBasePlugin()]).m
 | **@ydant/canvas**     | Canvas2D rendering                  | [Details](./packages/canvas/README.md)     |
 | **@ydant/portal**     | Render into alternate targets       | [Details](./packages/portal/README.md)     |
 | **@ydant/ssr**        | Server-side rendering + Hydration   | [Details](./packages/ssr/README.md)        |
+| **@ydant/devtools**   | Engine lifecycle observation        | [Details](./packages/devtools/README.md)   |
 
 ## Quick Start
 

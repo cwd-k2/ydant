@@ -143,16 +143,50 @@ function* myOperation(): Spell<"mytype"> {
 
 ### RenderContext
 
-The rendering context holds state and methods during rendering. Core fields include `parent`, `plugins`, `processChildren`, and `createChildContext`. Capability providers inject backend-specific operations (`tree`, `decorate`, `interact`, `schedule`, `currentElement`) via the same module augmentation mechanism used by other plugins.
+The rendering context holds state and methods during rendering. Core fields include `parent`, `scope`, `engine`, `processChildren`, and `createChildContext`. Capability providers inject backend-specific operations (`tree`, `decorate`, `interact`, `schedule`) via the same module augmentation mechanism used by other plugins.
 
 ```typescript
 interface RenderContext {
+  /** The node that children are appended to. */
   parent: unknown;
-  plugins: Map<string, Plugin>;
-  allPlugins: readonly Plugin[];
-  processChildren(builder: Builder, options?: { parent?: unknown }): void;
+  /** When set, child nodes are inserted before this reference node instead of appended. */
+  insertionRef?: unknown;
+  /** The execution scope (backend + plugins) for this context. */
+  scope: ExecutionScope;
+  /** The engine managing this context's execution scope. */
+  engine: Engine;
+  /** Processes a Builder's instructions in a new child context. */
+  processChildren(
+    builder: Builder,
+    options?: {
+      parent?: unknown;
+      scope?: ExecutionScope;
+      contextInit?: (childCtx: RenderContext, parentCtx: RenderContext) => void;
+    },
+  ): void;
+  /** Creates a new child-scoped RenderContext for the given parent node. */
   createChildContext(parent: unknown): RenderContext;
 }
+```
+
+### Schedulers
+
+Built-in schedulers that control when an Engine's task queue is flushed.
+
+```typescript
+type Scheduler = (flush: () => void) => void;
+```
+
+| Scheduler   | Description                              |
+| ----------- | ---------------------------------------- |
+| `sync`      | Flushes immediately (synchronous)        |
+| `microtask` | Defers flush via `queueMicrotask`        |
+| `animFrame` | Defers flush via `requestAnimationFrame` |
+
+```typescript
+import { sync, microtask, animFrame } from "@ydant/core";
+
+scope(backend, plugins).mount(App, { scheduler: sync });
 ```
 
 ### Utilities

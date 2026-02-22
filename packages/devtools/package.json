@@ -1,6 +1,6 @@
 {
   "name": "@ydant/devtools",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Developer tools plugin for Ydant — opt-in Engine lifecycle observation",
   "keywords": [
     "debug",
@@ -23,7 +23,7 @@
     "LICENSE",
     "README.md"
   ],
-  "main": "./dist/index.umd.js",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.es.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -34,7 +34,7 @@
         "default": "./src/index.ts"
       },
       "import": "./dist/index.es.js",
-      "require": "./dist/index.umd.js"
+      "require": "./dist/index.cjs"
     }
   },
   "scripts": {

@@ -10,7 +10,11 @@
       "@ydant/context",
       "@ydant/router",
       "@ydant/async",
-      "@ydant/transition"
+      "@ydant/transition",
+      "@ydant/canvas",
+      "@ydant/portal",
+      "@ydant/ssr",
+      "@ydant/devtools"
     ]
   ],
   "linked": [],

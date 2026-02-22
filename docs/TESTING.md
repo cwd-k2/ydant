@@ -323,16 +323,18 @@ describe("cleanup", () => {
 
 ```typescript
 it("processes custom child type through plugin", () => {
-  const dispose = mount(
-    function* () {
-      yield* myPrimitive("value");
-    },
+  const handle = mount(
     container,
-    { plugins: [createBasePlugin(), createMyPlugin()] },
+    () => {
+      return (function* () {
+        yield* myPrimitive("value");
+      })();
+    },
+    { plugins: [createMyPlugin()] },
   );
 
   expect(container.textContent).toBe("value");
-  dispose();
+  handle.dispose();
 });
 ```
 

@@ -7,13 +7,20 @@
 - カウンターコンポーネント（Slot による再レンダリング）
 - ダイアログコンポーネント（props を受け取るコンポーネント）
 
+## 使用パッケージ
+
+- `@ydant/core` — scope, mount
+- `@ydant/base` — 要素ファクトリ, refresh, text
+
 ## 実装のポイント
 
 ### Slot 変数の宣言パターン
 
-イベントハンドラ内で `Slot.refresh()` を使う場合、Slot 変数を先に宣言する:
+イベントハンドラ内で `refresh()` を使う場合、Slot 変数を先に宣言する:
 
 ```typescript
+import { html, refresh } from "@ydant/base";
+
 let countSlot: Slot; // 先に宣言
 
 return div(function* () {
@@ -21,7 +28,7 @@ return div(function* () {
     {
       onClick: () => {
         count++;
-        countSlot.refresh(() => [text(`Count: ${count}`)]); // ここで使用
+        refresh(countSlot, () => [text(`Count: ${count}`)]); // ここで使用
       },
     },
     "+1",
@@ -31,16 +38,16 @@ return div(function* () {
 });
 ```
 
-### Slot.refresh() の引数
+### refresh() の引数
 
-`refresh()` には必ずコンテンツを返す関数を渡す:
+`refresh(slot, content)` には Slot とコンテンツを返す関数を渡す:
 
 ```typescript
 // ✅ 正しい
-slot.refresh(() => [text("content")]);
+refresh(slot, () => [text("content")]);
 
 // ❌ 引数なしは不可
-slot.refresh();
+refresh(slot);
 ```
 
 ## 実行
