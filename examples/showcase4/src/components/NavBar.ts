@@ -18,17 +18,17 @@ export function NavBar(): Render {
     function* () {
       yield* RouterLink({
         href: `${basePath}/`,
-        children: () => span({ class: "hover:underline cursor-pointer" }, "Home"),
+        content: () => span({ class: "hover:underline cursor-pointer" }, "Home"),
       });
 
       yield* RouterLink({
         href: `${basePath}/users`,
-        children: () => span({ class: "hover:underline cursor-pointer" }, "Users"),
+        content: () => span({ class: "hover:underline cursor-pointer" }, "Users"),
       });
 
       yield* RouterLink({
         href: `${basePath}/contact`,
-        children: () => span({ class: "hover:underline cursor-pointer" }, "Contact"),
+        content: () => span({ class: "hover:underline cursor-pointer" }, "Contact"),
       });
 
       // テーマ切り替えボタン

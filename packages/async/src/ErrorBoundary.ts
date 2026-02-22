@@ -28,7 +28,12 @@ import { boundary } from "./boundary";
 export interface ErrorBoundaryProps {
   /** Component to display when an error is caught. Receives the error and a reset callback. */
   fallback: (error: Error, reset: () => void) => Render;
-  /** Content that may throw errors during rendering. */
+  /**
+   * Content that may throw errors during rendering.
+   *
+   * Must return a `Render` generator (not `Builder`) because it is evaluated
+   * inside a try-catch boundary via `yield*`.
+   */
   content: () => Render;
 }
 

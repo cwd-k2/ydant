@@ -42,12 +42,12 @@ export function NavBar(): Render {
 
       yield* RouterLink({
         href: `${basePath}/`,
-        children: () => span({ class: "hover:text-blue-300 cursor-pointer text-sm" }, "Home"),
+        content: () => span({ class: "hover:text-blue-300 cursor-pointer text-sm" }, "Home"),
       });
 
       yield* RouterLink({
         href: `${basePath}/dashboard`,
-        children: () => span({ class: "hover:text-blue-300 cursor-pointer text-sm" }, "Dashboard"),
+        content: () => span({ class: "hover:text-blue-300 cursor-pointer text-sm" }, "Dashboard"),
       });
 
       yield* span({ class: "ml-auto" });

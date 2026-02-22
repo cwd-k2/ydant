@@ -11,8 +11,8 @@
  * const App: Component = () =>
  *   div(function* () {
  *     yield* nav(() => [
- *       RouterLink({ href: "/", children: () => text("Home") }),
- *       RouterLink({ href: "/about", children: () => text("About") }),
+ *       RouterLink({ href: "/", content: () => text("Home") }),
+ *       RouterLink({ href: "/about", content: () => text("About") }),
  *     ]);
  *
  *     yield* RouterView({

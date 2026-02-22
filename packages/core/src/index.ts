@@ -40,7 +40,15 @@ export type {
 // Plugin System
 // =============================================================================
 
-export type { Backend, Plugin, RenderContext, Scheduler, Engine, Hub } from "./plugin";
+export type {
+  Backend,
+  Plugin,
+  RenderContext,
+  ExecutionScope,
+  Scheduler,
+  Engine,
+  Hub,
+} from "./plugin";
 
 // =============================================================================
 // Utilities

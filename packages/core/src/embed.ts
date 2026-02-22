@@ -46,6 +46,8 @@ export function* embed(
 // Plugin
 // =============================================================================
 
+let embedCounter = 0;
+
 /** Creates the embed plugin that handles scope-switching requests. */
 export function createEmbedPlugin(): Plugin {
   return {
@@ -63,7 +65,7 @@ export function createEmbedPlugin(): Plugin {
         if (existing) {
           engine = existing;
         } else {
-          engine = hub.spawn(`embed-${scope.backend.name}-${Date.now()}`, scope, { scheduler });
+          engine = hub.spawn(`embed-${scope.backend.name}-${++embedCounter}`, scope, { scheduler });
           // Propagate errors from child engine to parent engine via dispatch
           const parentEngine = ctx.engine;
           engine.onError((error) => {

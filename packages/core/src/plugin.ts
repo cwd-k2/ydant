@@ -216,7 +216,14 @@ export interface Engine {
   onBeforeFlush(callback: () => void): void;
   /** Registers a callback invoked after each flush cycle completes. */
   onFlush(callback: () => void): void;
-  /** Registers a handler for messages of the given type. */
+  /**
+   * Registers a handler for messages of the given type.
+   *
+   * Built-in message types (processed before user handlers):
+   * - `"engine:pause"` — pauses the target engine
+   * - `"engine:resume"` — resumes the target engine
+   * - `"engine:error"` — forwarded by embed when a child engine encounters an error
+   */
   on(type: string, handler: (message: Message) => void): void;
   /** Registers an error handler for task execution failures during flush. */
   onError(callback: (error: unknown) => void): void;

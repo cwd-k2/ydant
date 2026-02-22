@@ -54,7 +54,7 @@ describe("RouterLink", () => {
       div(function* () {
         yield* RouterLink({
           href: "/about",
-          children: () => text("About"),
+          content: () => text("About"),
         });
       }),
     );
@@ -70,7 +70,7 @@ describe("RouterLink", () => {
       div(function* () {
         yield* RouterLink({
           href: "/clicked",
-          children: () => text("Click me"),
+          content: () => text("Click me"),
         });
       }),
     );
@@ -86,7 +86,7 @@ describe("RouterLink", () => {
       div(function* () {
         yield* RouterLink({
           href: "/test",
-          children: () => text("Test"),
+          content: () => text("Test"),
         });
       }),
     );
@@ -110,7 +110,7 @@ describe("RouterLink", () => {
       div(function* () {
         yield* RouterLink({
           href: "/current",
-          children: () => text("Current"),
+          content: () => text("Current"),
           activeClass: "active",
         });
       }),
@@ -127,7 +127,7 @@ describe("RouterLink", () => {
       div(function* () {
         yield* RouterLink({
           href: "/different",
-          children: () => text("Link"),
+          content: () => text("Link"),
           activeClass: "active",
         });
       }),
@@ -144,7 +144,7 @@ describe("RouterLink", () => {
       div(function* () {
         yield* RouterLink({
           href: "/about",
-          children: () => text("About"),
+          content: () => text("About"),
           activeClass: "active",
         });
       }),
@@ -170,7 +170,7 @@ describe("RouterLink", () => {
       div(function* () {
         yield* RouterLink({
           href: "/current",
-          children: () => text("Current"),
+          content: () => text("Current"),
           activeClass: "active",
         });
       }),
@@ -197,7 +197,7 @@ describe("RouterLink", () => {
         parentSlot = yield* div(function* () {
           yield* RouterLink({
             href: "/test",
-            children: () => text("Test"),
+            content: () => text("Test"),
             activeClass: "active",
           });
         });

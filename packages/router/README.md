@@ -32,8 +32,8 @@ const App: Component = () =>
   div(function* () {
     // Navigation
     yield* nav(() => [
-      RouterLink({ href: "/", children: () => text("Home") }),
-      RouterLink({ href: "/users/1", children: () => text("User 1") }),
+      RouterLink({ href: "/", content: () => text("Home") }),
+      RouterLink({ href: "/users/1", content: () => text("User 1") }),
     ]);
 
     // Route definitions
@@ -109,7 +109,7 @@ function RouterLink(props: RouterLinkProps): Render;
 
 interface RouterLinkProps {
   href: string;
-  children: () => Render;
+  content: () => Render;
   activeClass?: string;
 }
 ```

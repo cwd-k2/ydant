@@ -2,7 +2,13 @@
 // Utility Types
 // =============================================================================
 
-/** Creates a discriminated union member with a `type` tag and optional payload. */
+/**
+ * Creates a discriminated union member with a `type` tag and optional payload.
+ *
+ * Used by plugin/backend authors to define new spell request types.
+ * App developers typically interact with spell functions (e.g., `div`, `text`)
+ * rather than constructing Tagged values directly.
+ */
 export type Tagged<T extends string, P = {}> = { type: T } & P;
 
 // =============================================================================

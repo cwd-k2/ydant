@@ -7,7 +7,8 @@
 import type { TransitionHandle } from "./Transition";
 
 declare module "@ydant/core" {
-  // request/response を持たず、return のみを追加する SpellSchema エントリ
+  // Return-only entry: adds TransitionHandle to Render's return type union,
+  // so that generators using `yield* Transition(...)` remain assignable to Render.
   interface SpellSchema {
     transition: { return: TransitionHandle };
   }

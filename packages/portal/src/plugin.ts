@@ -5,8 +5,8 @@
  * Processes portal requests by rendering children into a different target node.
  */
 
-import type { Plugin, RenderContext, Response } from "@ydant/core";
-import type { Portal } from "./types";
+import type { Plugin, RenderContext, Request, Response } from "@ydant/core";
+import { isTagged } from "@ydant/core";
 
 /** Creates a plugin that enables portal rendering. */
 export function createPortalPlugin(): Plugin {
@@ -15,7 +15,8 @@ export function createPortalPlugin(): Plugin {
     types: ["portal"],
     dependencies: ["base"],
 
-    process(request: Portal, ctx: RenderContext): Response {
+    process(request: Request, ctx: RenderContext): Response {
+      if (!isTagged(request, "portal")) return undefined;
       ctx.processChildren(request.content, { parent: request.target });
       // Clean up portal target's children when parent scope is unmounted
       ctx.unmountCallbacks.push(() => {

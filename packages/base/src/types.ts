@@ -59,7 +59,12 @@ export type Lifecycle = MountLifecycle | UnmountLifecycle;
 // Plugin Types
 // =============================================================================
 
-/** Tracks a keyed element's node and its associated unmount callbacks for reuse. */
+/**
+ * Tracks a keyed element's node and its associated unmount callbacks for reuse.
+ *
+ * Internal to the base plugin's keyed element reconciliation.
+ * Plugin authors may encounter this type via `RenderContext.keyedNodes`.
+ */
 export interface KeyedNode {
   key: string | number;
   node: unknown;

@@ -68,7 +68,13 @@ export interface TransitionHandle {
   setShow: (show: boolean) => Promise<void>;
 }
 
-/** Return type of `Transition`. Use with `yield*` to obtain a TransitionHandle. */
+/**
+ * Return type of `Transition`. Use with `yield*` to obtain a {@link TransitionHandle}.
+ *
+ * This is a concrete generator type (not `Spell<"transition">`) because
+ * `Transition` yields `Element` requests internally. Exported for type
+ * annotation purposes when storing the result of `Transition()`.
+ */
 export type TransitionInstruction = Generator<Element, TransitionHandle, Slot>;
 
 /**
@@ -77,6 +83,9 @@ export type TransitionInstruction = Generator<Element, TransitionHandle, Slot>;
  * Creates a container element and manages visibility transitions.
  * The `show` prop controls the initial visibility (defaults to `false`).
  * Use the returned `setShow` function to toggle visibility with animations.
+ *
+ * **DOM-only**: This component assumes a DOM backend. The container's
+ * `.node` is cast to `HTMLElement` for CSS class manipulation.
  */
 export function* Transition(props: TransitionProps): TransitionInstruction {
   const { content, show: initialShow = false } = props;

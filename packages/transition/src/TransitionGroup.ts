@@ -42,7 +42,12 @@ export interface TransitionGroupProps<T> {
   leaveFrom?: string;
   /** Classes applied at the end of the leave transition */
   leaveTo?: string;
-  /** Render function for each item (must return an element) */
+  /**
+   * Render function for each item.
+   *
+   * Must return `Spell<"element">` (not `Render`) because TransitionGroup
+   * accesses `itemSlot.node` as `HTMLElement` for CSS transition manipulation.
+   */
   content: (item: T, index: number) => Spell<"element">;
 }
 

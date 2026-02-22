@@ -11,7 +11,7 @@
  * yield* RouterLink({
  *   href: "/about",
  *   activeClass: "active",
- *   children: () => text("About"),
+ *   content: () => text("About"),
  * });
  * ```
  */
@@ -31,12 +31,12 @@ import { ROUTE_CHANGE_EVENT } from "./state";
  *
  * @param props - RouterLink properties
  * @param props.href - Destination path for the link
- * @param props.children - Child content to render inside the link
+ * @param props.content - Content to render inside the link
  * @param props.activeClass - CSS class name applied when href matches the current route (optional)
  * @returns A Render for the anchor element
  */
 export function RouterLink(props: RouterLinkProps): Render {
-  const { href, children, activeClass } = props;
+  const { href, content, activeClass } = props;
 
   return (function* () {
     const slot = yield* a(
@@ -48,7 +48,7 @@ export function RouterLink(props: RouterLinkProps): Render {
           navigate(href);
         },
       },
-      children,
+      content,
     );
 
     // Listen for route changes to reactively update the active class

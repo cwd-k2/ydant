@@ -3,6 +3,9 @@ import type { Tagged, Request, Render, MaybeRender } from "./types";
 /**
  * Checks whether a tagged object matches a given type tag.
  * When called with a {@link Request}, narrows to the matching variant.
+ *
+ * Primarily used by plugin authors in {@link Plugin.process} to narrow
+ * the incoming request to a specific spell type.
  */
 export function isTagged<T extends Request["type"]>(
   value: Request,

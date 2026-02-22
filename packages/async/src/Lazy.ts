@@ -16,15 +16,15 @@
  * ```
  */
 
-import type { Spell, Render } from "@ydant/core";
+import type { Spell, Render, Builder } from "@ydant/core";
 import { div, refresh } from "@ydant/base";
 import { onMount, onUnmount } from "@ydant/base";
 
 /** Props for the Lazy component. */
 export interface LazyProps {
-  /** Content to render when the trigger fires. */
-  content: () => Render;
-  /** Optional fallback to display while waiting. */
+  /** Content to render when the trigger fires. Passed to `refresh()`, so array syntax is accepted. */
+  content: Builder;
+  /** Optional fallback to display while waiting. Used with `yield*`, so must return a generator. */
   fallback?: () => Render;
   /**
    * When to trigger rendering.
@@ -45,6 +45,9 @@ export interface LazyProps {
  *
  * Wraps content in a container element. The content is not evaluated
  * until the trigger condition is met (viewport visibility or browser idle).
+ *
+ * **DOM-only**: This component uses `IntersectionObserver` and
+ * `requestIdleCallback`, and casts the container node to `Element`.
  */
 export function* Lazy(props: LazyProps): Spell<"element"> {
   const { content, fallback, trigger = "visible", rootMargin, threshold } = props;

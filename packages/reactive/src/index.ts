@@ -38,7 +38,7 @@ export type { ReactiveScope } from "./scope";
 export { signal } from "./signal";
 export { computed } from "./computed";
 export { effect } from "./effect";
-export { batch, scheduleEffect } from "./batch";
+export { batch } from "./batch";
 export { reactive } from "./reactive";
 
 // ─── Plugin ───

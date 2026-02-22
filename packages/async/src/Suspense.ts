@@ -26,7 +26,12 @@ import { boundary } from "./boundary";
 export interface SuspenseProps {
   /** Component to display while loading. */
   fallback: () => Render;
-  /** Content that may suspend by throwing a Promise. */
+  /**
+   * Content that may suspend by throwing a Promise.
+   *
+   * Must return a `Render` generator (not `Builder`) because it is evaluated
+   * inside a try-catch boundary via `yield*`.
+   */
   content: () => Render;
 }
 

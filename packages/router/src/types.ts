@@ -42,8 +42,8 @@ export interface RouterViewProps {
 export interface RouterLinkProps {
   /** Destination path for the link */
   href: string;
-  /** Child content rendered inside the link element */
-  children: () => Render;
+  /** Content rendered inside the link element */
+  content: () => Render;
   /** CSS class name applied when the link's href matches the current route */
   activeClass?: string;
 }
